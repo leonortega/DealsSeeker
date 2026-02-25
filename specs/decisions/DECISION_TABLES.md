@@ -30,3 +30,12 @@
 | Confirm action | Persists selected location in draft | No publish action implied |
 | Search selection | Replaces current selected location | Latest user-selected result wins |
 
+## Offer Availability Feedback Rules (`OFFERS.LIST.ACTIONS.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Feedback label | `Available?` | Displayed with thumbs controls |
+| Upvote control | Thumbs up icon | Increments positive counter by 1 |
+| Downvote control | Thumbs down icon | Increments negative counter by 1 |
+| Counter default | `0` | Used when no prior feedback exists |
+| Counter display | Positive as integer, negative as integer count | Example `12` up and `3` down |

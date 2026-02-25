@@ -14,7 +14,13 @@ Feature: Offer list item content and actions
   Scenario: Offer list item shows required action buttons
     Given an offer item is visible in the list
     When the action area is rendered
-    Then Still Available is visible
-    And No Longer Available is visible
+    Then Available? label is visible
+    And thumbs up with positive counter is visible
+    And thumbs down with negative counter is visible
     And Report is visible
 
+  Scenario: Selecting offer item opens walking directions
+    Given an offer item has a valid location
+    When the user selects the offer item destination action
+    Then Google Maps directions open for that location
+    And walking mode is selected

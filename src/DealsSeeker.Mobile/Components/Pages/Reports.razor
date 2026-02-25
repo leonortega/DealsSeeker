@@ -1,0 +1,48 @@
+@page "/reports"
+@page "/complaints"
+@inject IDealsSeekerApiClient ApiClient
+
+<h1>Reports</h1>
+
+<section class="card-block">
+    <label class="field-label" for="reportMessage">Report</label>
+    <textarea id="reportMessage" class="field-input" @bind="_message" rows="4"></textarea>
+
+    <label class="field-label" for="reportOfferId">Offer ID (optional)</label>
+    <input id="reportOfferId" class="field-input" @bind="_offerId" />
+
+    <button class="btn-main btn-danger" @onclick="SubmitAsync" disabled="@_submitting">Send Report</button>
+    @if (!string.IsNullOrWhiteSpace(_statusMessage))
+    {
+        <p class="status-line">@_statusMessage</p>
+    }
+</section>
+
+@code {
+    private string _message = string.Empty;
+    private string _offerId = string.Empty;
+    private string _statusMessage = string.Empty;
+    private bool _submitting;
+
+    private async Task SubmitAsync()
+    {
+        _submitting = true;
+        try
+        {
+            var result = await ApiClient.SubmitReportAsync(
+                new ReportRequest(_message.Trim(), string.IsNullOrWhiteSpace(_offerId) ? null : _offerId.Trim()),
+                CancellationToken.None);
+            _statusMessage = result.Message;
+            if (result.Success)
+            {
+                _message = string.Empty;
+                _offerId = string.Empty;
+            }
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+}
+

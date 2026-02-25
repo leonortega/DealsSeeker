@@ -1,0 +1,39 @@
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #eef3e6;
+}
+
+main {
+    flex: 1;
+    min-height: 0;
+}
+
+.top-row {
+    background: #f3f7ec;
+    border-bottom: 1px solid #d8decf;
+    color: #1f2f19;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.content {
+    padding-top: 1rem;
+    padding-bottom: 5.2rem;
+}
+
+.bottom-menu {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+}
+

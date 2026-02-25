@@ -1,0 +1,20 @@
+# .NET
+bin/
+obj/
+/.dotnet8/
+
+# VS
+.vs/
+*.user
+*.suo
+
+# MAUI build artifacts
+*.apk
+*.aab
+*.msix
+*.appx
+*.appxbundle
+
+# OS
+.DS_Store
+Thumbs.db

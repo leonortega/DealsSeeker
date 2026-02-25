@@ -6,6 +6,5 @@ Feature: Application shell and default landing
   Scenario: App shows shell sections and defaults to Offers
     Given the DealsSeeker mobile application is launchable
     When the user starts the application
-    Then the main navigation shows My Account, Offers, Suggestions, and Complaints
+    Then the main navigation shows My Account, Offers, Suggestions, and Reports
     And Offers is the active default section
-

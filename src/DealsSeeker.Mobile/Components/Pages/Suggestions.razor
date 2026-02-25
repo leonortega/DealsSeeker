@@ -1,0 +1,45 @@
+@page "/suggestions"
+@inject IDealsSeekerApiClient ApiClient
+
+<h1>Suggestions</h1>
+
+<section class="card-block">
+    <label class="field-label" for="suggestionMessage">Suggestion</label>
+    <textarea id="suggestionMessage" class="field-input" @bind="_message" rows="4"></textarea>
+
+    <label class="field-label" for="suggestionContact">Contact (optional)</label>
+    <input id="suggestionContact" class="field-input" @bind="_contact" />
+
+    <button class="btn-main" @onclick="SubmitAsync" disabled="@_submitting">Send Suggestion</button>
+    @if (!string.IsNullOrWhiteSpace(_statusMessage))
+    {
+        <p class="status-line">@_statusMessage</p>
+    }
+</section>
+
+@code {
+    private string _message = string.Empty;
+    private string _contact = string.Empty;
+    private string _statusMessage = string.Empty;
+    private bool _submitting;
+
+    private async Task SubmitAsync()
+    {
+        _submitting = true;
+        try
+        {
+            var result = await ApiClient.SubmitSuggestionAsync(new SuggestionRequest(_message.Trim(), string.IsNullOrWhiteSpace(_contact) ? null : _contact.Trim()), CancellationToken.None);
+            _statusMessage = result.Message;
+            if (result.Success)
+            {
+                _message = string.Empty;
+                _contact = string.Empty;
+            }
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+}
+

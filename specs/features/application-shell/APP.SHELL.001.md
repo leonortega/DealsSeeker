@@ -18,7 +18,7 @@ Define global app sections and startup landing behavior.
 
 ## Requirements
 - `APP.SHELL.001-R0`: The system shall be a mobile application named `DealsSeeker`.
-- `APP.SHELL.001-R1`: The system shall provide the main navigation sections: `My Account`, `Offers`, `Suggestions`, `Complaints`.
+- `APP.SHELL.001-R1`: The system shall provide the main navigation sections: `My Account`, `Offers`, `Suggestions`, `Reports`.
 - `APP.SHELL.001-R2`: The system shall open on the `Offers` section by default at startup.
 
 ## Acceptance Criteria (BDD)
@@ -27,7 +27,7 @@ Scenario: App starts on Offers view
   Given the application is installed and launchable
   When the user opens the application
   Then the app identity shall be DealsSeeker mobile application
-  And the main navigation shall display My Account, Offers, Suggestions, and Complaints
+  And the main navigation shall display My Account, Offers, Suggestions, and Reports
   And the Offers section shall be the active section
 ```
 

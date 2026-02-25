@@ -20,7 +20,7 @@
 | `APP.SHELL.001` | `bdd/app-shell.feature` | N/A | N/A |
 | `OFFERS.LAYOUT.001` | `bdd/offers-layout-and-navigation.feature` | N/A | N/A |
 | `OFFERS.SEARCH.001` | `bdd/offers-search.feature` | `contracts/json-schema/offer-search-request.schema.json`, `contracts/json-schema/offer-search-response.schema.json` | `examples/offers-search/*` |
-| `OFFERS.MAP.001` | `bdd/offers-search.feature` | N/A | `examples/offers-search/search-by-tag.output.json` |
+| `OFFERS.MAP.001` | `bdd/offers-search.feature`, `bdd/offers-list-item.feature` | N/A | `examples/offers-search/search-by-tag.output.json` |
 | `OFFERS.LIST.ITEM.001` | `bdd/offers-list-item.feature` | N/A | N/A |
 | `OFFERS.LIST.ACTIONS.001` | `bdd/offers-list-item.feature` | N/A | N/A |
 | `OFFERS.NAV.ADD.001` | `bdd/offers-layout-and-navigation.feature` | N/A | N/A |
