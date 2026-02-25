@@ -1,0 +1,21 @@
+{
+  "description": "Fresh coffee near station",
+  "tags": [
+    "coffee",
+    "fresh"
+  ],
+  "image": {
+    "source": "gallery",
+    "mimeType": "image/jpeg",
+    "sizeBytes": 423112,
+    "width": 1200,
+    "height": 900
+  },
+  "location": {
+    "source": "auto",
+    "label": "5th Avenue Station",
+    "lat": 40.7129,
+    "lng": -74.0061
+  }
+}
+
