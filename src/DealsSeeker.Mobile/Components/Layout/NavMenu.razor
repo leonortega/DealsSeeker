@@ -1,19 +1,68 @@
-<nav class="bottom-nav">
-    <NavLink class="bottom-link" href="/my-account">
-        <span class="bottom-icon">A</span>
-        <span class="bottom-text">Account</span>
-    </NavLink>
-    <NavLink class="bottom-link" href="/offers">
-        <span class="bottom-icon">O</span>
-        <span class="bottom-text">Offers</span>
-    </NavLink>
-    <NavLink class="bottom-link" href="/suggestions">
-        <span class="bottom-icon">S</span>
-        <span class="bottom-text">Suggestions</span>
-    </NavLink>
-    <NavLink class="bottom-link" href="/reports">
-        <span class="bottom-icon">R</span>
-        <span class="bottom-text">Reports</span>
-    </NavLink>
-</nav>
+<div class="hamburger-root @( _open ? "open" : string.Empty)">
+    <button class="hamburger-button"
+            title="@(_open ? "Close menu" : "Open menu")"
+            aria-label="@(_open ? "Close navigation menu" : "Open navigation menu")"
+            aria-expanded="@_open"
+            @onclick="ToggleMenu">
+        <span class="hamburger-lines">
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+    </button>
 
+    <button class="menu-backdrop @( _open ? "open" : string.Empty)"
+            aria-label="Close navigation menu"
+            @onclick="CloseMenu">
+    </button>
+
+    <aside class="menu-sheet @( _open ? "open" : string.Empty)"
+           role="navigation"
+           aria-label="Main navigation menu"
+           aria-hidden="@(!_open)">
+        <div class="sheet-header">
+            <span class="sheet-title">DealsSeeker</span>
+            <button class="sheet-close" aria-label="Close menu" @onclick="CloseMenu">x</button>
+        </div>
+
+        <nav class="sheet-grid">
+            <NavLink class="menu-option" href="/offers" @onclick="CloseMenu">
+                <span class="menu-option-icon" aria-hidden="true">O</span>
+                <span class="menu-option-title">Offers</span>
+                <span class="menu-option-desc">Browse nearby deals</span>
+            </NavLink>
+
+            <NavLink class="menu-option" href="/add-offer" @onclick="CloseMenu">
+                <span class="menu-option-icon" aria-hidden="true">+</span>
+                <span class="menu-option-title">Add new offer</span>
+                <span class="menu-option-desc">Publish a new deal</span>
+            </NavLink>
+
+            <NavLink class="menu-option" href="/my-account" @onclick="CloseMenu">
+                <span class="menu-option-icon" aria-hidden="true">A</span>
+                <span class="menu-option-title">My Account</span>
+                <span class="menu-option-desc">Profile and session</span>
+            </NavLink>
+
+            <NavLink class="menu-option" href="/suggestions" @onclick="CloseMenu">
+                <span class="menu-option-icon" aria-hidden="true">S</span>
+                <span class="menu-option-title">Suggestions</span>
+                <span class="menu-option-desc">Send app ideas</span>
+            </NavLink>
+
+            <NavLink class="menu-option" href="/reports" @onclick="CloseMenu">
+                <span class="menu-option-icon" aria-hidden="true">R</span>
+                <span class="menu-option-title">Reports</span>
+                <span class="menu-option-desc">Report an issue</span>
+            </NavLink>
+        </nav>
+    </aside>
+</div>
+
+@code {
+    private bool _open;
+
+    private void ToggleMenu() => _open = !_open;
+
+    private void CloseMenu() => _open = false;
+}

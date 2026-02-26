@@ -1,3 +1,4 @@
+using DealsSeeker.Shared.Contracts.Account;
 using DealsSeeker.Shared.Contracts.AddOffer;
 using DealsSeeker.Shared.Contracts.Common;
 using DealsSeeker.Shared.Contracts.Feedback;
@@ -8,6 +9,14 @@ namespace DealsSeeker.Mobile.Services.Api;
 
 public interface IDealsSeekerApiClient
 {
+    Task<CommandResult> RegisterUserAsync(RegisterUserRequest request, CancellationToken cancellationToken);
+
+    Task<AuthSessionDto?> LoginAsync(LoginRequest request, CancellationToken cancellationToken);
+
+    Task<CommandResult> LogoutAsync(CancellationToken cancellationToken);
+
+    Task<UserProfileDto?> GetMyProfileAsync(CancellationToken cancellationToken);
+
     Task<SearchOffersResponse> SearchOffersAsync(SearchOffersRequest request, CancellationToken cancellationToken);
 
     Task<CommandResult> VoteOfferAvailabilityAsync(string offerId, OfferAvailabilityVoteRequest request, CancellationToken cancellationToken);

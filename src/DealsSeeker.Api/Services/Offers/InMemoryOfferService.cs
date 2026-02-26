@@ -11,13 +11,15 @@ namespace DealsSeeker.Api.Services.Offers;
 public sealed class InMemoryOfferService : IOfferService
 {
     private readonly ConcurrentDictionary<string, OfferRecord> _offers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, OfferAvailabilityVoteType>> _availabilityVotes = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _sync = new();
 
     public InMemoryOfferService()
     {
         Seed();
     }
 
-    public Task<SearchOffersResponse> SearchAsync(SearchOffersRequest request, CancellationToken cancellationToken)
+    public Task<SearchOffersResponse> SearchAsync(SearchOffersRequest request, string userId, CancellationToken cancellationToken)
     {
         var queryWords = SplitQuery(request.Query);
         var offers = _offers.Values.Where(o => o.IsActive);
@@ -41,7 +43,8 @@ public sealed class InMemoryOfferService : IOfferService
                 o.Location,
                 DistanceMeters(request.UserLocation, o.Location),
                 o.PositiveAvailabilityCount,
-                o.NegativeAvailabilityCount))
+                o.NegativeAvailabilityCount,
+                HasUserVoted(o.OfferId, userId)))
             .OrderBy(o => o.DistanceMeters)
             .ToArray();
 
@@ -62,21 +65,39 @@ public sealed class InMemoryOfferService : IOfferService
         return Task.FromResult(new SearchOffersResponse(offerDtos, businesses));
     }
 
-    public Task<CommandResult> VoteAvailabilityAsync(string offerId, OfferAvailabilityVoteRequest request, CancellationToken cancellationToken)
+    public Task<CommandResult> VoteAvailabilityAsync(string offerId, string userId, OfferAvailabilityVoteRequest request, CancellationToken cancellationToken)
     {
-        if (!_offers.TryGetValue(offerId, out var existing))
+        if (string.IsNullOrWhiteSpace(userId))
         {
-            return Task.FromResult(new CommandResult(false, "Offer not found."));
+            return Task.FromResult(new CommandResult(false, "Authenticated user is required."));
         }
 
-        var updated = request.Vote switch
+        lock (_sync)
         {
-            OfferAvailabilityVoteType.ThumbsUp => existing with { PositiveAvailabilityCount = existing.PositiveAvailabilityCount + 1 },
-            OfferAvailabilityVoteType.ThumbsDown => existing with { NegativeAvailabilityCount = existing.NegativeAvailabilityCount + 1 },
-            _ => existing
-        };
+            if (!_offers.TryGetValue(offerId, out var existing))
+            {
+                return Task.FromResult(new CommandResult(false, "Offer not found."));
+            }
 
-        _offers[offerId] = updated;
+            var offerVotes = _availabilityVotes.GetOrAdd(
+                offerId,
+                static _ => new ConcurrentDictionary<string, OfferAvailabilityVoteType>(StringComparer.OrdinalIgnoreCase));
+
+            if (!offerVotes.TryAdd(userId, request.Vote))
+            {
+                return Task.FromResult(new CommandResult(false, "Availability feedback already submitted for this offer."));
+            }
+
+            var updated = request.Vote switch
+            {
+                OfferAvailabilityVoteType.ThumbsUp => existing with { PositiveAvailabilityCount = existing.PositiveAvailabilityCount + 1 },
+                OfferAvailabilityVoteType.ThumbsDown => existing with { NegativeAvailabilityCount = existing.NegativeAvailabilityCount + 1 },
+                _ => existing
+            };
+
+            _offers[offerId] = updated;
+        }
+
         return Task.FromResult(new CommandResult(true, "Availability feedback registered."));
     }
 
@@ -95,9 +116,11 @@ public sealed class InMemoryOfferService : IOfferService
     {
         var offerId = $"off-{Guid.NewGuid():N}"[..12];
         var location = request.Location?.Position ?? new GeoPoint(40.7128, -74.0060);
-        var imageUrl = request.Image?.FileName is { Length: > 0 } fileName
-            ? $"/uploads/{fileName}"
-            : "/images/offer-placeholder.png";
+        var imageUrl = !string.IsNullOrWhiteSpace(request.ImageDataUrl)
+            ? request.ImageDataUrl!
+            : !string.IsNullOrWhiteSpace(request.Image?.DataUrl)
+                ? request.Image!.DataUrl!
+            : "/images/offer-placeholder.svg";
 
         var normalizedTags = request.Tags
             .Select(NormalizeTag)
@@ -131,7 +154,8 @@ public sealed class InMemoryOfferService : IOfferService
             record.Location,
             0,
             record.PositiveAvailabilityCount,
-            record.NegativeAvailabilityCount));
+            record.NegativeAvailabilityCount,
+            false));
     }
 
     private static List<string> SplitQuery(string query) =>
@@ -168,8 +192,26 @@ public sealed class InMemoryOfferService : IOfferService
 
     private static double DegreesToRadians(double degrees) => degrees * Math.PI / 180;
 
-    private static string NormalizeTag(string value) =>
-        value.Trim().Trim('.', ',', ';', ':', '!', '?', '"', '\'').ToLower(CultureInfo.InvariantCulture);
+    private static string NormalizeTag(string value)
+    {
+        var normalized = (value ?? string.Empty)
+            .Trim()
+            .Trim('.', ',', ';', ':', '!', '?', '"', '\'', '(', ')', '[', ']', '{', '}')
+            .ToLower(CultureInfo.InvariantCulture);
+
+        return normalized;
+    }
+
+    private bool HasUserVoted(string offerId, string userId)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return false;
+        }
+
+        return _availabilityVotes.TryGetValue(offerId, out var votesByUser) &&
+               votesByUser.ContainsKey(userId);
+    }
 
     private void Seed()
     {
@@ -181,7 +223,7 @@ public sealed class InMemoryOfferService : IOfferService
                 "Main Street Cafe",
                 "Buy one coffee and get one free",
                 ["coffee", "breakfast"],
-                "https://picsum.photos/seed/coffee/400/250",
+                "/images/offer-placeholder.svg",
                 true,
                 new GeoPoint(40.7131, -74.0055),
                 0,
@@ -193,7 +235,7 @@ public sealed class InMemoryOfferService : IOfferService
                 "Broadway Market",
                 "Bakery discount before closing time",
                 ["bakery", "discount", "bread"],
-                "https://picsum.photos/seed/bakery/400/250",
+                "/images/offer-placeholder.svg",
                 true,
                 new GeoPoint(40.7165, -74.0035),
                 0,
@@ -205,7 +247,7 @@ public sealed class InMemoryOfferService : IOfferService
                 "Green Leaf Shop",
                 "Fresh tea selection with seasonal promos",
                 ["tea", "fresh", "seasonal"],
-                "https://picsum.photos/seed/tea/400/250",
+                "/images/offer-placeholder.svg",
                 true,
                 new GeoPoint(40.7105, -74.0080),
                 0,

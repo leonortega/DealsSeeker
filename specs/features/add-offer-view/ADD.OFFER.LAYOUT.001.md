@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer View Layout Composition
-- **Version**: `v1.0`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -21,7 +21,9 @@ Define required UI blocks for add-offer data entry.
 - `ADD.OFFER.LAYOUT.001-R2`: The system shall display a description input field.
 - `ADD.OFFER.LAYOUT.001-R3`: The system shall display a tag list section.
 - `ADD.OFFER.LAYOUT.001-R4`: The system shall display location information.
-- `ADD.OFFER.LAYOUT.001-R5`: The system shall display `Confirm Location` and `Search Location` actions.
+- `ADD.OFFER.LAYOUT.001-R5`: The system shall display `Confirm Location` action and a location search input with live suggestions.
+- `ADD.OFFER.LAYOUT.001-R6`: The system shall display a mini map location preview in Add Offer view.
+- `ADD.OFFER.LAYOUT.001-R7`: `Confirm Location` and `Edit Location` actions shall be positioned below the mini map.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -29,7 +31,9 @@ Scenario: Add Offer view displays required controls
   Given the user opens Add Offer view
   When the view loads
   Then image placeholder, description, tag list, and location info shall be visible
-  And Confirm Location and Search Location actions shall be visible
+  And a location search input with live suggestions shall be visible
+  And a mini map location preview shall be visible
+  And Confirm Location and Edit Location actions shall be visible below the mini map
 ```
 
 ## Example Inputs/Outputs
@@ -46,4 +50,3 @@ Scenario: Add Offer view displays required controls
 - `ADD.OFFER.IMAGE.001`
 - `ADD.OFFER.LOCATION.001`
 - `ADD.OFFER.DESCRIPTION.TAGS.001`
-

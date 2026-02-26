@@ -1,10 +1,11 @@
 @page "/"
 @inject NavigationManager Navigation
+@inject IUserSessionService Session
 
 @code {
     protected override void OnInitialized()
     {
-        Navigation.NavigateTo("/offers", forceLoad: false);
+        var firstView = Session.IsAuthenticated ? "/offers" : "/login";
+        Navigation.NavigateTo(firstView, forceLoad: false);
     }
 }
-

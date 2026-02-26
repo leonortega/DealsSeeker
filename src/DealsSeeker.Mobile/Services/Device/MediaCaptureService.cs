@@ -18,7 +18,11 @@ public sealed class MediaCaptureService : IMediaCaptureService
 
     public async Task<PickedImage?> PickPhotoAsync(CancellationToken cancellationToken)
     {
-        var file = await MediaPicker.Default.PickPhotoAsync();
+        var files = await MediaPicker.Default.PickPhotosAsync(new MediaPickerOptions
+        {
+            Title = "Select image"
+        });
+        var file = files.FirstOrDefault();
         return file is null ? null : await ToPickedImageAsync(file, "gallery", cancellationToken);
     }
 
@@ -47,9 +51,9 @@ public sealed class MediaCaptureService : IMediaCaptureService
             bytes.Length,
             null,
             null,
-            file.FileName);
+            file.FileName,
+            dataUrl);
 
         return new PickedImage(dataUrl, metadata);
     }
 }
-

@@ -2,22 +2,28 @@
 @inject IDealsSeekerApiClient ApiClient
 @inject IDeviceLocationService DeviceLocation
 @inject IMapLauncherService MapLauncher
+@inject IMapRenderingService MapRendering
+@inject IUserSessionService Session
+@inject IReportDraftContext ReportDraftContext
 @inject NavigationManager Navigation
 
 <h1>Offers</h1>
 
-<section class="card-block">
+<div class="offers-top-actions">
+    <button class="btn-main add-offer-button" @onclick="NavigateToAddOffer" title="Add new offer">+ add new offer</button>
+</div>
+
+<section class="card-block offers-search-panel">
     <div class="search-row">
         <input class="field-input" @bind="_query" placeholder="Search by product tag..." />
-        <button class="btn-main btn-icon" @onclick="NavigateToAddOffer" title="Add Offer">+</button>
     </div>
 
-    <button class="btn-main" @onclick="SearchAsync" disabled="@_loading">Search</button>
+    <button class="btn-main offers-search-submit" @onclick="SearchAsync" disabled="@_loading">Search</button>
 </section>
 
 <section class="card-block">
     <h2>Nearby Map</h2>
-    <p class="muted">Your location: @FormatLocation(_userLocation)</p>
+    <p class="muted">Your location: @FormatLocation(_userLocation) | Provider: @MapRendering.ActiveProvider</p>
     <iframe class="map-frame" src="@BuildMapEmbedUrl()" loading="lazy"></iframe>
     <div class="distance-row">
         <label>Coverage radius: @_radiusMeters m</label>
@@ -43,6 +49,10 @@
 
 <section class="card-block">
     <h2>Offers</h2>
+    @if (!string.IsNullOrWhiteSpace(_status))
+    {
+        <p class="status-line">@_status</p>
+    }
     @if (!string.IsNullOrWhiteSpace(_error))
     {
         <p class="status-line error">@_error</p>
@@ -62,7 +72,10 @@
             <article class="offer-card offer-card-clickable"
                      title="Open walking directions"
                      @onclick="() => OpenDirectionsAsync(offer.Location)">
-                <img src="@offer.ImageUrl" alt="Offer image" class="offer-image" />
+                <img src="@ResolveOfferImage(offer.ImageUrl)"
+                     alt="Offer image"
+                     class="offer-image"
+                     onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
                 <div class="offer-body">
                     <h3>@offer.BusinessName</h3>
                     <p>@((MarkupString)HighlightText(offer.Description))</p>
@@ -72,20 +85,10 @@
                             <span class="tag-pill">@tag</span>
                         }
                     </div>
-                    <div class="action-row">
-                        <span class="availability-label">Available?</span>
-                        <button class="btn-main btn-vote"
-                                title="Thumbs up"
-                                @onclick="() => VoteAsync(offer.OfferId, OfferAvailabilityVoteType.ThumbsUp)"
-                                @onclick:stopPropagation="true">&#128077; @offer.PositiveAvailabilityCount</button>
-                        <button class="btn-main btn-warning btn-vote"
-                                title="Thumbs down"
-                                @onclick="() => VoteAsync(offer.OfferId, OfferAvailabilityVoteType.ThumbsDown)"
-                                @onclick:stopPropagation="true">&#128078; @offer.NegativeAvailabilityCount</button>
-                        <button class="btn-main btn-danger"
-                                @onclick="() => ReportAsync(offer.OfferId)"
-                                @onclick:stopPropagation="true">Report</button>
-                    </div>
+                    <OfferActions Offer="offer"
+                                  VotesDisabled="@IsVoteDisabled(offer)"
+                                  OnVote="@(vote => VoteAsync(offer.OfferId, vote))"
+                                  OnReport="OpenReportViewAsync" />
                 </div>
             </article>
         }
@@ -94,6 +97,7 @@
 
 @code {
     private string _query = string.Empty;
+    private string? _status;
     private string? _error;
     private bool _loading;
     private int _radiusMeters = 1500;
@@ -102,6 +106,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!Session.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login", forceLoad: false);
+            return;
+        }
+
         var location = await DeviceLocation.TryGetCurrentLocationAsync(CancellationToken.None);
         if (location is not null)
         {
@@ -137,13 +147,41 @@
 
     private async Task VoteAsync(string offerId, OfferAvailabilityVoteType vote)
     {
-        await ApiClient.VoteOfferAvailabilityAsync(offerId, new OfferAvailabilityVoteRequest(vote), CancellationToken.None);
+        if (!Session.IsAuthenticated)
+        {
+            _error = "Login is required to vote offer availability.";
+            return;
+        }
+
+        var result = await ApiClient.VoteOfferAvailabilityAsync(offerId, new OfferAvailabilityVoteRequest(vote), CancellationToken.None);
+        if (!result.Success)
+        {
+            _error = result.Message;
+            if (result.Message.Contains("already submitted", StringComparison.OrdinalIgnoreCase))
+            {
+                await SearchAsync();
+            }
+
+            return;
+        }
+
+        _status = "Availability feedback registered.";
         await SearchAsync();
     }
 
-    private async Task ReportAsync(string offerId)
+    private Task OpenReportViewAsync(OfferItemDto offer)
     {
-        await ApiClient.ReportOfferAsync(offerId, new ReportOfferRequest("User report"), CancellationToken.None);
+        var userId = Session.CurrentSession?.UserId ?? "unknown";
+        var now = DateTimeOffset.UtcNow;
+        var initialMessage = $"Report opened from offer {offer.OfferId} at {now:yyyy-MM-dd HH:mm:ss} UTC.";
+        ReportDraftContext.Set(new OfferReportDraft(
+            offer,
+            userId,
+            now,
+            initialMessage));
+
+        Navigation.NavigateTo("/reports");
+        return Task.CompletedTask;
     }
 
     private void NavigateToAddOffer() => Navigation.NavigateTo("/add-offer");
@@ -173,5 +211,24 @@
     }
 
     private string BuildMapEmbedUrl() =>
-        $"https://maps.google.com/maps?q={_userLocation.Lat.ToString(System.Globalization.CultureInfo.InvariantCulture)},{_userLocation.Lng.ToString(System.Globalization.CultureInfo.InvariantCulture)}&z=15&output=embed";
+        MapRendering.BuildMapEmbedUrl(_userLocation, _results.Businesses, zoom: 15);
+
+    private bool IsVoteDisabled(OfferItemDto offer) =>
+        !Session.IsAuthenticated || offer.HasCurrentUserVoted;
+
+    private static string ResolveOfferImage(string imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return "/images/offer-placeholder.svg";
+        }
+
+        if (imageUrl.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase) ||
+            imageUrl.StartsWith("/images/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "/images/offer-placeholder.svg";
+        }
+
+        return imageUrl;
+    }
 }

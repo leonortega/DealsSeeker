@@ -50,6 +50,23 @@ h2 {
     align-items: center;
 }
 
+.search-row .field-input {
+    margin-bottom: 0;
+}
+
+.offers-top-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 0.6rem;
+}
+
+.add-offer-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    text-transform: lowercase;
+}
+
 .btn-main {
     border: none;
     border-radius: 10px;
@@ -73,7 +90,16 @@ h2 {
 
 .btn-icon {
     min-width: 2.5rem;
+    min-height: 2.6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
     font-size: 1.1rem;
+}
+
+.offers-search-submit {
+    margin-top: 0.65rem;
 }
 
 .muted {
@@ -89,6 +115,15 @@ h2 {
 
 .status-line.error {
     color: #9b2f2f;
+}
+
+.auth-link-row {
+    margin-top: 0.8rem;
+}
+
+.auth-link-row a {
+    margin-left: 0.25rem;
+    font-weight: 600;
 }
 
 .distance-row {
@@ -128,6 +163,48 @@ h2 {
 
 .result-item {
     border-radius: 10px;
+}
+
+.location-suggestion-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.45rem;
+    margin-bottom: 0.55rem;
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid #c9d3c0;
+    border-radius: 10px;
+    background: #f9fbf6;
+    padding: 0.35rem;
+}
+
+.location-suggestion-item {
+    width: 100%;
+    border: 1px solid #c0ccba;
+    border-radius: 10px;
+    background: #f5f8f0;
+    padding: 0.5rem 0.65rem;
+    color: #233521;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.location-suggestion-item:hover {
+    background: #edf4e7;
+    border-color: #aebda3;
+}
+
+.location-suggestion-title {
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.location-suggestion-subtitle {
+    font-size: 0.74rem;
+    color: #576451;
 }
 
 .tag-pill {
@@ -193,6 +270,15 @@ h2 {
 
 .btn-vote {
     min-width: 4.75rem;
+    cursor: default;
+}
+
+.btn-vote:disabled {
+    background: #d6ddd0 !important;
+    color: #66715f;
+    opacity: 1;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .image-placeholder {

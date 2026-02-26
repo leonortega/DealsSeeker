@@ -19,8 +19,28 @@ Feature: Offer list item content and actions
     And thumbs down with negative counter is visible
     And Report is visible
 
+  Scenario: User can vote only once per offer
+    Given the user already voted thumbs up for the displayed offer
+    When the same user taps thumbs down for the same offer
+    Then the second vote is rejected
+    And the counters remain unchanged by the rejected vote
+
+  Scenario: Availability buttons are disabled after user already voted
+    Given the user already voted for the displayed offer
+    When the offer item action area is rendered
+    Then thumbs up with positive counter is visible
+    And thumbs down with negative counter is visible
+    And both availability buttons are disabled for the user
+
+  Scenario: Availability buttons are enabled when user has not voted
+    Given the user has not voted for the displayed offer
+    When the offer item action area is rendered
+    Then thumbs up with positive counter is visible
+    And thumbs down with negative counter is visible
+    And both availability buttons are enabled for the user
+
   Scenario: Selecting offer item opens walking directions
     Given an offer item has a valid location
     When the user selects the offer item destination action
-    Then Google Maps directions open for that location
+    Then walking directions open for that location
     And walking mode is selected

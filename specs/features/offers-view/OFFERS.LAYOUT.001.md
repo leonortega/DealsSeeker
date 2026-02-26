@@ -8,10 +8,10 @@
 - **Priority**: High
 
 ## Purpose
-Define required UI blocks for the default Offers view.
+Define required UI blocks for the Offers view.
 
 ## Preconditions
-- User is in the Offers section.
+- User is authenticated and in the Offers section.
 
 ## Trigger
 - Offers view is rendered.
@@ -49,4 +49,3 @@ Scenario: Offers view shows all required sections
 - `OFFERS.MAP.001`
 - `OFFERS.LIST.ITEM.001`
 - `OFFERS.NAV.ADD.001`
-

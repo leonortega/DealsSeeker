@@ -1,5 +1,6 @@
 using System.Text.Json;
 using DealsSeeker.Api.Options;
+using DealsSeeker.Shared.Configuration;
 using DealsSeeker.Shared.Contracts.AddOffer;
 using DealsSeeker.Shared.Models;
 using Microsoft.Extensions.Options;
@@ -9,9 +10,10 @@ namespace DealsSeeker.Api.Services.Locations;
 public sealed class GoogleMapsLocationLookupService(
     HttpClient httpClient,
     IOptions<GoogleMapsOptions> options,
-    ILogger<GoogleMapsLocationLookupService> logger) : ILocationLookupService
+    ILogger<GoogleMapsLocationLookupService> logger) : ILocationLookupProvider
 {
     private readonly GoogleMapsOptions _options = options.Value;
+    public string ProviderKey => MapProviders.GoogleMaps;
 
     public async Task<IReadOnlyList<LocationSearchResultDto>> SearchAsync(string query, CancellationToken cancellationToken)
     {
@@ -22,8 +24,8 @@ public sealed class GoogleMapsLocationLookupService(
 
         if (string.IsNullOrWhiteSpace(_options.ApiKey))
         {
-            logger.LogWarning("Google Maps API key is missing. Returning no location results.");
-            return [];
+            logger.LogWarning("Google Maps API key is missing.");
+            throw new InvalidOperationException("Google Maps API key is missing.");
         }
 
         var endpoint = $"{_options.GeocodingBaseUrl}?address={Uri.EscapeDataString(query)}&key={Uri.EscapeDataString(_options.ApiKey)}";
@@ -63,4 +65,3 @@ public sealed class GoogleMapsLocationLookupService(
         return results;
     }
 }
-

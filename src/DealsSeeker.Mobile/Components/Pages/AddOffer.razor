@@ -2,6 +2,8 @@
 @inject IMediaCaptureService MediaCapture
 @inject IDeviceLocationService DeviceLocation
 @inject IDealsSeekerApiClient ApiClient
+@inject IMapRenderingService MapRendering
+@implements IDisposable
 
 <h1>Add Offer</h1>
 
@@ -30,41 +32,62 @@
 <section class="card-block">
     <h2>Location</h2>
     <p class="muted">Current: @FormatLocation(_location)</p>
-    <div class="action-row">
-        <button class="btn-main" @onclick="ConfirmLocation">Confirm Location</button>
-    </div>
 
     <div class="search-row">
-        <input class="field-input" placeholder="Search business or address..." @bind="_locationQuery" />
-        <button class="btn-main" @onclick="SearchLocationAsync" disabled="@_searchingLocation">Search Location</button>
+        <input class="field-input"
+               placeholder="Type business or address (min 3 chars)..."
+               value="@_locationQuery"
+               @oninput="OnLocationQueryInputAsync"
+               disabled="@_isLocationConfirmed" />
     </div>
+    @if (_searchingLocation)
+    {
+        <p class="muted">Searching locations...</p>
+    }
+    else if (_locationQuery.Trim().Length > 0 && _locationQuery.Trim().Length < 3)
+    {
+        <p class="muted">Type at least 3 characters to see suggestions.</p>
+    }
+    @if (!string.IsNullOrWhiteSpace(_locationStatus))
+    {
+        <p class="status-line">@_locationStatus</p>
+    }
 
     @if (_locationResults.Count > 0)
     {
-        <div class="result-list">
+        <div class="location-suggestion-list" role="listbox" aria-label="Address suggestions">
             @foreach (var result in _locationResults)
             {
-                <button class="result-item" @onclick="() => SelectLocation(result)">
-                    @result.Label (@result.Position.Lat:F4, @result.Position.Lng:F4)
+                <button class="location-suggestion-item" @onclick="() => SelectLocation(result)">
+                    <span class="location-suggestion-title">@result.Label</span>
+                    <span class="location-suggestion-subtitle">Tap to set this address</span>
                 </button>
             }
         </div>
     }
+
+    <h3>Location Preview</h3>
+    <iframe class="map-frame" src="@BuildLocationMapUrl()" loading="lazy"></iframe>
+    <div class="action-row">
+        <button class="btn-main"
+                @onclick="ConfirmLocation"
+                disabled="@(_isLocationConfirmed || _location is null)">Confirm Location</button>
+        <button class="btn-main btn-warning"
+                @onclick="EditLocation"
+                disabled="@(!_isLocationConfirmed)">Edit Location</button>
+    </div>
 </section>
 
 <section class="card-block">
     <h2>Description and Tags</h2>
     <label class="field-label" for="descriptionInput">Description</label>
-    <textarea id="descriptionInput" class="field-input" rows="4" @bind="_description"></textarea>
+    <textarea id="descriptionInput" class="field-input" rows="4" @bind="_description" @bind:event="oninput"></textarea>
 
-    <p class="muted">Press and hold a word for 2 seconds to create a tag.</p>
+    <p class="muted">Tap any detected word to create a tag instantly.</p>
     <div class="word-list">
         @foreach (var word in ExtractWords(_description))
         {
-            <button class="word-chip"
-                    @onpointerdown="() => BeginWordPress(word)"
-                    @onpointerup="EndWordPress"
-                    @onpointerleave="EndWordPress">
+            <button class="word-chip" @onclick="() => AddTag(word)">
                 @word
             </button>
         }
@@ -101,12 +124,19 @@
     private string _manualTag = string.Empty;
     private string _locationQuery = string.Empty;
     private string _status = string.Empty;
+    private string _locationStatus = string.Empty;
     private string _imageStatus = string.Empty;
     private bool _saving;
     private bool _searchingLocation;
-    private CancellationTokenSource? _longPressCts;
+    private bool _isLocationConfirmed;
+    private CancellationTokenSource? _locationSearchCts;
     private readonly List<string> _tags = [];
     private readonly List<LocationSearchResultDto> _locationResults = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await TryAutoPopulateLocationAsync();
+    }
 
     private async Task CaptureFromCameraAsync()
     {
@@ -133,83 +163,110 @@
         var point = await DeviceLocation.TryGetCurrentLocationAsync(CancellationToken.None);
         if (point is null)
         {
-            _status = "Current location unavailable.";
+            _locationStatus = "Current location unavailable.";
             return;
         }
 
-        _location = new OfferLocationDto("auto", "Current device location", point);
+        if (_location is null || !_isLocationConfirmed)
+        {
+            var label = BuildGpsLabel(point);
+            _location = new OfferLocationDto("auto", label, point);
+            _locationQuery = label;
+            _locationStatus = "Current location auto-populated.";
+        }
     }
 
     private void ConfirmLocation()
     {
         if (_location is null)
         {
-            _status = "No location selected.";
+            _locationStatus = "No location selected.";
             return;
         }
 
         _location = _location with { Source = "manual-confirmed" };
-        _status = "Location confirmed.";
+        _isLocationConfirmed = true;
+        _locationStatus = "Location confirmed.";
     }
 
-    private async Task SearchLocationAsync()
+    private void EditLocation()
     {
-        if (string.IsNullOrWhiteSpace(_locationQuery))
+        _isLocationConfirmed = false;
+        _locationStatus = "Location edit enabled.";
+    }
+
+    private async Task OnLocationQueryInputAsync(ChangeEventArgs args)
+    {
+        if (_isLocationConfirmed)
         {
             return;
         }
 
+        _locationQuery = args.Value?.ToString() ?? string.Empty;
+        await SearchLocationSuggestionsAsync();
+    }
+
+    private async Task SearchLocationSuggestionsAsync()
+    {
+        _locationSearchCts?.Cancel();
+        _locationSearchCts?.Dispose();
+        _locationSearchCts = new CancellationTokenSource();
+        var token = _locationSearchCts.Token;
+
+        var trimmed = _locationQuery.Trim();
+        if (trimmed.Length < 3)
+        {
+            _searchingLocation = false;
+            _locationStatus = string.Empty;
+            _locationResults.Clear();
+            return;
+        }
+
         _searchingLocation = true;
-        _status = string.Empty;
+        _locationStatus = string.Empty;
         try
         {
+            await Task.Delay(300, token);
+
             _locationResults.Clear();
-            var results = await ApiClient.SearchLocationsAsync(_locationQuery.Trim(), CancellationToken.None);
+            var results = await ApiClient.SearchLocationsAsync(trimmed, token);
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
             _locationResults.AddRange(results);
             if (_locationResults.Count == 0)
             {
-                _status = "No location results found.";
+                _locationStatus = "No location results found.";
             }
+        }
+        catch (OperationCanceledException)
+        {
         }
         catch (Exception ex)
         {
-            _status = $"Location search failed: {ex.Message}";
+            if (!token.IsCancellationRequested)
+            {
+                _locationStatus = $"Location search failed: {ex.Message}";
+            }
         }
         finally
         {
-            _searchingLocation = false;
+            if (!token.IsCancellationRequested)
+            {
+                _searchingLocation = false;
+            }
         }
     }
 
     private void SelectLocation(LocationSearchResultDto result)
     {
         _location = new OfferLocationDto("search", result.Label, result.Position);
-        _status = "Location selected from search.";
-    }
-
-    private void BeginWordPress(string word)
-    {
-        _longPressCts?.Cancel();
-        _longPressCts = new CancellationTokenSource();
-        _ = TryCreateTagAfterLongPressAsync(word, _longPressCts.Token);
-    }
-
-    private void EndWordPress()
-    {
-        _longPressCts?.Cancel();
-    }
-
-    private async Task TryCreateTagAfterLongPressAsync(string word, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
-            AddTag(word);
-            await InvokeAsync(StateHasChanged);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        _locationQuery = result.Label;
+        _isLocationConfirmed = false;
+        _locationStatus = "Location selected from suggestions.";
+        _locationResults.Clear();
     }
 
     private void AddManualTag()
@@ -249,7 +306,8 @@
                 _description.Trim(),
                 _tags.ToArray(),
                 _image?.Metadata,
-                _location);
+                _location,
+                _image?.DataUrl);
 
             var created = await ApiClient.CreateOfferAsync(request, CancellationToken.None);
             _status = created is null ? "Offer creation failed." : $"Offer created with ID {created.OfferId}.";
@@ -261,10 +319,13 @@
     }
 
     private static string NormalizeTag(string value) =>
-        value.Trim().Trim('.', ',', ';', ':', '!', '?', '"', '\'').ToLowerInvariant();
+        (value ?? string.Empty)
+            .Trim()
+            .Trim('.', ',', ';', ':', '!', '?', '"', '\'', '(', ')', '[', ']', '{', '}')
+            .ToLowerInvariant();
 
     private static IReadOnlyList<string> ExtractWords(string text) =>
-        Regex.Matches(text ?? string.Empty, "\\b[\\p{L}\\p{Nd}][\\p{L}\\p{Nd}\\-']*\\b")
+        Regex.Matches(text ?? string.Empty, "\\b[\\p{L}\\p{Nd}][\\p{L}\\p{Nd}\\-']*%?(?=\\b|\\s|$|[.,;:!?])")
             .Select(m => m.Value)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Take(30)
@@ -274,5 +335,23 @@
         location is null
             ? "Unavailable"
             : $"{location.Source}: {location.Label ?? "Location"} ({location.Position.Lat:F5}, {location.Position.Lng:F5})";
-}
 
+    private string BuildLocationMapUrl()
+    {
+        if (_location is null)
+        {
+            return MapRendering.BuildMapEmbedUrl(new GeoPoint(40.7128, -74.0060), [], zoom: 14);
+        }
+
+        return MapRendering.BuildLocationPreviewMapUrl(_location.Position, _location.Label, zoom: 15);
+    }
+
+    private static string BuildGpsLabel(GeoPoint point) =>
+        $"Current GPS location ({point.Lat:F5}, {point.Lng:F5})";
+
+    public void Dispose()
+    {
+        _locationSearchCts?.Cancel();
+        _locationSearchCts?.Dispose();
+    }
+}

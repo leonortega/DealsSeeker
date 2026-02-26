@@ -1,9 +1,124 @@
 @page "/my-account"
+@inject IDealsSeekerApiClient ApiClient
+@inject IUserSessionService Session
+@inject NavigationManager Navigation
 
 <h1>My Account</h1>
 
-<section class="card-block">
-    <h2>Profile</h2>
-    <p>This is a starter profile area for DealsSeeker users.</p>
-</section>
+@if (_loading)
+{
+    <section class="card-block">
+        <p class="muted">Loading account...</p>
+    </section>
+}
+else
+{
+    <section class="card-block">
+        <h2>Profile</h2>
+        @if (_profile is null)
+        {
+            <p class="muted">No profile data available.</p>
+        }
+        else
+        {
+            <p><strong>Name:</strong> @_profile.DisplayName</p>
+            <p><strong>Email:</strong> @_profile.Email</p>
+            <p><strong>User ID:</strong> @_profile.UserId</p>
+        }
 
+        <div class="action-row">
+            <button class="btn-main" @onclick="RefreshProfileAsync" disabled="@_working">Refresh</button>
+            <button class="btn-main btn-danger" @onclick="LogoutAsync" disabled="@_working">Logout</button>
+        </div>
+    </section>
+}
+
+@if (!string.IsNullOrWhiteSpace(_status))
+{
+    <section class="card-block">
+        <p class="status-line">@_status</p>
+    </section>
+}
+
+@if (!string.IsNullOrWhiteSpace(_error))
+{
+    <section class="card-block">
+        <p class="status-line error">@_error</p>
+    </section>
+}
+
+@code {
+    private string? _status;
+    private string? _error;
+    private bool _loading;
+    private bool _working;
+    private UserProfileDto? _profile;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login", forceLoad: false);
+            return;
+        }
+
+        await RefreshProfileAsync();
+    }
+
+    private async Task LogoutAsync()
+    {
+        if (_working)
+        {
+            return;
+        }
+
+        _working = true;
+        _status = null;
+        _error = null;
+        try
+        {
+            await ApiClient.LogoutAsync(CancellationToken.None);
+            await Session.ClearSessionAsync(CancellationToken.None);
+            _profile = null;
+            _status = "Logged out.";
+            Navigation.NavigateTo("/login", forceLoad: false);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Logout failed: {ex.Message}";
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+
+    private async Task RefreshProfileAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            if (!Session.IsAuthenticated)
+            {
+                _profile = null;
+                return;
+            }
+
+            _profile = await ApiClient.GetMyProfileAsync(CancellationToken.None);
+            if (_profile is null)
+            {
+                await Session.ClearSessionAsync(CancellationToken.None);
+                _status = "Your session expired. Please login again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Profile load failed: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

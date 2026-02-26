@@ -1,49 +1,127 @@
 using DealsSeeker.Api.Options;
+using DealsSeeker.Api.Services.Auth;
 using DealsSeeker.Api.Services.Feedback;
 using DealsSeeker.Api.Services.Locations;
 using DealsSeeker.Api.Services.Offers;
+using DealsSeeker.Shared.Contracts.Account;
 using DealsSeeker.Shared.Contracts.AddOffer;
 using DealsSeeker.Shared.Contracts.Feedback;
 using DealsSeeker.Shared.Contracts.Offers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 
+builder.Services.Configure<MapsOptions>(builder.Configuration.GetSection(MapsOptions.SectionName));
 builder.Services.Configure<GoogleMapsOptions>(builder.Configuration.GetSection(GoogleMapsOptions.SectionName));
+builder.Services.Configure<OpenLayersOptions>(builder.Configuration.GetSection(OpenLayersOptions.SectionName));
 
+builder.Services.AddSingleton<IAuthService, InMemoryAuthService>();
 builder.Services.AddSingleton<IOfferService, InMemoryOfferService>();
 builder.Services.AddSingleton<IFeedbackService, InMemoryFeedbackService>();
-builder.Services.AddHttpClient<ILocationLookupService, GoogleMapsLocationLookupService>();
+builder.Services.AddHttpClient<GoogleMapsLocationLookupService>();
+builder.Services.AddHttpClient<OpenLayersLocationLookupService>();
+builder.Services.AddTransient<ILocationLookupProvider>(serviceProvider => serviceProvider.GetRequiredService<GoogleMapsLocationLookupService>());
+builder.Services.AddTransient<ILocationLookupProvider>(serviceProvider => serviceProvider.GetRequiredService<OpenLayersLocationLookupService>());
+builder.Services.AddScoped<ILocationLookupService, ConfigurableLocationLookupService>();
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
 
 var api = app.MapGroup("/api");
 
-api.MapPost("/offers/search", async (SearchOffersRequest request, IOfferService offers, CancellationToken cancellationToken) =>
+api.MapPost("/auth/register", async (RegisterUserRequest request, IAuthService auth, CancellationToken cancellationToken) =>
     {
-        var response = await offers.SearchAsync(request, cancellationToken);
+        var result = await auth.RegisterAsync(request, cancellationToken);
+        return result.Success ? Results.Ok(result) : Results.BadRequest(result);
+    })
+    .WithName("RegisterUser")
+    .WithSummary("ACCOUNT.AUTH.REGISTER.001: Create a new user account.");
+
+api.MapPost("/auth/login", async (LoginRequest request, IAuthService auth, CancellationToken cancellationToken) =>
+    {
+        var session = await auth.LoginAsync(request, cancellationToken);
+        return session is null ? Results.Unauthorized() : Results.Ok(session);
+    })
+    .WithName("LoginUser")
+    .WithSummary("ACCOUNT.AUTH.LOGIN.001: Authenticate user and start session.");
+
+api.MapPost("/auth/logout", async (HttpContext httpContext, IAuthService auth, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await auth.LogoutAsync(accessToken, cancellationToken);
+        return result.Success ? Results.Ok(result) : Results.Unauthorized();
+    })
+    .WithName("LogoutUser")
+    .WithSummary("ACCOUNT.PROFILE.001: End authenticated session.");
+
+api.MapGet("/account/me", async (HttpContext httpContext, IAuthService auth, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        return profile is null ? Results.Unauthorized() : Results.Ok(profile);
+    })
+    .WithName("GetMyAccountProfile")
+    .WithSummary("ACCOUNT.PROFILE.001: Get profile for authenticated user.");
+
+api.MapPost("/offers/search", async (SearchOffersRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var response = await offers.SearchAsync(request, profile.UserId, cancellationToken);
         return Results.Ok(response);
     })
     .WithName("SearchOffers")
-    .WithSummary("OFFERS.SEARCH.001: Search offers by tags and update map markers.");
+    .WithSummary("OFFERS.SEARCH.001 + OFFERS.LIST.ACTIONS.001: Search offers by tags and include current-user vote state.");
 
-api.MapPost("/offers/{offerId}/availability", async (string offerId, OfferAvailabilityVoteRequest request, IOfferService offers, CancellationToken cancellationToken) =>
+api.MapPost("/offers/{offerId}/availability", async (string offerId, OfferAvailabilityVoteRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
     {
-        var result = await offers.VoteAvailabilityAsync(offerId, request, cancellationToken);
-        return result.Success ? Results.Ok(result) : Results.NotFound(result);
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await offers.VoteAvailabilityAsync(offerId, profile.UserId, request, cancellationToken);
+        if (result.Success)
+        {
+            return Results.Ok(result);
+        }
+
+        return result.Message.StartsWith("Offer not found.", StringComparison.OrdinalIgnoreCase)
+            ? Results.NotFound(result)
+            : Results.BadRequest(result);
     })
     .WithName("VoteOfferAvailability")
-    .WithSummary("OFFERS.LIST.ACTIONS.001: Register thumbs up/down availability feedback counters.");
+    .WithSummary("OFFERS.LIST.ACTIONS.001: Register thumbs up/down availability feedback counters, one vote per user.");
 
 api.MapPost("/offers/{offerId}/report", async (string offerId, ReportOfferRequest request, IOfferService offers, CancellationToken cancellationToken) =>
     {
@@ -67,7 +145,7 @@ api.MapGet("/locations/search", async (string query, ILocationLookupService look
         return Results.Ok(results);
     })
     .WithName("SearchLocations")
-    .WithSummary("ADD.OFFER.LOCATION.001: Search business or address using Google Maps API.");
+    .WithSummary("ADD.OFFER.LOCATION.001 + APP.CONFIG.MAPS.001: Search business or address using configured map provider module.");
 
 api.MapPost("/suggestions", async (SuggestionRequest request, IFeedbackService feedback, CancellationToken cancellationToken) =>
     {
@@ -94,3 +172,17 @@ api.MapPost("/complaints", async (ReportRequest request, IFeedbackService feedba
     .WithSummary("Backward-compatible alias for report submission.");
 
 app.Run();
+
+static bool TryGetAccessToken(HttpContext httpContext, out string accessToken)
+{
+    const string bearerPrefix = "Bearer ";
+    var authorizationHeader = httpContext.Request.Headers.Authorization.ToString();
+    if (authorizationHeader.StartsWith(bearerPrefix, StringComparison.OrdinalIgnoreCase))
+    {
+        accessToken = authorizationHeader[bearerPrefix.Length..].Trim();
+        return !string.IsNullOrWhiteSpace(accessToken);
+    }
+
+    accessToken = string.Empty;
+    return false;
+}

@@ -18,22 +18,19 @@ main {
     height: 3.5rem;
     display: flex;
     align-items: center;
+    gap: 0.6rem;
     font-weight: 700;
     position: sticky;
     top: 0;
     z-index: 2;
 }
 
+.app-title {
+    font-size: 1.05rem;
+    letter-spacing: 0.01em;
+}
+
 .content {
     padding-top: 1rem;
-    padding-bottom: 5.2rem;
+    padding-bottom: 1rem;
 }
-
-.bottom-menu {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 3;
-}
-

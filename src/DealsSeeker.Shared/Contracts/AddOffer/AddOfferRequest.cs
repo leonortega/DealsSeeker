@@ -4,5 +4,5 @@ public sealed record AddOfferRequest(
     string Description,
     IReadOnlyList<string> Tags,
     OfferImageDto? Image,
-    OfferLocationDto? Location);
-
+    OfferLocationDto? Location,
+    string? ImageDataUrl = null);

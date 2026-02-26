@@ -10,6 +10,7 @@ Feature: Add Offer layout required controls
     And a description input field is visible
     And a tag list section is visible
     And location information is visible
-    And Confirm Location is visible
-    And Search Location is visible
-
+    And a location search input is visible
+    And location suggestions appear while typing from the 3rd character
+    And a mini map location preview is visible
+    And Confirm Location and Edit Location are visible below the mini map

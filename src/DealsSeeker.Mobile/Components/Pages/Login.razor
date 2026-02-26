@@ -1,0 +1,87 @@
+@page "/login"
+@inject IDealsSeekerApiClient ApiClient
+@inject IUserSessionService Session
+@inject NavigationManager Navigation
+
+<h1>Login</h1>
+
+<section class="card-block">
+    <label class="field-label" for="loginUser">User (email)</label>
+    <input id="loginUser" class="field-input" @bind="_email" />
+
+    <label class="field-label" for="loginPassword">Password</label>
+    <input id="loginPassword" class="field-input" type="password" @bind="_password" />
+
+    <button class="btn-main" @onclick="LoginAsync" disabled="@_working">Login</button>
+
+    <p class="muted auth-link-row">
+        New user?
+        <a href="/create-user">Create user</a>
+    </p>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(_status))
+{
+    <section class="card-block">
+        <p class="status-line">@_status</p>
+    </section>
+}
+
+@if (!string.IsNullOrWhiteSpace(_error))
+{
+    <section class="card-block">
+        <p class="status-line error">@_error</p>
+    </section>
+}
+
+@code {
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+    private string? _status;
+    private string? _error;
+    private bool _working;
+
+    protected override void OnInitialized()
+    {
+        if (Session.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/offers", forceLoad: false);
+        }
+    }
+
+    private async Task LoginAsync()
+    {
+        if (_working)
+        {
+            return;
+        }
+
+        _working = true;
+        _status = null;
+        _error = null;
+        try
+        {
+            var session = await ApiClient.LoginAsync(
+                new LoginRequest(_email.Trim(), _password),
+                CancellationToken.None);
+
+            if (session is null)
+            {
+                _error = "Invalid user or password.";
+                return;
+            }
+
+            await Session.SetSessionAsync(session, CancellationToken.None);
+            _status = "Login successful.";
+            Navigation.NavigateTo("/offers", forceLoad: false);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Login failed: {ex.Message}";
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+}

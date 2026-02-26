@@ -1,0 +1,37 @@
+<div class="action-row" @onclick:stopPropagation="true">
+    <span class="availability-label">Available?</span>
+    <button class="btn-main btn-vote"
+            title="@UpVoteTitle"
+            @onclick="VoteUpAsync"
+            disabled="@VotesDisabled">&#128077; @Offer.PositiveAvailabilityCount</button>
+    <button class="btn-main btn-warning btn-vote"
+            title="@DownVoteTitle"
+            @onclick="VoteDownAsync"
+            disabled="@VotesDisabled">&#128078; @Offer.NegativeAvailabilityCount</button>
+    <button class="btn-main btn-danger"
+            @onclick="ReportAsync">Report</button>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public OfferItemDto Offer { get; set; } = default!;
+
+    [Parameter]
+    public bool VotesDisabled { get; set; }
+
+    [Parameter]
+    public EventCallback<OfferAvailabilityVoteType> OnVote { get; set; }
+
+    [Parameter]
+    public EventCallback<OfferItemDto> OnReport { get; set; }
+
+    private string? UpVoteTitle => VotesDisabled ? null : "Thumbs up";
+
+    private string? DownVoteTitle => VotesDisabled ? null : "Thumbs down";
+
+    private Task VoteUpAsync() => OnVote.InvokeAsync(OfferAvailabilityVoteType.ThumbsUp);
+
+    private Task VoteDownAsync() => OnVote.InvokeAsync(OfferAvailabilityVoteType.ThumbsDown);
+
+    private Task ReportAsync() => OnReport.InvokeAsync(Offer);
+}

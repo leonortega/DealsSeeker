@@ -1,4 +1,8 @@
+using System.Net;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
+using DealsSeeker.Mobile.Services.Auth;
+using DealsSeeker.Shared.Contracts.Account;
 using DealsSeeker.Shared.Contracts.AddOffer;
 using DealsSeeker.Shared.Contracts.Common;
 using DealsSeeker.Shared.Contracts.Feedback;
@@ -7,11 +11,52 @@ using DealsSeeker.Shared.Models;
 
 namespace DealsSeeker.Mobile.Services.Api;
 
-public sealed class DealsSeekerApiClient(HttpClient httpClient) : IDealsSeekerApiClient
+public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionService userSession) : IDealsSeekerApiClient
 {
+    public async Task<CommandResult> RegisterUserAsync(RegisterUserRequest request, CancellationToken cancellationToken)
+    {
+        var response = await httpClient.PostAsJsonAsync("/api/auth/register", request, cancellationToken);
+        return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
+               ?? new CommandResult(response.IsSuccessStatusCode, response.ReasonPhrase ?? "Registration request processed.");
+    }
+
+    public async Task<AuthSessionDto?> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
+    {
+        var response = await httpClient.PostAsJsonAsync("/api/auth/login", request, cancellationToken);
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<AuthSessionDto>(cancellationToken: cancellationToken);
+    }
+
+    public async Task<CommandResult> LogoutAsync(CancellationToken cancellationToken)
+    {
+        var request = CreateRequest(HttpMethod.Post, "/api/auth/logout", requiresAuth: true);
+        var response = await httpClient.SendAsync(request, cancellationToken);
+        return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
+               ?? new CommandResult(response.IsSuccessStatusCode, response.ReasonPhrase ?? "Logout processed.");
+    }
+
+    public async Task<UserProfileDto?> GetMyProfileAsync(CancellationToken cancellationToken)
+    {
+        var request = CreateRequest(HttpMethod.Get, "/api/account/me", requiresAuth: true);
+        var response = await httpClient.SendAsync(request, cancellationToken);
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<UserProfileDto>(cancellationToken: cancellationToken);
+    }
+
     public async Task<SearchOffersResponse> SearchOffersAsync(SearchOffersRequest request, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsJsonAsync("/api/offers/search", request, cancellationToken);
+        var httpRequest = CreateRequest(HttpMethod.Post, "/api/offers/search", request, requiresAuth: true);
+        var response = await httpClient.SendAsync(httpRequest, cancellationToken);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<SearchOffersResponse>(cancellationToken: cancellationToken)
                ?? new SearchOffersResponse([], []);
@@ -19,7 +64,8 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient) : IDealsSeekerAp
 
     public async Task<CommandResult> VoteOfferAvailabilityAsync(string offerId, OfferAvailabilityVoteRequest request, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsJsonAsync($"/api/offers/{offerId}/availability", request, cancellationToken);
+        var httpRequest = CreateRequest(HttpMethod.Post, $"/api/offers/{offerId}/availability", request, requiresAuth: true);
+        var response = await httpClient.SendAsync(httpRequest, cancellationToken);
         return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
                ?? new CommandResult(response.IsSuccessStatusCode, response.ReasonPhrase ?? "Availability vote processed.");
     }
@@ -61,5 +107,21 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient) : IDealsSeekerAp
         var response = await httpClient.PostAsJsonAsync("/api/reports", request, cancellationToken);
         return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
                ?? new CommandResult(response.IsSuccessStatusCode, response.ReasonPhrase ?? "Report processed.");
+    }
+
+    private HttpRequestMessage CreateRequest(HttpMethod method, string uri, object? payload = null, bool requiresAuth = false)
+    {
+        var request = new HttpRequestMessage(method, uri);
+        if (payload is not null)
+        {
+            request.Content = JsonContent.Create(payload);
+        }
+
+        if (requiresAuth && userSession.CurrentSession is { AccessToken: { Length: > 0 } accessToken })
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        }
+
+        return request;
     }
 }

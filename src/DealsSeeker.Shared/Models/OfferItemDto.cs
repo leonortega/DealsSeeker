@@ -11,4 +11,5 @@ public sealed record OfferItemDto(
     GeoPoint Location,
     double DistanceMeters,
     int PositiveAvailabilityCount,
-    int NegativeAvailabilityCount);
+    int NegativeAvailabilityCount,
+    bool HasCurrentUserVoted);

@@ -1,15 +1,47 @@
 @page "/reports"
 @page "/complaints"
 @inject IDealsSeekerApiClient ApiClient
+@inject IUserSessionService Session
+@inject IReportDraftContext ReportDraftContext
+@inject NavigationManager Navigation
 
 <h1>Reports</h1>
 
+@if (_previewOffer is not null)
+{
+    <section class="card-block">
+        <h2>Offer Preview</h2>
+        <article class="offer-card report-preview-card">
+            <img src="@ResolveOfferImage(_previewOffer.ImageUrl)"
+                 alt="Offer image"
+                 class="offer-image"
+                 onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
+            <div class="offer-body">
+                <h3>@_previewOffer.BusinessName</h3>
+                <p>@_previewOffer.Description</p>
+                <div class="tag-list">
+                    @foreach (var tag in _previewOffer.Tags)
+                    {
+                        <span class="tag-pill">@tag</span>
+                    }
+                </div>
+            </div>
+        </article>
+    </section>
+}
+
 <section class="card-block">
-    <label class="field-label" for="reportMessage">Report</label>
+    <label class="field-label" for="reportUserId">User ID</label>
+    <input id="reportUserId" class="field-input" @bind="_userId" readonly />
+
+    <label class="field-label" for="reportMessage">Report text</label>
     <textarea id="reportMessage" class="field-input" @bind="_message" rows="4"></textarea>
 
-    <label class="field-label" for="reportOfferId">Offer ID (optional)</label>
-    <input id="reportOfferId" class="field-input" @bind="_offerId" />
+    <label class="field-label" for="reportOfferId">Offer ID</label>
+    <input id="reportOfferId" class="field-input" @bind="_offerId" readonly="@_fromOfferSelection" />
+
+    <label class="field-label" for="reportDate">Date (UTC)</label>
+    <input id="reportDate" class="field-input" value="@FormatUtc(_reportedAtUtc)" readonly />
 
     <button class="btn-main btn-danger" @onclick="SubmitAsync" disabled="@_submitting">Send Report</button>
     @if (!string.IsNullOrWhiteSpace(_statusMessage))
@@ -21,8 +53,36 @@
 @code {
     private string _message = string.Empty;
     private string _offerId = string.Empty;
+    private string _userId = string.Empty;
+    private DateTimeOffset _reportedAtUtc = DateTimeOffset.UtcNow;
+    private OfferItemDto? _previewOffer;
+    private bool _fromOfferSelection;
     private string _statusMessage = string.Empty;
     private bool _submitting;
+
+    protected override void OnInitialized()
+    {
+        if (!Session.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login", forceLoad: false);
+            return;
+        }
+
+        _userId = Session.CurrentSession?.UserId ?? string.Empty;
+        var draft = ReportDraftContext.Consume();
+        if (draft is null)
+        {
+            _reportedAtUtc = DateTimeOffset.UtcNow;
+            return;
+        }
+
+        _fromOfferSelection = true;
+        _previewOffer = draft.Offer;
+        _offerId = draft.Offer.OfferId;
+        _userId = draft.UserId;
+        _reportedAtUtc = draft.ReportedAtUtc;
+        _message = draft.InitialMessage;
+    }
 
     private async Task SubmitAsync()
     {
@@ -30,13 +90,20 @@
         try
         {
             var result = await ApiClient.SubmitReportAsync(
-                new ReportRequest(_message.Trim(), string.IsNullOrWhiteSpace(_offerId) ? null : _offerId.Trim()),
+                new ReportRequest(
+                    _message.Trim(),
+                    string.IsNullOrWhiteSpace(_offerId) ? null : _offerId.Trim(),
+                    string.IsNullOrWhiteSpace(_userId) ? null : _userId.Trim(),
+                    _reportedAtUtc),
                 CancellationToken.None);
             _statusMessage = result.Message;
             if (result.Success)
             {
                 _message = string.Empty;
                 _offerId = string.Empty;
+                _previewOffer = null;
+                _fromOfferSelection = false;
+                _reportedAtUtc = DateTimeOffset.UtcNow;
             }
         }
         finally
@@ -44,5 +111,23 @@
             _submitting = false;
         }
     }
-}
 
+    private static string ResolveOfferImage(string imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return "/images/offer-placeholder.svg";
+        }
+
+        if (imageUrl.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase) ||
+            imageUrl.StartsWith("/images/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "/images/offer-placeholder.svg";
+        }
+
+        return imageUrl;
+    }
+
+    private static string FormatUtc(DateTimeOffset value) =>
+        value.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'");
+}

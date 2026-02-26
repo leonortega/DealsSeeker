@@ -7,12 +7,11 @@ namespace DealsSeeker.Api.Services.Offers;
 
 public interface IOfferService
 {
-    Task<SearchOffersResponse> SearchAsync(SearchOffersRequest request, CancellationToken cancellationToken);
+    Task<SearchOffersResponse> SearchAsync(SearchOffersRequest request, string userId, CancellationToken cancellationToken);
 
-    Task<CommandResult> VoteAvailabilityAsync(string offerId, OfferAvailabilityVoteRequest request, CancellationToken cancellationToken);
+    Task<CommandResult> VoteAvailabilityAsync(string offerId, string userId, OfferAvailabilityVoteRequest request, CancellationToken cancellationToken);
 
     Task<CommandResult> ReportAsync(string offerId, ReportOfferRequest request, CancellationToken cancellationToken);
 
     Task<OfferItemDto> AddAsync(AddOfferRequest request, CancellationToken cancellationToken);
 }
-
