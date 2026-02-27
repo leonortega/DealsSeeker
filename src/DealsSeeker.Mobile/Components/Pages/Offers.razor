@@ -14,8 +14,13 @@
 </div>
 
 <section class="card-block offers-search-panel">
+    <label class="field-label" for="offersSearchQuery">Search by product tag</label>
     <div class="search-row">
-        <input class="field-input" @bind="_query" placeholder="Search by product tag..." />
+        <input id="offersSearchQuery"
+               name="offersSearchQuery"
+               class="field-input"
+               @bind="_query"
+               placeholder="Search by product tag..." />
     </div>
 
     <button class="btn-main offers-search-submit" @onclick="SearchAsync" disabled="@_loading">Search</button>
@@ -26,8 +31,15 @@
     <p class="muted">Your location: @FormatLocation(_userLocation) | Provider: @MapRendering.ActiveProvider</p>
     <iframe class="map-frame" src="@BuildMapEmbedUrl()" loading="lazy"></iframe>
     <div class="distance-row">
-        <label>Coverage radius: @_radiusMeters m</label>
-        <input type="range" min="100" max="5000" step="100" @bind="_radiusMeters" @bind:event="oninput" />
+        <label for="coverageRadius">Coverage radius: @_radiusMeters m</label>
+        <input id="coverageRadius"
+               name="coverageRadius"
+               type="range"
+               min="100"
+               max="5000"
+               step="100"
+               @bind="_radiusMeters"
+               @bind:event="oninput" />
     </div>
 
     @if (_results.Businesses.Count == 0)
@@ -104,7 +116,9 @@
     private GeoPoint _userLocation = new(40.7128, -74.0060);
     private SearchOffersResponse _results = new([], []);
 
-    protected override async Task OnInitializedAsync()
+protected override async Task OnInitializedAsync()
+{
+    try
     {
         if (!Session.IsAuthenticated)
         {
@@ -112,14 +126,26 @@
             return;
         }
 
-        var location = await DeviceLocation.TryGetCurrentLocationAsync(CancellationToken.None);
-        if (location is not null)
+        // Temporarily isolate location call
+        try
         {
-            _userLocation = location;
+            var location = await DeviceLocation.TryGetCurrentLocationAsync(CancellationToken.None);
+            if (location is not null)
+                _userLocation = location;
+        }
+        catch (Exception locEx)
+        {
+            _error = $"LOCATION ERROR: {locEx.GetType().Name} - {locEx.Message}";
+            return; // skip search, just show the error
         }
 
         await SearchAsync();
     }
+    catch (Exception ex)
+    {
+        _error = $"INIT ERROR: {ex.GetType().Name} - {ex.Message}";
+    }
+}
 
     private async Task SearchAsync()
     {

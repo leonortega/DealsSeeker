@@ -1,4 +1,6 @@
 using DealsSeeker.Api.Options;
+using DealsSeeker.Api.Logging;
+using DealsSeeker.Api.Persistence;
 using DealsSeeker.Api.Services.Auth;
 using DealsSeeker.Api.Services.Feedback;
 using DealsSeeker.Api.Services.Locations;
@@ -7,18 +9,44 @@ using DealsSeeker.Shared.Contracts.Account;
 using DealsSeeker.Shared.Contracts.AddOffer;
 using DealsSeeker.Shared.Contracts.Feedback;
 using DealsSeeker.Shared.Contracts.Offers;
+using Microsoft.Data.Sqlite;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseSerilog((context, _, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext();
+
+    var databaseConnectionString = context.Configuration.GetSection(DatabaseOptions.SectionName)["ConnectionString"]
+                                 ?? "Data Source=Data/dealseeker.db";
+    var loggingPersistence = context.Configuration.GetSection(LoggingPersistenceOptions.SectionName).Get<LoggingPersistenceOptions>()
+                             ?? new LoggingPersistenceOptions();
+
+    if (loggingPersistence.EnableDatabaseSink)
+    {
+        loggerConfiguration.WriteTo.Sink(
+            new SqliteLogEventSink(databaseConnectionString, context.HostingEnvironment.ContentRootPath),
+            restrictedToMinimumLevel: loggingPersistence.ResolveMinimumLevel());
+    }
+});
+
 builder.Services.AddOpenApi();
 
+builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection(DatabaseOptions.SectionName));
+builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
+builder.Services.Configure<LoggingPersistenceOptions>(builder.Configuration.GetSection(LoggingPersistenceOptions.SectionName));
 builder.Services.Configure<MapsOptions>(builder.Configuration.GetSection(MapsOptions.SectionName));
 builder.Services.Configure<GoogleMapsOptions>(builder.Configuration.GetSection(GoogleMapsOptions.SectionName));
 builder.Services.Configure<OpenLayersOptions>(builder.Configuration.GetSection(OpenLayersOptions.SectionName));
 
-builder.Services.AddSingleton<IAuthService, InMemoryAuthService>();
-builder.Services.AddSingleton<IOfferService, InMemoryOfferService>();
-builder.Services.AddSingleton<IFeedbackService, InMemoryFeedbackService>();
+builder.Services.AddSingleton<IDbConnectionFactory, SqliteConnectionFactory>();
+builder.Services.AddSingleton<IDatabaseMigrationRunner, SqliteMigrationRunner>();
+builder.Services.AddScoped<IAuthService, DapperAuthService>();
+builder.Services.AddScoped<IOfferService, DapperOfferService>();
+builder.Services.AddScoped<IFeedbackService, DapperFeedbackService>();
 builder.Services.AddHttpClient<GoogleMapsLocationLookupService>();
 builder.Services.AddHttpClient<OpenLayersLocationLookupService>();
 builder.Services.AddTransient<ILocationLookupProvider>(serviceProvider => serviceProvider.GetRequiredService<GoogleMapsLocationLookupService>());
@@ -32,12 +60,29 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var migrationRunner = scope.ServiceProvider.GetRequiredService<IDatabaseMigrationRunner>();
+    await migrationRunner.ApplyMigrationsAsync(CancellationToken.None);
+}
+
+var configuredConnectionString = app.Configuration.GetSection(DatabaseOptions.SectionName)["ConnectionString"]
+                               ?? "Data Source=Data/dealseeker.db";
+var resolvedDatabasePath = ResolveSqliteDataSource(configuredConnectionString, app.Environment.ContentRootPath);
+if (!string.IsNullOrWhiteSpace(resolvedDatabasePath))
+{
+    app.Logger.LogInformation("SQLite database path: {DatabasePath}", resolvedDatabasePath);
+}
+
+app.Logger.LogInformation("DealsSeeker API startup completed. Serilog sinks configured (file + database).");
+
 app.UseHttpsRedirection();
 
 var api = app.MapGroup("/api");
 
-api.MapPost("/auth/register", async (RegisterUserRequest request, IAuthService auth, CancellationToken cancellationToken) =>
+api.MapPost("/auth/register", async (RegisterUserRequest request, IAuthService auth, ILoggerFactory loggerFactory, CancellationToken cancellationToken) =>
     {
+        loggerFactory.CreateLogger("DealsSeeker.Auth").LogInformation("Register request received for email {Email}", request.Email);
         var result = await auth.RegisterAsync(request, cancellationToken);
         return result.Success ? Results.Ok(result) : Results.BadRequest(result);
     })
@@ -171,7 +216,14 @@ api.MapPost("/complaints", async (ReportRequest request, IFeedbackService feedba
     .WithName("CreateComplaintAlias")
     .WithSummary("Backward-compatible alias for report submission.");
 
-app.Run();
+try
+{
+    app.Run();
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 static bool TryGetAccessToken(HttpContext httpContext, out string accessToken)
 {
@@ -185,4 +237,18 @@ static bool TryGetAccessToken(HttpContext httpContext, out string accessToken)
 
     accessToken = string.Empty;
     return false;
+}
+
+static string ResolveSqliteDataSource(string connectionString, string contentRootPath)
+{
+    var builder = new SqliteConnectionStringBuilder(connectionString);
+    if (string.IsNullOrWhiteSpace(builder.DataSource) ||
+        builder.DataSource.Equals(":memory:", StringComparison.OrdinalIgnoreCase))
+    {
+        return builder.DataSource ?? string.Empty;
+    }
+
+    return Path.IsPathRooted(builder.DataSource)
+        ? builder.DataSource
+        : Path.GetFullPath(Path.Combine(contentRootPath, builder.DataSource));
 }

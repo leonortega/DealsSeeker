@@ -2,6 +2,11 @@
 bin/
 obj/
 /.dotnet8/
+/.build/
+**/*.db
+**/*.sqlite
+Data/
+Logs/
 
 # VS
 .vs/

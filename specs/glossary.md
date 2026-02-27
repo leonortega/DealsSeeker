@@ -10,6 +10,8 @@
 - **Create User view**: View used to register a new account with validation rules for email and password.
 - **Offer**: A promotional item with image, description, tags, and location.
 - **Session persistence**: Behavior where active authenticated session data is saved on device for reuse after app restart.
+- **Serilog minimum level**: The configured threshold that determines which log events are emitted.
+- **Database log sink**: Logging destination that writes structured log events into persistent database storage.
 - **Internal app configuration**: Application-owned configuration used to select runtime modules and behavior.
 - **Report draft context**: Temporary report payload prepared from an offer item before final submission in Reports view.
 - **Tag**: A keyword associated with an offer and used for search matching.

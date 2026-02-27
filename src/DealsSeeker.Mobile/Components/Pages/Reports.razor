@@ -32,16 +32,16 @@
 
 <section class="card-block">
     <label class="field-label" for="reportUserId">User ID</label>
-    <input id="reportUserId" class="field-input" @bind="_userId" readonly />
+    <input id="reportUserId" name="reportUserId" class="field-input" @bind="_userId" readonly />
 
     <label class="field-label" for="reportMessage">Report text</label>
-    <textarea id="reportMessage" class="field-input" @bind="_message" rows="4"></textarea>
+    <textarea id="reportMessage" name="reportMessage" class="field-input" @bind="_message" rows="4"></textarea>
 
     <label class="field-label" for="reportOfferId">Offer ID</label>
-    <input id="reportOfferId" class="field-input" @bind="_offerId" readonly="@_fromOfferSelection" />
+    <input id="reportOfferId" name="reportOfferId" class="field-input" @bind="_offerId" readonly="@_fromOfferSelection" />
 
     <label class="field-label" for="reportDate">Date (UTC)</label>
-    <input id="reportDate" class="field-input" value="@FormatUtc(_reportedAtUtc)" readonly />
+    <input id="reportDate" name="reportDate" class="field-input" value="@FormatUtc(_reportedAtUtc)" readonly />
 
     <button class="btn-main btn-danger" @onclick="SubmitAsync" disabled="@_submitting">Send Report</button>
     @if (!string.IsNullOrWhiteSpace(_statusMessage))

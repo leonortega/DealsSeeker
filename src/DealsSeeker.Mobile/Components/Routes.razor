@@ -1,12 +1,25 @@
-<Router AppAssembly="@typeof(MauiProgram).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
+<LoggingErrorBoundary>
+    <ChildContent>
+        <Router AppAssembly="@typeof(MauiProgram).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            </Found>
+            <NotFound>
+                <LayoutView Layout="@typeof(Layout.MainLayout)">
+                    <h1>Page not found</h1>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </ChildContent>
+    <ErrorContent Context="exception">
         <LayoutView Layout="@typeof(Layout.MainLayout)">
-            <h1>Page not found</h1>
+            <h1>Unexpected error</h1>
+            <p>The app captured an unhandled UI exception. Check Serilog output for details.</p>
+            @if (!string.IsNullOrWhiteSpace(exception?.Message))
+            {
+                <pre>@exception.Message</pre>
+            }
         </LayoutView>
-    </NotFound>
-</Router>
-
+    </ErrorContent>
+</LoggingErrorBoundary>

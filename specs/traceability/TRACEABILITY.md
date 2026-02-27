@@ -18,6 +18,7 @@
 | Spec ID | Feature File | Contract | Examples |
 |---|---|---|---|
 | `APP.SHELL.001` | `bdd/app-shell.feature`, `bdd/account-management.feature` | N/A | N/A |
+| `APP.LOGGING.001` | `bdd/logging-configuration.feature` | N/A | N/A |
 | `APP.CONFIG.MAPS.001` | `bdd/map-provider-configuration.feature` | N/A | N/A |
 | `ACCOUNT.AUTH.LOGIN.001` | `bdd/account-management.feature` | N/A | N/A |
 | `ACCOUNT.AUTH.REGISTER.001` | `bdd/account-management.feature` | N/A | N/A |

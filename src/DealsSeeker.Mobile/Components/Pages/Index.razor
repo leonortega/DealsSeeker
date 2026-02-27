@@ -1,11 +1,32 @@
 @page "/"
 @inject NavigationManager Navigation
 @inject IUserSessionService Session
+@inject IDealsSeekerApiClient ApiClient
 
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        var firstView = Session.IsAuthenticated ? "/offers" : "/login";
-        Navigation.NavigateTo(firstView, forceLoad: false);
+        if (!Session.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login", forceLoad: false);
+            return;
+        }
+
+        try
+        {
+            var profile = await ApiClient.GetMyProfileAsync(CancellationToken.None);
+            if (profile is null)
+            {
+                await Session.ClearSessionAsync(CancellationToken.None);
+                Navigation.NavigateTo("/login", forceLoad: false);
+                return;
+            }
+        }
+        catch
+        {
+            // If validation endpoint is temporarily unavailable, preserve local session flow.
+        }
+
+        Navigation.NavigateTo("/offers", forceLoad: false);
     }
 }

@@ -39,7 +39,7 @@ The app supports configurable map provider modules (`GoogleMaps`, `OpenLayers`).
 API config (`src/DealsSeeker.Api/appsettings.json`):
 - `Maps:Provider` (default: `OpenLayers`)
 - `Maps:FallbackProvider` (default: `GoogleMaps`)
-- `OpenLayers:*` (Nominatim geocoding settings)
+- `OpenLayers:*` (Photon geocoding settings)
 - `GoogleMaps:ApiKey` (required only when `GoogleMaps` is active/fallback and used)
 
 Mobile internal config:
@@ -47,3 +47,22 @@ Mobile internal config:
 - environment variables also supported:
   - `DEALSEEKER_MAP_PROVIDER`
   - `DEALSEEKER_MAP_PROVIDER_FALLBACK`
+
+## Persistence (Dapper + SQLite)
+- API persistence uses `Dapper` with `SQLite`.
+- DB schema is created/updated from SQL migrations at app startup.
+- Migration files: `src/DealsSeeker.Api/Persistence/Migrations/*.sql`
+- Default DB file: `Data/dealseeker.db` (configured via `Database:ConnectionString`).
+
+Session persistence:
+- Auth sessions (tokens) are stored in SQLite table `auth_sessions`.
+- Expired or invalid sessions are rejected by API profile/token validation.
+
+## Logging (Serilog)
+- API logging uses `Serilog` with configurable minimum levels from configuration.
+- Sinks:
+  - rolling file logs: `Logs/dealseeker-*.log`
+  - SQLite logs table: `logs` in the same DB
+- Configuration sections:
+  - `Serilog` (global logging + file sink)
+  - `LoggingPersistence` (database sink enable + minimum level)

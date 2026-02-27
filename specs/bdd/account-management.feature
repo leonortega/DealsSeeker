@@ -41,6 +41,12 @@ Feature: Account management for user lifecycle
     Then the user is not required to login again
     And the Offers view is shown
 
+  Scenario: Expired persisted session redirects to Login
+    Given the user has an expired persisted session on device
+    When the user launches the app
+    Then the expired session is cleared
+    And the Login view is shown
+
   Scenario: Authenticated user opens My Account
     Given the user is authenticated
     When the user opens the My Account section

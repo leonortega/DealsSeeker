@@ -85,5 +85,18 @@
 | Create user email validation | Required valid email format | Reject malformed emails |
 | Create user password validation | Strong password required | Minimum 8 chars, letters and numbers |
 | Session persistence | Persist on device | User remains logged in across app restarts |
+| Startup with expired persisted session | Clear session and redirect to `Login` | Prevent access with invalid token |
 | My Account unauthenticated access | Redirect to `Login` | Profile requires active session |
 | Logout behavior | Clear session and redirect to `Login` | Applies from My Account context |
+
+## Logging Rules (`APP.LOGGING.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Logging framework | Serilog | Preferred logging pipeline |
+| Global minimum level | Configurable via internal configuration | Example: `Information`, `Warning`, `Error` |
+| File sink | Enabled and persistent | Rolling log files |
+| Database sink | Enabled and persistent | Writes to `logs` table |
+| Database sink minimum level | Separately configurable | Can be stricter than global minimum |
+| Invalid configured level | Fallback to `Information` | Avoid startup failure |
+| Sink failure handling | Other sinks continue when possible | API should remain available |

@@ -300,3 +300,10 @@ h2 {
     background: #fff2c8;
     border-top: 1px solid #d3b45f;
 }
+
+#blazor-error-ui .error-details {
+    margin-top: 0.5rem;
+    white-space: pre-wrap;
+    font-size: 0.8rem;
+    color: #6f1d1d;
+}

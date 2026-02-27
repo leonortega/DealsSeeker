@@ -33,8 +33,11 @@
     <h2>Location</h2>
     <p class="muted">Current: @FormatLocation(_location)</p>
 
+    <label class="field-label" for="locationQuery">Search business or address</label>
     <div class="search-row">
-        <input class="field-input"
+        <input id="locationQuery"
+               name="locationQuery"
+               class="field-input"
                placeholder="Type business or address (min 3 chars)..."
                value="@_locationQuery"
                @oninput="OnLocationQueryInputAsync"
@@ -81,7 +84,12 @@
 <section class="card-block">
     <h2>Description and Tags</h2>
     <label class="field-label" for="descriptionInput">Description</label>
-    <textarea id="descriptionInput" class="field-input" rows="4" @bind="_description" @bind:event="oninput"></textarea>
+    <textarea id="descriptionInput"
+              name="descriptionInput"
+              class="field-input"
+              rows="4"
+              @bind="_description"
+              @bind:event="oninput"></textarea>
 
     <p class="muted">Tap any detected word to create a tag instantly.</p>
     <div class="word-list">
@@ -93,8 +101,13 @@
         }
     </div>
 
+    <label class="field-label" for="manualTagInput">Add tag manually</label>
     <div class="search-row">
-        <input class="field-input" placeholder="Add tag manually..." @bind="_manualTag" />
+        <input id="manualTagInput"
+               name="manualTagInput"
+               class="field-input"
+               placeholder="Add tag manually..."
+               @bind="_manualTag" />
         <button class="btn-main" @onclick="AddManualTag">Add Tag</button>
     </div>
 

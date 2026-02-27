@@ -5,10 +5,10 @@
 
 <section class="card-block">
     <label class="field-label" for="suggestionMessage">Suggestion</label>
-    <textarea id="suggestionMessage" class="field-input" @bind="_message" rows="4"></textarea>
+    <textarea id="suggestionMessage" name="suggestionMessage" class="field-input" @bind="_message" rows="4"></textarea>
 
     <label class="field-label" for="suggestionContact">Contact (optional)</label>
-    <input id="suggestionContact" class="field-input" @bind="_contact" />
+    <input id="suggestionContact" name="suggestionContact" class="field-input" @bind="_contact" />
 
     <button class="btn-main" @onclick="SubmitAsync" disabled="@_submitting">Send Suggestion</button>
     @if (!string.IsNullOrWhiteSpace(_statusMessage))
@@ -42,4 +42,3 @@
         }
     }
 }
-

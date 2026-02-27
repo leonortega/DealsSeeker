@@ -7,13 +7,13 @@
 
 <section class="card-block">
     <label class="field-label" for="registerName">Name</label>
-    <input id="registerName" class="field-input" @bind="_displayName" />
+    <input id="registerName" name="registerName" class="field-input" @bind="_displayName" />
 
     <label class="field-label" for="registerEmail">Email</label>
-    <input id="registerEmail" class="field-input" @bind="_email" />
+    <input id="registerEmail" name="registerEmail" class="field-input" @bind="_email" />
 
     <label class="field-label" for="registerPassword">Password</label>
-    <input id="registerPassword" class="field-input" type="password" @bind="_password" />
+    <input id="registerPassword" name="registerPassword" class="field-input" type="password" @bind="_password" />
 
     <p class="muted">Password must have at least 8 chars, with letters and numbers.</p>
 
