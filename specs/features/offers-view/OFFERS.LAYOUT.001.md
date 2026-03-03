@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offers View Layout Composition
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -20,7 +20,7 @@ Define required UI blocks for the Offers view.
 - `OFFERS.LAYOUT.001-R1`: The system shall display a search bar.
 - `OFFERS.LAYOUT.001-R2`: The system shall display a `+` button near the search bar.
 - `OFFERS.LAYOUT.001-R3`: The system shall display a map component.
-- `OFFERS.LAYOUT.001-R4`: The system shall display a distance indicator below the map.
+- `OFFERS.LAYOUT.001-R4`: The system shall display a coverage radius control directly below the search textbox.
 - `OFFERS.LAYOUT.001-R5`: The system shall display a list of offers below the map area.
 
 ## Acceptance Criteria (BDD)
@@ -29,8 +29,8 @@ Scenario: Offers view shows all required sections
   Given the user navigates to the Offers section
   When the Offers view loads
   Then the view shall show a search bar and a nearby plus button
+  And a coverage radius control shall be visible below the search textbox
   And a map component shall be visible
-  And a distance indicator shall be visible below the map
   And an offer list shall be visible below the map area
 ```
 

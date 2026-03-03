@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offer Item Visual Structure
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -22,6 +22,7 @@ Define mandatory content displayed per offer list item.
 - `OFFERS.LIST.ITEM.001-R3`: The system shall highlight keywords in the description.
 - `OFFERS.LIST.ITEM.001-R4`: The system shall display associated tags below the description.
 - `OFFERS.LIST.ITEM.001-R5`: Each offer item shall provide a selectable destination action that opens walking directions per `OFFERS.MAP.001`.
+- `OFFERS.LIST.ITEM.001-R6`: Each offer item shall display the distance in meters from the current user location.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -32,6 +33,7 @@ Scenario: Offer item displays required content blocks
   And the description shall be visible
   And matching keywords shall be highlighted in the description
   And the tags shall be listed below the description
+  And the distance in meters from current location shall be visible
 
 Scenario: Offer item supports destination selection
   Given an offer item with valid location is displayed
@@ -41,7 +43,7 @@ Scenario: Offer item supports destination selection
 
 ## Example Inputs/Outputs
 - Example input: Offer with tags `coffee`, `breakfast`.
-- Expected output: Item card shows image, description, highlighted keywords, and visible tags list.
+- Expected output: Item card shows image, description, highlighted keywords, visible tags list, and distance in meters.
 - Example input: Select destination action on an offer item.
 - Expected output: Directions launch behavior follows `OFFERS.MAP.001`.
 

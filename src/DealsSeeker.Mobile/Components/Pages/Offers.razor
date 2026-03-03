@@ -18,18 +18,12 @@
     <div class="search-row">
         <input id="offersSearchQuery"
                name="offersSearchQuery"
+               @ref="_searchQueryInput"
                class="field-input"
                @bind="_query"
                placeholder="Search by product tag..." />
     </div>
 
-    <button class="btn-main offers-search-submit" @onclick="SearchAsync" disabled="@_loading">Search</button>
-</section>
-
-<section class="card-block">
-    <h2>Nearby Map</h2>
-    <p class="muted">Your location: @FormatLocation(_userLocation) | Provider: @MapRendering.ActiveProvider</p>
-    <iframe class="map-frame" src="@BuildMapEmbedUrl()" loading="lazy"></iframe>
     <div class="distance-row">
         <label for="coverageRadius">Coverage radius: @_radiusMeters m</label>
         <input id="coverageRadius"
@@ -38,25 +32,19 @@
                min="100"
                max="5000"
                step="100"
-               @bind="_radiusMeters"
-               @bind:event="oninput" />
+               value="@_radiusMeters"
+               @oninput="OnCoverageRadiusInput"
+               @onchange="OnCoverageRadiusChangedAsync" />
     </div>
 
-    @if (_results.Businesses.Count == 0)
-    {
-        <p class="muted">No business markers found for the current filter.</p>
-    }
-    else
-    {
-        <div class="marker-list">
-            @foreach (var marker in _results.Businesses)
-            {
-                <button class="marker-chip" @onclick="() => OpenDirectionsAsync(marker.Location)">
-                    @marker.Name (@Math.Round(marker.DistanceMeters) m)
-                </button>
-            }
-        </div>
-    }
+    <button class="btn-main offers-search-submit" @onclick="SearchAsync" disabled="@_loading">Search</button>
+</section>
+
+<section class="card-block">
+    <h2>Nearby Map</h2>
+    <p class="muted">Your location: @_userLocationLabel | Provider: @MapRendering.ActiveProvider</p>
+    <p class="muted">Map coverage radius: @_radiusMeters m</p>
+    <iframe class="map-frame" src="@BuildMapEmbedUrl()" loading="lazy"></iframe>
 </section>
 
 <section class="card-block">
@@ -91,6 +79,7 @@
                 <div class="offer-body">
                     <h3>@offer.BusinessName</h3>
                     <p>@((MarkupString)HighlightText(offer.Description))</p>
+                    <p class="muted">Distance: @FormatDistanceMeters(offer.DistanceMeters)</p>
                     <div class="tag-list">
                         @foreach (var tag in offer.Tags)
                         {
@@ -114,11 +103,11 @@
     private bool _loading;
     private int _radiusMeters = 1500;
     private GeoPoint _userLocation = new(40.7128, -74.0060);
+    private string _userLocationLabel = "Current location";
     private SearchOffersResponse _results = new([], []);
+    private ElementReference _searchQueryInput;
 
-protected override async Task OnInitializedAsync()
-{
-    try
+    protected override async Task OnInitializedAsync()
     {
         if (!Session.IsAuthenticated)
         {
@@ -126,26 +115,43 @@ protected override async Task OnInitializedAsync()
             return;
         }
 
-        // Temporarily isolate location call
         try
         {
             var location = await DeviceLocation.TryGetCurrentLocationAsync(CancellationToken.None);
             if (location is not null)
+            {
                 _userLocation = location;
+                await TryResolveUserLocationLabelAsync(location);
+            }
+            else
+            {
+                _userLocationLabel = "Current location";
+            }
         }
-        catch (Exception locEx)
+        catch
         {
-            _error = $"LOCATION ERROR: {locEx.GetType().Name} - {locEx.Message}";
-            return; // skip search, just show the error
+            _userLocationLabel = "Current location";
         }
 
         await SearchAsync();
     }
-    catch (Exception ex)
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _error = $"INIT ERROR: {ex.GetType().Name} - {ex.Message}";
+        if (!firstRender || !Session.IsAuthenticated)
+        {
+            return;
+        }
+
+        try
+        {
+            await _searchQueryInput.FocusAsync();
+        }
+        catch
+        {
+            // No-op: focus is best effort on startup.
+        }
     }
-}
 
     private async Task SearchAsync()
     {
@@ -164,6 +170,25 @@ protected override async Task OnInitializedAsync()
         {
             _loading = false;
         }
+    }
+
+    private void OnCoverageRadiusInput(ChangeEventArgs args)
+    {
+        if (args.Value is null)
+        {
+            return;
+        }
+
+        if (int.TryParse(args.Value.ToString(), out var parsed))
+        {
+            _radiusMeters = Math.Clamp(parsed, 100, 5000);
+        }
+    }
+
+    private async Task OnCoverageRadiusChangedAsync(ChangeEventArgs args)
+    {
+        OnCoverageRadiusInput(args);
+        await SearchAsync();
     }
 
     private async Task OpenDirectionsAsync(GeoPoint destination)
@@ -212,9 +237,6 @@ protected override async Task OnInitializedAsync()
 
     private void NavigateToAddOffer() => Navigation.NavigateTo("/add-offer");
 
-    private string FormatLocation(GeoPoint? point) =>
-        point is null ? "Unavailable" : $"{point.Lat:F5}, {point.Lng:F5}";
-
     private string HighlightText(string description)
     {
         var words = Regex.Split(_query ?? string.Empty, "\\s+")
@@ -236,11 +258,53 @@ protected override async Task OnInitializedAsync()
         return encoded;
     }
 
-    private string BuildMapEmbedUrl() =>
-        MapRendering.BuildMapEmbedUrl(_userLocation, _results.Businesses, zoom: 15);
+    private string BuildMapEmbedUrl()
+    {
+        var zoom = CalculateMapZoomForCoverage(_radiusMeters, _userLocation.Lat);
+        return MapRendering.BuildMapEmbedUrl(_userLocation, _results.Businesses, zoom);
+    }
+
+    private static int CalculateMapZoomForCoverage(int radiusMeters, double latitude)
+    {
+        // Approximate zoom so the selected radius fits in the visible map width.
+        var safeRadius = Math.Max(100, radiusMeters);
+        var clampedLatitude = Math.Clamp(latitude, -85d, 85d);
+        var latitudeRadians = clampedLatitude * (Math.PI / 180d);
+
+        const double metersPerPixelAtZoom0 = 156543.03392;
+        const double assumedMapWidthPixels = 420d;
+        const double diameterCoverageRatio = 0.75d;
+        var targetMetersPerPixel = (2d * safeRadius) / (assumedMapWidthPixels * diameterCoverageRatio);
+
+        var latitudeScale = Math.Max(0.1d, Math.Cos(latitudeRadians));
+        var rawZoom = Math.Log((metersPerPixelAtZoom0 * latitudeScale) / targetMetersPerPixel, 2d);
+        return (int)Math.Clamp(Math.Round(rawZoom, MidpointRounding.AwayFromZero), 2, 18);
+    }
 
     private bool IsVoteDisabled(OfferItemDto offer) =>
         !Session.IsAuthenticated || offer.HasCurrentUserVoted;
+
+    private static string FormatDistanceMeters(double distanceMeters) =>
+        $"{Math.Round(Math.Max(0, distanceMeters))} m";
+
+    private async Task TryResolveUserLocationLabelAsync(GeoPoint point)
+    {
+        try
+        {
+            var resolved = await ApiClient.ReverseLocationAsync(point, CancellationToken.None);
+            if (!string.IsNullOrWhiteSpace(resolved?.Label))
+            {
+                _userLocationLabel = resolved.Label.Trim();
+                return;
+            }
+        }
+        catch
+        {
+            // Fallback label is used when reverse-geocoding is unavailable.
+        }
+
+        _userLocationLabel = "Current location";
+    }
 
     private static string ResolveOfferImage(string imageUrl)
     {

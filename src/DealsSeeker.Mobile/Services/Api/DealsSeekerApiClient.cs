@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Net.Http.Headers;
+using System.Globalization;
 using DealsSeeker.Mobile.Services.Auth;
 using DealsSeeker.Shared.Contracts.Account;
 using DealsSeeker.Shared.Contracts.AddOffer;
@@ -93,6 +94,20 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         var response = await httpClient.GetAsync($"/api/locations/search?query={Uri.EscapeDataString(query)}", cancellationToken);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<IReadOnlyList<LocationSearchResultDto>>(cancellationToken: cancellationToken) ?? [];
+    }
+
+    public async Task<LocationSearchResultDto?> ReverseLocationAsync(GeoPoint point, CancellationToken cancellationToken)
+    {
+        var lat = point.Lat.ToString("G17", CultureInfo.InvariantCulture);
+        var lng = point.Lng.ToString("G17", CultureInfo.InvariantCulture);
+        var response = await httpClient.GetAsync($"/api/locations/reverse?lat={Uri.EscapeDataString(lat)}&lng={Uri.EscapeDataString(lng)}", cancellationToken);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<LocationSearchResultDto>(cancellationToken: cancellationToken);
     }
 
     public async Task<CommandResult> SubmitSuggestionAsync(SuggestionRequest request, CancellationToken cancellationToken)

@@ -9,6 +9,7 @@ using DealsSeeker.Shared.Contracts.Account;
 using DealsSeeker.Shared.Contracts.AddOffer;
 using DealsSeeker.Shared.Contracts.Feedback;
 using DealsSeeker.Shared.Contracts.Offers;
+using DealsSeeker.Shared.Models;
 using Microsoft.Data.Sqlite;
 using Serilog;
 
@@ -191,6 +192,14 @@ api.MapGet("/locations/search", async (string query, ILocationLookupService look
     })
     .WithName("SearchLocations")
     .WithSummary("ADD.OFFER.LOCATION.001 + APP.CONFIG.MAPS.001: Search business or address using configured map provider module.");
+
+api.MapGet("/locations/reverse", async (double lat, double lng, ILocationLookupService lookup, CancellationToken cancellationToken) =>
+    {
+        var result = await lookup.ReverseAsync(new GeoPoint(lat, lng), cancellationToken);
+        return result is null ? Results.NotFound() : Results.Ok(result);
+    })
+    .WithName("ReverseLocation")
+    .WithSummary("ADD.OFFER.LOCATION.001: Resolve nearest human-readable address label from coordinates.");
 
 api.MapPost("/suggestions", async (SuggestionRequest request, IFeedbackService feedback, CancellationToken cancellationToken) =>
     {

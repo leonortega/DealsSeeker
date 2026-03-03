@@ -13,7 +13,7 @@ public sealed class MapLauncherService(
     {
         var lat = destination.Lat.ToString(CultureInfo.InvariantCulture);
         var lng = destination.Lng.ToString(CultureInfo.InvariantCulture);
-        var mapProvider = ResolveProvider(settings.MapProvider, settings.MapProviderFallback);
+        var mapProvider = ResolveProvider(settings.MapRedirectProvider, settings.MapRedirectProviderFallback);
         var webUri = mapProvider == MapProviders.OpenLayers
             ? await BuildOpenLayersWalkingUriAsync(destination, cancellationToken)
             : $"https://www.google.com/maps/dir/?api=1&destination={lat},{lng}&travelmode=walking";

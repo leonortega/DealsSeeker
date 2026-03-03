@@ -37,16 +37,20 @@ dotnet run --project src/DealsSeeker.Mobile/DealsSeeker.Mobile.csproj -f net10.0
 The app supports configurable map provider modules (`GoogleMaps`, `OpenLayers`).
 
 API config (`src/DealsSeeker.Api/appsettings.json`):
-- `Maps:Provider` (default: `OpenLayers`)
-- `Maps:FallbackProvider` (default: `GoogleMaps`)
+- `Maps:DisplayProvider` / `Maps:DisplayFallbackProvider` (in-view map rendering + location lookup)
+- `Maps:RedirectProvider` / `Maps:RedirectFallbackProvider` (offer/marker redirect behavior)
 - `OpenLayers:*` (Photon geocoding settings)
 - `GoogleMaps:ApiKey` (required only when `GoogleMaps` is active/fallback and used)
 
 Mobile internal config:
-- `Api:MapProvider` / `Api:MapProviderFallback` (resolved in `MauiProgram`)
+- `Api:MapDisplayProvider` / `Api:MapDisplayProviderFallback`
+- `Api:MapRedirectProvider` / `Api:MapRedirectProviderFallback`
 - environment variables also supported:
-  - `DEALSEEKER_MAP_PROVIDER`
-  - `DEALSEEKER_MAP_PROVIDER_FALLBACK`
+  - `DEALSEEKER_MAP_DISPLAY_PROVIDER`
+  - `DEALSEEKER_MAP_DISPLAY_PROVIDER_FALLBACK`
+  - `DEALSEEKER_MAP_REDIRECT_PROVIDER`
+  - `DEALSEEKER_MAP_REDIRECT_PROVIDER_FALLBACK`
+  - legacy compatibility: `DEALSEEKER_MAP_PROVIDER`, `DEALSEEKER_MAP_PROVIDER_FALLBACK`
 
 ## Persistence (Dapper + SQLite)
 - API persistence uses `Dapper` with `SQLite`.

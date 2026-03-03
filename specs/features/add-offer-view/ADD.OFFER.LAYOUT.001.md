@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer View Layout Composition
-- **Version**: `v1.3`
+- **Version**: `v1.4`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -24,6 +24,7 @@ Define required UI blocks for add-offer data entry.
 - `ADD.OFFER.LAYOUT.001-R5`: The system shall display `Confirm Location` action and a location search input with live suggestions.
 - `ADD.OFFER.LAYOUT.001-R6`: The system shall display a mini map location preview in Add Offer view.
 - `ADD.OFFER.LAYOUT.001-R7`: `Confirm Location` and `Edit Location` actions shall be positioned below the mini map.
+- `ADD.OFFER.LAYOUT.001-R8`: After a successful create-offer response (no errors), the system shall redirect to `Offers` view.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -34,6 +35,12 @@ Scenario: Add Offer view displays required controls
   And a location search input with live suggestions shall be visible
   And a mini map location preview shall be visible
   And Confirm Location and Edit Location actions shall be visible below the mini map
+
+Scenario: Successful add-offer submission redirects to Offers
+  Given the user is in Add Offer view with valid offer data
+  When the user submits create offer
+  And the create-offer response is successful with no errors
+  Then the system shall redirect the user to Offers view
 ```
 
 ## Example Inputs/Outputs

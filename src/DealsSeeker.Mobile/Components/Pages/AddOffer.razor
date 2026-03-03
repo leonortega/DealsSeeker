@@ -3,6 +3,7 @@
 @inject IDeviceLocationService DeviceLocation
 @inject IDealsSeekerApiClient ApiClient
 @inject IMapRenderingService MapRendering
+@inject NavigationManager Navigation
 @implements IDisposable
 
 <h1>Add Offer</h1>
@@ -31,7 +32,7 @@
 
 <section class="card-block">
     <h2>Location</h2>
-    <p class="muted">Current: @FormatLocation(_location)</p>
+    <p class="muted">Current address: @FormatLocation(_location)</p>
 
     <label class="field-label" for="locationQuery">Search business or address</label>
     <div class="search-row">
@@ -182,7 +183,7 @@
 
         if (_location is null || !_isLocationConfirmed)
         {
-            var label = BuildGpsLabel(point);
+            var label = await ResolveAutoLocationLabelAsync(point);
             _location = new OfferLocationDto("auto", label, point);
             _locationQuery = label;
             _locationStatus = "Current location auto-populated.";
@@ -323,7 +324,14 @@
                 _image?.DataUrl);
 
             var created = await ApiClient.CreateOfferAsync(request, CancellationToken.None);
-            _status = created is null ? "Offer creation failed." : $"Offer created with ID {created.OfferId}.";
+            if (created is null)
+            {
+                _status = "Offer creation failed.";
+                return;
+            }
+
+            _status = $"Offer created with ID {created.OfferId}.";
+            Navigation.NavigateTo("/offers", forceLoad: false);
         }
         finally
         {
@@ -347,7 +355,7 @@
     private static string FormatLocation(OfferLocationDto? location) =>
         location is null
             ? "Unavailable"
-            : $"{location.Source}: {location.Label ?? "Location"} ({location.Position.Lat:F5}, {location.Position.Lng:F5})";
+            : location.Label ?? "Current location";
 
     private string BuildLocationMapUrl()
     {
@@ -359,8 +367,23 @@
         return MapRendering.BuildLocationPreviewMapUrl(_location.Position, _location.Label, zoom: 15);
     }
 
-    private static string BuildGpsLabel(GeoPoint point) =>
-        $"Current GPS location ({point.Lat:F5}, {point.Lng:F5})";
+    private async Task<string> ResolveAutoLocationLabelAsync(GeoPoint point)
+    {
+        try
+        {
+            var result = await ApiClient.ReverseLocationAsync(point, CancellationToken.None);
+            if (!string.IsNullOrWhiteSpace(result?.Label))
+            {
+                return result.Label.Trim();
+            }
+        }
+        catch
+        {
+            // Fallback label is used when reverse-geocoding is unavailable.
+        }
+
+        return "Current location";
+    }
 
     public void Dispose()
     {

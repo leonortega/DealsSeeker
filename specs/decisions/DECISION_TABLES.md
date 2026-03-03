@@ -9,7 +9,18 @@
 | Partial match | Prefix and substring allowed | `cof` matches `coffee` |
 | Empty query | No filtering | Full active offer set is shown |
 | Multiple words | AND semantics | All words must match at least one tag |
+| Radius change with active query | Re-run search automatically | Applies tag + distance filtering |
+| Radius change with empty query | Re-run search automatically | Applies distance-only filtering |
+| Radius change map zoom | Adjust map zoom to keep selected radius visible | Applies with and without search text |
 | Result sort | Distance ascending | If distance unavailable, keep stable input order |
+
+## Offer List Distance Display Rules (`OFFERS.LIST.ITEM.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Distance value source | Computed from current user location | Uses internal coordinates |
+| Distance visibility | Show per offer in meters | User-facing value in offer list item |
+| Distance format | Rounded integer meters | Example `235 m` |
 
 ## Tag Creation Rules (`ADD.OFFER.DESCRIPTION.TAGS.001`)
 
@@ -28,12 +39,16 @@
 | Decision Point | Default Rule | Notes |
 |---|---|---|
 | Auto-population trigger | Add Offer view open | Use current GPS location when available |
+| Auto-population display value | Nearest resolved address label | Derived from reverse-geocoding GPS coordinates |
 | Permission denied | Keep location empty and surface error state | User can still use location suggestions by text |
 | Confirm action | Persists selected location in draft | No publish action implied |
 | Edit action | Returns location to editable mode | Re-enables confirm flow |
 | Search interaction | Typeahead suggestions from 3rd character | No dedicated Search button |
 | Search selection | Replaces current selected location | Latest user-selected result wins |
 | Textbox after selection | Set to selected suggestion label | Keeps chosen place visible to user |
+| Coordinate visibility in UI | Hidden | Raw `lat`/`lng` never shown to end users in Add Offer location text |
+| Coordinate persistence | Persist `lat`/`lng` in draft and DB | Internal data only, used for map and backend storage |
+| Reverse-geocode fallback | Show generic non-coordinate label | Do not expose numeric coordinates when address not resolved |
 | Mini map behavior | Show selected location red marker | Updates when selected result changes |
 | Initial button state | Confirm enabled, Edit disabled | Before location confirmation |
 | After confirm | Confirm disabled, Edit enabled | Location is locked |
@@ -45,10 +60,22 @@
 |---|---|---|
 | Provider configuration source | Internal app configuration | Not hardcoded in feature behavior |
 | Supported providers | Google Maps API and OpenLayers API | Additional providers may be added later |
-| Offers map renderer | Use configured provider | Applies to map display and markers |
-| Add Offer location search | Use configured provider | Applies to business/address text lookup |
+| In-view map renderer provider | Configured independently | Applies to Offers/Add Offer rendered maps |
+| Navigation redirect provider | Configured independently | Applies when user opens directions from offers/markers |
+| Offers map renderer | Use configured in-view renderer provider | Applies to map display and markers |
+| Add Offer location search | Use configured in-view renderer provider | Applies to business/address text lookup |
+| Offer click redirect | Use configured navigation redirect provider | May differ from in-view renderer |
 | Provider initialization failure | Apply configured fallback behavior | App remains available |
 | Provider switch lifecycle | Effective after config reload/app restart policy | Controlled by app configuration policy |
+
+## Offers Location Display Rules (`OFFERS.MAP.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Offers location text value | Human-readable address label | Applies to user-facing location text in Offers view |
+| Coordinate visibility in Offers UI | Hidden | Raw `lat`/`lng` not displayed to end users |
+| Coordinate usage | Internal only | Coordinates still drive map markers, filtering, directions, and persistence |
+| Address-label fallback | Generic non-coordinate label | Avoid exposing numeric coordinates when no address is resolved |
 
 ## Offer Availability Feedback Rules (`OFFERS.LIST.ACTIONS.001`)
 
@@ -73,7 +100,7 @@
 | Direct Reports access | No preview required | User can still submit generic report |
 | Report payload from offer flow | Include message + metadata | Includes `userId`, `offerId`, and report date/time |
 
-## Account Session and Entry Rules (`APP.SHELL.001`, `ACCOUNT.AUTH.*`, `ACCOUNT.PROFILE.001`)
+## Account Session and Post-Submit Navigation Rules (`APP.SHELL.001`, `ACCOUNT.AUTH.*`, `ACCOUNT.PROFILE.001`, `ADD.OFFER.LAYOUT.001`, `REPORTS.OFFER.PREFILL.001`)
 
 | Decision Point | Default Rule | Notes |
 |---|---|---|
@@ -88,6 +115,10 @@
 | Startup with expired persisted session | Clear session and redirect to `Login` | Prevent access with invalid token |
 | My Account unauthenticated access | Redirect to `Login` | Profile requires active session |
 | Logout behavior | Clear session and redirect to `Login` | Applies from My Account context |
+| Suggestions submit success | Redirect to `Offers` | Applies only when response has no errors |
+| Reports submit success | Redirect to `Offers` | Applies only when response has no errors |
+| Add Offer submit success | Redirect to `Offers` | Applies only when offer create response has no errors |
+| Any submit error | Stay in current view and show error/status | No redirect on failed response |
 
 ## Logging Rules (`APP.LOGGING.001`)
 

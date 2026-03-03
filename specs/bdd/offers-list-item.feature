@@ -10,6 +10,7 @@ Feature: Offer list item content and actions
     And the short description is visible
     And keywords are highlighted in the description
     And tags are shown below the description
+    And distance in meters from current location is shown
 
   Scenario: Offer list item shows required action buttons
     Given an offer item is visible in the list

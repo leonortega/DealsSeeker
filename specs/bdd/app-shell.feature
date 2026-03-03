@@ -23,3 +23,10 @@ Feature: Application shell and session-aware landing
     When the user starts the application
     Then the persisted session is cleared
     And Login is the first visible view
+
+  Scenario: Suggestions and Reports successful submit redirects to Offers
+    Given the user is authenticated
+    And the user is in Suggestions or Reports view
+    When the user submits with valid data
+    And the response is successful with no errors
+    Then the app redirects to Offers view

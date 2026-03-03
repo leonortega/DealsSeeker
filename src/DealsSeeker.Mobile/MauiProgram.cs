@@ -29,8 +29,18 @@ public static class MauiProgram
         builder.Services.AddSingleton(new ApiSettings
         {
             BaseUrl = apiConfiguration["BaseUrl"] ?? defaultApiSettings.BaseUrl,
-            MapProvider = apiConfiguration["MapProvider"] ?? defaultApiSettings.MapProvider,
-            MapProviderFallback = apiConfiguration["MapProviderFallback"] ?? defaultApiSettings.MapProviderFallback
+            MapDisplayProvider = apiConfiguration["MapDisplayProvider"]
+                                 ?? apiConfiguration["MapProvider"]
+                                 ?? defaultApiSettings.MapDisplayProvider,
+            MapDisplayProviderFallback = apiConfiguration["MapDisplayProviderFallback"]
+                                         ?? apiConfiguration["MapProviderFallback"]
+                                         ?? defaultApiSettings.MapDisplayProviderFallback,
+            MapRedirectProvider = apiConfiguration["MapRedirectProvider"]
+                                  ?? apiConfiguration["MapProvider"]
+                                  ?? defaultApiSettings.MapRedirectProvider,
+            MapRedirectProviderFallback = apiConfiguration["MapRedirectProviderFallback"]
+                                          ?? apiConfiguration["MapProviderFallback"]
+                                          ?? defaultApiSettings.MapRedirectProviderFallback
         });
         builder.Services.AddSingleton<IUserSessionService, UserSessionService>();
         builder.Services.AddSingleton<IDeviceLocationService, DeviceLocationService>();
@@ -73,9 +83,7 @@ public static class MauiProgram
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog(Log.Logger, dispose: true);
 
-#if DEBUG
-        builder.Services.AddBlazorWebViewDeveloperTools();
-#endif
+// NOTE: AddBlazorWebViewDeveloperTools can conflict with BlazorWebView startup in this app.
 
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
         {

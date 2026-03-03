@@ -6,7 +6,8 @@ Feature: Add Offer location suggestions and mini map
   Scenario: Initial GPS location and map marker on view open
     Given the user opens Add Offer view
     When GPS location is available
-    Then the location textbox is prefilled with current location
+    Then the location textbox is prefilled with the nearest resolved address label
+    And raw latitude and longitude values are not shown in location UI text
     And the mini map shows the current location as a red point
 
   Scenario: Typeahead suggestions start from 3rd character
@@ -22,6 +23,12 @@ Feature: Add Offer location suggestions and mini map
     Then the location textbox value is set to the selected label
     And the selected location becomes the current draft location
     And the mini map preview shows the selected location as a red point
+
+  Scenario: Coordinates are persisted but hidden from users
+    Given a location is selected for the Add Offer draft
+    When the location section is rendered
+    Then the UI shows only human-readable location labels
+    And latitude/longitude are kept for persistence only
 
   Scenario: Confirm and edit button toggle
     Given Confirm Location is enabled

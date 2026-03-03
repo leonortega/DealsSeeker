@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer Location Auto-Populate, Confirm, and Live Suggestions
-- **Version**: `v1.4`
+- **Version**: `v1.5`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -32,6 +32,10 @@ Define location lifecycle during add-offer flow.
 - `ADD.OFFER.LOCATION.001-R13`: Initial control state shall be `Confirm Location` enabled and `Edit Location` disabled.
 - `ADD.OFFER.LOCATION.001-R14`: After user confirms location, `Confirm Location` shall be disabled and `Edit Location` enabled.
 - `ADD.OFFER.LOCATION.001-R15`: After user enters edit mode, `Edit Location` shall be disabled and `Confirm Location` enabled.
+- `ADD.OFFER.LOCATION.001-R16`: On Add Offer view open, when GPS coordinates are available, the system shall resolve and display the nearest human-readable address label for that location.
+- `ADD.OFFER.LOCATION.001-R17`: Raw coordinate values (`lat`, `lng`) shall not be displayed to users in Add Offer location UI.
+- `ADD.OFFER.LOCATION.001-R18`: Raw coordinate values (`lat`, `lng`) shall remain in draft data and be persisted to backend/database storage.
+- `ADD.OFFER.LOCATION.001-R19`: If reverse-geocoding cannot resolve an address label, the UI shall show a generic location label without exposing numeric coordinates.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -39,7 +43,8 @@ Scenario: Auto-populate location when view opens
   Given the user opens Add Offer view
   When GPS location is available
   Then the draft location shall be auto-populated with current location
-  And the location textbox value shall be set to current location label
+  And the location textbox value shall be set to the nearest resolved address label
+  And raw latitude/longitude values shall not be shown in the location UI
   And the mini map shall show the current location as a red point
 
 Scenario: Typeahead suggestions and replace selected location
@@ -52,6 +57,12 @@ Scenario: Typeahead suggestions and replace selected location
   And the selected result location shall replace the current draft location
   And the location textbox value shall be updated to the selected suggestion label
   And the mini map shall display the selected location as a red point
+
+Scenario: Coordinates are hidden in UI but persisted in draft
+  Given the user has an auto-populated or selected location
+  When the Add Offer location section is displayed
+  Then raw latitude and longitude values shall not be visible in textbox or helper text
+  And the draft payload shall still contain latitude and longitude values for persistence
 
 Scenario: Confirm and edit toggle state
   Given the Add Offer location controls are visible
@@ -67,12 +78,14 @@ Scenario: Confirm and edit toggle state
 
 ## Example Inputs/Outputs
 - Example input: Search text `Main Street Market`.
-- Expected output: Draft location updated to selected result coordinates/address.
+- Expected output: Location textbox shows selected/resolved address label only.
+- Expected output: Draft location stores selected result coordinates and address label.
 
 ## Edge Cases
 - Current location unavailable due to permission/state.
 - Search returns no results.
 - User confirms location without auto-populated value.
+- Reverse-geocoding returns no address for GPS coordinates; UI shows fallback non-coordinate label.
 
 ## Non-Functional Constraints
 - Location state should remain consistent across view updates within the same draft.

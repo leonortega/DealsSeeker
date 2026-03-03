@@ -16,10 +16,13 @@
         "required": [
           "offerId",
           "businessId",
+          "businessName",
           "description",
           "tags",
           "imageUrl",
           "isActive",
+          "location",
+          "distanceMeters",
           "hasCurrentUserVoted"
         ],
         "properties": {
@@ -28,6 +31,10 @@
             "minLength": 1
           },
           "businessId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "businessName": {
             "type": "string",
             "minLength": 1
           },
@@ -52,6 +59,31 @@
           "isActive": {
             "type": "boolean"
           },
+          "location": {
+            "type": "object",
+            "required": [
+              "lat",
+              "lng"
+            ],
+            "properties": {
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lng": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "additionalProperties": false
+          },
+          "distanceMeters": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Distance from current user location to this offer destination in meters."
+          },
           "hasCurrentUserVoted": {
             "type": "boolean",
             "description": "True when the current authenticated user already cast availability feedback for this offer."
@@ -67,7 +99,8 @@
         "required": [
           "businessId",
           "name",
-          "location"
+          "location",
+          "distanceMeters"
         ],
         "properties": {
           "businessId": {
@@ -97,6 +130,10 @@
               }
             },
             "additionalProperties": false
+          },
+          "distanceMeters": {
+            "type": "number",
+            "minimum": 0
           }
         },
         "additionalProperties": false

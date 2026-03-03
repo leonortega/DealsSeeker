@@ -7,7 +7,7 @@ namespace DealsSeeker.Mobile.Services.Maps;
 
 public sealed class MapRenderingService(ApiSettings settings) : IMapRenderingService
 {
-    public string ActiveProvider => ResolveProvider(settings.MapProvider, settings.MapProviderFallback);
+    public string ActiveProvider => ResolveProvider(settings.MapDisplayProvider, settings.MapDisplayProviderFallback);
 
     public string BuildMapEmbedUrl(GeoPoint center, IReadOnlyList<BusinessMarkerDto> markers, int zoom)
     {

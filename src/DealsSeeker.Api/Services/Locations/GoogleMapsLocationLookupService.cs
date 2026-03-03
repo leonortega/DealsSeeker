@@ -64,4 +64,41 @@ public sealed class GoogleMapsLocationLookupService(
 
         return results;
     }
+
+    public async Task<LocationSearchResultDto?> ReverseAsync(GeoPoint point, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(_options.ApiKey))
+        {
+            logger.LogWarning("Google Maps API key is missing.");
+            throw new InvalidOperationException("Google Maps API key is missing.");
+        }
+
+        var endpoint = $"{_options.GeocodingBaseUrl}?latlng={point.Lat.ToString("G17", System.Globalization.CultureInfo.InvariantCulture)},{point.Lng.ToString("G17", System.Globalization.CultureInfo.InvariantCulture)}&key={Uri.EscapeDataString(_options.ApiKey)}";
+        using var response = await httpClient.GetAsync(endpoint, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+
+        if (!json.RootElement.TryGetProperty("results", out var resultsElement) ||
+            resultsElement.ValueKind != JsonValueKind.Array ||
+            resultsElement.GetArrayLength() == 0)
+        {
+            return null;
+        }
+
+        var first = resultsElement[0];
+        if (!first.TryGetProperty("formatted_address", out var addressElement) ||
+            !first.TryGetProperty("geometry", out var geometryElement) ||
+            !geometryElement.TryGetProperty("location", out var locationElement))
+        {
+            return null;
+        }
+
+        var lat = locationElement.GetProperty("lat").GetDouble();
+        var lng = locationElement.GetProperty("lng").GetDouble();
+        return new LocationSearchResultDto(
+            addressElement.GetString() ?? "Current location",
+            new GeoPoint(lat, lng));
+    }
 }

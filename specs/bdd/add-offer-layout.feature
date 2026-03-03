@@ -14,3 +14,9 @@ Feature: Add Offer layout required controls
     And location suggestions appear while typing from the 3rd character
     And a mini map location preview is visible
     And Confirm Location and Edit Location are visible below the mini map
+
+  Scenario: Successful add-offer submit redirects to Offers
+    Given the user is in Add Offer view with valid data
+    When the user presses Create Offer
+    And the create-offer request succeeds with no errors
+    Then the app redirects to Offers view

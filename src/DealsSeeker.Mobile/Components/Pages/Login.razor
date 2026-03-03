@@ -6,18 +6,20 @@
 <h1>Login</h1>
 
 <section class="card-block">
-    <label class="field-label" for="loginUser">User (email)</label>
-    <input id="loginUser" name="loginUser" class="field-input" @bind="_email" />
+    <form @onsubmit="OnSubmitAsync" autocomplete="on">
+        <label class="field-label" for="loginUser">User (email)</label>
+        <input id="loginUser" name="loginUser" class="field-input" type="email" autocomplete="username" @bind="_email" />
 
-    <label class="field-label" for="loginPassword">Password</label>
-    <input id="loginPassword" name="loginPassword" class="field-input" type="password" @bind="_password" />
+        <label class="field-label" for="loginPassword">Password</label>
+        <input id="loginPassword" name="loginPassword" class="field-input" type="password" autocomplete="current-password" @bind="_password" />
 
-    <button class="btn-main" @onclick="LoginAsync" disabled="@_working">Login</button>
+        <button class="btn-main" type="submit" disabled="@_working">Login</button>
 
-    <p class="muted auth-link-row">
-        New user?
-        <a href="/create-user">Create user</a>
-    </p>
+        <p class="muted auth-link-row">
+            New user?
+            <a href="/create-user">Create user</a>
+        </p>
+    </form>
 </section>
 
 @if (!string.IsNullOrWhiteSpace(_status))
@@ -83,5 +85,10 @@
         {
             _working = false;
         }
+    }
+
+    private Task OnSubmitAsync()
+    {
+        return LoginAsync();
     }
 }

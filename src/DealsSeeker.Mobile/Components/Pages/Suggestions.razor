@@ -1,5 +1,6 @@
 @page "/suggestions"
 @inject IDealsSeekerApiClient ApiClient
+@inject NavigationManager Navigation
 
 <h1>Suggestions</h1>
 
@@ -34,6 +35,7 @@
             {
                 _message = string.Empty;
                 _contact = string.Empty;
+                Navigation.NavigateTo("/offers", forceLoad: false);
             }
         }
         finally

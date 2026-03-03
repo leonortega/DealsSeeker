@@ -114,7 +114,7 @@
 
 .menu-option {
     color: #1f311b;
-    text-decoration: none;
+    text-decoration: none !important;
     padding: 0.5rem 0.45rem 0.6rem;
     border-radius: 12px;
     font-weight: 600;
@@ -132,6 +132,7 @@
 .menu-option:hover,
 .menu-option:focus,
 .menu-option:focus-visible,
+.menu-option *,
 .menu-option-title,
 .menu-option-desc {
     text-decoration: none !important;
@@ -156,6 +157,12 @@
     color: #2b4a39;
 }
 
+.menu-option-icon-image {
+    width: 1.15rem;
+    height: 1.15rem;
+    display: block;
+}
+
 .menu-option-title {
     font-size: 0.86rem;
     line-height: 1.15;
@@ -172,4 +179,23 @@
     .sheet-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
+
+/* NavLink renders <a> in a child component, so use ::deep to style it from scoped CSS. */
+.sheet-grid ::deep a.menu-option,
+.sheet-grid ::deep a.menu-option:link,
+.sheet-grid ::deep a.menu-option:visited,
+.sheet-grid ::deep a.menu-option:hover,
+.sheet-grid ::deep a.menu-option:active,
+.sheet-grid ::deep a.menu-option:focus,
+.sheet-grid ::deep a.menu-option:focus-visible {
+    text-decoration: none !important;
+    color: #1f311b !important;
+}
+
+.sheet-grid ::deep a.menu-option:hover .menu-option-title,
+.sheet-grid ::deep a.menu-option:hover .menu-option-desc,
+.sheet-grid ::deep a.menu-option:hover .menu-option-icon {
+    color: #1f311b !important;
+    text-decoration: none !important;
 }

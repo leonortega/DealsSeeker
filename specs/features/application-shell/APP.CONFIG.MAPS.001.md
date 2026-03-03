@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Configurable Map Provider Modules
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -18,38 +18,44 @@ Define internal configuration rules for map provider modules used by the app.
 
 ## Requirements
 - `APP.CONFIG.MAPS.001-R1`: The system shall support multiple map provider modules.
-- `APP.CONFIG.MAPS.001-R2`: The active map provider shall be selected from internal app configuration.
-- `APP.CONFIG.MAPS.001-R3`: The system shall support `Google Maps API` provider module.
-- `APP.CONFIG.MAPS.001-R4`: The system shall support `OpenLayers API` provider module.
-- `APP.CONFIG.MAPS.001-R5`: Offers map rendering and Add Offer location search shall use the configured provider module.
-- `APP.CONFIG.MAPS.001-R6`: If configured provider is unavailable at runtime, the system shall fail gracefully and use configured fallback behavior.
+- `APP.CONFIG.MAPS.001-R2`: Map provider for in-app map rendering shall be selected from internal app configuration.
+- `APP.CONFIG.MAPS.001-R3`: Map provider for external navigation redirect (offer click / marker click) shall be selected from internal app configuration independently from in-app rendering provider.
+- `APP.CONFIG.MAPS.001-R4`: The system shall support `Google Maps API` provider module.
+- `APP.CONFIG.MAPS.001-R5`: The system shall support `OpenLayers API` provider module.
+- `APP.CONFIG.MAPS.001-R6`: Offers/Add Offer map rendering shall use the configured in-app rendering provider.
+- `APP.CONFIG.MAPS.001-R7`: Offer navigation redirect shall use the configured navigation redirect provider.
+- `APP.CONFIG.MAPS.001-R8`: If configured provider is unavailable at runtime, the system shall fail gracefully and use configured fallback behavior.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
-Scenario: Google Maps provider is selected by configuration
-  Given internal configuration sets map provider to Google Maps API
+Scenario: Google Maps is selected for both rendering and redirect
+  Given internal configuration sets map rendering provider to Google Maps API
+  And internal configuration sets navigation redirect provider to Google Maps API
   When the app initializes map-dependent features
   Then Offers map rendering shall use Google Maps provider
-  And Add Offer location search shall use Google Maps provider
+  And Add Offer map rendering shall use Google Maps provider
+  And offer navigation redirect shall use Google Maps provider
 
-Scenario: OpenLayers provider is selected by configuration
-  Given internal configuration sets map provider to OpenLayers API
+Scenario: Mixed providers are selected by configuration
+  Given internal configuration sets map rendering provider to OpenLayers API
+  And internal configuration sets navigation redirect provider to Google Maps API
   When the app initializes map-dependent features
   Then Offers map rendering shall use OpenLayers provider
-  And Add Offer location search shall use OpenLayers provider
+  And Add Offer map rendering shall use OpenLayers provider
+  And offer navigation redirect shall use Google Maps provider
 
 Scenario: Provider failure uses fallback behavior
-  Given the configured map provider cannot be initialized
+  Given a configured map provider cannot be initialized
   When a map-dependent feature is requested
   Then the system shall apply fallback behavior defined by configuration
   And the app shall not crash
 ```
 
 ## Example Inputs/Outputs
-- Example input: `MapProvider=GoogleMaps`.
-- Expected output: Google Maps module is used for map rendering and location search.
-- Example input: `MapProvider=OpenLayers`.
-- Expected output: OpenLayers module is used for map rendering and location search.
+- Example input: `MapDisplayProvider=OpenLayers`, `MapRedirectProvider=GoogleMaps`.
+- Expected output: In-view maps render with OpenLayers and offer click redirects use Google Maps.
+- Example input: `MapDisplayProvider=GoogleMaps`, `MapRedirectProvider=GoogleMaps`.
+- Expected output: In-view maps and redirects both use Google Maps.
 
 ## Edge Cases
 - Unknown provider key in configuration.

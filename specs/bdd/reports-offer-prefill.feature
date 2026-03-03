@@ -19,3 +19,4 @@ Feature: Prefilled report flow from offer item
     When the user submits the report
     Then report payload includes message, offerId, userId, and report date
     And the report is submitted successfully
+    And the app redirects to Offers view

@@ -104,6 +104,7 @@
                 _previewOffer = null;
                 _fromOfferSelection = false;
                 _reportedAtUtc = DateTimeOffset.UtcNow;
+                Navigation.NavigateTo("/offers", forceLoad: false);
             }
         }
         finally

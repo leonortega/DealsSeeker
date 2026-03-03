@@ -27,6 +27,8 @@ public interface IDealsSeekerApiClient
 
     Task<IReadOnlyList<LocationSearchResultDto>> SearchLocationsAsync(string query, CancellationToken cancellationToken);
 
+    Task<LocationSearchResultDto?> ReverseLocationAsync(GeoPoint point, CancellationToken cancellationToken);
+
     Task<CommandResult> SubmitSuggestionAsync(SuggestionRequest request, CancellationToken cancellationToken);
 
     Task<CommandResult> SubmitReportAsync(ReportRequest request, CancellationToken cancellationToken);

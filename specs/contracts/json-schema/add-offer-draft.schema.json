@@ -82,7 +82,8 @@
         },
         "label": {
           "type": "string",
-          "maxLength": 250
+          "maxLength": 250,
+          "description": "Human-readable address/location label for UI display. Raw numeric coordinates are persisted separately in lat/lng and should not be shown directly to users."
         },
         "lat": {
           "type": "number",

@@ -61,6 +61,43 @@ public sealed class OpenLayersLocationLookupService(
         return [];
     }
 
+    public async Task<LocationSearchResultDto?> ReverseAsync(GeoPoint point, CancellationToken cancellationToken)
+    {
+        var endpoints = new[]
+        {
+            BuildReverseEndpoint(_options.GeocodingBaseUrl, point),
+            BuildReverseEndpoint(_options.FallbackGeocodingBaseUrl, point)
+        }
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        Exception? lastException = null;
+        foreach (var endpoint in endpoints)
+        {
+            try
+            {
+                var result = await ReverseInternalAsync(endpoint, cancellationToken);
+                if (result is not null)
+                {
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+                logger.LogWarning(ex, "OpenLayers reverse geocoding endpoint failed: {Endpoint}", endpoint);
+            }
+        }
+
+        if (lastException is not null)
+        {
+            throw new HttpRequestException("OpenLayers reverse geocoding failed for configured endpoints.", lastException);
+        }
+
+        return null;
+    }
+
     private async Task<IReadOnlyList<LocationSearchResultDto>> SearchInternalAsync(string endpoint, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
@@ -88,6 +125,35 @@ public sealed class OpenLayersLocationLookupService(
         }
 
         return [];
+    }
+
+    private async Task<LocationSearchResultDto?> ReverseInternalAsync(string endpoint, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
+        if (!string.IsNullOrWhiteSpace(_options.UserAgent))
+        {
+            request.Headers.TryAddWithoutValidation(HeaderNames.UserAgent, _options.UserAgent);
+        }
+
+        using var response = await httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+
+        if (json.RootElement.ValueKind == JsonValueKind.Object &&
+            json.RootElement.TryGetProperty("features", out var featuresElement) &&
+            featuresElement.ValueKind == JsonValueKind.Array)
+        {
+            return ParsePhotonFeatures(featuresElement).FirstOrDefault();
+        }
+
+        if (json.RootElement.ValueKind == JsonValueKind.Object)
+        {
+            return ParseNominatimReverseObject(json.RootElement);
+        }
+
+        return null;
     }
 
     private static IReadOnlyList<LocationSearchResultDto> ParseNominatimArray(JsonElement items)
@@ -204,5 +270,62 @@ public sealed class OpenLayersLocationLookupService(
 
         var separator = trimmed.Contains('?') ? "&" : "?";
         return $"{trimmed}{separator}q={encodedQuery}&limit={maxResults}";
+    }
+
+    private static string BuildReverseEndpoint(string baseUrl, GeoPoint point)
+    {
+        if (string.IsNullOrWhiteSpace(baseUrl))
+        {
+            return string.Empty;
+        }
+
+        var trimmed = baseUrl.Trim().TrimEnd('/');
+        var lat = point.Lat.ToString("G17", CultureInfo.InvariantCulture);
+        var lng = point.Lng.ToString("G17", CultureInfo.InvariantCulture);
+
+        if (trimmed.Contains("photon.komoot.io", StringComparison.OrdinalIgnoreCase))
+        {
+            var root = trimmed.EndsWith("/api", StringComparison.OrdinalIgnoreCase)
+                ? trimmed[..^4]
+                : trimmed;
+            return $"{root}/reverse?lat={lat}&lon={lng}";
+        }
+
+        if (trimmed.Contains("nominatim", StringComparison.OrdinalIgnoreCase))
+        {
+            var root = trimmed.EndsWith("/search", StringComparison.OrdinalIgnoreCase)
+                ? trimmed[..^7]
+                : trimmed;
+            return $"{root}/reverse?format=jsonv2&lat={lat}&lon={lng}";
+        }
+
+        var separator = trimmed.Contains('?') ? "&" : "?";
+        return $"{trimmed}{separator}lat={lat}&lon={lng}";
+    }
+
+    private static LocationSearchResultDto? ParseNominatimReverseObject(JsonElement item)
+    {
+        if (!item.TryGetProperty("display_name", out var displayNameElement))
+        {
+            return null;
+        }
+
+        if (!item.TryGetProperty("lat", out var latElement) ||
+            !item.TryGetProperty("lon", out var lonElement))
+        {
+            return null;
+        }
+
+        var latRaw = latElement.ValueKind == JsonValueKind.String ? latElement.GetString() : latElement.GetDouble().ToString(CultureInfo.InvariantCulture);
+        var lngRaw = lonElement.ValueKind == JsonValueKind.String ? lonElement.GetString() : lonElement.GetDouble().ToString(CultureInfo.InvariantCulture);
+        if (!double.TryParse(latRaw, NumberStyles.Float, CultureInfo.InvariantCulture, out var lat) ||
+            !double.TryParse(lngRaw, NumberStyles.Float, CultureInfo.InvariantCulture, out var lng))
+        {
+            return null;
+        }
+
+        return new LocationSearchResultDto(
+            displayNameElement.GetString() ?? "Current location",
+            new GeoPoint(lat, lng));
     }
 }

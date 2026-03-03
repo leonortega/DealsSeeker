@@ -18,6 +18,73 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-    <script src="_framework/blazor.webview.js"></script>
+    <script>
+        (function () {
+            function appendErrorDetails(message) {
+                var host = document.getElementById("blazor-error-ui");
+                if (!host || !message) {
+                    return;
+                }
+
+                host.style.display = "block";
+
+                var details = host.querySelector(".error-details");
+                if (!details) {
+                    details = document.createElement("pre");
+                    details.className = "error-details";
+                    host.appendChild(details);
+                }
+
+                details.textContent = message;
+            }
+            window.__appendErrorDetails = appendErrorDetails;
+
+            window.addEventListener("error", function (event) {
+                var location = "";
+                if (event && event.filename) {
+                    location = " at " + event.filename + ":" + (event.lineno || 0) + ":" + (event.colno || 0);
+                }
+
+                var stack = event && event.error && event.error.stack ? "\n" + event.error.stack : "";
+                appendErrorDetails("window.error: " + (event && event.message ? event.message : "Unknown JS error") + location + stack);
+            });
+
+            window.addEventListener("unhandledrejection", function (event) {
+                var reason = event ? event.reason : null;
+                var message = reason && reason.message ? reason.message : String(reason);
+                var stack = reason && reason.stack ? "\n" + reason.stack : "";
+                appendErrorDetails("unhandledrejection: " + message + stack);
+            });
+
+            window.__patchBlazorStart = function () {
+                if (!window.Blazor || typeof window.Blazor.start !== "function" || window.Blazor.__dealsSeekerStartWrapped) {
+                    return;
+                }
+
+                var originalStart = window.Blazor.start.bind(window.Blazor);
+                var started = false;
+
+                window.Blazor.start = function () {
+                    var stack = new Error("Blazor.start invocation").stack || "(no stack)";
+                    if (started) {
+                        var duplicateMessage = "Duplicate Blazor.start call blocked.\n" + stack;
+                        console.warn(duplicateMessage);
+                        appendErrorDetails(duplicateMessage);
+                        return Promise.resolve();
+                    }
+
+                    started = true;
+                    return originalStart.apply(window.Blazor, arguments).catch(function (error) {
+                        var failureMessage = "Blazor.start failed: " + (error && error.message ? error.message : String(error)) + "\n" + stack;
+                        appendErrorDetails(failureMessage);
+                        throw error;
+                    });
+                };
+
+                window.Blazor.__dealsSeekerStartWrapped = true;
+            };
+        })();
+    </script>
+    <script src="_framework/blazor.webview.js" autostart="false" onload="window.__patchBlazorStart && window.__patchBlazorStart()"></script>
 </body>
 </html>

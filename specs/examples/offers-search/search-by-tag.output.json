@@ -3,13 +3,20 @@
     {
       "offerId": "off-100",
       "businessId": "biz-1",
+      "businessName": "Main Street Cafe",
       "description": "Buy one coffee and get one free",
       "tags": [
         "coffee",
         "breakfast"
       ],
       "imageUrl": "/images/offers/off-100.jpg",
-      "isActive": true
+      "isActive": true,
+      "location": {
+        "lat": 40.7131,
+        "lng": -74.0055
+      },
+      "distanceMeters": 145.2,
+      "hasCurrentUserVoted": false
     }
   ],
   "businesses": [
@@ -19,8 +26,8 @@
       "location": {
         "lat": 40.7131,
         "lng": -74.0055
-      }
+      },
+      "distanceMeters": 145.2
     }
   ]
 }
-

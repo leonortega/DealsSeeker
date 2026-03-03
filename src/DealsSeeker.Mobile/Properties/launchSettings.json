@@ -2,7 +2,13 @@
   "profiles": {
     "(Default)": {
       "commandName": "Project",
-      "dotnetRunMessages": true
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "DEALSEEKER_MAP_DISPLAY_PROVIDER": "OpenLayers",
+        "DEALSEEKER_MAP_DISPLAY_PROVIDER_FALLBACK": "GoogleMaps",
+        "DEALSEEKER_MAP_REDIRECT_PROVIDER": "GoogleMaps",
+        "DEALSEEKER_MAP_REDIRECT_PROVIDER_FALLBACK": "OpenLayers"
+      }
     },
     "Windows Machine": {
       "commandName": "MsixPackage",

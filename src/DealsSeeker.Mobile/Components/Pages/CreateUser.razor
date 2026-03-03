@@ -6,23 +6,25 @@
 <h1>Create User</h1>
 
 <section class="card-block">
-    <label class="field-label" for="registerName">Name</label>
-    <input id="registerName" name="registerName" class="field-input" @bind="_displayName" />
+    <form @onsubmit="OnSubmitAsync" autocomplete="on">
+        <label class="field-label" for="registerName">Name</label>
+        <input id="registerName" name="registerName" class="field-input" autocomplete="name" @bind="_displayName" />
 
-    <label class="field-label" for="registerEmail">Email</label>
-    <input id="registerEmail" name="registerEmail" class="field-input" @bind="_email" />
+        <label class="field-label" for="registerEmail">Email</label>
+        <input id="registerEmail" name="registerEmail" class="field-input" type="email" autocomplete="username" @bind="_email" />
 
-    <label class="field-label" for="registerPassword">Password</label>
-    <input id="registerPassword" name="registerPassword" class="field-input" type="password" @bind="_password" />
+        <label class="field-label" for="registerPassword">Password</label>
+        <input id="registerPassword" name="registerPassword" class="field-input" type="password" autocomplete="new-password" @bind="_password" />
 
-    <p class="muted">Password must have at least 8 chars, with letters and numbers.</p>
+        <p class="muted">Password must have at least 8 chars, with letters and numbers.</p>
 
-    <button class="btn-main" @onclick="CreateUserAsync" disabled="@_working">Create User</button>
+        <button class="btn-main" type="submit" disabled="@_working">Create User</button>
 
-    <p class="muted auth-link-row">
-        Already have an account?
-        <a href="/login">Login</a>
-    </p>
+        <p class="muted auth-link-row">
+            Already have an account?
+            <a href="/login">Login</a>
+        </p>
+    </form>
 </section>
 
 @if (!string.IsNullOrWhiteSpace(_status))
@@ -118,6 +120,11 @@
         {
             _working = false;
         }
+    }
+
+    private Task OnSubmitAsync()
+    {
+        return CreateUserAsync();
     }
 
     private static bool IsValidEmail(string email) =>

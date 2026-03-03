@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -24,6 +24,7 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R4`: After successful login or successful user creation, the system shall navigate to `Offers`.
 - `APP.SHELL.001-R5`: The system shall persist authenticated session state on device so the user is not required to login again on every app launch.
 - `APP.SHELL.001-R6`: On app access with a persisted session, the system shall validate session activity; if the session is expired/invalid, the session shall be cleared and startup view shall be `Login`.
+- `APP.SHELL.001-R7`: After successful submission in `Suggestions` or `Reports` view (no errors), the system shall redirect to `Offers` view.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -48,6 +49,12 @@ Scenario: App starts on Login when persisted session is expired
   When the user opens the application
   Then the persisted session shall be cleared
   And the Login view shall be the first visible view
+
+Scenario: Suggestions and Reports success submissions redirect to Offers
+  Given the authenticated user is in Suggestions or Reports view
+  When the user submits the form
+  And the submit response is successful with no errors
+  Then the system shall redirect the user to Offers view
 ```
 
 ## Example Inputs/Outputs

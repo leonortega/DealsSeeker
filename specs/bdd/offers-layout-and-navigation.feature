@@ -8,9 +8,9 @@ Feature: Offers layout and navigation to Add Offer
     And the user opens the Offers section
     When the Offers view is rendered
     Then a search bar is visible
+    And a coverage radius control below the search textbox is visible
     And a plus button near the search bar is visible
     And a map component is visible
-    And a distance indicator below the map is visible
     And an offer list below the map is visible
 
   Scenario: Plus button opens Add Offer view
