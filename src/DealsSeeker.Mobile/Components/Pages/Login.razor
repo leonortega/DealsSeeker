@@ -1,23 +1,24 @@
 @page "/login"
 @inject IDealsSeekerApiClient ApiClient
 @inject IUserSessionService Session
+@inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
 
-<h1>Login</h1>
+<h1>@T("auth.loginTitle")</h1>
 
 <section class="card-block">
     <form @onsubmit="OnSubmitAsync" autocomplete="on">
-        <label class="field-label" for="loginUser">User (email)</label>
+        <label class="field-label" for="loginUser">@T("auth.userEmail")</label>
         <input id="loginUser" name="loginUser" class="field-input" type="email" autocomplete="username" @bind="_email" />
 
-        <label class="field-label" for="loginPassword">Password</label>
+        <label class="field-label" for="loginPassword">@T("auth.password")</label>
         <input id="loginPassword" name="loginPassword" class="field-input" type="password" autocomplete="current-password" @bind="_password" />
 
-        <button class="btn-main" type="submit" disabled="@_working">Login</button>
+        <button class="btn-main" type="submit" disabled="@_working">@T("auth.loginButton")</button>
 
         <p class="muted auth-link-row">
-            New user?
-            <a href="/create-user">Create user</a>
+            @T("auth.newUser")
+            <a href="/create-user">@T("auth.createUserLink")</a>
         </p>
     </form>
 </section>
@@ -69,17 +70,17 @@
 
             if (session is null)
             {
-                _error = "Invalid user or password.";
+                _error = T("auth.invalidCredentials");
                 return;
             }
 
             await Session.SetSessionAsync(session, CancellationToken.None);
-            _status = "Login successful.";
+            _status = T("auth.loginSuccess");
             Navigation.NavigateTo("/offers", forceLoad: false);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _error = $"Login failed: {ex.Message}";
+            _error = T("auth.loginFailedPrefix");
         }
         finally
         {
@@ -91,4 +92,6 @@
     {
         return LoginAsync();
     }
+
+    private string T(string key) => Preferences.Translate(key);
 }

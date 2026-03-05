@@ -3,17 +3,18 @@
 @inject IDealsSeekerApiClient ApiClient
 @inject IUserSessionService Session
 @inject IReportDraftContext ReportDraftContext
+@inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
 
-<h1>Reports</h1>
+<h1>@T("reports.title")</h1>
 
 @if (_previewOffer is not null)
 {
     <section class="card-block">
-        <h2>Offer Preview</h2>
+        <h2>@T("reports.offerPreview")</h2>
         <article class="offer-card report-preview-card">
             <img src="@ResolveOfferImage(_previewOffer.ImageUrl)"
-                 alt="Offer image"
+                 alt="@T("offers.imageAlt")"
                  class="offer-image"
                  onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
             <div class="offer-body">
@@ -31,19 +32,19 @@
 }
 
 <section class="card-block">
-    <label class="field-label" for="reportUserId">User ID</label>
+    <label class="field-label" for="reportUserId">@T("reports.userId")</label>
     <input id="reportUserId" name="reportUserId" class="field-input" @bind="_userId" readonly />
 
-    <label class="field-label" for="reportMessage">Report text</label>
+    <label class="field-label" for="reportMessage">@T("reports.reportText")</label>
     <textarea id="reportMessage" name="reportMessage" class="field-input" @bind="_message" rows="4"></textarea>
 
-    <label class="field-label" for="reportOfferId">Offer ID</label>
+    <label class="field-label" for="reportOfferId">@T("reports.offerId")</label>
     <input id="reportOfferId" name="reportOfferId" class="field-input" @bind="_offerId" readonly="@_fromOfferSelection" />
 
-    <label class="field-label" for="reportDate">Date (UTC)</label>
+    <label class="field-label" for="reportDate">@T("reports.dateUtc")</label>
     <input id="reportDate" name="reportDate" class="field-input" value="@FormatUtc(_reportedAtUtc)" readonly />
 
-    <button class="btn-main btn-danger" @onclick="SubmitAsync" disabled="@_submitting">Send Report</button>
+    <button class="btn-main btn-danger" @onclick="SubmitAsync" disabled="@_submitting">@T("reports.sendReport")</button>
     @if (!string.IsNullOrWhiteSpace(_statusMessage))
     {
         <p class="status-line">@_statusMessage</p>
@@ -96,9 +97,9 @@
                     string.IsNullOrWhiteSpace(_userId) ? null : _userId.Trim(),
                     _reportedAtUtc),
                 CancellationToken.None);
-            _statusMessage = result.Message;
             if (result.Success)
             {
+                _statusMessage = T("reports.submitSuccess");
                 _message = string.Empty;
                 _offerId = string.Empty;
                 _previewOffer = null;
@@ -106,6 +107,14 @@
                 _reportedAtUtc = DateTimeOffset.UtcNow;
                 Navigation.NavigateTo("/offers", forceLoad: false);
             }
+            else
+            {
+                _statusMessage = T("reports.submitFailed");
+            }
+        }
+        catch (Exception)
+        {
+            _statusMessage = T("reports.submitFailed");
         }
         finally
         {
@@ -131,4 +140,6 @@
 
     private static string FormatUtc(DateTimeOffset value) =>
         value.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'");
+
+    private string T(string key) => Preferences.Translate(key);
 }

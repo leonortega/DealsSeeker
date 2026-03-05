@@ -3,10 +3,10 @@
 }
 
 .hamburger-button {
-    border: 1px solid #b2c0ad;
+    border: 1px solid var(--color-border-strong, #b2c0ad);
     border-radius: 8px;
-    background: #ffffff;
-    color: #1f311b;
+    background: var(--color-surface, #ffffff);
+    color: var(--color-text, #1f311b);
     width: 2.5rem;
     height: 2.5rem;
     display: inline-flex;
@@ -35,7 +35,7 @@
     width: 100%;
     height: 0.12rem;
     border-radius: 99px;
-    background: #264030;
+    background: var(--color-text, #264030);
     transition: transform 140ms ease, opacity 140ms ease;
 }
 
@@ -63,8 +63,8 @@
     left: 0;
     right: 0;
     width: 100%;
-    background: #fbfdf8;
-    border-bottom: 1px solid #c9d3c2;
+    background: var(--color-surface, #fbfdf8);
+    border-bottom: 1px solid var(--color-border, #c9d3c2);
     border-bottom-left-radius: 20px;
     border-bottom-right-radius: 20px;
     box-shadow: 0 12px 28px rgba(25, 35, 22, 0.22);
@@ -84,47 +84,153 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.95rem 0.95rem 0.65rem;
-    border-bottom: 1px solid #d8e2d2;
+    border-bottom: 1px solid var(--color-border, #d8e2d2);
 }
 
 .sheet-title {
     font-weight: 800;
-    color: #1f311b;
+    color: var(--color-text, #1f311b);
     font-size: 1rem;
     letter-spacing: 0.01em;
 }
 
 .sheet-close {
-    border: 1px solid #b7c6b2;
+    border: 1px solid var(--color-border-strong, #b7c6b2);
     border-radius: 10px;
-    background: #ffffff;
-    color: #233a2b;
+    background: var(--color-surface, #ffffff);
+    color: var(--color-text, #233a2b);
     width: 2rem;
     height: 2rem;
     font-size: 0.95rem;
     font-weight: 700;
 }
 
-.sheet-grid {
+.menu-main {
     padding: 0.7rem;
+}
+
+.sheet-grid {
     display: grid;
     gap: 0.45rem 0.35rem;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.language-picker {
+    position: relative;
+}
+
+.menu-option-control {
+    padding: 0.15rem 0.1rem;
+    display: flex;
+    align-items: center;
+    min-height: 2.2rem;
+}
+
+.menu-control-button {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0;
+    text-align: left;
+}
+
+.menu-option-control-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.language-trigger-icon {
+    font-size: 0.76rem;
+    line-height: 1;
+}
+
+.language-trigger-caret {
+    font-size: 0.6rem;
+    opacity: 0.9;
+}
+
+.language-list {
+    position: absolute;
+    top: calc(100% + 0.2rem);
+    left: 0;
+    right: 0;
+    border: 1px solid var(--color-border-strong, #cfdac9);
+    border-radius: 8px;
+    background: var(--color-surface, #ffffff);
+    overflow: hidden;
+    box-shadow: 0 6px 14px rgba(18, 28, 23, 0.16);
+    z-index: 8;
+}
+
+.language-option {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--color-border, #d8e2d2);
+    background: var(--color-surface, #ffffff);
+    color: var(--color-text, #1f311b);
+    text-align: left;
+    padding: 0.42rem 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.language-option:last-child {
+    border-bottom: none;
+}
+
+.language-option.active {
+    background: var(--color-promoted-bg, #e6f0df);
+    font-weight: 700;
+}
+
+.theme-switch {
+    width: 22px;
+    height: 12px;
+    border-radius: 999px;
+    border: 1.6px solid currentColor;
+    display: inline-flex;
+    align-items: center;
+    padding: 1px;
+    box-sizing: border-box;
+}
+
+.theme-switch-knob {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    transform: translateX(0);
+    transition: transform 140ms ease;
+}
+
+.theme-trigger.dark .theme-switch-knob {
+    transform: translateX(10px);
+}
+
+.theme-trigger .menu-option-icon {
+    font-size: 0.7rem;
 }
 
 .menu-option {
-    color: #1f311b;
+    color: var(--color-text, #1f311b);
     text-decoration: none !important;
     padding: 0.5rem 0.45rem 0.6rem;
     border-radius: 12px;
     font-weight: 600;
-    border: 1px solid #d7e2d0;
+    border: 1px solid var(--color-border, #d7e2d0);
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     gap: 0.2rem;
-    background: #ffffff;
+    background: var(--color-surface, #ffffff);
 }
 
 .menu-option,
@@ -139,28 +245,33 @@
 }
 
 .menu-option.active {
-    background: #e6f0df;
-    border-color: #b8cdae;
+    background: var(--color-promoted-bg, #e6f0df);
+    border-color: var(--color-promoted-border, #b8cdae);
 }
 
 .menu-option-icon {
     width: 2.05rem;
     height: 2.05rem;
     border-radius: 999px;
-    border: 1px solid #b5c7af;
-    background: #f3f8ee;
+    border: 1px solid var(--color-border-strong, #b5c7af);
+    background: var(--color-surface-soft, #f3f8ee);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 0.88rem;
     font-weight: 800;
-    color: #2b4a39;
+    color: var(--color-text, #2b4a39);
 }
 
 .menu-option-icon-image {
     width: 1.15rem;
     height: 1.15rem;
     display: block;
+}
+
+.menu-option-icon-text {
+    font-size: 1rem;
+    line-height: 1;
 }
 
 .menu-option-title {
@@ -171,11 +282,17 @@
 .menu-option-desc {
     font-size: 0.68rem;
     line-height: 1.2;
-    color: #5d6b59;
+    color: var(--color-muted, #5d6b59);
     font-weight: 500;
 }
 
-@media (max-width: 440px) {
+@media (max-width: 980px) {
+    .sheet-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 660px) {
     .sheet-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -190,12 +307,12 @@
 .sheet-grid ::deep a.menu-option:focus,
 .sheet-grid ::deep a.menu-option:focus-visible {
     text-decoration: none !important;
-    color: #1f311b !important;
+    color: var(--color-text, #1f311b) !important;
 }
 
 .sheet-grid ::deep a.menu-option:hover .menu-option-title,
 .sheet-grid ::deep a.menu-option:hover .menu-option-desc,
 .sheet-grid ::deep a.menu-option:hover .menu-option-icon {
-    color: #1f311b !important;
+    color: var(--color-text, #1f311b) !important;
     text-decoration: none !important;
 }

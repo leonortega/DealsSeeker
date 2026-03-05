@@ -1,3 +1,5 @@
+@inject IAppPreferencesService Preferences
+
 <LoggingErrorBoundary>
     <ChildContent>
         <Router AppAssembly="@typeof(MauiProgram).Assembly">
@@ -7,15 +9,15 @@
             </Found>
             <NotFound>
                 <LayoutView Layout="@typeof(Layout.MainLayout)">
-                    <h1>Page not found</h1>
+                    <h1>@T("routes.pageNotFound")</h1>
                 </LayoutView>
             </NotFound>
         </Router>
     </ChildContent>
     <ErrorContent Context="exception">
         <LayoutView Layout="@typeof(Layout.MainLayout)">
-            <h1>Unexpected error</h1>
-            <p>The app captured an unhandled UI exception. Check Serilog output for details.</p>
+            <h1>@T("routes.unexpectedError")</h1>
+            <p>@T("routes.unhandledUiException")</p>
             @if (!string.IsNullOrWhiteSpace(exception?.Message))
             {
                 <pre>@exception.Message</pre>
@@ -23,3 +25,7 @@
         </LayoutView>
     </ErrorContent>
 </LoggingErrorBoundary>
+
+@code {
+    private string T(string key) => Preferences.Translate(key);
+}

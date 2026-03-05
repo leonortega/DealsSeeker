@@ -1,8 +1,11 @@
 using DealsSeeker.Mobile.Services.Api;
 using DealsSeeker.Mobile.Services.Auth;
 using DealsSeeker.Mobile.Services.Device;
+using DealsSeeker.Mobile.Services.Localization;
 using DealsSeeker.Mobile.Services.Maps;
+using DealsSeeker.Mobile.Services.Preferences;
 using DealsSeeker.Mobile.Services.Reports;
+using DealsSeeker.Mobile.Services.Ui;
 using Microsoft.Maui.Storage;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -15,6 +18,8 @@ public static class MauiProgram
 {
     try
     {
+        CultureService.ApplyStartupCultureFromPreferences();
+
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
@@ -24,6 +29,7 @@ public static class MauiProgram
             });
 
         builder.Services.AddMauiBlazorWebView();
+        builder.Services.AddLocalization(options => options.ResourcesPath = "Resources/Localization");
         var defaultApiSettings = new ApiSettings();
         var apiConfiguration = builder.Configuration.GetSection("Api");
         builder.Services.AddSingleton(new ApiSettings
@@ -48,6 +54,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<IMapRenderingService, MapRenderingService>();
         builder.Services.AddSingleton<IMediaCaptureService, MediaCaptureService>();
         builder.Services.AddSingleton<IReportDraftContext, ReportDraftContext>();
+        builder.Services.AddSingleton<IViewBusyService, ViewBusyService>();
+        builder.Services.AddSingleton<ICultureService, CultureService>();
         builder.Services.AddScoped<HttpClient>(serviceProvider =>
         {
             var settings = serviceProvider.GetRequiredService<ApiSettings>();
@@ -58,6 +66,7 @@ public static class MauiProgram
             return new HttpClient(handler) { BaseAddress = new Uri(settings.BaseUrl) };
         });
         builder.Services.AddScoped<IDealsSeekerApiClient, DealsSeekerApiClient>();
+        builder.Services.AddScoped<IAppPreferencesService, AppPreferencesService>();
 
         var logsDirectory = Path.Combine(FileSystem.Current.AppDataDirectory, "logs");
         Directory.CreateDirectory(logsDirectory);

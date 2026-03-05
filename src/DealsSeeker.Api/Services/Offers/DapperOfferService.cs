@@ -12,6 +12,30 @@ namespace DealsSeeker.Api.Services.Offers;
 
 public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) : IOfferService
 {
+    private const string PlaceholderImageUrl = "/images/offer-placeholder.svg";
+    private const double FuzzySimilarityThreshold = 0.72d;
+
+    private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, IReadOnlyList<string>>> SynonymsByLanguage
+        = new Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<string>>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["en"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["coffee"] = ["cafe", "espresso", "latte"],
+                ["tea"] = ["chai", "infusion"],
+                ["bakery"] = ["bread", "pastry"],
+                ["discount"] = ["deal", "promo", "sale"],
+                ["fresh"] = ["organic", "new"]
+            },
+            ["es"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["cafe"] = ["coffee", "espresso"],
+                ["te"] = ["tea", "infusion"],
+                ["panaderia"] = ["bakery", "bread"],
+                ["descuento"] = ["discount", "deal", "promo"],
+                ["fresco"] = ["fresh", "organic"]
+            }
+        };
+
     public async Task<SearchOffersResponse> SearchAsync(SearchOffersRequest request, string userId, CancellationToken cancellationToken)
     {
         await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
@@ -28,7 +52,8 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                 lat AS Lat,
                 lng AS Lng,
                 positive_availability_count AS PositiveAvailabilityCount,
-                negative_availability_count AS NegativeAvailabilityCount
+                negative_availability_count AS NegativeAvailabilityCount,
+                report_count AS ReportCount
             FROM offers
             WHERE is_active = 1;
             """)).ToList();
@@ -39,6 +64,7 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
         }
 
         var offerIds = offerRows.Select(x => x.OfferId).ToArray();
+
         var tagRows = (await connection.QueryAsync<OfferTagRow>(
             """
             SELECT offer_id AS OfferId, tag AS Tag
@@ -47,7 +73,19 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
             """,
             new { OfferIds = offerIds })).ToList();
 
+        var imageRows = (await connection.QueryAsync<OfferImageRow>(
+            """
+            SELECT
+                offer_id AS OfferId,
+                image_url AS ImageUrl,
+                sort_order AS SortOrder
+            FROM offer_images
+            WHERE offer_id IN @OfferIds;
+            """,
+            new { OfferIds = offerIds })).ToList();
+
         HashSet<string> votedOfferIds = [];
+        HashSet<string> favoriteOfferIds = [];
         if (!string.IsNullOrWhiteSpace(userId))
         {
             votedOfferIds = (await connection.QueryAsync<string>(
@@ -58,43 +96,116 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                 """,
                 new { UserId = userId, OfferIds = offerIds }))
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            favoriteOfferIds = (await connection.QueryAsync<string>(
+                """
+                SELECT offer_id
+                FROM offer_favorites
+                WHERE user_id = @UserId AND offer_id IN @OfferIds;
+                """,
+                new { UserId = userId, OfferIds = offerIds }))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
         }
+
+        var promotedPriorities = (await connection.QueryAsync<PromotedOfferRow>(
+            """
+            SELECT
+                offer_id AS OfferId,
+                priority AS Priority,
+                starts_at_utc AS StartsAtUtc,
+                ends_at_utc AS EndsAtUtc
+            FROM promoted_offers
+            WHERE offer_id IN @OfferIds;
+            """,
+            new { OfferIds = offerIds }))
+            .Where(IsPromotionActive)
+            .ToDictionary(x => x.OfferId, x => (int)x.Priority, StringComparer.OrdinalIgnoreCase);
 
         var tagsByOffer = tagRows
             .GroupBy(x => x.OfferId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(
                 g => g.Key,
-                g => (IReadOnlyList<string>)g.Select(x => x.Tag).ToArray(),
+                g => (IReadOnlyList<string>)g.Select(x => x.Tag).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
                 StringComparer.OrdinalIgnoreCase);
 
-        var queryWords = SplitQuery(request.Query);
-        var filteredOffers = offerRows
+        var imageUrlsByOffer = imageRows
+            .GroupBy(x => x.OfferId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyList<string>)g
+                    .OrderBy(x => x.SortOrder)
+                    .ThenBy(x => x.ImageUrl, StringComparer.OrdinalIgnoreCase)
+                    .Select(x => x.ImageUrl)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+
+        var queryTokens = SplitQuery(request.Query);
+        var synonymExpansions = ExpandQueryWithSynonyms(queryTokens, request.Locale);
+        var isPreSearch = queryTokens.Count == 0;
+
+        var candidates = offerRows
             .Select(row =>
             {
                 var tags = tagsByOffer.TryGetValue(row.OfferId, out var rowTags) ? rowTags : [];
+                var imageUrls = imageUrlsByOffer.TryGetValue(row.OfferId, out var rowImages) && rowImages.Count > 0
+                    ? rowImages
+                    : [string.IsNullOrWhiteSpace(row.ImageUrl) ? PlaceholderImageUrl : row.ImageUrl];
                 var location = new GeoPoint(row.Lat, row.Lng);
-                return new
-                {
-                    Row = row,
-                    Tags = tags,
-                    Location = location,
-                    DistanceMeters = DistanceMeters(request.UserLocation, location)
-                };
+                var distanceMeters = DistanceMeters(request.UserLocation, location);
+                var isFavorite = favoriteOfferIds.Contains(row.OfferId);
+                var isPromoted = promotedPriorities.ContainsKey(row.OfferId);
+                var isReported = row.ReportCount > 0;
+
+                var terms = BuildSearchTerms(row.Description, tags);
+                var matches = EvaluateMatch(
+                    terms,
+                    queryTokens,
+                    synonymExpansions,
+                    out var relevanceScore,
+                    out var strategies);
+
+                return new OfferCandidate(
+                    row,
+                    tags,
+                    imageUrls,
+                    location,
+                    distanceMeters,
+                    isFavorite,
+                    isPromoted,
+                    isReported,
+                    relevanceScore,
+                    strategies,
+                    matches);
             })
             .Where(x => x.DistanceMeters <= request.RadiusMeters)
-            .Where(x => queryWords.Count == 0 || QueryMatchesTags(queryWords, x.Tags))
-            .OrderBy(x => x.DistanceMeters)
-            .ToArray();
+            .Where(x => x.MatchesQuery)
+            .Where(x => !request.FavoritesOnly || x.IsFavorite)
+            .ToList();
 
-        var offers = filteredOffers
+        var orderedOffers = candidates
+            .OrderBy(x => x.IsReported ? 1 : 0)
+            .ThenByDescending(x => isPreSearch && x.IsPromoted)
+            .ThenByDescending(x => !isPreSearch ? x.RelevanceScore : 0d)
+            .ThenByDescending(x => x.IsPromoted && !isPreSearch)
+            .ThenBy(x => isPreSearch && x.IsPromoted
+                ? -GetPromotionPriority(promotedPriorities, x.Row.OfferId)
+                : 0)
+            .ThenBy(x => x.DistanceMeters)
             .Select(x => new OfferItemDto(
                 x.Row.OfferId,
                 x.Row.BusinessId,
                 x.Row.BusinessName,
                 x.Row.Description,
                 x.Tags,
-                x.Row.ImageUrl,
+                x.ImageUrls[0],
+                x.ImageUrls,
                 x.Row.IsActive != 0,
+                x.IsPromoted,
+                x.IsFavorite,
+                x.IsReported,
+                x.RelevanceScore,
+                x.MatchStrategies,
                 x.Location,
                 x.DistanceMeters,
                 (int)x.Row.PositiveAvailabilityCount,
@@ -102,11 +213,11 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                 votedOfferIds.Contains(x.Row.OfferId)))
             .ToArray();
 
-        var businesses = offers
+        var businesses = orderedOffers
             .GroupBy(x => x.BusinessId, StringComparer.OrdinalIgnoreCase)
             .Select(group =>
             {
-                var first = group.First();
+                var first = group.OrderBy(x => x.DistanceMeters).First();
                 return new BusinessMarkerDto(
                     first.BusinessId,
                     first.BusinessName,
@@ -116,7 +227,7 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
             .OrderBy(x => x.DistanceMeters)
             .ToArray();
 
-        return new SearchOffersResponse(offers, businesses);
+        return new SearchOffersResponse(orderedOffers, businesses);
     }
 
     public async Task<CommandResult> VoteAvailabilityAsync(string offerId, string userId, OfferAvailabilityVoteRequest request, CancellationToken cancellationToken)
@@ -227,6 +338,50 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
         }
     }
 
+    public async Task<CommandResult> SetFavoriteAsync(string offerId, string userId, SetFavoriteRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return new CommandResult(false, "Authenticated user is required.");
+        }
+
+        await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+
+        var offerExists = await connection.ExecuteScalarAsync<long>(
+            "SELECT COUNT(1) FROM offers WHERE offer_id = @OfferId;",
+            new { OfferId = offerId });
+        if (offerExists == 0)
+        {
+            return new CommandResult(false, "Offer not found.");
+        }
+
+        if (request.IsFavorite)
+        {
+            await connection.ExecuteAsync(
+                """
+                INSERT OR IGNORE INTO offer_favorites (user_id, offer_id, created_at_utc)
+                VALUES (@UserId, @OfferId, @CreatedAtUtc);
+                """,
+                new
+                {
+                    UserId = userId,
+                    OfferId = offerId,
+                    CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O")
+                });
+
+            return new CommandResult(true, "Offer saved to favorites.");
+        }
+
+        await connection.ExecuteAsync(
+            """
+            DELETE FROM offer_favorites
+            WHERE user_id = @UserId AND offer_id = @OfferId;
+            """,
+            new { UserId = userId, OfferId = offerId });
+
+        return new CommandResult(true, "Offer removed from favorites.");
+    }
+
     public async Task<OfferItemDto> AddAsync(AddOfferRequest request, CancellationToken cancellationToken)
     {
         var offerId = $"off-{Guid.NewGuid():N}"[..12];
@@ -239,17 +394,15 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
 
         var description = request.Description?.Trim() ?? string.Empty;
         var location = request.Location?.Position ?? new GeoPoint(40.7128, -74.0060);
-        var imageUrl = !string.IsNullOrWhiteSpace(request.ImageDataUrl)
-            ? request.ImageDataUrl!
-            : !string.IsNullOrWhiteSpace(request.Image?.DataUrl)
-                ? request.Image!.DataUrl!
-                : "/images/offer-placeholder.svg";
 
         var normalizedTags = request.Tags
             .Select(NormalizeTag)
             .Where(tag => !string.IsNullOrWhiteSpace(tag))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+
+        var normalizedImages = NormalizeImages(request.Images ?? []);
+        var primaryImageUrl = normalizedImages[0].ImageUrl;
 
         await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         await using var transaction = connection.BeginTransaction();
@@ -271,7 +424,7 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                     BusinessId = businessId,
                     BusinessName = businessName,
                     Description = description,
-                    ImageUrl = imageUrl,
+                    ImageUrl = primaryImageUrl,
                     Lat = location.Lat,
                     Lng = location.Lng,
                     CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O")
@@ -289,6 +442,23 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                     transaction);
             }
 
+            await connection.ExecuteAsync(
+                """
+                INSERT INTO offer_images (offer_id, image_url, mime_type, width, height, sort_order, created_at_utc)
+                VALUES (@OfferId, @ImageUrl, @MimeType, @Width, @Height, @SortOrder, @CreatedAtUtc);
+                """,
+                normalizedImages.Select(image => new
+                {
+                    OfferId = offerId,
+                    image.ImageUrl,
+                    image.MimeType,
+                    image.Width,
+                    image.Height,
+                    SortOrder = image.SortOrder,
+                    CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O")
+                }),
+                transaction);
+
             await transaction.CommitAsync(cancellationToken);
         }
         catch
@@ -303,8 +473,14 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
             businessName,
             description,
             normalizedTags,
-            imageUrl,
+            primaryImageUrl,
+            normalizedImages.Select(x => x.ImageUrl).ToArray(),
             true,
+            false,
+            false,
+            false,
+            0d,
+            ["exact"],
             location,
             0,
             0,
@@ -312,20 +488,253 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
             false);
     }
 
-    private static List<string> SplitQuery(string query) =>
+    private static IReadOnlyList<string> SplitQuery(string query) =>
         Regex.Split(query ?? string.Empty, "\\s+")
-            .Select(word => word.Trim().ToLowerInvariant())
+            .Select(word => NormalizeSearchTerm(word))
             .Where(word => !string.IsNullOrWhiteSpace(word))
-            .ToList();
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
-    private static bool QueryMatchesTags(IReadOnlyCollection<string> words, IReadOnlyList<string> tags)
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> ExpandQueryWithSynonyms(
+        IReadOnlyList<string> queryTokens,
+        string? locale)
     {
-        if (words.Count == 0)
+        var languageCode = ResolveLanguageCode(locale);
+        if (!SynonymsByLanguage.TryGetValue(languageCode, out var languageDictionary))
         {
+            return new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var expanded = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var token in queryTokens)
+        {
+            if (languageDictionary.TryGetValue(token, out var synonyms) && synonyms.Count > 0)
+            {
+                expanded[token] = synonyms.Select(NormalizeSearchTerm).Where(x => x.Length > 0).ToArray();
+            }
+            else
+            {
+                expanded[token] = [];
+            }
+        }
+
+        return expanded;
+    }
+
+    private static string ResolveLanguageCode(string? locale)
+    {
+        if (string.IsNullOrWhiteSpace(locale))
+        {
+            return "en";
+        }
+
+        var normalized = locale.Trim();
+        var separatorIndex = normalized.IndexOf('-');
+        if (separatorIndex <= 0)
+        {
+            separatorIndex = normalized.IndexOf('_');
+        }
+
+        return (separatorIndex > 0 ? normalized[..separatorIndex] : normalized).ToLowerInvariant();
+    }
+
+    private static IReadOnlyList<string> BuildSearchTerms(string description, IReadOnlyList<string> tags)
+    {
+        var terms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var tag in tags)
+        {
+            var normalizedTag = NormalizeSearchTerm(tag);
+            if (normalizedTag.Length > 0)
+            {
+                terms.Add(normalizedTag);
+            }
+        }
+
+        foreach (Match match in Regex.Matches(description ?? string.Empty, "[\\p{L}\\p{Nd}%]+"))
+        {
+            var normalizedWord = NormalizeSearchTerm(match.Value);
+            if (normalizedWord.Length > 0)
+            {
+                terms.Add(normalizedWord);
+            }
+        }
+
+        return terms.ToArray();
+    }
+
+    private static bool EvaluateMatch(
+        IReadOnlyList<string> terms,
+        IReadOnlyList<string> queryTokens,
+        IReadOnlyDictionary<string, IReadOnlyList<string>> synonymExpansions,
+        out double relevanceScore,
+        out IReadOnlyList<string> strategies)
+    {
+        if (queryTokens.Count == 0)
+        {
+            relevanceScore = 0d;
+            strategies = ["exact"];
             return true;
         }
 
-        return words.All(word => tags.Any(tag => tag.Contains(word, StringComparison.OrdinalIgnoreCase)));
+        var matchedStrategies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var scoreSum = 0d;
+
+        foreach (var token in queryTokens)
+        {
+            var tokenScore = 0d;
+            string? tokenStrategy = null;
+
+            if (terms.Any(term => term.Contains(token, StringComparison.OrdinalIgnoreCase)))
+            {
+                tokenScore = 1d;
+                tokenStrategy = "exact";
+            }
+
+            if (synonymExpansions.TryGetValue(token, out var synonyms) && synonyms.Count > 0)
+            {
+                var hasSynonymMatch = synonyms.Any(synonym =>
+                    terms.Any(term => term.Contains(synonym, StringComparison.OrdinalIgnoreCase)));
+                if (hasSynonymMatch && tokenScore < 0.88d)
+                {
+                    tokenScore = 0.88d;
+                    tokenStrategy = "synonym";
+                }
+            }
+
+            var bestFuzzy = 0d;
+            foreach (var term in terms)
+            {
+                var ratio = SimilarityRatio(token, term);
+                if (ratio > bestFuzzy)
+                {
+                    bestFuzzy = ratio;
+                }
+            }
+
+            if (bestFuzzy >= FuzzySimilarityThreshold)
+            {
+                var fuzzyScore = 0.6d + (bestFuzzy * 0.3d);
+                if (fuzzyScore > tokenScore)
+                {
+                    tokenScore = fuzzyScore;
+                    tokenStrategy = "fuzzy";
+                }
+            }
+
+            if (tokenStrategy is null)
+            {
+                relevanceScore = 0d;
+                strategies = [];
+                return false;
+            }
+
+            matchedStrategies.Add(tokenStrategy);
+            scoreSum += tokenScore;
+        }
+
+        relevanceScore = Math.Round(scoreSum / queryTokens.Count, 4, MidpointRounding.AwayFromZero);
+        strategies = matchedStrategies
+            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        return true;
+    }
+
+    private static double SimilarityRatio(string left, string right)
+    {
+        if (left.Length == 0 && right.Length == 0)
+        {
+            return 1d;
+        }
+
+        var maxLength = Math.Max(left.Length, right.Length);
+        if (maxLength == 0)
+        {
+            return 1d;
+        }
+
+        var distance = LevenshteinDistance(left, right);
+        return 1d - ((double)distance / maxLength);
+    }
+
+    private static int LevenshteinDistance(string source, string target)
+    {
+        var sourceLength = source.Length;
+        var targetLength = target.Length;
+
+        var matrix = new int[sourceLength + 1, targetLength + 1];
+        for (var i = 0; i <= sourceLength; i++)
+        {
+            matrix[i, 0] = i;
+        }
+
+        for (var j = 0; j <= targetLength; j++)
+        {
+            matrix[0, j] = j;
+        }
+
+        for (var i = 1; i <= sourceLength; i++)
+        {
+            for (var j = 1; j <= targetLength; j++)
+            {
+                var cost = source[i - 1] == target[j - 1] ? 0 : 1;
+                matrix[i, j] = Math.Min(
+                    Math.Min(matrix[i - 1, j] + 1, matrix[i, j - 1] + 1),
+                    matrix[i - 1, j - 1] + cost);
+            }
+        }
+
+        return matrix[sourceLength, targetLength];
+    }
+
+    private static bool IsPromotionActive(PromotedOfferRow row)
+    {
+        var now = DateTimeOffset.UtcNow;
+        if (!TryParseDateTimeOffset(row.StartsAtUtc, out var startsAt))
+        {
+            startsAt = DateTimeOffset.MinValue;
+        }
+
+        if (!TryParseDateTimeOffset(row.EndsAtUtc, out var endsAt))
+        {
+            endsAt = DateTimeOffset.MaxValue;
+        }
+
+        return now >= startsAt && now <= endsAt;
+    }
+
+    private static bool TryParseDateTimeOffset(string? value, out DateTimeOffset parsed)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            parsed = default;
+            return false;
+        }
+
+        return DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out parsed);
+    }
+
+    private static int GetPromotionPriority(IReadOnlyDictionary<string, int> promotedPriorities, string offerId) =>
+        promotedPriorities.TryGetValue(offerId, out var priority) ? priority : 0;
+
+    private static IReadOnlyList<NormalizedImage> NormalizeImages(IReadOnlyList<OfferImageDto> images)
+    {
+        var normalized = images
+            .Where(image => !string.IsNullOrWhiteSpace(image.DataUrl))
+            .Select((image, index) => new NormalizedImage(
+                ImageUrl: image.DataUrl!,
+                MimeType: image.MimeType,
+                Width: image.Width,
+                Height: image.Height,
+                SortOrder: image.Order >= 0 ? image.Order : index))
+            .OrderBy(image => image.SortOrder)
+            .ToArray();
+
+        if (normalized.Length > 0)
+        {
+            return normalized;
+        }
+
+        return [new NormalizedImage(PlaceholderImageUrl, "image/svg+xml", null, null, 0)];
     }
 
     private static double DistanceMeters(GeoPoint from, GeoPoint to)
@@ -349,6 +758,9 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
             .Trim('.', ',', ';', ':', '!', '?', '"', '\'', '(', ')', '[', ']', '{', '}')
             .ToLower(CultureInfo.InvariantCulture);
 
+    private static string NormalizeSearchTerm(string value) =>
+        string.Concat(NormalizeTag(value).Where(ch => !char.IsWhiteSpace(ch)));
+
     private sealed record OfferRow(
         string OfferId,
         string BusinessId,
@@ -359,7 +771,32 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
         double Lat,
         double Lng,
         long PositiveAvailabilityCount,
-        long NegativeAvailabilityCount);
+        long NegativeAvailabilityCount,
+        long ReportCount);
 
     private sealed record OfferTagRow(string OfferId, string Tag);
+
+    private sealed record OfferImageRow(string OfferId, string ImageUrl, long SortOrder);
+
+    private sealed record PromotedOfferRow(string OfferId, long Priority, string? StartsAtUtc, string? EndsAtUtc);
+
+    private sealed record OfferCandidate(
+        OfferRow Row,
+        IReadOnlyList<string> Tags,
+        IReadOnlyList<string> ImageUrls,
+        GeoPoint Location,
+        double DistanceMeters,
+        bool IsFavorite,
+        bool IsPromoted,
+        bool IsReported,
+        double RelevanceScore,
+        IReadOnlyList<string> MatchStrategies,
+        bool MatchesQuery);
+
+    private sealed record NormalizedImage(
+        string ImageUrl,
+        string MimeType,
+        int? Width,
+        int? Height,
+        int SortOrder);
 }

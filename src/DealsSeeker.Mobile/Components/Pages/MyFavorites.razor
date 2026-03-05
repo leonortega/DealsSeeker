@@ -1,0 +1,126 @@
+@page "/my-favorites"
+@inject IDealsSeekerApiClient ApiClient
+@inject IDeviceLocationService DeviceLocation
+@inject IMapLauncherService MapLauncher
+@inject IUserSessionService Session
+@inject IAppPreferencesService Preferences
+@inject NavigationManager Navigation
+
+<h1>@T("favorites.title")</h1>
+
+@if (!string.IsNullOrWhiteSpace(_error))
+{
+    <section class="card-block">
+        <p class="status-line error">@_error</p>
+    </section>
+}
+
+<section class="card-block">
+    @if (_loading)
+    {
+        <p class="muted">@T("offers.loading")</p>
+    }
+    else if (_offers.Count == 0)
+    {
+        <p class="muted">@T("favorites.empty")</p>
+    }
+    else
+    {
+        <div class="offer-grid">
+            @foreach (var offer in _offers)
+            {
+                <article class="offer-card-square @(offer.IsReported ? "offer-card-reported" : string.Empty)">
+                    <img src="@ResolveOfferImage(offer.ImageUrl)"
+                         alt="@T("offers.imageAlt")"
+                         class="offer-image-square"
+                         onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
+                    <div class="offer-square-body">
+                        <h3>@offer.BusinessName</h3>
+                        <p>@offer.Description</p>
+                        <p class="muted">@FormatDistanceMeters(offer.DistanceMeters)</p>
+                        <div class="action-row">
+                            <button class="btn-main" @onclick="() => OpenDirectionsAsync(offer.Location)">@T("offers.directions")</button>
+                            <button class="btn-main btn-danger" @onclick="() => RemoveFavoriteAsync(offer.OfferId)">@T("offers.favoriteRemove")</button>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private GeoPoint _userLocation = new(40.7128, -74.0060);
+    private List<OfferItemDto> _offers = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login", forceLoad: false);
+            return;
+        }
+
+        await Preferences.InitializeAsync(Session.CurrentSession?.UserId, CancellationToken.None);
+
+        var location = await DeviceLocation.TryGetCurrentLocationAsync(CancellationToken.None);
+        if (location is not null)
+        {
+            _userLocation = location;
+        }
+
+        await LoadFavoritesAsync();
+    }
+
+    private async Task LoadFavoritesAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            var response = await ApiClient.SearchOffersAsync(
+                new SearchOffersRequest(
+                    Query: string.Empty,
+                    UserLocation: _userLocation,
+                    RadiusMeters: 5000,
+                    Locale: Preferences.Language,
+                    FavoritesOnly: true),
+                CancellationToken.None);
+
+            _offers = response.Offers.ToList();
+        }
+        catch (Exception)
+        {
+            _error = T("favorites.loadFailed");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task RemoveFavoriteAsync(string offerId)
+    {
+        var result = await ApiClient.SetOfferFavoriteAsync(offerId, new SetFavoriteRequest(false), CancellationToken.None);
+        if (!result.Success)
+        {
+            _error = T("favorites.removeFailed");
+            return;
+        }
+
+        await LoadFavoritesAsync();
+    }
+
+    private Task OpenDirectionsAsync(GeoPoint destination) =>
+        MapLauncher.OpenWalkingDirectionsAsync(destination, CancellationToken.None);
+
+    private string T(string key) => Preferences.Translate(key);
+
+    private static string ResolveOfferImage(string imageUrl) =>
+        string.IsNullOrWhiteSpace(imageUrl) ? "/images/offer-placeholder.svg" : imageUrl;
+
+    private static string FormatDistanceMeters(double distanceMeters) =>
+        $"{Math.Round(Math.Max(0, distanceMeters))} m";
+}

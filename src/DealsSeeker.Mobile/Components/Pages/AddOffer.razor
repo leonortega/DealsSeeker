@@ -3,27 +3,48 @@
 @inject IDeviceLocationService DeviceLocation
 @inject IDealsSeekerApiClient ApiClient
 @inject IMapRenderingService MapRendering
+@inject IUserSessionService Session
+@inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
 @implements IDisposable
 
-<h1>Add Offer</h1>
+<h1>@T("addOffer.title")</h1>
 
 <section class="card-block">
-    <h2>Image</h2>
+    <h2>@T("addOffer.images")</h2>
     <button class="image-placeholder" @onclick="CaptureFromCameraAsync">
-        @if (_image is null)
+        @if (_images.Count == 0)
         {
-            <span class="photo-icon">[ photo ]</span>
+            <span class="photo-icon">@T("addOffer.photoPlaceholder")</span>
         }
         else
         {
-            <img src="@_image.DataUrl" alt="Offer preview" class="offer-image" />
+            <img src="@_images[0].DataUrl" alt="@T("addOffer.previewAlt")" class="offer-image" />
         }
     </button>
     <div class="action-row">
-        <button class="btn-main" @onclick="CaptureFromCameraAsync">Take Photo</button>
-        <button class="btn-main" @onclick="UploadFromGalleryAsync">Upload Image</button>
+        <button class="btn-main" @onclick="CaptureFromCameraAsync">@T("addOffer.takePhoto")</button>
+        <button class="btn-main" @onclick="UploadFromGalleryAsync">@T("addOffer.uploadPhotos")</button>
     </div>
+
+    @if (_images.Count > 0)
+    {
+        <div class="photo-strip">
+            @for (var i = 0; i < _images.Count; i++)
+            {
+                var current = _images[i];
+                <div class="photo-thumb-card">
+                    <img src="@current.DataUrl" class="photo-thumb" alt="@($"{T("addOffer.photoAlt")} {i + 1}")" />
+                    <div class="photo-thumb-actions">
+                        <button class="btn-main" @onclick="() => MoveImage(i, -1)" disabled="@(i == 0)">&#8592;</button>
+                        <button class="btn-main" @onclick="() => MoveImage(i, 1)" disabled="@(i == _images.Count - 1)">&#8594;</button>
+                        <button class="btn-main btn-danger" @onclick="() => RemoveImage(i)">@T("addOffer.remove")</button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
     @if (!string.IsNullOrWhiteSpace(_imageStatus))
     {
         <p class="status-line">@_imageStatus</p>
@@ -31,26 +52,26 @@
 </section>
 
 <section class="card-block">
-    <h2>Location</h2>
-    <p class="muted">Current address: @FormatLocation(_location)</p>
+    <h2>@T("addOffer.location")</h2>
+    <p class="muted">@T("addOffer.currentAddress"): @FormatLocation(_location)</p>
 
-    <label class="field-label" for="locationQuery">Search business or address</label>
+    <label class="field-label" for="locationQuery">@T("addOffer.searchAddressLabel")</label>
     <div class="search-row">
         <input id="locationQuery"
                name="locationQuery"
                class="field-input"
-               placeholder="Type business or address (min 3 chars)..."
+               placeholder="@T("addOffer.searchAddressPlaceholder")"
                value="@_locationQuery"
                @oninput="OnLocationQueryInputAsync"
                disabled="@_isLocationConfirmed" />
     </div>
     @if (_searchingLocation)
     {
-        <p class="muted">Searching locations...</p>
+        <p class="muted">@T("addOffer.searchingLocations")</p>
     }
     else if (_locationQuery.Trim().Length > 0 && _locationQuery.Trim().Length < 3)
     {
-        <p class="muted">Type at least 3 characters to see suggestions.</p>
+        <p class="muted">@T("addOffer.typeAtLeast3Chars")</p>
     }
     @if (!string.IsNullOrWhiteSpace(_locationStatus))
     {
@@ -59,32 +80,32 @@
 
     @if (_locationResults.Count > 0)
     {
-        <div class="location-suggestion-list" role="listbox" aria-label="Address suggestions">
+        <div class="location-suggestion-list" role="listbox" aria-label="@T("addOffer.addressSuggestionsAria")">
             @foreach (var result in _locationResults)
             {
                 <button class="location-suggestion-item" @onclick="() => SelectLocation(result)">
                     <span class="location-suggestion-title">@result.Label</span>
-                    <span class="location-suggestion-subtitle">Tap to set this address</span>
+                    <span class="location-suggestion-subtitle">@T("addOffer.tapToSetAddress")</span>
                 </button>
             }
         </div>
     }
 
-    <h3>Location Preview</h3>
+    <h3>@T("addOffer.locationPreview")</h3>
     <iframe class="map-frame" src="@BuildLocationMapUrl()" loading="lazy"></iframe>
     <div class="action-row">
         <button class="btn-main"
                 @onclick="ConfirmLocation"
-                disabled="@(_isLocationConfirmed || _location is null)">Confirm Location</button>
+                disabled="@(_isLocationConfirmed || _location is null)">@T("addOffer.confirmLocation")</button>
         <button class="btn-main btn-warning"
                 @onclick="EditLocation"
-                disabled="@(!_isLocationConfirmed)">Edit Location</button>
+                disabled="@(!_isLocationConfirmed)">@T("addOffer.editLocation")</button>
     </div>
 </section>
 
 <section class="card-block">
-    <h2>Description and Tags</h2>
-    <label class="field-label" for="descriptionInput">Description</label>
+    <h2>@T("addOffer.tags")</h2>
+    <label class="field-label" for="descriptionInput">@T("addOffer.description")</label>
     <textarea id="descriptionInput"
               name="descriptionInput"
               class="field-input"
@@ -92,7 +113,7 @@
               @bind="_description"
               @bind:event="oninput"></textarea>
 
-    <p class="muted">Tap any detected word to create a tag instantly.</p>
+    <p class="muted">@T("addOffer.tapWordToTag")</p>
     <div class="word-list">
         @foreach (var word in ExtractWords(_description))
         {
@@ -102,14 +123,14 @@
         }
     </div>
 
-    <label class="field-label" for="manualTagInput">Add tag manually</label>
+    <label class="field-label" for="manualTagInput">@T("addOffer.addTagManually")</label>
     <div class="search-row">
         <input id="manualTagInput"
                name="manualTagInput"
                class="field-input"
-               placeholder="Add tag manually..."
+               placeholder="@T("addOffer.addTagPlaceholder")"
                @bind="_manualTag" />
-        <button class="btn-main" @onclick="AddManualTag">Add Tag</button>
+        <button class="btn-main" @onclick="AddManualTag">@T("addOffer.addTagButton")</button>
     </div>
 
     <div class="tag-list">
@@ -121,10 +142,25 @@
             </span>
         }
     </div>
+
+    @if (GetSuggestedTags().Count > 0)
+    {
+        <label class="field-label">@T("addOffer.suggestions")</label>
+        <div class="tag-list">
+            @foreach (var suggestion in GetSuggestedTags())
+            {
+                <span class="tag-pill tag-suggestion-pill">
+                    @suggestion
+                    <button class="tag-remove" @onclick="() => AcceptSuggestion(suggestion)">+</button>
+                    <button class="tag-remove" @onclick="() => DismissSuggestion(suggestion)">x</button>
+                </span>
+            }
+        </div>
+    }
 </section>
 
 <section class="card-block">
-    <button class="btn-main" @onclick="CreateOfferAsync" disabled="@_saving">Create Offer</button>
+    <button class="btn-main" @onclick="CreateOfferAsync" disabled="@_saving">@T("addOffer.create")</button>
     @if (!string.IsNullOrWhiteSpace(_status))
     {
         <p class="status-line">@_status</p>
@@ -132,7 +168,29 @@
 </section>
 
 @code {
-    private PickedImage? _image;
+    private const int MaxPhotos = 8;
+    private const double SuggestionThreshold = 0.72d;
+
+    private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, IReadOnlyList<string>>> SuggestionDictionary
+        = new Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<string>>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["en"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["coffee"] = ["cafe", "espresso", "latte"],
+                ["tea"] = ["chai", "infusion"],
+                ["bakery"] = ["bread", "pastry"],
+                ["discount"] = ["deal", "promo", "sale"]
+            },
+            ["es"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["cafe"] = ["coffee", "espresso"],
+                ["te"] = ["tea", "infusion"],
+                ["panaderia"] = ["bakery", "bread"],
+                ["descuento"] = ["discount", "deal", "promo"]
+            }
+        };
+
+    private readonly List<PickedImage> _images = [];
     private OfferLocationDto? _location;
     private string _description = string.Empty;
     private string _manualTag = string.Empty;
@@ -145,31 +203,91 @@
     private bool _isLocationConfirmed;
     private CancellationTokenSource? _locationSearchCts;
     private readonly List<string> _tags = [];
+    private readonly HashSet<string> _dismissedSuggestions = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<LocationSearchResultDto> _locationResults = [];
 
     protected override async Task OnInitializedAsync()
     {
+        if (!Session.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login", forceLoad: false);
+            return;
+        }
+
+        await Preferences.InitializeAsync(Session.CurrentSession?.UserId, CancellationToken.None);
         await TryAutoPopulateLocationAsync();
     }
 
     private async Task CaptureFromCameraAsync()
     {
-        _image = await MediaCapture.CapturePhotoAsync(CancellationToken.None);
-        _imageStatus = _image is null ? "Camera permission denied or capture cancelled." : "Photo attached.";
-        if (_image is not null)
+        if (_images.Count >= MaxPhotos)
         {
-            await TryAutoPopulateLocationAsync();
+            _imageStatus = string.Format(T("addOffer.maxPhotosReached"), MaxPhotos);
+            return;
         }
+
+        var captured = await MediaCapture.CapturePhotoAsync(CancellationToken.None);
+        if (captured is null)
+        {
+            _imageStatus = T("addOffer.cameraDenied");
+            return;
+        }
+
+        _images.Add(captured);
+        _imageStatus = T("addOffer.photoAttached");
+        await TryAutoPopulateLocationAsync();
     }
 
     private async Task UploadFromGalleryAsync()
     {
-        _image = await MediaCapture.PickPhotoAsync(CancellationToken.None);
-        _imageStatus = _image is null ? "Image upload cancelled." : "Image attached from gallery.";
-        if (_image is not null)
+        if (_images.Count >= MaxPhotos)
         {
-            await TryAutoPopulateLocationAsync();
+            _imageStatus = string.Format(T("addOffer.maxPhotosReached"), MaxPhotos);
+            return;
         }
+
+        var picked = await MediaCapture.PickPhotosAsync(CancellationToken.None);
+        if (picked.Count == 0)
+        {
+            _imageStatus = T("addOffer.imageUploadCancelled");
+            return;
+        }
+
+        foreach (var photo in picked)
+        {
+            if (_images.Count >= MaxPhotos)
+            {
+                break;
+            }
+
+            _images.Add(photo);
+        }
+
+        _imageStatus = T("addOffer.imagesAttachedFromGallery");
+        await TryAutoPopulateLocationAsync();
+    }
+
+    private void MoveImage(int index, int delta)
+    {
+        var target = index + delta;
+        if (index < 0 || index >= _images.Count || target < 0 || target >= _images.Count)
+        {
+            return;
+        }
+
+        (_images[index], _images[target]) = (_images[target], _images[index]);
+        _imageStatus = T("addOffer.photoOrderUpdated");
+    }
+
+    private void RemoveImage(int index)
+    {
+        if (index < 0 || index >= _images.Count)
+        {
+            return;
+        }
+
+        _images.RemoveAt(index);
+        _imageStatus = T("addOffer.photoRemoved");
     }
 
     private async Task TryAutoPopulateLocationAsync()
@@ -177,7 +295,7 @@
         var point = await DeviceLocation.TryGetCurrentLocationAsync(CancellationToken.None);
         if (point is null)
         {
-            _locationStatus = "Current location unavailable.";
+            _locationStatus = T("addOffer.currentLocationUnavailable");
             return;
         }
 
@@ -186,7 +304,7 @@
             var label = await ResolveAutoLocationLabelAsync(point);
             _location = new OfferLocationDto("auto", label, point);
             _locationQuery = label;
-            _locationStatus = "Current location auto-populated.";
+            _locationStatus = T("addOffer.currentLocationAuto");
         }
     }
 
@@ -194,19 +312,19 @@
     {
         if (_location is null)
         {
-            _locationStatus = "No location selected.";
+            _locationStatus = T("addOffer.noLocationSelected");
             return;
         }
 
         _location = _location with { Source = "manual-confirmed" };
         _isLocationConfirmed = true;
-        _locationStatus = "Location confirmed.";
+        _locationStatus = T("addOffer.locationConfirmed");
     }
 
     private void EditLocation()
     {
         _isLocationConfirmed = false;
-        _locationStatus = "Location edit enabled.";
+        _locationStatus = T("addOffer.locationEditEnabled");
     }
 
     private async Task OnLocationQueryInputAsync(ChangeEventArgs args)
@@ -252,17 +370,17 @@
             _locationResults.AddRange(results);
             if (_locationResults.Count == 0)
             {
-                _locationStatus = "No location results found.";
+                _locationStatus = T("addOffer.noLocationResults");
             }
         }
         catch (OperationCanceledException)
         {
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             if (!token.IsCancellationRequested)
             {
-                _locationStatus = $"Location search failed: {ex.Message}";
+                _locationStatus = T("addOffer.locationSearchFailed");
             }
         }
         finally
@@ -279,7 +397,7 @@
         _location = new OfferLocationDto("search", result.Label, result.Position);
         _locationQuery = result.Label;
         _isLocationConfirmed = false;
-        _locationStatus = "Location selected from suggestions.";
+        _locationStatus = T("addOffer.locationSelectedFromSuggestions");
         _locationResults.Clear();
     }
 
@@ -310,27 +428,81 @@
         _tags.Remove(tag);
     }
 
+    private void AcceptSuggestion(string suggestion)
+    {
+        AddTag(suggestion);
+        _dismissedSuggestions.Add(suggestion);
+    }
+
+    private void DismissSuggestion(string suggestion)
+    {
+        _dismissedSuggestions.Add(suggestion);
+    }
+
+    private IReadOnlyList<string> GetSuggestedTags()
+    {
+        var language = Preferences.Language;
+        if (!SuggestionDictionary.TryGetValue(language, out var dictionary))
+        {
+            dictionary = SuggestionDictionary["en"];
+        }
+
+        var baseTerms = _tags
+            .Concat(ExtractWords(_description).Select(NormalizeTag))
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var suggestions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var term in baseTerms)
+        {
+            foreach (var entry in dictionary)
+            {
+                var normalizedKey = NormalizeTag(entry.Key);
+                if (normalizedKey.Equals(term, StringComparison.OrdinalIgnoreCase) ||
+                    SimilarityRatio(normalizedKey, term) >= SuggestionThreshold)
+                {
+                    suggestions.Add(normalizedKey);
+                    foreach (var synonym in entry.Value)
+                    {
+                        suggestions.Add(NormalizeTag(synonym));
+                    }
+                }
+            }
+        }
+
+        return suggestions
+            .Where(x => !_tags.Contains(x, StringComparer.OrdinalIgnoreCase))
+            .Where(x => !_dismissedSuggestions.Contains(x))
+            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .Take(12)
+            .ToArray();
+    }
+
     private async Task CreateOfferAsync()
     {
         _saving = true;
         _status = string.Empty;
         try
         {
+            var orderedImages = _images
+                .Select((picked, index) => picked.Metadata with { Order = index })
+                .ToArray();
+
             var request = new AddOfferRequest(
                 _description.Trim(),
                 _tags.ToArray(),
-                _image?.Metadata,
-                _location,
-                _image?.DataUrl);
+                orderedImages,
+                _location);
 
             var created = await ApiClient.CreateOfferAsync(request, CancellationToken.None);
             if (created is null)
             {
-                _status = "Offer creation failed.";
+                _status = T("addOffer.createFailed");
                 return;
             }
 
-            _status = $"Offer created with ID {created.OfferId}.";
+            _status = string.Format(T("addOffer.createdWithId"), created.OfferId);
             Navigation.NavigateTo("/offers", forceLoad: false);
         }
         finally
@@ -352,10 +524,10 @@
             .Take(30)
             .ToArray();
 
-    private static string FormatLocation(OfferLocationDto? location) =>
+    private string FormatLocation(OfferLocationDto? location) =>
         location is null
-            ? "Unavailable"
-            : location.Label ?? "Current location";
+            ? T("addOffer.locationUnavailable")
+            : location.Label ?? T("addOffer.currentLocation");
 
     private string BuildLocationMapUrl()
     {
@@ -379,10 +551,58 @@
         }
         catch
         {
-            // Fallback label is used when reverse-geocoding is unavailable.
         }
 
-        return "Current location";
+        return T("addOffer.currentLocation");
+    }
+
+    private string T(string key) => Preferences.Translate(key);
+
+    private static double SimilarityRatio(string left, string right)
+    {
+        if (left.Length == 0 && right.Length == 0)
+        {
+            return 1d;
+        }
+
+        var maxLength = Math.Max(left.Length, right.Length);
+        if (maxLength == 0)
+        {
+            return 1d;
+        }
+
+        var distance = LevenshteinDistance(left, right);
+        return 1d - ((double)distance / maxLength);
+    }
+
+    private static int LevenshteinDistance(string source, string target)
+    {
+        var sourceLength = source.Length;
+        var targetLength = target.Length;
+        var matrix = new int[sourceLength + 1, targetLength + 1];
+
+        for (var i = 0; i <= sourceLength; i++)
+        {
+            matrix[i, 0] = i;
+        }
+
+        for (var j = 0; j <= targetLength; j++)
+        {
+            matrix[0, j] = j;
+        }
+
+        for (var i = 1; i <= sourceLength; i++)
+        {
+            for (var j = 1; j <= targetLength; j++)
+            {
+                var cost = source[i - 1] == target[j - 1] ? 0 : 1;
+                matrix[i, j] = Math.Min(
+                    Math.Min(matrix[i - 1, j] + 1, matrix[i, j - 1] + 1),
+                    matrix[i - 1, j - 1] + cost);
+            }
+        }
+
+        return matrix[sourceLength, targetLength];
     }
 
     public void Dispose()

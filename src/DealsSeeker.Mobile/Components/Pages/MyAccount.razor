@@ -1,35 +1,53 @@
 @page "/my-account"
 @inject IDealsSeekerApiClient ApiClient
 @inject IUserSessionService Session
+@inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
 
-<h1>My Account</h1>
+<h1>@T("account.title")</h1>
 
 @if (_loading)
 {
     <section class="card-block">
-        <p class="muted">Loading account...</p>
+        <p class="muted">@T("account.loading")</p>
     </section>
 }
 else
 {
     <section class="card-block">
-        <h2>Profile</h2>
+        <h2>@T("account.profile")</h2>
         @if (_profile is null)
         {
-            <p class="muted">No profile data available.</p>
+            <p class="muted">@T("account.noProfile")</p>
         }
         else
         {
-            <p><strong>Name:</strong> @_profile.DisplayName</p>
-            <p><strong>Email:</strong> @_profile.Email</p>
-            <p><strong>User ID:</strong> @_profile.UserId</p>
+            <p><strong>@T("account.name"):</strong> @_profile.DisplayName</p>
+            <p><strong>@T("account.email"):</strong> @_profile.Email</p>
+            <p><strong>@T("account.userId"):</strong> @_profile.UserId</p>
         }
 
         <div class="action-row">
-            <button class="btn-main" @onclick="RefreshProfileAsync" disabled="@_working">Refresh</button>
-            <button class="btn-main btn-danger" @onclick="LogoutAsync" disabled="@_working">Logout</button>
+            <button class="btn-main" @onclick="RefreshProfileAsync" disabled="@_working">@T("account.refresh")</button>
+            <button class="btn-main btn-danger" @onclick="LogoutAsync" disabled="@_working">@T("account.logout")</button>
         </div>
+    </section>
+
+    <section class="card-block">
+        <h2>@T("account.settings")</h2>
+
+        <label class="field-label" for="themeMode">@T("settings.theme")</label>
+        <select id="themeMode" class="field-input" value="@Preferences.ThemeMode" @onchange="OnThemeChangedAsync">
+            <option value="system">@T("settings.theme.system")</option>
+            <option value="light">@T("settings.theme.light")</option>
+            <option value="dark">@T("settings.theme.dark")</option>
+        </select>
+
+        <label class="field-label" for="languageMode">@T("settings.language")</label>
+        <select id="languageMode" class="field-input" value="@Preferences.Language" @onchange="OnLanguageChangedAsync">
+            <option value="en">@T("settings.language.en")</option>
+            <option value="es">@T("settings.language.es")</option>
+        </select>
     </section>
 }
 
@@ -62,6 +80,7 @@ else
             return;
         }
 
+        await Preferences.InitializeAsync(Session.CurrentSession?.UserId, CancellationToken.None);
         await RefreshProfileAsync();
     }
 
@@ -80,12 +99,12 @@ else
             await ApiClient.LogoutAsync(CancellationToken.None);
             await Session.ClearSessionAsync(CancellationToken.None);
             _profile = null;
-            _status = "Logged out.";
+            _status = T("account.loggedOut");
             Navigation.NavigateTo("/login", forceLoad: false);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _error = $"Logout failed: {ex.Message}";
+            _error = T("account.logoutFailed");
         }
         finally
         {
@@ -109,16 +128,32 @@ else
             if (_profile is null)
             {
                 await Session.ClearSessionAsync(CancellationToken.None);
-                _status = "Your session expired. Please login again.";
+                _status = T("account.sessionExpired");
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _error = $"Profile load failed: {ex.Message}";
+            _error = T("account.profileLoadFailed");
         }
         finally
         {
             _loading = false;
         }
     }
+
+    private async Task OnThemeChangedAsync(ChangeEventArgs args)
+    {
+        var nextTheme = args.Value?.ToString() ?? "system";
+        await Preferences.SetThemeModeAsync(nextTheme, Session.CurrentSession?.UserId, CancellationToken.None);
+        _status = T("settings.themeUpdated");
+    }
+
+    private async Task OnLanguageChangedAsync(ChangeEventArgs args)
+    {
+        var nextLanguage = args.Value?.ToString() ?? "en";
+        await Preferences.SetLanguageAsync(nextLanguage, Session.CurrentSession?.UserId, CancellationToken.None);
+        _status = T("settings.languageUpdated");
+    }
+
+    private string T(string key) => Preferences.Translate(key);
 }

@@ -6,7 +6,7 @@ Feature: Add Offer layout required controls
   Scenario: Add Offer view shows all mandatory controls
     Given the user navigates to Add Offer view
     When the view loads
-    Then an image placeholder with photo icon is visible
+    Then an image upload area with photo icon is visible
     And a description input field is visible
     And a tag list section is visible
     And location information is visible

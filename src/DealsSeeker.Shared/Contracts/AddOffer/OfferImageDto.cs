@@ -6,5 +6,6 @@ public sealed record OfferImageDto(
     long SizeBytes,
     int? Width,
     int? Height,
+    int Order,
     string? FileName,
     string? DataUrl);

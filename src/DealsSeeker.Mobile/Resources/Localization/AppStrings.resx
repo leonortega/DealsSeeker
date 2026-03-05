@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="account.email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="account.loading" xml:space="preserve">
+    <value>Loading account...</value>
+  </data>
+  <data name="account.loggedOut" xml:space="preserve">
+    <value>Logged out.</value>
+  </data>
+  <data name="account.logout" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="account.logoutFailed" xml:space="preserve">
+    <value>Logout failed.</value>
+  </data>
+  <data name="account.name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="account.noProfile" xml:space="preserve">
+    <value>No profile data available.</value>
+  </data>
+  <data name="account.profile" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="account.profileLoadFailed" xml:space="preserve">
+    <value>Profile load failed.</value>
+  </data>
+  <data name="account.refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="account.sessionExpired" xml:space="preserve">
+    <value>Your session expired. Please login again.</value>
+  </data>
+  <data name="account.settings" xml:space="preserve">
+    <value>App Settings</value>
+  </data>
+  <data name="account.title" xml:space="preserve">
+    <value>My Account</value>
+  </data>
+  <data name="account.userId" xml:space="preserve">
+    <value>User ID</value>
+  </data>
+  <data name="addOffer.addressSuggestionsAria" xml:space="preserve">
+    <value>Address suggestions</value>
+  </data>
+  <data name="addOffer.addTagButton" xml:space="preserve">
+    <value>Add Tag</value>
+  </data>
+  <data name="addOffer.addTagManually" xml:space="preserve">
+    <value>Add tag manually</value>
+  </data>
+  <data name="addOffer.addTagPlaceholder" xml:space="preserve">
+    <value>Add tag manually...</value>
+  </data>
+  <data name="addOffer.cameraDenied" xml:space="preserve">
+    <value>Camera permission denied or capture cancelled.</value>
+  </data>
+  <data name="addOffer.confirmLocation" xml:space="preserve">
+    <value>Confirm Location</value>
+  </data>
+  <data name="addOffer.create" xml:space="preserve">
+    <value>Create Offer</value>
+  </data>
+  <data name="addOffer.createdWithId" xml:space="preserve">
+    <value>Offer created with ID {0}.</value>
+  </data>
+  <data name="addOffer.createFailed" xml:space="preserve">
+    <value>Offer creation failed.</value>
+  </data>
+  <data name="addOffer.currentAddress" xml:space="preserve">
+    <value>Current address</value>
+  </data>
+  <data name="addOffer.currentLocation" xml:space="preserve">
+    <value>Current location</value>
+  </data>
+  <data name="addOffer.currentLocationAuto" xml:space="preserve">
+    <value>Current location auto-populated.</value>
+  </data>
+  <data name="addOffer.currentLocationUnavailable" xml:space="preserve">
+    <value>Current location unavailable.</value>
+  </data>
+  <data name="addOffer.description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="addOffer.editLocation" xml:space="preserve">
+    <value>Edit Location</value>
+  </data>
+  <data name="addOffer.images" xml:space="preserve">
+    <value>Photos</value>
+  </data>
+  <data name="addOffer.imagesAttachedFromGallery" xml:space="preserve">
+    <value>Image(s) attached from gallery.</value>
+  </data>
+  <data name="addOffer.imageUploadCancelled" xml:space="preserve">
+    <value>Image upload cancelled.</value>
+  </data>
+  <data name="addOffer.location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="addOffer.locationConfirmed" xml:space="preserve">
+    <value>Location confirmed.</value>
+  </data>
+  <data name="addOffer.locationEditEnabled" xml:space="preserve">
+    <value>Location edit enabled.</value>
+  </data>
+  <data name="addOffer.locationPreview" xml:space="preserve">
+    <value>Location Preview</value>
+  </data>
+  <data name="addOffer.locationSearchFailed" xml:space="preserve">
+    <value>Location search failed.</value>
+  </data>
+  <data name="addOffer.locationSelectedFromSuggestions" xml:space="preserve">
+    <value>Location selected from suggestions.</value>
+  </data>
+  <data name="addOffer.locationUnavailable" xml:space="preserve">
+    <value>Unavailable</value>
+  </data>
+  <data name="addOffer.maxPhotosReached" xml:space="preserve">
+    <value>Maximum of {0} photos reached.</value>
+  </data>
+  <data name="addOffer.noLocationResults" xml:space="preserve">
+    <value>No location results found.</value>
+  </data>
+  <data name="addOffer.noLocationSelected" xml:space="preserve">
+    <value>No location selected.</value>
+  </data>
+  <data name="addOffer.photoAlt" xml:space="preserve">
+    <value>Offer photo</value>
+  </data>
+  <data name="addOffer.photoAttached" xml:space="preserve">
+    <value>Photo attached.</value>
+  </data>
+  <data name="addOffer.photoOrderUpdated" xml:space="preserve">
+    <value>Photo order updated.</value>
+  </data>
+  <data name="addOffer.photoPlaceholder" xml:space="preserve">
+    <value>[ photo ]</value>
+  </data>
+  <data name="addOffer.photoRemoved" xml:space="preserve">
+    <value>Photo removed.</value>
+  </data>
+  <data name="addOffer.previewAlt" xml:space="preserve">
+    <value>Offer preview</value>
+  </data>
+  <data name="addOffer.remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="addOffer.searchAddressLabel" xml:space="preserve">
+    <value>Search business or address</value>
+  </data>
+  <data name="addOffer.searchAddressPlaceholder" xml:space="preserve">
+    <value>Type business or address (min 3 chars)...</value>
+  </data>
+  <data name="addOffer.searchingLocations" xml:space="preserve">
+    <value>Searching locations...</value>
+  </data>
+  <data name="addOffer.suggestions" xml:space="preserve">
+    <value>Suggested tags</value>
+  </data>
+  <data name="addOffer.tags" xml:space="preserve">
+    <value>Description and Tags</value>
+  </data>
+  <data name="addOffer.takePhoto" xml:space="preserve">
+    <value>Take Photo</value>
+  </data>
+  <data name="addOffer.tapToSetAddress" xml:space="preserve">
+    <value>Tap to set this address</value>
+  </data>
+  <data name="addOffer.tapWordToTag" xml:space="preserve">
+    <value>Tap any detected word to create a tag instantly.</value>
+  </data>
+  <data name="addOffer.title" xml:space="preserve">
+    <value>Add Offer</value>
+  </data>
+  <data name="addOffer.typeAtLeast3Chars" xml:space="preserve">
+    <value>Type at least 3 characters to see suggestions.</value>
+  </data>
+  <data name="addOffer.uploadPhotos" xml:space="preserve">
+    <value>Upload Photos</value>
+  </data>
+  <data name="auth.alreadyHaveAccount" xml:space="preserve">
+    <value>Already have an account?</value>
+  </data>
+  <data name="auth.createUserButton" xml:space="preserve">
+    <value>Create User</value>
+  </data>
+  <data name="auth.createUserFailedPrefix" xml:space="preserve">
+    <value>Create user failed.</value>
+  </data>
+  <data name="auth.createUserLink" xml:space="preserve">
+    <value>Create user</value>
+  </data>
+  <data name="auth.createUserRejected" xml:space="preserve">
+    <value>User registration failed.</value>
+  </data>
+  <data name="auth.createUserTitle" xml:space="preserve">
+    <value>Create User</value>
+  </data>
+  <data name="auth.email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="auth.invalidCredentials" xml:space="preserve">
+    <value>Invalid user or password.</value>
+  </data>
+  <data name="auth.loginButton" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="auth.loginFailedPrefix" xml:space="preserve">
+    <value>Login failed.</value>
+  </data>
+  <data name="auth.loginLink" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="auth.loginSuccess" xml:space="preserve">
+    <value>Login successful.</value>
+  </data>
+  <data name="auth.loginTitle" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="auth.name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="auth.nameRequired" xml:space="preserve">
+    <value>Name is required.</value>
+  </data>
+  <data name="auth.newUser" xml:space="preserve">
+    <value>New user?</value>
+  </data>
+  <data name="auth.password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="auth.passwordHint" xml:space="preserve">
+    <value>Password must have at least 8 chars, with letters and numbers.</value>
+  </data>
+  <data name="auth.passwordStrongRequired" xml:space="preserve">
+    <value>Password must have at least 8 chars, with letters and numbers.</value>
+  </data>
+  <data name="auth.userCreated" xml:space="preserve">
+    <value>User created.</value>
+  </data>
+  <data name="auth.userCreatedLoginFailed" xml:space="preserve">
+    <value>User created but login failed. Please login manually.</value>
+  </data>
+  <data name="auth.userEmail" xml:space="preserve">
+    <value>User (email)</value>
+  </data>
+  <data name="auth.validEmailRequired" xml:space="preserve">
+    <value>Please enter a valid email.</value>
+  </data>
+  <data name="common.unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="favorites.empty" xml:space="preserve">
+    <value>No favorites yet.</value>
+  </data>
+  <data name="favorites.loadFailed" xml:space="preserve">
+    <value>Failed to load favorites.</value>
+  </data>
+  <data name="favorites.removeFailed" xml:space="preserve">
+    <value>Failed to remove favorite.</value>
+  </data>
+  <data name="favorites.title" xml:space="preserve">
+    <value>My Favorites</value>
+  </data>
+  <data name="nav.addOffer" xml:space="preserve">
+    <value>Add new offer</value>
+  </data>
+  <data name="nav.changeLanguage" xml:space="preserve">
+    <value>Change Language</value>
+  </data>
+  <data name="nav.changeTheme" xml:space="preserve">
+    <value>Change Theme</value>
+  </data>
+  <data name="nav.closeMenu" xml:space="preserve">
+    <value>Close menu</value>
+  </data>
+  <data name="nav.closeNavigationMenu" xml:space="preserve">
+    <value>Close navigation menu</value>
+  </data>
+  <data name="nav.desc.addOffer" xml:space="preserve">
+    <value>Publish a new deal</value>
+  </data>
+  <data name="nav.desc.myAccount" xml:space="preserve">
+    <value>Profile and session</value>
+  </data>
+  <data name="nav.desc.myFavorites" xml:space="preserve">
+    <value>Saved offers</value>
+  </data>
+  <data name="nav.desc.offers" xml:space="preserve">
+    <value>Browse nearby deals</value>
+  </data>
+  <data name="nav.desc.reports" xml:space="preserve">
+    <value>Report an issue</value>
+  </data>
+  <data name="nav.desc.suggestions" xml:space="preserve">
+    <value>Send app ideas</value>
+  </data>
+  <data name="nav.mainNavigationMenu" xml:space="preserve">
+    <value>Main navigation menu</value>
+  </data>
+  <data name="nav.myAccount" xml:space="preserve">
+    <value>My Account</value>
+  </data>
+  <data name="nav.myFavorites" xml:space="preserve">
+    <value>My Favorites</value>
+  </data>
+  <data name="nav.offers" xml:space="preserve">
+    <value>Offers</value>
+  </data>
+  <data name="nav.openMenu" xml:space="preserve">
+    <value>Open menu</value>
+  </data>
+  <data name="nav.openNavigationMenu" xml:space="preserve">
+    <value>Open navigation menu</value>
+  </data>
+  <data name="nav.reports" xml:space="preserve">
+    <value>Reports</value>
+  </data>
+  <data name="nav.suggestions" xml:space="preserve">
+    <value>Suggestions</value>
+  </data>
+  <data name="offers.availableQuestion" xml:space="preserve">
+    <value>Available?</value>
+  </data>
+  <data name="offers.currentLocation" xml:space="preserve">
+    <value>Current location</value>
+  </data>
+  <data name="offers.details" xml:space="preserve">
+    <value>View details</value>
+  </data>
+  <data name="offers.directions" xml:space="preserve">
+    <value>Get Walking Directions</value>
+  </data>
+  <data name="offers.distance" xml:space="preserve">
+    <value>Distance</value>
+  </data>
+  <data name="offers.favoriteAdd" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="offers.favoriteRemove" xml:space="preserve">
+    <value>Saved</value>
+  </data>
+  <data name="offers.favoritesOnly" xml:space="preserve">
+    <value>Show favorites only</value>
+  </data>
+  <data name="offers.favoriteUpdated" xml:space="preserve">
+    <value>Favorite updated.</value>
+  </data>
+  <data name="offers.favoriteUpdateFailed" xml:space="preserve">
+    <value>Failed to update favorite.</value>
+  </data>
+  <data name="offers.feedbackRegistered" xml:space="preserve">
+    <value>Availability feedback registered.</value>
+  </data>
+  <data name="offers.fullscreenImageAlt" xml:space="preserve">
+    <value>Fullscreen offer image</value>
+  </data>
+  <data name="offers.imageAlt" xml:space="preserve">
+    <value>Offer image</value>
+  </data>
+  <data name="offers.loading" xml:space="preserve">
+    <value>Loading offers...</value>
+  </data>
+  <data name="offers.loginRequiredVote" xml:space="preserve">
+    <value>Login is required to vote offer availability.</value>
+  </data>
+  <data name="offers.nearbyMap" xml:space="preserve">
+    <value>Nearby Map</value>
+  </data>
+  <data name="offers.noResults" xml:space="preserve">
+    <value>No offers found.</value>
+  </data>
+  <data name="offers.promoted" xml:space="preserve">
+    <value>Promoted offers</value>
+  </data>
+  <data name="offers.provider" xml:space="preserve">
+    <value>Provider</value>
+  </data>
+  <data name="offers.radius" xml:space="preserve">
+    <value>Coverage radius</value>
+  </data>
+  <data name="offers.reportAction" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="offers.reportDraftOpened" xml:space="preserve">
+    <value>Reporting offer {0} at {1}.</value>
+  </data>
+  <data name="offers.reported" xml:space="preserve">
+    <value>Reported</value>
+  </data>
+  <data name="offers.results" xml:space="preserve">
+    <value>Offers feed</value>
+  </data>
+  <data name="offers.searchButton" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="offers.searchFailed" xml:space="preserve">
+    <value>Search failed.</value>
+  </data>
+  <data name="offers.searchLabel" xml:space="preserve">
+    <value>Smart search</value>
+  </data>
+  <data name="offers.searchPlaceholder" xml:space="preserve">
+    <value>Search offers...</value>
+  </data>
+  <data name="offers.thumbsDown" xml:space="preserve">
+    <value>Thumbs down</value>
+  </data>
+  <data name="offers.thumbsUp" xml:space="preserve">
+    <value>Thumbs up</value>
+  </data>
+  <data name="offers.title" xml:space="preserve">
+    <value>Offers</value>
+  </data>
+  <data name="offers.voteAlreadySubmitted" xml:space="preserve">
+    <value>You already submitted feedback for this offer.</value>
+  </data>
+  <data name="offers.voteFailed" xml:space="preserve">
+    <value>Failed to submit availability vote.</value>
+  </data>
+  <data name="offers.yourLocation" xml:space="preserve">
+    <value>Your location</value>
+  </data>
+  <data name="reports.dateUtc" xml:space="preserve">
+    <value>Date (UTC)</value>
+  </data>
+  <data name="reports.offerId" xml:space="preserve">
+    <value>Offer ID</value>
+  </data>
+  <data name="reports.offerPreview" xml:space="preserve">
+    <value>Offer Preview</value>
+  </data>
+  <data name="reports.reportText" xml:space="preserve">
+    <value>Report text</value>
+  </data>
+  <data name="reports.sendReport" xml:space="preserve">
+    <value>Send Report</value>
+  </data>
+  <data name="reports.submitFailed" xml:space="preserve">
+    <value>Failed to send report.</value>
+  </data>
+  <data name="reports.submitSuccess" xml:space="preserve">
+    <value>Report sent.</value>
+  </data>
+  <data name="reports.title" xml:space="preserve">
+    <value>Reports</value>
+  </data>
+  <data name="reports.userId" xml:space="preserve">
+    <value>User ID</value>
+  </data>
+  <data name="routes.pageNotFound" xml:space="preserve">
+    <value>Page not found</value>
+  </data>
+  <data name="routes.unexpectedError" xml:space="preserve">
+    <value>Unexpected error</value>
+  </data>
+  <data name="routes.unhandledUiException" xml:space="preserve">
+    <value>The app captured an unhandled UI exception. Check logs for details.</value>
+  </data>
+  <data name="settings.language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="settings.language.en" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="settings.language.es" xml:space="preserve">
+    <value>Spanish</value>
+  </data>
+  <data name="settings.languageUpdated" xml:space="preserve">
+    <value>Language updated.</value>
+  </data>
+  <data name="settings.theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="settings.theme.dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="settings.theme.light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="settings.theme.system" xml:space="preserve">
+    <value>Use system</value>
+  </data>
+  <data name="settings.themeUpdated" xml:space="preserve">
+    <value>Theme updated.</value>
+  </data>
+  <data name="suggestions.contactOptional" xml:space="preserve">
+    <value>Contact (optional)</value>
+  </data>
+  <data name="suggestions.send" xml:space="preserve">
+    <value>Send Suggestion</value>
+  </data>
+  <data name="suggestions.submitFailed" xml:space="preserve">
+    <value>Failed to send suggestion.</value>
+  </data>
+  <data name="suggestions.submitSuccess" xml:space="preserve">
+    <value>Suggestion sent.</value>
+  </data>
+  <data name="suggestions.suggestion" xml:space="preserve">
+    <value>Suggestion</value>
+  </data>
+  <data name="suggestions.title" xml:space="preserve">
+    <value>Suggestions</value>
+  </data>
+  <data name="offers.favorite" xml:space="preserve">
+    <value>Favorite</value>
+  </data>
+  <data name="offers.address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="offers.anyProblem" xml:space="preserve">
+    <value>Any problem?</value>
+  </data>
+</root>

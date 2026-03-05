@@ -23,6 +23,8 @@ public interface IDealsSeekerApiClient
 
     Task<CommandResult> ReportOfferAsync(string offerId, ReportOfferRequest request, CancellationToken cancellationToken);
 
+    Task<CommandResult> SetOfferFavoriteAsync(string offerId, SetFavoriteRequest request, CancellationToken cancellationToken);
+
     Task<OfferItemDto?> CreateOfferAsync(AddOfferRequest request, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<LocationSearchResultDto>> SearchLocationsAsync(string query, CancellationToken cancellationToken);

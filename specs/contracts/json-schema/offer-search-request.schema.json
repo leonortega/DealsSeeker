@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dealseeker.local/schemas/offer-search-request.schema.json",
   "title": "OfferSearchRequest",
-  "description": "Contract for tag-based search input. Spec IDs: OFFERS.SEARCH.001",
+  "description": "Contract for smart search input. Spec IDs: OFFERS.SEARCH.001, OFFERS.SEARCH.SMART.001, APP.LOCALIZATION.001",
   "type": "object",
   "required": [
     "query",
@@ -12,6 +12,11 @@
     "query": {
       "type": "string",
       "maxLength": 120
+    },
+    "locale": {
+      "type": "string",
+      "description": "Selected app language/locale used for multilingual dictionary resolution.",
+      "pattern": "^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{2,8})*$"
     },
     "userLocation": {
       "type": "object",
@@ -42,4 +47,3 @@
   },
   "additionalProperties": false
 }
-

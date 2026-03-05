@@ -141,7 +141,7 @@ api.MapPost("/offers/search", async (SearchOffersRequest request, HttpContext ht
         return Results.Ok(response);
     })
     .WithName("SearchOffers")
-    .WithSummary("OFFERS.SEARCH.001 + OFFERS.LIST.ACTIONS.001: Search offers by tags and include current-user vote state.");
+    .WithSummary("OFFERS.SEARCH.001 + OFFERS.SEARCH.SMART.001 + OFFERS.FAVORITES.001: Search offers with smart ranking and current-user state.");
 
 api.MapPost("/offers/{offerId}/availability", async (string offerId, OfferAvailabilityVoteRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
     {
@@ -176,6 +176,32 @@ api.MapPost("/offers/{offerId}/report", async (string offerId, ReportOfferReques
     })
     .WithName("ReportOffer")
     .WithSummary("OFFERS.LIST.ACTIONS.001: Report an offer.");
+
+api.MapPost("/offers/{offerId}/favorite", async (string offerId, SetFavoriteRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await offers.SetFavoriteAsync(offerId, profile.UserId, request, cancellationToken);
+        if (result.Success)
+        {
+            return Results.Ok(result);
+        }
+
+        return result.Message.StartsWith("Offer not found.", StringComparison.OrdinalIgnoreCase)
+            ? Results.NotFound(result)
+            : Results.BadRequest(result);
+    })
+    .WithName("SetFavorite")
+    .WithSummary("OFFERS.FAVORITES.001: Save or remove offer from user favorites.");
 
 api.MapPost("/offers", async (AddOfferRequest request, IOfferService offers, CancellationToken cancellationToken) =>
     {

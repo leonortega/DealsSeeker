@@ -96,3 +96,4 @@ Scenario: Coverage radius change refreshes map coverage and markers
 ## Related Specs
 - `OFFERS.SEARCH.001`
 - `APP.CONFIG.MAPS.001`
+- `OFFERS.DETAIL.ACTIONS.001`

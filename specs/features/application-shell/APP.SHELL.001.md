@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v1.3`
+- **Version**: `v1.5`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -25,6 +25,13 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R5`: The system shall persist authenticated session state on device so the user is not required to login again on every app launch.
 - `APP.SHELL.001-R6`: On app access with a persisted session, the system shall validate session activity; if the session is expired/invalid, the session shall be cleared and startup view shall be `Login`.
 - `APP.SHELL.001-R7`: After successful submission in `Suggestions` or `Reports` view (no errors), the system shall redirect to `Offers` view.
+- `APP.SHELL.001-R8`: The main navigation menu shall include quick controls to change app language and app theme.
+- `APP.SHELL.001-R9`: Menu-triggered language/theme changes shall apply instantly in the current view.
+- `APP.SHELL.001-R10`: On application startup, the system shall display a branded splash screen for approximately 2 seconds before showing the first interactive view.
+- `APP.SHELL.001-R11`: The splash screen shall include app identity visuals and a startup animation, then exit with a smooth transition.
+- `APP.SHELL.001-R12`: When any active view is waiting for required data (for example, location resolution or search execution), the system shall display a blocking animated loading state.
+- `APP.SHELL.001-R13`: While the blocking loading state is visible, user interaction with the underlying view shall be prevented.
+- `APP.SHELL.001-R14`: The blocking loading state shall be dismissed automatically when all pending required operations complete.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -55,6 +62,26 @@ Scenario: Suggestions and Reports success submissions redirect to Offers
   When the user submits the form
   And the submit response is successful with no errors
   Then the system shall redirect the user to Offers view
+
+Scenario: Menu includes quick language and theme controls
+  Given the authenticated user opens the main navigation menu
+  When the menu is rendered
+  Then language-change and theme-change controls shall be visible
+  And selecting either control shall apply the change immediately
+
+Scenario: Startup splash screen is shown before first interactive view
+  Given the application is installed and launchable
+  When the user opens the application
+  Then a branded splash screen shall be shown for about 2 seconds
+  And the splash screen shall animate in and out
+  And after splash exit the first view shall become interactive
+
+Scenario: Blocking loading state appears during required data waits
+  Given the user is on any view that is waiting for required data
+  When the data request is in progress
+  Then an animated loading overlay shall be visible
+  And interaction with the underlying view shall be blocked
+  And when the request completes the loading overlay shall be removed
 ```
 
 ## Example Inputs/Outputs
@@ -65,12 +92,18 @@ Scenario: Suggestions and Reports success submissions redirect to Offers
 
 ## Edge Cases
 - Persisted session token is invalid or expired at startup; first view shall be `Login`.
+- Multiple concurrent required requests shall keep the blocking loading state visible until all complete.
+- If a request fails, the blocking loading state shall still be dismissed and the error state shall remain interactive.
 
 ## Non-Functional Constraints
 - First visible shell and startup view should render without blocking on network responses.
+- Splash display duration target is ~2 seconds with smooth animation on supported devices.
+- Blocking loading animation should be lightweight and consistent across light/dark themes.
 
 ## Related Specs
 - `APP.CONFIG.MAPS.001`
+- `APP.LOCALIZATION.001`
+- `APP.THEME.001`
 - `OFFERS.LAYOUT.001`
 - `ACCOUNT.AUTH.LOGIN.001`
 - `ACCOUNT.AUTH.REGISTER.001`

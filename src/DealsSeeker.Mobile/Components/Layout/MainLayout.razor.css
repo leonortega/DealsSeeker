@@ -3,7 +3,8 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: #eef3e6;
+    background: var(--color-bg, #eef3e6);
+    color: var(--color-text, #1d271b);
 }
 
 main {
@@ -12,9 +13,9 @@ main {
 }
 
 .top-row {
-    background: #f3f7ec;
-    border-bottom: 1px solid #d8decf;
-    color: #1f2f19;
+    background: var(--color-surface-soft, #f3f7ec);
+    border-bottom: 1px solid var(--color-border, #d8decf);
+    color: var(--color-text, #1f2f19);
     height: 3.5rem;
     display: flex;
     align-items: center;
@@ -30,7 +31,128 @@ main {
     letter-spacing: 0.01em;
 }
 
+.app-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.app-brand-icon {
+    width: 1.45rem;
+    height: 1.45rem;
+}
+
 .content {
     padding-top: 1rem;
     padding-bottom: 1rem;
+}
+
+.startup-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(120% 80% at 50% 10%, rgba(106, 176, 131, 0.2), transparent 65%),
+        linear-gradient(160deg, var(--color-bg, #eef3e6), var(--color-surface-soft, #f3f7ec));
+    animation: splash-enter 420ms ease-out both;
+}
+
+.startup-splash-content {
+    text-align: center;
+    display: grid;
+    gap: 0.45rem;
+    justify-items: center;
+}
+
+.startup-splash-icon {
+    width: clamp(6.8rem, 24vw, 11rem);
+    height: clamp(6.8rem, 24vw, 11rem);
+    filter: drop-shadow(0 10px 26px rgba(18, 43, 29, 0.26));
+    animation: splash-icon-bob 1500ms ease-in-out infinite;
+}
+
+.startup-splash-title {
+    margin: 0;
+    font-size: clamp(1.6rem, 5vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: 0.015em;
+    color: var(--color-text, #1d271b);
+}
+
+.startup-splash-subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--color-muted, #576451);
+}
+
+.startup-splash.exit {
+    animation: splash-exit 420ms ease-in forwards;
+}
+
+.view-busy-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: grid;
+    place-items: center;
+    background: rgba(7, 12, 9, 0.42);
+    backdrop-filter: blur(1.8px);
+}
+
+.view-busy-spinner {
+    width: 3.1rem;
+    height: 3.1rem;
+    border-radius: 50%;
+    border: 4px solid rgba(235, 245, 238, 0.32);
+    border-top-color: #6ab083;
+    border-right-color: #6ab083;
+    animation: view-busy-spin 0.78s linear infinite;
+}
+
+@keyframes splash-enter {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes splash-icon-bob {
+    0% {
+        transform: translateY(0) scale(0.98);
+    }
+
+    50% {
+        transform: translateY(-6px) scale(1);
+    }
+
+    100% {
+        transform: translateY(0) scale(0.98);
+    }
+}
+
+@keyframes splash-exit {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(1.04);
+    }
+}
+
+@keyframes view-busy-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }

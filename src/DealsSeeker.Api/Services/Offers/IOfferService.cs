@@ -13,5 +13,7 @@ public interface IOfferService
 
     Task<CommandResult> ReportAsync(string offerId, ReportOfferRequest request, CancellationToken cancellationToken);
 
+    Task<CommandResult> SetFavoriteAsync(string offerId, string userId, SetFavoriteRequest request, CancellationToken cancellationToken);
+
     Task<OfferItemDto> AddAsync(AddOfferRequest request, CancellationToken cancellationToken);
 }

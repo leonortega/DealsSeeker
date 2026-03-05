@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer View Layout Composition
-- **Version**: `v1.4`
+- **Version**: `v1.5`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -17,7 +17,7 @@ Define required UI blocks for add-offer data entry.
 - Add Offer view renders.
 
 ## Requirements
-- `ADD.OFFER.LAYOUT.001-R1`: The system shall display an image placeholder with a photo icon.
+- `ADD.OFFER.LAYOUT.001-R1`: The system shall display an image upload area with a photo icon and preview support.
 - `ADD.OFFER.LAYOUT.001-R2`: The system shall display a description input field.
 - `ADD.OFFER.LAYOUT.001-R3`: The system shall display a tag list section.
 - `ADD.OFFER.LAYOUT.001-R4`: The system shall display location information.
@@ -31,7 +31,7 @@ Define required UI blocks for add-offer data entry.
 Scenario: Add Offer view displays required controls
   Given the user opens Add Offer view
   When the view loads
-  Then image placeholder, description, tag list, and location info shall be visible
+  Then image upload area, description, tag list, and location info shall be visible
   And a location search input with live suggestions shall be visible
   And a mini map location preview shall be visible
   And Confirm Location and Edit Location actions shall be visible below the mini map
@@ -48,7 +48,7 @@ Scenario: Successful add-offer submission redirects to Offers
 - Expected output: Full required layout blocks rendered.
 
 ## Edge Cases
-- No camera capability still shows placeholder and alternative upload path.
+- No camera capability still shows upload area and alternative gallery path.
 
 ## Non-Functional Constraints
 - Layout remains usable on mobile portrait screens.
@@ -57,3 +57,5 @@ Scenario: Successful add-offer submission redirects to Offers
 - `ADD.OFFER.IMAGE.001`
 - `ADD.OFFER.LOCATION.001`
 - `ADD.OFFER.DESCRIPTION.TAGS.001`
+- `ADD.OFFER.TAGS.SUGGESTIONS.001`
+- `OFFERS.PHOTOS.CAROUSEL.001`
