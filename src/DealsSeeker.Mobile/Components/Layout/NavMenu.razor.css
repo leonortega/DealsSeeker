@@ -87,6 +87,20 @@
     border-bottom: 1px solid var(--color-border, #d8e2d2);
 }
 
+.sheet-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-width: 0;
+}
+
+.sheet-brand-icon {
+    width: 1.55rem;
+    height: 1.55rem;
+    display: block;
+    flex: 0 0 auto;
+}
+
 .sheet-title {
     font-weight: 800;
     color: var(--color-text, #1f311b);

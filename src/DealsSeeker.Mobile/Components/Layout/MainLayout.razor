@@ -2,19 +2,10 @@
 @inject IUserSessionService Session
 @inject IAppPreferencesService Preferences
 @inject IViewBusyService Busy
+@inject IJSRuntime JS
 @implements IDisposable
 
 <div class="page @GetThemeClass()">
-    @if (_showStartupSplash)
-    {
-        <div class="startup-splash @(_splashExiting ? "exit" : string.Empty)" aria-hidden="true">
-            <div class="startup-splash-content">
-                <img src="/images/dealseeker-icon.svg" alt="" class="startup-splash-icon" />
-                <p class="startup-splash-title">DealsSeeker</p>
-                <p class="startup-splash-subtitle">Find nearby deals instantly</p>
-            </div>
-        </div>
-    }
     @if (Busy.IsBusy)
     {
         <div class="view-busy-overlay" role="status" aria-live="polite">
@@ -39,9 +30,6 @@
 
 @code {
     private string _bodyRenderKey = "en";
-    private readonly CancellationTokenSource _splashCts = new();
-    private bool _showStartupSplash = true;
-    private bool _splashExiting;
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,14 +39,12 @@
         _bodyRenderKey = BuildBodyRenderKey();
     }
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            _ = RunStartupSplashAsync(_splashCts.Token);
+            await JS.InvokeVoidAsync("DealsSeekerStartup.complete");
         }
-
-        return Task.CompletedTask;
     }
 
     private void OnPreferencesChanged()
@@ -81,28 +67,9 @@
 
     public void Dispose()
     {
-        _splashCts.Cancel();
-        _splashCts.Dispose();
         Preferences.Changed -= OnPreferencesChanged;
         Busy.Changed -= OnBusyChanged;
     }
 
     private string BuildBodyRenderKey() => Preferences.Language;
-
-    private async Task RunStartupSplashAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            await Task.Delay(2000, cancellationToken);
-            _splashExiting = true;
-            await InvokeAsync(StateHasChanged);
-
-            await Task.Delay(450, cancellationToken);
-            _showStartupSplash = false;
-            await InvokeAsync(StateHasChanged);
-        }
-        catch (OperationCanceledException)
-        {
-        }
-    }
 }
