@@ -12,38 +12,51 @@
 
 <section class="card-block">
     <h2>@T("addOffer.images")</h2>
-    <button class="image-placeholder" @onclick="CaptureFromCameraAsync">
+    <div class="photo-preview-shell">
         @if (_images.Count == 0)
         {
-            <span class="photo-icon">@T("addOffer.photoPlaceholder")</span>
+            <div class="image-placeholder photo-preview-empty">
+                <span class="photo-icon">@T("addOffer.photoPlaceholder")</span>
+            </div>
         }
         else
         {
-            <img src="@_images[0].DataUrl" alt="@T("addOffer.previewAlt")" class="offer-image" />
+            var currentImage = CurrentImage();
+            <div class="photo-preview-stage">
+                @if (_images.Count > 1)
+                {
+                    <button class="photo-preview-nav photo-preview-nav-prev"
+                            @onclick="ShowPreviousImage"
+                            aria-label="@T("addOffer.previousPhoto")">
+                        &#8592;
+                    </button>
+                }
+                <img src="@currentImage.DataUrl"
+                     alt="@($"{T("addOffer.previewAlt")} {CurrentImageNumber()}")"
+                     class="photo-preview-image" />
+                @if (_images.Count > 1)
+                {
+                    <button class="photo-preview-nav photo-preview-nav-next"
+                            @onclick="ShowNextImage"
+                            aria-label="@T("addOffer.nextPhoto")">
+                        &#8594;
+                    </button>
+                }
+                <span class="photo-preview-count">@CurrentImageNumber() / @_images.Count</span>
+            </div>
         }
-    </button>
-    <div class="action-row">
-        <button class="btn-main" @onclick="CaptureFromCameraAsync">@T("addOffer.takePhoto")</button>
-        <button class="btn-main" @onclick="UploadFromGalleryAsync">@T("addOffer.uploadPhotos")</button>
     </div>
 
-    @if (_images.Count > 0)
-    {
-        <div class="photo-strip">
-            @for (var i = 0; i < _images.Count; i++)
-            {
-                var current = _images[i];
-                <div class="photo-thumb-card">
-                    <img src="@current.DataUrl" class="photo-thumb" alt="@($"{T("addOffer.photoAlt")} {i + 1}")" />
-                    <div class="photo-thumb-actions">
-                        <button class="btn-main" @onclick="() => MoveImage(i, -1)" disabled="@(i == 0)">&#8592;</button>
-                        <button class="btn-main" @onclick="() => MoveImage(i, 1)" disabled="@(i == _images.Count - 1)">&#8594;</button>
-                        <button class="btn-main btn-danger" @onclick="() => RemoveImage(i)">@T("addOffer.remove")</button>
-                    </div>
-                </div>
-            }
-        </div>
-    }
+    <div class="action-row photo-action-bar">
+        <button class="btn-main" @onclick="CaptureFromCameraAsync">@T("addOffer.takePhoto")</button>
+        <button class="btn-main" @onclick="UploadFromGalleryAsync">@T("addOffer.uploadPhotos")</button>
+        @if (_images.Count > 0)
+        {
+            <button class="btn-main btn-icon" @onclick="() => MoveCurrentImage(-1)" disabled="@(!CanMoveCurrentImage(-1))">&#8678;</button>
+            <button class="btn-main btn-icon" @onclick="() => MoveCurrentImage(1)" disabled="@(!CanMoveCurrentImage(1))">&#8680;</button>
+            <button class="btn-main btn-danger" @onclick="RemoveCurrentImage">@T("addOffer.remove")</button>
+        }
+    </div>
 
     @if (!string.IsNullOrWhiteSpace(_imageStatus))
     {
@@ -205,6 +218,7 @@
     private readonly List<string> _tags = [];
     private readonly HashSet<string> _dismissedSuggestions = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<LocationSearchResultDto> _locationResults = [];
+    private int _selectedImageIndex;
 
     protected override async Task OnInitializedAsync()
     {
@@ -234,6 +248,7 @@
         }
 
         _images.Add(captured);
+        _selectedImageIndex = _images.Count - 1;
         _imageStatus = T("addOffer.photoAttached");
         await TryAutoPopulateLocationAsync();
     }
@@ -253,6 +268,7 @@
             return;
         }
 
+        var firstNewIndex = _images.Count;
         foreach (var photo in picked)
         {
             if (_images.Count >= MaxPhotos)
@@ -261,6 +277,11 @@
             }
 
             _images.Add(photo);
+        }
+
+        if (_images.Count > firstNewIndex)
+        {
+            _selectedImageIndex = firstNewIndex;
         }
 
         _imageStatus = T("addOffer.imagesAttachedFromGallery");
@@ -276,6 +297,14 @@
         }
 
         (_images[index], _images[target]) = (_images[target], _images[index]);
+        if (_selectedImageIndex == index)
+        {
+            _selectedImageIndex = target;
+        }
+        else if (_selectedImageIndex == target)
+        {
+            _selectedImageIndex = index;
+        }
         _imageStatus = T("addOffer.photoOrderUpdated");
     }
 
@@ -287,7 +316,58 @@
         }
 
         _images.RemoveAt(index);
+        ClampSelectedImageIndex();
         _imageStatus = T("addOffer.photoRemoved");
+    }
+
+    private PickedImage CurrentImage() => _images[Math.Clamp(_selectedImageIndex, 0, _images.Count - 1)];
+
+    private int CurrentImageNumber() => Math.Clamp(_selectedImageIndex, 0, Math.Max(0, _images.Count - 1)) + 1;
+
+    private void ShowPreviousImage()
+    {
+        if (_images.Count <= 1)
+        {
+            return;
+        }
+
+        _selectedImageIndex = (_selectedImageIndex - 1 + _images.Count) % _images.Count;
+    }
+
+    private void ShowNextImage()
+    {
+        if (_images.Count <= 1)
+        {
+            return;
+        }
+
+        _selectedImageIndex = (_selectedImageIndex + 1) % _images.Count;
+    }
+
+    private void MoveCurrentImage(int delta) => MoveImage(_selectedImageIndex, delta);
+
+    private bool CanMoveCurrentImage(int delta)
+    {
+        if (_images.Count == 0)
+        {
+            return false;
+        }
+
+        var target = _selectedImageIndex + delta;
+        return target >= 0 && target < _images.Count;
+    }
+
+    private void RemoveCurrentImage() => RemoveImage(_selectedImageIndex);
+
+    private void ClampSelectedImageIndex()
+    {
+        if (_images.Count == 0)
+        {
+            _selectedImageIndex = 0;
+            return;
+        }
+
+        _selectedImageIndex = Math.Clamp(_selectedImageIndex, 0, _images.Count - 1);
     }
 
     private async Task TryAutoPopulateLocationAsync()

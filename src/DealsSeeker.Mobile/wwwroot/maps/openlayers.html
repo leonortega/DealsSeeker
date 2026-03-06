@@ -107,19 +107,38 @@
             })
         });
 
-        new ol.Map({
+        var map = new ol.Map({
             target: "map",
+            loadTilesWhileAnimating: false,
+            loadTilesWhileInteracting: false,
             layers: [
                 new ol.layer.Tile({
-                    source: new ol.source.OSM()
+                    source: new ol.source.OSM({
+                        transition: 0
+                    })
                 }),
                 vectorLayer
             ],
             view: new ol.View({
                 center: ol.proj.fromLonLat([lng, lat]),
-                zoom: Math.max(2, Math.min(18, zoom))
+                zoom: Math.max(2, Math.min(18, zoom)),
+                enableRotation: false
             })
         });
+
+        var controls = map.getControls && map.getControls();
+        if (controls && typeof controls.clear === "function") {
+            controls.clear();
+        }
+
+        var interactions = map.getInteractions && map.getInteractions();
+        if (interactions && typeof interactions.forEach === "function") {
+            interactions.forEach(function (interaction) {
+                if (interaction && typeof interaction.setActive === "function") {
+                    interaction.setActive(false);
+                }
+            });
+        }
     }
 </script>
 </body>

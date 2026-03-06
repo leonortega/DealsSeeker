@@ -575,33 +575,74 @@ h2 {
     font-weight: 600;
 }
 
-.photo-strip {
-    margin-top: 0.6rem;
-    display: grid;
-    gap: 0.45rem;
+.photo-preview-shell {
+    margin-top: 0.35rem;
 }
 
-.photo-thumb-card {
-    display: grid;
-    grid-template-columns: 72px 1fr;
-    gap: 0.5rem;
-    align-items: center;
+.photo-preview-stage {
+    position: relative;
+    width: 100%;
+    min-height: 260px;
     border: 1px solid var(--color-border);
-    border-radius: 10px;
-    padding: 0.35rem;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--color-surface-soft);
 }
 
-.photo-thumb {
-    width: 72px;
-    height: 72px;
-    border-radius: 8px;
-    object-fit: cover;
+.photo-preview-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.6rem;
+    height: 2.6rem;
+    border: none;
+    border-radius: 999px;
+    background: rgba(20, 34, 24, 0.7);
+    color: #f7fbf4;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    z-index: 1;
 }
 
-.photo-thumb-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
+.photo-preview-nav-prev {
+    left: 0.7rem;
+}
+
+.photo-preview-nav-next {
+    right: 0.7rem;
+}
+
+.photo-preview-empty {
+    min-height: 260px;
+    display: grid;
+    place-items: center;
+}
+
+.photo-preview-image {
+    width: 100%;
+    min-height: 260px;
+    max-height: 420px;
+    object-fit: contain;
+    display: block;
+    background: var(--color-surface-soft);
+}
+
+.photo-preview-count {
+    position: absolute;
+    right: 0.65rem;
+    bottom: 0.65rem;
+    border-radius: 999px;
+    background: rgba(16, 26, 19, 0.72);
+    color: #f7fbf4;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.photo-action-bar {
+    margin-top: 0.7rem;
 }
 
 .modal-backdrop {

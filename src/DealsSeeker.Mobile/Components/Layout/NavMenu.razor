@@ -29,7 +29,9 @@
                 <img src="/images/dealseeker-icon.svg" alt="" class="sheet-brand-icon" />
                 <span class="sheet-title">DealsSeeker</span>
             </div>
-            <button class="sheet-close" aria-label="@T("nav.closeMenu")" @onclick="CloseMenu">x</button>
+            <button class="sheet-close" aria-label="@T("nav.closeMenu")" @onclick="CloseMenu">
+                <img src="/images/menu/close.svg" alt="" class="sheet-close-icon" />
+            </button>
         </div>
 
         <div class="menu-main">
@@ -38,54 +40,68 @@
                     <span class="menu-option-icon" aria-hidden="true">
                         <img class="menu-option-icon-image" src="/images/menu/offers.svg" alt="" />
                     </span>
-                    <span class="menu-option-title">@T("nav.offers")</span>
-                    <span class="menu-option-desc">@T("nav.desc.offers")</span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.offers")</span>
+                        <span class="menu-option-desc">@T("nav.desc.offers")</span>
+                    </span>
                 </NavLink>
 
                 <NavLink class="menu-option" href="/add-offer" @onclick="CloseMenu">
                     <span class="menu-option-icon" aria-hidden="true">
                         <img class="menu-option-icon-image" src="/images/menu/add-offer.svg" alt="" />
                     </span>
-                    <span class="menu-option-title">@T("nav.addOffer")</span>
-                    <span class="menu-option-desc">@T("nav.desc.addOffer")</span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.addOffer")</span>
+                        <span class="menu-option-desc">@T("nav.desc.addOffer")</span>
+                    </span>
                 </NavLink>
 
                 <NavLink class="menu-option" href="/my-favorites" @onclick="CloseMenu">
                     <span class="menu-option-icon" aria-hidden="true">
-                        <span class="menu-option-icon-text">&#9733;</span>
+                        <img class="menu-option-icon-image" src="/images/menu/favorites.svg" alt="" />
                     </span>
-                    <span class="menu-option-title">@T("nav.myFavorites")</span>
-                    <span class="menu-option-desc">@T("nav.desc.myFavorites")</span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.myFavorites")</span>
+                        <span class="menu-option-desc">@T("nav.desc.myFavorites")</span>
+                    </span>
                 </NavLink>
 
                 <NavLink class="menu-option" href="/my-account" @onclick="CloseMenu">
                     <span class="menu-option-icon" aria-hidden="true">
                         <img class="menu-option-icon-image" src="/images/menu/my-account.svg" alt="" />
                     </span>
-                    <span class="menu-option-title">@T("nav.myAccount")</span>
-                    <span class="menu-option-desc">@T("nav.desc.myAccount")</span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.myAccount")</span>
+                        <span class="menu-option-desc">@T("nav.desc.myAccount")</span>
+                    </span>
                 </NavLink>
 
                 <NavLink class="menu-option" href="/suggestions" @onclick="CloseMenu">
                     <span class="menu-option-icon" aria-hidden="true">
                         <img class="menu-option-icon-image" src="/images/menu/suggestions.svg" alt="" />
                     </span>
-                    <span class="menu-option-title">@T("nav.suggestions")</span>
-                    <span class="menu-option-desc">@T("nav.desc.suggestions")</span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.suggestions")</span>
+                        <span class="menu-option-desc">@T("nav.desc.suggestions")</span>
+                    </span>
                 </NavLink>
 
                 <NavLink class="menu-option" href="/reports" @onclick="CloseMenu">
                     <span class="menu-option-icon" aria-hidden="true">
                         <img class="menu-option-icon-image" src="/images/menu/reports.svg" alt="" />
                     </span>
-                    <span class="menu-option-title">@T("nav.reports")</span>
-                    <span class="menu-option-desc">@T("nav.desc.reports")</span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.reports")</span>
+                        <span class="menu-option-desc">@T("nav.desc.reports")</span>
+                    </span>
                 </NavLink>
 
                 <div class="menu-option-control language-picker">
                     <button class="menu-control-button language-trigger" @onclick="ToggleLanguageList">
-                        <span class="menu-option-icon language-trigger-icon" aria-hidden="true">&#127760;</span>
-                        <span class="menu-option-control-body">
+                        <span class="menu-option-icon" aria-hidden="true">
+                            <img class="menu-option-icon-image" src="/images/menu/language.svg" alt="" />
+                        </span>
+                        <span class="menu-option-body">
                             <span class="menu-option-title">@T("nav.changeLanguage")</span>
                             <span class="menu-option-desc">@CurrentLanguageListLabel()</span>
                         </span>
@@ -110,11 +126,9 @@
                             @onclick="ToggleThemeBinaryAsync"
                             aria-label="@T("nav.changeTheme")">
                         <span class="menu-option-icon" aria-hidden="true">
-                            <span class="theme-switch">
-                                <span class="theme-switch-knob"></span>
-                            </span>
+                            <img class="menu-option-icon-image" src="@ThemeIconPath()" alt="" />
                         </span>
-                        <span class="menu-option-control-body">
+                        <span class="menu-option-body">
                             <span class="menu-option-title">@T("settings.theme")</span>
                             <span class="menu-option-desc">@CurrentThemeBinaryLabel()</span>
                         </span>
@@ -187,6 +201,10 @@
     private string CurrentThemeBinaryLabel() => IsDarkThemeActive()
         ? T("settings.theme.dark")
         : T("settings.theme.light");
+
+    private string ThemeIconPath() => IsDarkThemeActive()
+        ? "/images/menu/theme-dark.svg"
+        : "/images/menu/theme-light.svg";
 
     private bool IsDarkThemeActive()
     {
