@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer View Layout Composition
-- **Version**: `v1.5`
+- **Version**: `v1.6`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -19,7 +19,7 @@ Define required UI blocks for add-offer data entry.
 ## Requirements
 - `ADD.OFFER.LAYOUT.001-R1`: The system shall display an image upload area with a photo icon and preview support.
 - `ADD.OFFER.LAYOUT.001-R2`: The system shall display a description input field.
-- `ADD.OFFER.LAYOUT.001-R3`: The system shall display a tag list section.
+- `ADD.OFFER.LAYOUT.001-R3`: The system shall display a tag management section with the current tag list and a suggested tags subsection.
 - `ADD.OFFER.LAYOUT.001-R4`: The system shall display location information.
 - `ADD.OFFER.LAYOUT.001-R5`: The system shall display `Confirm Location` action and a location search input with live suggestions.
 - `ADD.OFFER.LAYOUT.001-R6`: The system shall display a mini map location preview in Add Offer view.
@@ -31,7 +31,7 @@ Define required UI blocks for add-offer data entry.
 Scenario: Add Offer view displays required controls
   Given the user opens Add Offer view
   When the view loads
-  Then image upload area, description, tag list, and location info shall be visible
+  Then image upload area, description, current tag list, suggested tags section, and location info shall be visible
   And a location search input with live suggestions shall be visible
   And a mini map location preview shall be visible
   And Confirm Location and Edit Location actions shall be visible below the mini map

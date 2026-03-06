@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dealseeker.local/schemas/add-offer-draft.schema.json",
   "title": "AddOfferDraft",
-  "description": "Draft state for Add Offer view. Spec IDs: ADD.OFFER.LAYOUT.001, ADD.OFFER.IMAGE.001, ADD.OFFER.LOCATION.001, ADD.OFFER.DESCRIPTION.TAGS.001, OFFERS.PHOTOS.CAROUSEL.001, OFFERS.IMAGE.RENDERING.001",
+  "description": "Draft state for Add Offer view. Spec IDs: ADD.OFFER.LAYOUT.001, ADD.OFFER.IMAGE.001, ADD.OFFER.LOCATION.001, ADD.OFFER.DESCRIPTION.TAGS.001, ADD.OFFER.TAGS.SUGGESTIONS.001, OFFERS.PHOTOS.CAROUSEL.001, OFFERS.IMAGE.RENDERING.001",
   "type": "object",
   "required": [
     "description",

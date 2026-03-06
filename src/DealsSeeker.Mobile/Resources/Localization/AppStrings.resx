@@ -96,6 +96,9 @@
   <data name="addOffer.description" xml:space="preserve">
     <value>Description</value>
   </data>
+  <data name="addOffer.detectedWords" xml:space="preserve">
+    <value>Detected words</value>
+  </data>
   <data name="addOffer.editLocation" xml:space="preserve">
     <value>Edit Location</value>
   </data>
@@ -138,11 +141,26 @@
   <data name="addOffer.noLocationSelected" xml:space="preserve">
     <value>No location selected.</value>
   </data>
+  <data name="addOffer.noDetectedWords" xml:space="preserve">
+    <value>Type in the description to generate words here.</value>
+  </data>
+  <data name="addOffer.noSelectedTags" xml:space="preserve">
+    <value>No tags selected yet.</value>
+  </data>
+  <data name="addOffer.noSuggestedTags" xml:space="preserve">
+    <value>No related suggestions for the selected tags.</value>
+  </data>
   <data name="addOffer.photoAlt" xml:space="preserve">
     <value>Offer photo</value>
   </data>
   <data name="addOffer.photoAttached" xml:space="preserve">
     <value>Photo attached.</value>
+  </data>
+  <data name="addOffer.movePhotoEarlier" xml:space="preserve">
+    <value>Move Earlier</value>
+  </data>
+  <data name="addOffer.movePhotoLater" xml:space="preserve">
+    <value>Move Later</value>
   </data>
   <data name="addOffer.photoOrderUpdated" xml:space="preserve">
     <value>Photo order updated.</value>
@@ -168,8 +186,17 @@
   <data name="addOffer.searchingLocations" xml:space="preserve">
     <value>Searching locations...</value>
   </data>
+  <data name="addOffer.selectedTags" xml:space="preserve">
+    <value>Selected tags</value>
+  </data>
   <data name="addOffer.suggestions" xml:space="preserve">
     <value>Suggested tags</value>
+  </data>
+  <data name="addOffer.suggestedTagsHelp" xml:space="preserve">
+    <value>Tap a related tag to add a synonym, singular, plural, or similar variation.</value>
+  </data>
+  <data name="addOffer.selectTagForSuggestions" xml:space="preserve">
+    <value>Select a tag first to see related suggestions.</value>
   </data>
   <data name="addOffer.tags" xml:space="preserve">
     <value>Description and Tags</value>

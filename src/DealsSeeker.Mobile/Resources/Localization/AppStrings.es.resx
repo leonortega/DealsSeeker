@@ -96,6 +96,9 @@
   <data name="addOffer.description" xml:space="preserve">
     <value>Descripción</value>
   </data>
+  <data name="addOffer.detectedWords" xml:space="preserve">
+    <value>Palabras detectadas</value>
+  </data>
   <data name="addOffer.editLocation" xml:space="preserve">
     <value>Editar ubicación</value>
   </data>
@@ -138,11 +141,26 @@
   <data name="addOffer.noLocationSelected" xml:space="preserve">
     <value>No hay ubicación seleccionada.</value>
   </data>
+  <data name="addOffer.noDetectedWords" xml:space="preserve">
+    <value>Escribe en la descripción para generar palabras aquí.</value>
+  </data>
+  <data name="addOffer.noSelectedTags" xml:space="preserve">
+    <value>Todavía no hay etiquetas seleccionadas.</value>
+  </data>
+  <data name="addOffer.noSuggestedTags" xml:space="preserve">
+    <value>No hay sugerencias relacionadas para las etiquetas seleccionadas.</value>
+  </data>
   <data name="addOffer.photoAlt" xml:space="preserve">
     <value>Foto de oferta</value>
   </data>
   <data name="addOffer.photoAttached" xml:space="preserve">
     <value>Foto adjuntada.</value>
+  </data>
+  <data name="addOffer.movePhotoEarlier" xml:space="preserve">
+    <value>Mover antes</value>
+  </data>
+  <data name="addOffer.movePhotoLater" xml:space="preserve">
+    <value>Mover después</value>
   </data>
   <data name="addOffer.photoOrderUpdated" xml:space="preserve">
     <value>Orden de fotos actualizado.</value>
@@ -168,8 +186,17 @@
   <data name="addOffer.searchingLocations" xml:space="preserve">
     <value>Buscando ubicaciones...</value>
   </data>
+  <data name="addOffer.selectedTags" xml:space="preserve">
+    <value>Etiquetas seleccionadas</value>
+  </data>
   <data name="addOffer.suggestions" xml:space="preserve">
     <value>Etiquetas sugeridas</value>
+  </data>
+  <data name="addOffer.suggestedTagsHelp" xml:space="preserve">
+    <value>Toca una etiqueta relacionada para agregar un sinónimo, singular, plural o variación similar.</value>
+  </data>
+  <data name="addOffer.selectTagForSuggestions" xml:space="preserve">
+    <value>Selecciona primero una etiqueta para ver sugerencias relacionadas.</value>
   </data>
   <data name="addOffer.tags" xml:space="preserve">
     <value>Descripción y etiquetas</value>

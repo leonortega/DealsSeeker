@@ -28,7 +28,7 @@
                     <button class="photo-preview-nav photo-preview-nav-prev"
                             @onclick="ShowPreviousImage"
                             aria-label="@T("addOffer.previousPhoto")">
-                        &#8592;
+                        <span class="photo-preview-nav-arrow" aria-hidden="true">&#8592;</span>
                     </button>
                 }
                 <img src="@currentImage.DataUrl"
@@ -39,7 +39,7 @@
                     <button class="photo-preview-nav photo-preview-nav-next"
                             @onclick="ShowNextImage"
                             aria-label="@T("addOffer.nextPhoto")">
-                        &#8594;
+                        <span class="photo-preview-nav-arrow" aria-hidden="true">&#8594;</span>
                     </button>
                 }
                 <span class="photo-preview-count">@CurrentImageNumber() / @_images.Count</span>
@@ -52,8 +52,20 @@
         <button class="btn-main" @onclick="UploadFromGalleryAsync">@T("addOffer.uploadPhotos")</button>
         @if (_images.Count > 0)
         {
-            <button class="btn-main btn-icon" @onclick="() => MoveCurrentImage(-1)" disabled="@(!CanMoveCurrentImage(-1))">&#8678;</button>
-            <button class="btn-main btn-icon" @onclick="() => MoveCurrentImage(1)" disabled="@(!CanMoveCurrentImage(1))">&#8680;</button>
+            <button class="btn-main btn-order"
+                    @onclick="() => MoveCurrentImage(-1)"
+                    disabled="@(!CanMoveCurrentImage(-1))"
+                    aria-label="@T("addOffer.movePhotoEarlier")">
+                <span class="btn-order-icon" aria-hidden="true">&#8678;</span>
+                <span>@T("addOffer.movePhotoEarlier")</span>
+            </button>
+            <button class="btn-main btn-order"
+                    @onclick="() => MoveCurrentImage(1)"
+                    disabled="@(!CanMoveCurrentImage(1))"
+                    aria-label="@T("addOffer.movePhotoLater")">
+                <span class="btn-order-icon" aria-hidden="true">&#8680;</span>
+                <span>@T("addOffer.movePhotoLater")</span>
+            </button>
             <button class="btn-main btn-danger" @onclick="RemoveCurrentImage">@T("addOffer.remove")</button>
         }
     </div>
@@ -123,53 +135,78 @@
               name="descriptionInput"
               class="field-input"
               rows="4"
-              @bind="_description"
-              @bind:event="oninput"></textarea>
+              value="@_description"
+              @oninput="OnDescriptionInput"></textarea>
 
-    <p class="muted">@T("addOffer.tapWordToTag")</p>
-    <div class="word-list">
-        @foreach (var word in ExtractWords(_description))
-        {
-            <button class="word-chip" @onclick="() => AddTag(word)">
-                @word
-            </button>
-        }
-    </div>
-
-    <label class="field-label" for="manualTagInput">@T("addOffer.addTagManually")</label>
-    <div class="search-row">
-        <input id="manualTagInput"
-               name="manualTagInput"
-               class="field-input"
-               placeholder="@T("addOffer.addTagPlaceholder")"
-               @bind="_manualTag" />
-        <button class="btn-main" @onclick="AddManualTag">@T("addOffer.addTagButton")</button>
-    </div>
-
-    <div class="tag-list">
-        @foreach (var tag in _tags)
-        {
-            <span class="tag-pill">
-                @tag
-                <button class="tag-remove" @onclick="() => RemoveTag(tag)">x</button>
-            </span>
-        }
-    </div>
-
-    @if (GetSuggestedTags().Count > 0)
-    {
-        <label class="field-label">@T("addOffer.suggestions")</label>
-        <div class="tag-list">
-            @foreach (var suggestion in GetSuggestedTags())
-            {
-                <span class="tag-pill tag-suggestion-pill">
-                    @suggestion
-                    <button class="tag-remove" @onclick="() => AcceptSuggestion(suggestion)">+</button>
-                    <button class="tag-remove" @onclick="() => DismissSuggestion(suggestion)">x</button>
-                </span>
-            }
-        </div>
+    @{
+        var detectedWords = ExtractWords(_description);
     }
+    <div class="tag-section-block">
+        <label class="field-label">@T("addOffer.detectedWords")</label>
+        <p class="muted">@T("addOffer.tapWordToTag")</p>
+        @if (detectedWords.Count == 0)
+        {
+            <p class="muted">@T("addOffer.noDetectedWords")</p>
+        }
+        else
+        {
+            <div class="word-list">
+                @foreach (var word in detectedWords)
+                {
+                    <button class="word-chip" @onclick="() => AddTag(word)">
+                        @word
+                    </button>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="tag-section-block">
+        <label class="field-label">@T("addOffer.selectedTags")</label>
+        @if (_tags.Count == 0)
+        {
+            <p class="muted">@T("addOffer.noSelectedTags")</p>
+        }
+        else
+        {
+            <div class="tag-list">
+                @foreach (var tag in _tags)
+                {
+                    <span class="tag-pill">
+                        @tag
+                        <button class="tag-remove" @onclick="() => RemoveTag(tag)">x</button>
+                    </span>
+                }
+            </div>
+        }
+    </div>
+
+    @{
+        var suggestedTags = GetSuggestedTags();
+    }
+    <div class="tag-section-block">
+        <label class="field-label">@T("addOffer.suggestions")</label>
+        <p class="muted">@T("addOffer.suggestedTagsHelp")</p>
+        @if (_tags.Count == 0)
+        {
+            <p class="muted">@T("addOffer.selectTagForSuggestions")</p>
+        }
+        else if (suggestedTags.Count == 0)
+        {
+            <p class="muted">@T("addOffer.noSuggestedTags")</p>
+        }
+        else
+        {
+            <div class="word-list">
+                @foreach (var suggestion in suggestedTags)
+                {
+                    <button class="word-chip" @onclick="() => AddTag(suggestion)">
+                        @suggestion
+                    </button>
+                }
+            </div>
+        }
+    </div>
 </section>
 
 <section class="card-block">
@@ -189,24 +226,25 @@
         {
             ["en"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
             {
-                ["coffee"] = ["cafe", "espresso", "latte"],
-                ["tea"] = ["chai", "infusion"],
-                ["bakery"] = ["bread", "pastry"],
-                ["discount"] = ["deal", "promo", "sale"]
+                ["coffee"] = ["coffees", "cafe", "cafes", "espresso", "espressos", "latte", "lattes"],
+                ["tea"] = ["teas", "chai", "infusion", "infusions"],
+                ["bakery"] = ["bakeries", "bread", "breads", "pastry", "pastries"],
+                ["discount"] = ["discounts", "deal", "deals", "promo", "promos", "sale", "sales"],
+                ["offer"] = ["offers", "deal", "deals", "promo", "promos"]
             },
             ["es"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
             {
-                ["cafe"] = ["coffee", "espresso"],
-                ["te"] = ["tea", "infusion"],
-                ["panaderia"] = ["bakery", "bread"],
-                ["descuento"] = ["discount", "deal", "promo"]
+                ["cafe"] = ["cafes", "coffee", "espresso", "espressos"],
+                ["te"] = ["tes", "tea", "infusion", "infusiones"],
+                ["panaderia"] = ["panaderias", "bakery", "bread", "pan"],
+                ["descuento"] = ["descuentos", "discount", "deal", "promo", "promos"],
+                ["oferta"] = ["ofertas", "deal", "deals", "promo", "promos"]
             }
         };
 
     private readonly List<PickedImage> _images = [];
     private OfferLocationDto? _location;
     private string _description = string.Empty;
-    private string _manualTag = string.Empty;
     private string _locationQuery = string.Empty;
     private string _status = string.Empty;
     private string _locationStatus = string.Empty;
@@ -216,7 +254,6 @@
     private bool _isLocationConfirmed;
     private CancellationTokenSource? _locationSearchCts;
     private readonly List<string> _tags = [];
-    private readonly HashSet<string> _dismissedSuggestions = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<LocationSearchResultDto> _locationResults = [];
     private int _selectedImageIndex;
 
@@ -481,10 +518,13 @@
         _locationResults.Clear();
     }
 
-    private void AddManualTag()
+    private void OnDescriptionInput(ChangeEventArgs args)
     {
-        AddTag(_manualTag);
-        _manualTag = string.Empty;
+        _description = args.Value?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(_description))
+        {
+            _tags.Clear();
+        }
     }
 
     private void AddTag(string value)
@@ -508,55 +548,206 @@
         _tags.Remove(tag);
     }
 
-    private void AcceptSuggestion(string suggestion)
-    {
-        AddTag(suggestion);
-        _dismissedSuggestions.Add(suggestion);
-    }
-
-    private void DismissSuggestion(string suggestion)
-    {
-        _dismissedSuggestions.Add(suggestion);
-    }
-
     private IReadOnlyList<string> GetSuggestedTags()
     {
+        if (_tags.Count == 0)
+        {
+            return [];
+        }
+
         var language = Preferences.Language;
         if (!SuggestionDictionary.TryGetValue(language, out var dictionary))
         {
             dictionary = SuggestionDictionary["en"];
         }
 
-        var baseTerms = _tags
-            .Concat(ExtractWords(_description).Select(NormalizeTag))
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
         var suggestions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var term in baseTerms)
+        foreach (var selectedTag in _tags.Select(NormalizeTag))
         {
-            foreach (var entry in dictionary)
+            if (string.IsNullOrWhiteSpace(selectedTag))
             {
-                var normalizedKey = NormalizeTag(entry.Key);
-                if (normalizedKey.Equals(term, StringComparison.OrdinalIgnoreCase) ||
-                    SimilarityRatio(normalizedKey, term) >= SuggestionThreshold)
-                {
-                    suggestions.Add(normalizedKey);
-                    foreach (var synonym in entry.Value)
-                    {
-                        suggestions.Add(NormalizeTag(synonym));
-                    }
-                }
+                continue;
+            }
+
+            foreach (var variant in ExpandTagVariants(selectedTag, language))
+            {
+                suggestions.Add(variant);
+            }
+
+            foreach (var relatedTag in FindRelatedTags(selectedTag, language, dictionary))
+            {
+                suggestions.Add(relatedTag);
             }
         }
 
         return suggestions
             .Where(x => !_tags.Contains(x, StringComparer.OrdinalIgnoreCase))
-            .Where(x => !_dismissedSuggestions.Contains(x))
             .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
             .Take(12)
             .ToArray();
+    }
+
+    private static IEnumerable<string> FindRelatedTags(
+        string selectedTag,
+        string language,
+        IReadOnlyDictionary<string, IReadOnlyList<string>> dictionary)
+    {
+        var selectedForms = ExpandComparisonForms(selectedTag, language);
+
+        foreach (var entry in dictionary)
+        {
+            var normalizedKey = NormalizeTag(entry.Key);
+            if (string.IsNullOrWhiteSpace(normalizedKey))
+            {
+                continue;
+            }
+
+            var keyForms = ExpandComparisonForms(normalizedKey, language);
+            var matches = selectedForms.Overlaps(keyForms) ||
+                selectedForms.Any(form => SimilarityRatio(normalizedKey, form) >= SuggestionThreshold);
+
+            if (!matches)
+            {
+                continue;
+            }
+
+            yield return normalizedKey;
+            foreach (var synonym in entry.Value.Select(NormalizeTag).Where(x => !string.IsNullOrWhiteSpace(x)))
+            {
+                yield return synonym;
+            }
+        }
+    }
+
+    private static HashSet<string> ExpandComparisonForms(string value, string language)
+    {
+        var forms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var variant in ExpandTagVariants(value, language))
+        {
+            forms.Add(variant);
+        }
+
+        return forms;
+    }
+
+    private static IEnumerable<string> ExpandTagVariants(string value, string language)
+    {
+        var normalized = NormalizeTag(value);
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            yield break;
+        }
+
+        var variants = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            normalized,
+            ToSingular(normalized, language),
+            ToPlural(normalized, language)
+        };
+
+        foreach (var variant in variants.Where(x => !string.IsNullOrWhiteSpace(x)))
+        {
+            yield return variant;
+        }
+    }
+
+    private static string ToSingular(string value, string language)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.EndsWith('%'))
+        {
+            return value;
+        }
+
+        if (string.Equals(language, "es", StringComparison.OrdinalIgnoreCase))
+        {
+            if (value.EndsWith("ces", StringComparison.OrdinalIgnoreCase) && value.Length > 3)
+            {
+                return value[..^3] + "z";
+            }
+
+            if (value.EndsWith('s') && value.Length > 3)
+            {
+                if (value.EndsWith("es", StringComparison.OrdinalIgnoreCase) &&
+                    !IsVowel(value[value.Length - 3]) &&
+                    !value.EndsWith("aes", StringComparison.OrdinalIgnoreCase) &&
+                    !value.EndsWith("ees", StringComparison.OrdinalIgnoreCase) &&
+                    !value.EndsWith("oes", StringComparison.OrdinalIgnoreCase))
+                {
+                    return value[..^2];
+                }
+
+                return value[..^1];
+            }
+
+            return value;
+        }
+
+        if (value.EndsWith("ies", StringComparison.OrdinalIgnoreCase) && value.Length > 3)
+        {
+            return value[..^3] + "y";
+        }
+
+        if ((value.EndsWith("ches", StringComparison.OrdinalIgnoreCase) ||
+            value.EndsWith("shes", StringComparison.OrdinalIgnoreCase) ||
+            value.EndsWith("sses", StringComparison.OrdinalIgnoreCase) ||
+            value.EndsWith("xes", StringComparison.OrdinalIgnoreCase) ||
+            value.EndsWith("zes", StringComparison.OrdinalIgnoreCase)) &&
+            value.Length > 2)
+        {
+            return value[..^2];
+        }
+
+        if (value.EndsWith('s') && !value.EndsWith("ss", StringComparison.OrdinalIgnoreCase) && value.Length > 1)
+        {
+            return value[..^1];
+        }
+
+        return value;
+    }
+
+    private static string ToPlural(string value, string language)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.EndsWith('%'))
+        {
+            return value;
+        }
+
+        if (!string.Equals(ToSingular(value, language), value, StringComparison.OrdinalIgnoreCase))
+        {
+            return value;
+        }
+
+        if (string.Equals(language, "es", StringComparison.OrdinalIgnoreCase))
+        {
+            if (value.EndsWith('z'))
+            {
+                return value[..^1] + "ces";
+            }
+
+            return IsVowel(value[^1]) ? string.Concat(value, "s") : string.Concat(value, "es");
+        }
+
+        if (value.EndsWith('y') && value.Length > 1 && !IsVowel(value[^2]))
+        {
+            return value[..^1] + "ies";
+        }
+
+        if (value.EndsWith('s') ||
+            value.EndsWith('x') ||
+            value.EndsWith('z') ||
+            value.EndsWith("ch", StringComparison.OrdinalIgnoreCase) ||
+            value.EndsWith("sh", StringComparison.OrdinalIgnoreCase))
+        {
+            return string.Concat(value, "es");
+        }
+
+        return string.Concat(value, "s");
+    }
+
+    private static bool IsVowel(char value)
+    {
+        var lowered = char.ToLowerInvariant(value);
+        return lowered is 'a' or 'e' or 'i' or 'o' or 'u';
     }
 
     private async Task CreateOfferAsync()

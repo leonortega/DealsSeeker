@@ -46,4 +46,4 @@
 | `ADD.OFFER.IMAGE.001` | `bdd/add-offer-image.feature` | `contracts/json-schema/add-offer-draft.schema.json` | `examples/add-offer/add-offer-draft.valid.json` |
 | `ADD.OFFER.LOCATION.001` | `bdd/add-offer-image.feature`, `bdd/add-offer-location.feature`, `bdd/map-provider-configuration.feature` | `contracts/json-schema/add-offer-draft.schema.json` | `examples/add-offer/add-offer-draft.valid.json`, `examples/add-offer/add-offer-draft.manual-location.json` |
 | `ADD.OFFER.DESCRIPTION.TAGS.001` | `bdd/add-offer-tags.feature` | `contracts/json-schema/add-offer-draft.schema.json` | `examples/add-offer/add-offer-draft.valid.json` |
-| `ADD.OFFER.TAGS.SUGGESTIONS.001` | `bdd/add-offer-tag-suggestions.feature` | N/A | N/A |
+| `ADD.OFFER.TAGS.SUGGESTIONS.001` | `bdd/add-offer-tag-suggestions.feature` | `contracts/json-schema/add-offer-draft.schema.json` | N/A |

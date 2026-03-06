@@ -8,7 +8,8 @@ Feature: Add Offer layout required controls
     When the view loads
     Then an image upload area with photo icon is visible
     And a description input field is visible
-    And a tag list section is visible
+    And a current tag list section is visible
+    And a suggested tags section is visible
     And location information is visible
     And a location search input is visible
     And location suggestions appear while typing from the 3rd character

@@ -37,11 +37,12 @@
 | Normalization | Lowercase and trim punctuation except `%` | Prevent duplicates like `Coffee` vs `coffee` while preserving `50%` |
 | Percent handling | Preserve trailing percent symbol | `50%` remains `50%` |
 | Duplicate tags | Prevent duplicates | Existing tag remains highlighted or unchanged |
-| Manual tags | Allowed | Same normalization and duplicate rules apply |
-| Suggestion scope | Similar and semantically related tags | Driven by dictionary similarity and synonyms |
+| Manual tags | Not available | Tags are created from detected description words or accepted suggested tags |
+| Description cleared | Clear selected tags | Prevent stale selected/suggested tag state when text is erased |
+| Suggestion scope | Related terms for selected tags | Includes dictionary synonyms plus singular/plural variants |
 | Suggestion threshold | Configurable | Similarity ratio threshold default is TBD |
 | Suggestion presentation | Optional chips/pills | Non-blocking UX |
-| Suggestion persistence | Explicit accept only | Removed/unaccepted suggestions are not saved |
+| Suggestion persistence | Explicit accept only | Suggested chips are not saved until tapped |
 | Suggestion language | Use selected app language | Fallback to default language resources |
 
 ## Offer Photos and Rendering Rules (`ADD.OFFER.IMAGE.001`, `OFFERS.IMAGE.RENDERING.001`, `OFFERS.PHOTOS.CAROUSEL.001`)
@@ -111,7 +112,7 @@
 | UI string source | Externalized resource files | No hardcoded UI text |
 | Search dictionaries | Load by selected language | Used by smart search and tag suggestions |
 | Missing translation key | Fallback to default language | Prevents blank UI text |
-| Missing language dictionary | Feature-level fallback | Non-blocking exact match/manual tag flow remains available |
+| Missing language dictionary | Feature-level fallback | Non-blocking exact match and selected-tag suggestion flow remains available |
 
 ## Startup Splash and Blocking Loading Rules (`APP.SHELL.001`, `OFFERS.SEARCH.001`)
 

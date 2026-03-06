@@ -22,3 +22,13 @@ Feature: Manage tags from Add Offer description
     Given the existing tags include "coffee"
     When the user taps the detected word "Coffee"
     Then no duplicate tag is created
+
+  Scenario: Remove selected tag
+    Given the existing tags include "coffee"
+    When the user removes the tag "coffee"
+    Then the tag list no longer includes "coffee"
+
+  Scenario: Clearing description removes selected tags
+    Given the existing tags include "coffee" and "discount"
+    When the user clears the description text
+    Then the tag list is empty

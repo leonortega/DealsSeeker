@@ -3,15 +3,27 @@ Feature: Tag suggestions in Add Offer view
   I want optional tag suggestions while creating offers
   So that I can improve discoverability without losing control
 
-  Scenario: Suggest tags from fuzzy and synonym dictionaries
+  Scenario: Suggest related tags from the selected tag list
     Given the user selected the tag "coffee"
     And multilingual suggestion dictionaries are available
     When the suggestion engine runs
-    Then the user sees optional chips with similar and related tags
-    And the user can remove any suggested tag before submission
+    Then the user sees optional chips with related tags such as "cafe" and "espresso"
+    And the selected tag list does not change until a suggested chip is tapped
+
+  Scenario: Suggest singular form from plural selected tag
+    Given the user selected the tag "offers"
+    When the suggestion engine runs
+    Then the user sees the related tag "offer"
 
   Scenario: Suggestions are optional and non-blocking
-    Given suggestion services are unavailable
-    When the user manually adds tags
-    Then the user can still submit the offer
-    And no blocking error is raised by the suggestions feature
+    Given the user has not selected any tags yet
+    When the Add Offer tag section loads
+    Then the Suggested Tags section remains visible
+    And the user sees guidance to select a tag first
+
+  Scenario: Clearing description removes suggestions
+    Given the user selected the tag "coffee"
+    And the Suggested Tags section shows related tags
+    When the user clears the description text
+    Then the selected tag list is empty
+    And the Suggested Tags section shows no related tags

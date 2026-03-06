@@ -196,7 +196,6 @@ h2 {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    text-transform: lowercase;
 }
 
 .btn-main {
@@ -230,6 +229,23 @@ h2 {
     justify-content: center;
     align-self: stretch;
     font-size: 1.1rem;
+}
+
+.btn-order {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    white-space: nowrap;
+}
+
+.btn-order-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    font-size: 1rem;
+    line-height: 1;
 }
 
 .offers-search-submit {
@@ -339,6 +355,17 @@ h2 {
 .location-suggestion-subtitle {
     font-size: 0.74rem;
     color: var(--color-muted);
+}
+
+.tag-section-block {
+    margin-top: 0.9rem;
+    padding-top: 0.15rem;
+}
+
+.tag-section-block + .tag-section-block {
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--color-border);
 }
 
 .tag-pill {
@@ -597,13 +624,25 @@ h2 {
     height: 2.6rem;
     border: none;
     border-radius: 999px;
-    background: rgba(20, 34, 24, 0.7);
-    color: #f7fbf4;
+    padding: 0;
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    line-height: 1;
     z-index: 1;
+    box-shadow: 0 6px 14px rgba(35, 53, 33, 0.18);
+}
+
+.photo-preview-nav-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 1.2rem;
+    line-height: 1;
 }
 
 .photo-preview-nav-prev {
