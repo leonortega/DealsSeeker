@@ -233,7 +233,7 @@ api.MapPost("/suggestions", async (SuggestionRequest request, IFeedbackService f
         return result.Success ? Results.Ok(result) : Results.BadRequest(result);
     })
     .WithName("CreateSuggestion")
-    .WithSummary("App shell section: submit suggestion.");
+    .WithSummary("SUGGESTIONS.SUBMIT.001: Submit a suggestion with required message and optional contact details.");
 
 api.MapPost("/reports", async (ReportRequest request, IFeedbackService feedback, CancellationToken cancellationToken) =>
     {
@@ -241,7 +241,7 @@ api.MapPost("/reports", async (ReportRequest request, IFeedbackService feedback,
         return result.Success ? Results.Ok(result) : Results.BadRequest(result);
     })
     .WithName("CreateReport")
-    .WithSummary("App shell section: submit report.");
+    .WithSummary("REPORTS.SUBMIT.001 + REPORTS.OFFER.PREFILL.001: Submit a generic or offer-prefilled report.");
 
 api.MapPost("/complaints", async (ReportRequest request, IFeedbackService feedback, CancellationToken cancellationToken) =>
     {
@@ -249,7 +249,7 @@ api.MapPost("/complaints", async (ReportRequest request, IFeedbackService feedba
         return result.Success ? Results.Ok(result) : Results.BadRequest(result);
     })
     .WithName("CreateComplaintAlias")
-    .WithSummary("Backward-compatible alias for report submission.");
+    .WithSummary("REPORTS.SUBMIT.001: Backward-compatible alias for report submission.");
 
 try
 {

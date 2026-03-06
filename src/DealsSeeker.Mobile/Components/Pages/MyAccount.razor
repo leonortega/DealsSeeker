@@ -129,6 +129,7 @@ else
             {
                 await Session.ClearSessionAsync(CancellationToken.None);
                 _status = T("account.sessionExpired");
+                Navigation.NavigateTo("/login", forceLoad: false);
             }
         }
         catch (Exception)

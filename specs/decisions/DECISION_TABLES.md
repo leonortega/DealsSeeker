@@ -66,6 +66,9 @@
 | Persistence | Account-backed | Not local-only storage |
 | Sync scope | Cross-session and cross-device | Based on authenticated account |
 | My Favorites source | Saved offers only | Uses same offer entity data model |
+| My Favorites removal | Explicit remove action per saved item | Removes item from saved set and list |
+| My Favorites directions | Walking directions action per saved item | Uses the saved offer location |
+| My Favorites unauthenticated access | Redirect to `Login` | Saved list requires authenticated context |
 
 ## Promoted Offers Rules (`OFFERS.FEED.PROMOTED.001`)
 
@@ -179,7 +182,7 @@
 | Counter default | `0` | Used when no prior feedback exists |
 | Counter display | Positive as integer, negative as integer count | Example `12` up and `3` down |
 
-## Report Prefill Rules (`OFFERS.LIST.ACTIONS.001`, `REPORTS.OFFER.PREFILL.001`)
+## Report Prefill and Generic Report Rules (`OFFERS.LIST.ACTIONS.001`, `REPORTS.OFFER.PREFILL.001`, `REPORTS.SUBMIT.001`)
 
 | Decision Point | Default Rule | Notes |
 |---|---|---|
@@ -188,8 +191,19 @@
 | Prefilled metadata | `userId`, `offerId`, report date/time, text | Captured at report-button press time |
 | Direct Reports access | No preview required | User can still submit generic report |
 | Report payload from offer flow | Include message + metadata | Includes `userId`, `offerId`, and report date/time |
+| Reports route alias | Legacy complaints entry uses same report behavior | Backward-compatible access path |
+| Reports authentication | Active session required for Reports view | Unauthenticated user is redirected to `Login` |
 
-## Account Session and Post-Submit Navigation Rules (`APP.SHELL.001`, `ACCOUNT.AUTH.*`, `ACCOUNT.PROFILE.001`, `ADD.OFFER.LAYOUT.001`, `REPORTS.OFFER.PREFILL.001`)
+## Suggestions Submission Rules (`SUGGESTIONS.SUBMIT.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Suggestion message | Required | Blank suggestion is rejected |
+| Contact field | Optional | Stored when provided |
+| Success navigation | Redirect to `Offers` | Applies only after successful submission |
+| Failure behavior | Stay in Suggestions and show status/error | No redirect on failed submission |
+
+## Account Session and Post-Submit Navigation Rules (`APP.SHELL.001`, `ACCOUNT.AUTH.*`, `ACCOUNT.PROFILE.001`, `ADD.OFFER.LAYOUT.001`, `REPORTS.OFFER.PREFILL.001`, `REPORTS.SUBMIT.001`, `SUGGESTIONS.SUBMIT.001`)
 
 | Decision Point | Default Rule | Notes |
 |---|---|---|

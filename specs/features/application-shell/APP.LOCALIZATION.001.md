@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Application Localization and Language Selection
-- **Version**: `v0.2`
+- **Version**: `v0.3`
 - **Status**: Draft
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -17,6 +17,7 @@ Provide multi-language UI and dictionary behavior with system-locale defaults.
 - App startup or user language change from menu/settings controls.
 
 ## Requirements
+- `APP.LOCALIZATION.001-R0`: The system shall support at least `English` and `Spanish` as selectable app languages.
 - `APP.LOCALIZATION.001-R1`: The default value of the app language shall be the device/system language (locale).
 - `APP.LOCALIZATION.001-R2`: The user shall be able to manually change app language in settings.
 - `APP.LOCALIZATION.001-R3`: All user-facing UI strings shall be externalized into localization resource files.
@@ -36,9 +37,9 @@ Scenario: Default language value is the system language
 
 Scenario: User changes language from settings
   Given the app is currently in English
-  When the user selects French in settings
-  Then UI strings shall be rendered from French localization resources
-  And search/tag dictionaries shall switch to French resources
+  When the user selects Spanish in settings
+  Then UI strings shall be rendered from Spanish localization resources
+  And search/tag dictionaries shall switch to Spanish resources
 
 Scenario: User changes language from menu control
   Given the app is currently in English

@@ -14,3 +14,21 @@ Feature: Offer favorites and My Favorites section
     When the user opens My Favorites
     Then all saved offers are listed
     And unsaved offers are not listed
+
+  Scenario: User removes a saved offer from My Favorites
+    Given an authenticated user is on My Favorites
+    And a saved offer is listed
+    When the user taps remove favorite for that offer
+    Then the offer is removed from the saved set
+    And the offer no longer appears in My Favorites
+
+  Scenario: User opens directions from My Favorites
+    Given an authenticated user is on My Favorites
+    And a saved offer has a valid location
+    When the user taps directions for that offer
+    Then walking directions open for that location
+
+  Scenario: Unauthenticated user opens My Favorites
+    Given the user is not authenticated
+    When the user opens My Favorites
+    Then the Login view is shown

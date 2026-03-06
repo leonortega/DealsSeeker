@@ -11,9 +11,9 @@ Feature: App localization and language override
 
   Scenario: Language override updates UI and dictionaries
     Given app language is English
-    When the user selects French in settings
-    Then UI strings switch to French resources
-    And search and tag suggestion dictionaries switch to French resources
+    When the user selects Spanish in settings
+    Then UI strings switch to Spanish resources
+    And search and tag suggestion dictionaries switch to Spanish resources
 
   Scenario: Language change from menu applies instantly
     Given app language is English

@@ -62,3 +62,4 @@ Scenario: Submit report with prefilled context
 ## Related Specs
 - `OFFERS.LIST.ACTIONS.001`
 - `ACCOUNT.PROFILE.001`
+- `REPORTS.SUBMIT.001`

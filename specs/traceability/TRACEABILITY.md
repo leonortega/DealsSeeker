@@ -25,6 +25,8 @@
 | `ACCOUNT.AUTH.LOGIN.001` | `bdd/account-management.feature` | N/A | N/A |
 | `ACCOUNT.AUTH.REGISTER.001` | `bdd/account-management.feature` | N/A | N/A |
 | `ACCOUNT.PROFILE.001` | `bdd/account-management.feature` | N/A | N/A |
+| `SUGGESTIONS.SUBMIT.001` | `bdd/suggestions-submit.feature`, `bdd/app-shell.feature` | N/A | N/A |
+| `REPORTS.SUBMIT.001` | `bdd/reports-submit.feature`, `bdd/app-shell.feature` | N/A | N/A |
 | `OFFERS.LAYOUT.001` | `bdd/offers-layout-and-navigation.feature` | N/A | N/A |
 | `OFFERS.SEARCH.001` | `bdd/offers-search.feature` | `contracts/json-schema/offer-search-request.schema.json`, `contracts/json-schema/offer-search-response.schema.json` | `examples/offers-search/*` |
 | `OFFERS.SEARCH.SMART.001` | `bdd/offers-smart-search.feature` | `contracts/json-schema/offer-search-request.schema.json`, `contracts/json-schema/offer-search-response.schema.json` | `examples/offers-search/*` |

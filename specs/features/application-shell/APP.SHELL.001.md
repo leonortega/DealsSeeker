@@ -108,3 +108,5 @@ Scenario: Blocking loading state appears during required data waits
 - `ACCOUNT.AUTH.LOGIN.001`
 - `ACCOUNT.AUTH.REGISTER.001`
 - `ACCOUNT.PROFILE.001`
+- `SUGGESTIONS.SUBMIT.001`
+- `REPORTS.SUBMIT.001`

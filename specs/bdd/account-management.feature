@@ -52,6 +52,12 @@ Feature: Account management for user lifecycle
     When the user opens the My Account section
     Then the user profile information is shown
 
+  Scenario: User logs out from My Account
+    Given the user is authenticated
+    When the user selects logout from My Account
+    Then the user session ends
+    And the Login view is shown
+
   Scenario: Unauthenticated user opens My Account
     Given the user is not authenticated
     When the user opens the My Account section
