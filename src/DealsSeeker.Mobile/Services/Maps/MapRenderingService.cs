@@ -7,14 +7,13 @@ namespace DealsSeeker.Mobile.Services.Maps;
 
 public sealed class MapRenderingService(ApiSettings settings) : IMapRenderingService
 {
-    public string ActiveProvider => ResolveProvider(settings.MapDisplayProvider, settings.MapDisplayProviderFallback);
-
     public string BuildMapEmbedUrl(GeoPoint center, IReadOnlyList<BusinessMarkerDto> markers, int zoom)
     {
         var lat = center.Lat.ToString(CultureInfo.InvariantCulture);
         var lng = center.Lng.ToString(CultureInfo.InvariantCulture);
+        var provider = ResolveProvider(settings.MapDisplayProvider, settings.MapDisplayProviderFallback);
 
-        return ActiveProvider switch
+        return provider switch
         {
             MapProviders.OpenLayers => BuildOpenLayersEmbedUrl(center, markers, zoom, showUserMarker: true),
             _ => $"https://maps.google.com/maps?q={lat},{lng}&z={zoom}&output=embed"
@@ -25,8 +24,9 @@ public sealed class MapRenderingService(ApiSettings settings) : IMapRenderingSer
     {
         var lat = location.Lat.ToString(CultureInfo.InvariantCulture);
         var lng = location.Lng.ToString(CultureInfo.InvariantCulture);
+        var provider = ResolveProvider(settings.MapDisplayProvider, settings.MapDisplayProviderFallback);
 
-        return ActiveProvider switch
+        return provider switch
         {
             MapProviders.OpenLayers => BuildOpenLayersEmbedUrl(
                 location,

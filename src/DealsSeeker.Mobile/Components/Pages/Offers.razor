@@ -1,33 +1,51 @@
 @page "/offers"
+@using System.Globalization
 @inject IDealsSeekerApiClient ApiClient
 @inject IDeviceLocationService DeviceLocation
 @inject IMapLauncherService MapLauncher
 @inject IMapRenderingService MapRendering
 @inject IUserSessionService Session
 @inject IReportDraftContext ReportDraftContext
+@inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
+@implements IDisposable
 
-<h1>Offers</h1>
+<section class="page-hero">
+    <div class="page-hero-copy">
+        <h1>@T("offers.title")</h1>
+    </div>
 
-<div class="offers-top-actions">
-    <button class="btn-main add-offer-button" @onclick="NavigateToAddOffer" title="Add new offer">+ add new offer</button>
-</div>
+    <button class="btn-main btn-main-accent add-offer-button"
+            @onclick="NavigateToAddOffer"
+            title="@T("nav.addOffer")">
+        <span class="button-glyph" aria-hidden="true">+</span>
+        <span>@T("nav.addOffer")</span>
+    </button>
+</section>
 
-<section class="card-block offers-search-panel">
-    <label class="field-label" for="offersSearchQuery">Search by product tag</label>
+<section class="card-block feature-panel offers-search-panel">
+    <div class="section-heading">
+        <div>
+            <h2>@T("offers.searchButton")</h2>
+        </div>
+    </div>
+
+    <label class="field-label" for="offersSearchQuery">@T("offers.searchLabel")</label>
     <div class="search-row">
         <input id="offersSearchQuery"
                name="offersSearchQuery"
                @ref="_searchQueryInput"
                class="field-input"
                @bind="_query"
-               placeholder="Search by product tag..." />
+               placeholder="@T("offers.searchPlaceholder")" />
+        <button class="btn-main" @onclick="SearchAsync" disabled="@_loading">@T("offers.searchButton")</button>
     </div>
 
     <div class="distance-row">
-        <label for="coverageRadius">Coverage radius: @_radiusMeters m</label>
+        <label class="field-label" for="coverageRadius">@T("offers.radius"): @_radiusMeters m</label>
         <input id="coverageRadius"
                name="coverageRadius"
+               class="range-input"
                type="range"
                min="100"
                max="5000"
@@ -37,75 +55,289 @@
                @onchange="OnCoverageRadiusChangedAsync" />
     </div>
 
-    <button class="btn-main offers-search-submit" @onclick="SearchAsync" disabled="@_loading">Search</button>
-</section>
+    <label class="offers-favorites-toggle">
+        <input type="checkbox" @bind="_favoritesOnly" @bind:after="SearchAsync" />
+        <span>@T("offers.favoritesOnly")</span>
+    </label>
 
-<section class="card-block">
-    <h2>Nearby Map</h2>
-    <p class="muted">Your location: @_userLocationLabel | Provider: @MapRendering.ActiveProvider</p>
-    <p class="muted">Map coverage radius: @_radiusMeters m</p>
-    <iframe class="map-frame" src="@BuildMapEmbedUrl()" loading="lazy"></iframe>
-</section>
-
-<section class="card-block">
-    <h2>Offers</h2>
     @if (!string.IsNullOrWhiteSpace(_status))
     {
         <p class="status-line">@_status</p>
     }
+
     @if (!string.IsNullOrWhiteSpace(_error))
     {
         <p class="status-line error">@_error</p>
     }
-    else if (_loading)
+</section>
+
+<section class="card-block map-panel">
+    <div class="section-heading">
+        <div>
+            <h2>@T("offers.nearbyMap")</h2>
+        </div>
+    </div>
+
+    <p class="muted">@T("offers.yourLocation"): @_userLocationLabel</p>
+    <iframe class="map-frame map-frame-large" src="@BuildMapEmbedUrl()" loading="lazy"></iframe>
+</section>
+
+@if (_promotedOffers.Count > 0)
+{
+    <section class="card-block">
+        <div class="section-heading">
+            <div>
+                <h2>@T("offers.promoted")</h2>
+            </div>
+        </div>
+
+        <div class="offer-grid promoted-grid">
+            @foreach (var offer in _promotedOffers)
+            {
+                <article class="offer-card-square offer-card-modern @(offer.IsReported ? "offer-card-reported" : string.Empty)">
+                    <button class="offer-image-button" title="@T("offers.details")" @onclick="() => OpenDetail(offer)">
+                        <img src="@ResolveOfferImage(offer.ImageUrl)"
+                             alt="@T("offers.imageAlt")"
+                             class="offer-image-square"
+                             onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
+                        <span class="offer-image-scrim"></span>
+                        <div class="offer-card-badges">
+                            <span class="offer-badge offer-badge-promoted">@T("offers.promoted")</span>
+                            @if (offer.IsReported)
+                            {
+                                <span class="offer-badge offer-badge-reported">@T("offers.reported")</span>
+                            }
+                        </div>
+                        <div class="offer-visual-meta">
+                            <span class="offer-distance-chip">@FormatDistanceMeters(offer.DistanceMeters)</span>
+                            @if (offer.ImageUrls.Count > 1)
+                            {
+                                <span class="offer-distance-chip offer-distance-chip-soft">@offer.ImageUrls.Count</span>
+                            }
+                        </div>
+                    </button>
+
+                    <div class="offer-square-body">
+                        <div class="offer-card-heading">
+                            <h3>@offer.BusinessName</h3>
+                            <p class="offer-description-preview">@((MarkupString)HighlightText(ShortDescription(offer.Description)))</p>
+                        </div>
+
+                        @if (offer.IsReported)
+                        {
+                            <p class="offer-reported-warning">@T("offers.reportedWarning")</p>
+                        }
+
+                        @if (offer.Tags.Count > 0)
+                        {
+                            <div class="tag-list offer-tag-list">
+                                @foreach (var tag in VisibleTags(offer))
+                                {
+                                    <span class="tag-pill">@tag</span>
+                                }
+                            </div>
+                        }
+
+                        <div class="offer-meta-row">
+                            <span class="offer-meta-pill">@T("offers.distance"): @FormatDistanceMeters(offer.DistanceMeters)</span>
+                            @if (offer.HasCurrentUserVoted)
+                            {
+                                <span class="offer-meta-pill">@T("offers.availableQuestion")</span>
+                            }
+                        </div>
+
+                        <button class="btn-secondary btn-favorite @(offer.IsFavorite ? "active" : string.Empty)"
+                                @onclick="() => ToggleFavoriteAsync(offer)">
+                            <span class="favorite-heart" aria-hidden="true">&#10084;</span>
+                            <span>@T("offers.favorite")</span>
+                        </button>
+
+                        <OfferActions Offer="offer"
+                                      VotesDisabled="@IsVoteDisabled(offer)"
+                                      OnVote="@(vote => VoteAsync(offer.OfferId, vote))"
+                                      OnReport="OpenReportViewAsync" />
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+}
+
+<section class="card-block">
+    <div class="section-heading">
+        <div>
+            <h2>@T("offers.results")</h2>
+        </div>
+    </div>
+
+    @if (_loading)
     {
-        <p class="muted">Loading offers...</p>
+        <p class="muted">@T("offers.loading")</p>
     }
-    else if (_results.Offers.Count == 0)
+    else if (_feedOffers.Count == 0)
     {
-        <p class="muted">No offers found.</p>
+        <p class="muted">@T("offers.noResults")</p>
     }
     else
     {
-        @foreach (var offer in _results.Offers)
-        {
-            <article class="offer-card offer-card-clickable"
-                     title="Open walking directions"
-                     @onclick="() => OpenDirectionsAsync(offer.Location)">
-                <img src="@ResolveOfferImage(offer.ImageUrl)"
-                     alt="Offer image"
-                     class="offer-image"
-                     onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
-                <div class="offer-body">
-                    <h3>@offer.BusinessName</h3>
-                    <p>@((MarkupString)HighlightText(offer.Description))</p>
-                    <p class="muted">Distance: @FormatDistanceMeters(offer.DistanceMeters)</p>
-                    <div class="tag-list">
-                        @foreach (var tag in offer.Tags)
+        <div class="offer-grid">
+            @foreach (var offer in _feedOffers)
+            {
+                <article class="offer-card-square offer-card-modern @(offer.IsReported ? "offer-card-reported" : string.Empty)">
+                    <button class="offer-image-button" title="@T("offers.details")" @onclick="() => OpenDetail(offer)">
+                        <img src="@ResolveOfferImage(offer.ImageUrl)"
+                             alt="@T("offers.imageAlt")"
+                             class="offer-image-square"
+                             onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
+                        <span class="offer-image-scrim"></span>
+                        <div class="offer-card-badges">
+                            @if (offer.IsReported)
+                            {
+                                <span class="offer-badge offer-badge-reported">@T("offers.reported")</span>
+                            }
+                        </div>
+                        <div class="offer-visual-meta">
+                            <span class="offer-distance-chip">@FormatDistanceMeters(offer.DistanceMeters)</span>
+                            @if (offer.ImageUrls.Count > 1)
+                            {
+                                <span class="offer-distance-chip offer-distance-chip-soft">@offer.ImageUrls.Count</span>
+                            }
+                        </div>
+                    </button>
+
+                    <div class="offer-square-body">
+                        <div class="offer-card-heading">
+                            <h3>@offer.BusinessName</h3>
+                            <p class="offer-description-preview">@((MarkupString)HighlightText(ShortDescription(offer.Description)))</p>
+                        </div>
+
+                        @if (offer.IsReported)
                         {
-                            <span class="tag-pill">@tag</span>
+                            <p class="offer-reported-warning">@T("offers.reportedWarning")</p>
                         }
+
+                        @if (offer.Tags.Count > 0)
+                        {
+                            <div class="tag-list offer-tag-list">
+                                @foreach (var tag in VisibleTags(offer))
+                                {
+                                    <span class="tag-pill">@tag</span>
+                                }
+                            </div>
+                        }
+
+                        <div class="offer-meta-row">
+                            <span class="offer-meta-pill">@T("offers.distance"): @FormatDistanceMeters(offer.DistanceMeters)</span>
+                            @if (offer.HasCurrentUserVoted)
+                            {
+                                <span class="offer-meta-pill">@T("offers.availableQuestion")</span>
+                            }
+                        </div>
+
+                        <button class="btn-secondary btn-favorite @(offer.IsFavorite ? "active" : string.Empty)"
+                                @onclick="() => ToggleFavoriteAsync(offer)">
+                            <span class="favorite-heart" aria-hidden="true">&#10084;</span>
+                            <span>@T("offers.favorite")</span>
+                        </button>
+
+                        <OfferActions Offer="offer"
+                                      VotesDisabled="@IsVoteDisabled(offer)"
+                                      OnVote="@(vote => VoteAsync(offer.OfferId, vote))"
+                                      OnReport="OpenReportViewAsync" />
                     </div>
-                    <OfferActions Offer="offer"
-                                  VotesDisabled="@IsVoteDisabled(offer)"
-                                  OnVote="@(vote => VoteAsync(offer.OfferId, vote))"
-                                  OnReport="OpenReportViewAsync" />
-                </div>
-            </article>
-        }
+                </article>
+            }
+        </div>
     }
 </section>
+
+@if (_detailOffer is not null)
+{
+    <div class="modal-backdrop" @onclick="CloseDetail"></div>
+    <section class="offer-detail-modal" role="dialog" aria-modal="true">
+        <div class="offer-detail-header">
+            <div>
+                <h2>@_detailOffer.BusinessName</h2>
+            </div>
+            <button class="close-button" @onclick="CloseDetail" aria-label="@T("nav.closeMenu")">
+                <span class="close-button-glyph" aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="offer-detail-carousel">
+            <button class="btn-icon-ghost" @onclick="PreviousImage" disabled="@(GetDetailImages().Count <= 1)">&#8592;</button>
+            <div class="offer-detail-visual">
+                <img src="@CurrentDetailImage()"
+                     alt="@T("offers.imageAlt")"
+                     class="offer-detail-image"
+                     @onclick="OpenFullscreen"
+                     onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
+                <span class="photo-preview-count">@DetailImageCountLabel()</span>
+            </div>
+            <button class="btn-icon-ghost" @onclick="NextImage" disabled="@(GetDetailImages().Count <= 1)">&#8594;</button>
+        </div>
+
+        <p class="offer-detail-description">@((MarkupString)HighlightText(_detailOffer.Description))</p>
+        <div class="offer-meta-row">
+            <span class="offer-meta-pill">@T("offers.distance"): @FormatDistanceMeters(_detailOffer.DistanceMeters)</span>
+            @if (_detailOffer.IsPromoted)
+            {
+                <span class="offer-meta-pill">@T("offers.promoted")</span>
+            }
+        </div>
+
+        @if (_detailOffer.Tags.Count > 0)
+        {
+            <div class="tag-list offer-tag-list">
+                @foreach (var tag in _detailOffer.Tags)
+                {
+                    <span class="tag-pill">@tag</span>
+                }
+            </div>
+        }
+
+        <div class="action-row detail-action-row">
+            <button class="btn-main" @onclick="() => OpenDirectionsAsync(_detailOffer.Location)">@DirectionsButtonText()</button>
+            <button class="btn-secondary btn-favorite @(_detailOffer.IsFavorite ? "active" : string.Empty)"
+                    @onclick="() => ToggleFavoriteAsync(_detailOffer)">
+                <span class="favorite-heart" aria-hidden="true">&#10084;</span>
+                <span>@T("offers.favorite")</span>
+            </button>
+        </div>
+    </section>
+}
+
+@if (_fullscreenImageOpen)
+{
+    <div class="modal-backdrop" @onclick="CloseFullscreen"></div>
+    <section class="image-fullscreen-modal" role="dialog" aria-modal="true">
+        <button class="close-button image-modal-close" @onclick="CloseFullscreen" aria-label="@T("nav.closeMenu")">
+            <span class="close-button-glyph" aria-hidden="true">&times;</span>
+        </button>
+        <img src="@CurrentDetailImage()"
+             alt="@T("offers.fullscreenImageAlt")"
+             class="image-fullscreen"
+             onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
+    </section>
+}
 
 @code {
     private string _query = string.Empty;
     private string? _status;
     private string? _error;
     private bool _loading;
+    private bool _favoritesOnly;
     private int _radiusMeters = 1500;
     private GeoPoint _userLocation = new(40.7128, -74.0060);
-    private string _userLocationLabel = "Current location";
+    private string _userLocationLabel = string.Empty;
     private SearchOffersResponse _results = new([], []);
+    private List<OfferItemDto> _promotedOffers = [];
+    private List<OfferItemDto> _feedOffers = [];
     private ElementReference _searchQueryInput;
+    private OfferItemDto? _detailOffer;
+    private int _detailImageIndex;
+    private bool _fullscreenImageOpen;
+    private string _renderedLanguage = "en";
 
     protected override async Task OnInitializedAsync()
     {
@@ -114,6 +346,10 @@
             Navigation.NavigateTo("/login", forceLoad: false);
             return;
         }
+
+        await Preferences.InitializeAsync(Session.CurrentSession?.UserId, CancellationToken.None);
+        Preferences.Changed += OnPreferencesChanged;
+        _renderedLanguage = Preferences.Language;
 
         try
         {
@@ -125,12 +361,12 @@
             }
             else
             {
-                _userLocationLabel = "Current location";
+                _userLocationLabel = CurrentLocationFallback();
             }
         }
         catch
         {
-            _userLocationLabel = "Current location";
+            _userLocationLabel = CurrentLocationFallback();
         }
 
         await SearchAsync();
@@ -149,7 +385,6 @@
         }
         catch
         {
-            // No-op: focus is best effort on startup.
         }
     }
 
@@ -157,20 +392,53 @@
     {
         _loading = true;
         _error = null;
+
         try
         {
-            var request = new SearchOffersRequest(_query, _userLocation, _radiusMeters);
+            var request = new SearchOffersRequest(
+                _query,
+                _userLocation,
+                _radiusMeters,
+                Locale: Preferences.Language,
+                FavoritesOnly: _favoritesOnly);
+
             _results = await ApiClient.SearchOffersAsync(request, CancellationToken.None);
+            PartitionOfferSets();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _error = $"Search failed: {ex.Message}";
+            _error = T("offers.searchFailed");
         }
         finally
         {
             _loading = false;
         }
     }
+
+    private void PartitionOfferSets()
+    {
+        var isPreSearch = string.IsNullOrWhiteSpace(_query);
+        if (isPreSearch)
+        {
+            _promotedOffers = OrderReportedLast(_results.Offers
+                .Where(offer => offer.IsPromoted && !offer.IsReported)
+                .ToList());
+
+            var promotedIds = _promotedOffers.Select(x => x.OfferId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            _feedOffers = OrderReportedLast(_results.Offers
+                .Where(offer => !promotedIds.Contains(offer.OfferId))
+                .ToList());
+            return;
+        }
+
+        _promotedOffers = [];
+        _feedOffers = OrderReportedLast(_results.Offers.ToList());
+    }
+
+    private static List<OfferItemDto> OrderReportedLast(List<OfferItemDto> offers) =>
+        offers
+            .OrderBy(offer => offer.IsReported ? 1 : 0)
+            .ToList();
 
     private void OnCoverageRadiusInput(ChangeEventArgs args)
     {
@@ -193,38 +461,65 @@
 
     private async Task OpenDirectionsAsync(GeoPoint destination)
     {
-        await MapLauncher.OpenWalkingDirectionsAsync(destination, CancellationToken.None);
+        await MapLauncher.OpenDirectionsAsync(destination, Preferences.NavigationMode, CancellationToken.None);
+    }
+
+    private async Task ToggleFavoriteAsync(OfferItemDto offer)
+    {
+        var result = await ApiClient.SetOfferFavoriteAsync(
+            offer.OfferId,
+            new SetFavoriteRequest(!offer.IsFavorite),
+            CancellationToken.None);
+
+        if (!result.Success)
+        {
+            _error = T("offers.favoriteUpdateFailed");
+            return;
+        }
+
+        _status = T("offers.favoriteUpdated");
+        await SearchAsync();
+
+        if (_detailOffer is not null && _detailOffer.OfferId.Equals(offer.OfferId, StringComparison.OrdinalIgnoreCase))
+        {
+            _detailOffer = _results.Offers.FirstOrDefault(x => x.OfferId.Equals(offer.OfferId, StringComparison.OrdinalIgnoreCase));
+            _detailImageIndex = 0;
+        }
     }
 
     private async Task VoteAsync(string offerId, OfferAvailabilityVoteType vote)
     {
         if (!Session.IsAuthenticated)
         {
-            _error = "Login is required to vote offer availability.";
+            _error = T("offers.loginRequiredVote");
             return;
         }
 
         var result = await ApiClient.VoteOfferAvailabilityAsync(offerId, new OfferAvailabilityVoteRequest(vote), CancellationToken.None);
         if (!result.Success)
         {
-            _error = result.Message;
+            _error = T("offers.voteFailed");
             if (result.Message.Contains("already submitted", StringComparison.OrdinalIgnoreCase))
             {
+                _error = T("offers.voteAlreadySubmitted");
                 await SearchAsync();
             }
 
             return;
         }
 
-        _status = "Availability feedback registered.";
+        _status = T("offers.feedbackRegistered");
         await SearchAsync();
     }
 
     private Task OpenReportViewAsync(OfferItemDto offer)
     {
-        var userId = Session.CurrentSession?.UserId ?? "unknown";
+        var userId = Session.CurrentSession?.UserId ?? T("common.unknown");
         var now = DateTimeOffset.UtcNow;
-        var initialMessage = $"Report opened from offer {offer.OfferId} at {now:yyyy-MM-dd HH:mm:ss} UTC.";
+        var initialMessage = string.Format(
+            T("offers.reportDraftOpened"),
+            offer.OfferId,
+            now.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture));
         ReportDraftContext.Set(new OfferReportDraft(
             offer,
             userId,
@@ -235,7 +530,68 @@
         return Task.CompletedTask;
     }
 
-    private void NavigateToAddOffer() => Navigation.NavigateTo("/add-offer");
+    private void OpenDetail(OfferItemDto offer)
+    {
+        _detailOffer = offer;
+        _detailImageIndex = 0;
+        _fullscreenImageOpen = false;
+    }
+
+    private void CloseDetail()
+    {
+        _detailOffer = null;
+        _detailImageIndex = 0;
+        _fullscreenImageOpen = false;
+    }
+
+    private void OpenFullscreen()
+    {
+        _fullscreenImageOpen = true;
+    }
+
+    private void CloseFullscreen()
+    {
+        _fullscreenImageOpen = false;
+    }
+
+    private void NextImage()
+    {
+        var images = GetDetailImages();
+        if (images.Count <= 1)
+        {
+            return;
+        }
+
+        _detailImageIndex = (_detailImageIndex + 1) % images.Count;
+    }
+
+    private void PreviousImage()
+    {
+        var images = GetDetailImages();
+        if (images.Count <= 1)
+        {
+            return;
+        }
+
+        _detailImageIndex = (_detailImageIndex - 1 + images.Count) % images.Count;
+    }
+
+    private IReadOnlyList<string> GetDetailImages()
+    {
+        if (_detailOffer is null || _detailOffer.ImageUrls.Count == 0)
+        {
+            return ["/images/offer-placeholder.svg"];
+        }
+
+        return _detailOffer.ImageUrls;
+    }
+
+    private string CurrentDetailImage()
+    {
+        var images = GetDetailImages();
+        var clampedIndex = Math.Clamp(_detailImageIndex, 0, images.Count - 1);
+        return ResolveOfferImage(images[clampedIndex]);
+    }
 
     private string HighlightText(string description)
     {
@@ -266,7 +622,6 @@
 
     private static int CalculateMapZoomForCoverage(int radiusMeters, double latitude)
     {
-        // Approximate zoom so the selected radius fits in the visible map width.
         var safeRadius = Math.Max(100, radiusMeters);
         var clampedLatitude = Math.Clamp(latitude, -85d, 85d);
         var latitudeRadians = clampedLatitude * (Math.PI / 180d);
@@ -300,10 +655,40 @@
         }
         catch
         {
-            // Fallback label is used when reverse-geocoding is unavailable.
         }
 
-        _userLocationLabel = "Current location";
+        _userLocationLabel = CurrentLocationFallback();
+    }
+
+    private void NavigateToAddOffer() => Navigation.NavigateTo("/add-offer");
+
+    private string T(string key) => Preferences.Translate(key);
+
+    private string DirectionsButtonText() =>
+        Preferences.NavigationMode == NavigationModes.Car
+            ? T("offers.directions.car")
+            : T("offers.directions.pedestrian");
+
+    private string CurrentLocationFallback() => T("offers.currentLocation");
+
+    private void OnPreferencesChanged()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            var languageChanged = !string.Equals(_renderedLanguage, Preferences.Language, StringComparison.OrdinalIgnoreCase);
+            _renderedLanguage = Preferences.Language;
+            if (languageChanged && Session.IsAuthenticated)
+            {
+                await SearchAsync();
+            }
+
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        Preferences.Changed -= OnPreferencesChanged;
     }
 
     private static string ResolveOfferImage(string imageUrl)
@@ -313,12 +698,24 @@
             return "/images/offer-placeholder.svg";
         }
 
-        if (imageUrl.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase) ||
-            imageUrl.StartsWith("/images/", StringComparison.OrdinalIgnoreCase))
-        {
-            return "/images/offer-placeholder.svg";
-        }
-
         return imageUrl;
     }
+
+    private static string ShortDescription(string description)
+    {
+        var trimmed = (description ?? string.Empty).Trim();
+        if (trimmed.Length <= 120)
+        {
+            return trimmed;
+        }
+
+        return string.Concat(trimmed[..117].TrimEnd(), "...");
+    }
+
+    private static IEnumerable<string> VisibleTags(OfferItemDto offer) =>
+        offer.Tags
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Take(3);
+
+    private string DetailImageCountLabel() => $"{Math.Clamp(_detailImageIndex + 1, 1, GetDetailImages().Count)} / {GetDetailImages().Count}";
 }

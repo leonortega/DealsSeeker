@@ -1,78 +1,238 @@
-<div class="hamburger-root @( _open ? "open" : string.Empty)">
-    <button class="hamburger-button"
-            title="@(_open ? "Close menu" : "Open menu")"
-            aria-label="@(_open ? "Close navigation menu" : "Open navigation menu")"
-            aria-expanded="@_open"
-            @onclick="ToggleMenu">
-        <span class="hamburger-lines">
-            <span></span>
-            <span></span>
-            <span></span>
-        </span>
-    </button>
+@inject IAppPreferencesService Preferences
+@inject IUserSessionService Session
+@implements IDisposable
 
-    <button class="menu-backdrop @( _open ? "open" : string.Empty)"
-            aria-label="Close navigation menu"
-            @onclick="CloseMenu">
-    </button>
+@if (ShowToggle)
+{
+    <div class="hamburger-root @( IsOpen ? "open" : string.Empty)">
+        <button class="hamburger-button"
+                title="@(IsOpen ? T("nav.closeMenu") : T("nav.openMenu"))"
+                aria-label="@(IsOpen ? T("nav.closeNavigationMenu") : T("nav.openNavigationMenu"))"
+                aria-expanded="@IsOpen"
+                @onclick="ToggleMenu">
+            <span class="hamburger-lines">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+        </button>
+    </div>
+}
 
-    <aside class="menu-sheet @( _open ? "open" : string.Empty)"
+@if (ShowSheet)
+{
+    <aside class="menu-sheet @( IsOpen ? "open" : string.Empty)"
            role="navigation"
-           aria-label="Main navigation menu"
-           aria-hidden="@(!_open)">
+           aria-label="@T("nav.mainNavigationMenu")"
+           aria-hidden="@(!IsOpen)">
         <div class="sheet-header">
-            <span class="sheet-title">DealsSeeker</span>
-            <button class="sheet-close" aria-label="Close menu" @onclick="CloseMenu">x</button>
+            <div class="sheet-header-copy">
+                <div class="sheet-brand">
+                    <img src="/images/dealseeker-icon.svg" alt="" class="sheet-brand-icon" />
+                    <span class="sheet-title">DealsSeeker</span>
+                </div>
+            </div>
+
+            <button class="sheet-close close-button" aria-label="@T("nav.closeMenu")" @onclick="CloseMenu">
+                <span class="close-button-glyph" aria-hidden="true">&times;</span>
+            </button>
         </div>
 
-        <nav class="sheet-grid">
-            <NavLink class="menu-option" href="/offers" @onclick="CloseMenu">
-                <span class="menu-option-icon" aria-hidden="true">
-                    <img class="menu-option-icon-image" src="/images/menu/offers.svg" alt="" />
-                </span>
-                <span class="menu-option-title">Offers</span>
-                <span class="menu-option-desc">Browse nearby deals</span>
-            </NavLink>
+        <div class="menu-main">
+            <nav class="sheet-grid">
+                <NavLink class="menu-option" href="/offers" @onclick="CloseMenu">
+                    <span class="menu-option-icon" aria-hidden="true">
+                        <img class="menu-option-icon-image" src="/images/menu/offers.svg" alt="" />
+                    </span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.offers")</span>
+                        <span class="menu-option-desc">@T("nav.desc.offers")</span>
+                    </span>
+                </NavLink>
 
-            <NavLink class="menu-option" href="/add-offer" @onclick="CloseMenu">
-                <span class="menu-option-icon" aria-hidden="true">
-                    <img class="menu-option-icon-image" src="/images/menu/add-offer.svg" alt="" />
-                </span>
-                <span class="menu-option-title">Add new offer</span>
-                <span class="menu-option-desc">Publish a new deal</span>
-            </NavLink>
+                <NavLink class="menu-option" href="/add-offer" @onclick="CloseMenu">
+                    <span class="menu-option-icon" aria-hidden="true">
+                        <img class="menu-option-icon-image" src="/images/menu/add-offer.svg" alt="" />
+                    </span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.addOffer")</span>
+                        <span class="menu-option-desc">@T("nav.desc.addOffer")</span>
+                    </span>
+                </NavLink>
 
-            <NavLink class="menu-option" href="/my-account" @onclick="CloseMenu">
-                <span class="menu-option-icon" aria-hidden="true">
-                    <img class="menu-option-icon-image" src="/images/menu/my-account.svg" alt="" />
-                </span>
-                <span class="menu-option-title">My Account</span>
-                <span class="menu-option-desc">Profile and session</span>
-            </NavLink>
+                <NavLink class="menu-option" href="/my-favorites" @onclick="CloseMenu">
+                    <span class="menu-option-icon" aria-hidden="true">
+                        <img class="menu-option-icon-image" src="/images/menu/favorites.svg" alt="" />
+                    </span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.myFavorites")</span>
+                        <span class="menu-option-desc">@T("nav.desc.myFavorites")</span>
+                    </span>
+                </NavLink>
 
-            <NavLink class="menu-option" href="/suggestions" @onclick="CloseMenu">
-                <span class="menu-option-icon" aria-hidden="true">
-                    <img class="menu-option-icon-image" src="/images/menu/suggestions.svg" alt="" />
-                </span>
-                <span class="menu-option-title">Suggestions</span>
-                <span class="menu-option-desc">Send app ideas</span>
-            </NavLink>
+                <NavLink class="menu-option" href="/my-account" @onclick="CloseMenu">
+                    <span class="menu-option-icon" aria-hidden="true">
+                        <img class="menu-option-icon-image" src="/images/menu/my-account.svg" alt="" />
+                    </span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.myAccount")</span>
+                        <span class="menu-option-desc">@T("nav.desc.myAccount")</span>
+                    </span>
+                </NavLink>
 
-            <NavLink class="menu-option" href="/reports" @onclick="CloseMenu">
-                <span class="menu-option-icon" aria-hidden="true">
-                    <img class="menu-option-icon-image" src="/images/menu/reports.svg" alt="" />
-                </span>
-                <span class="menu-option-title">Reports</span>
-                <span class="menu-option-desc">Report an issue</span>
-            </NavLink>
-        </nav>
+                <NavLink class="menu-option" href="/suggestions" @onclick="CloseMenu">
+                    <span class="menu-option-icon" aria-hidden="true">
+                        <img class="menu-option-icon-image" src="/images/menu/suggestions.svg" alt="" />
+                    </span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.suggestions")</span>
+                        <span class="menu-option-desc">@T("nav.desc.suggestions")</span>
+                    </span>
+                </NavLink>
+
+                <NavLink class="menu-option" href="/reports" @onclick="CloseMenu">
+                    <span class="menu-option-icon" aria-hidden="true">
+                        <img class="menu-option-icon-image" src="/images/menu/reports.svg" alt="" />
+                    </span>
+                    <span class="menu-option-body">
+                        <span class="menu-option-title">@T("nav.reports")</span>
+                        <span class="menu-option-desc">@T("nav.desc.reports")</span>
+                    </span>
+                </NavLink>
+
+                <div class="menu-option-control language-picker">
+                    <button class="menu-control-button language-trigger" @onclick="ToggleLanguageList">
+                        <span class="menu-option-icon" aria-hidden="true">
+                            <img class="menu-option-icon-image" src="/images/menu/language.svg" alt="" />
+                        </span>
+                        <span class="menu-option-body">
+                            <span class="menu-option-title">@T("nav.changeLanguage")</span>
+                            <span class="menu-option-desc">@CurrentLanguageListLabel()</span>
+                        </span>
+                        <span class="language-trigger-caret" aria-hidden="true">@(_languageListOpen ? "▴" : "▾")</span>
+                    </button>
+                    @if (_languageListOpen)
+                    {
+                        <div class="language-list" role="listbox" aria-label="@T("nav.changeLanguage")">
+                            @foreach (var language in LanguageOptions)
+                            {
+                                <button class="language-option @(IsCurrentLanguage(language) ? "active" : string.Empty)"
+                                        @onclick="() => SelectLanguageAsync(language)">
+                                    @LanguageOptionLabel(language)
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="menu-option-control">
+                    <button class="menu-control-button theme-trigger @(IsDarkThemeActive() ? "dark" : "light")"
+                            @onclick="ToggleThemeBinaryAsync"
+                            aria-label="@T("nav.changeTheme")">
+                        <span class="menu-option-icon" aria-hidden="true">
+                            <img class="menu-option-icon-image" src="@ThemeIconPath()" alt="" />
+                        </span>
+                        <span class="menu-option-body">
+                            <span class="menu-option-title">@T("settings.theme")</span>
+                            <span class="menu-option-desc">@CurrentThemeBinaryLabel()</span>
+                        </span>
+                    </button>
+                </div>
+            </nav>
+        </div>
     </aside>
-</div>
+}
 
 @code {
-    private bool _open;
+    private static readonly string[] LanguageOptions = ["en", "es"];
+    private bool _languageListOpen;
 
-    private void ToggleMenu() => _open = !_open;
+    [Parameter]
+    public bool ShowToggle { get; set; } = true;
 
-    private void CloseMenu() => _open = false;
+    [Parameter]
+    public bool ShowSheet { get; set; } = true;
+
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsOpenChanged { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Preferences.Changed += OnPreferencesChanged;
+    }
+
+    private void OnPreferencesChanged() => InvokeAsync(StateHasChanged);
+
+    private Task ToggleMenu()
+    {
+        var nextOpen = !IsOpen;
+        if (!nextOpen)
+        {
+            _languageListOpen = false;
+        }
+
+        return IsOpenChanged.InvokeAsync(nextOpen);
+    }
+
+    private Task CloseMenu()
+    {
+        _languageListOpen = false;
+        return IsOpenChanged.InvokeAsync(false);
+    }
+
+    private void ToggleLanguageList() => _languageListOpen = !_languageListOpen;
+
+    private async Task SelectLanguageAsync(string language)
+    {
+        if (!LanguageOptions.Contains(language, StringComparer.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _languageListOpen = false;
+        await Preferences.SetLanguageAsync(language, Session.CurrentSession?.UserId, CancellationToken.None);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleThemeBinaryAsync()
+    {
+        var nextTheme = IsDarkThemeActive() ? "light" : "dark";
+
+        await Preferences.SetThemeModeAsync(nextTheme, Session.CurrentSession?.UserId, CancellationToken.None);
+    }
+
+    private string CurrentLanguageListLabel() => LanguageOptionLabel(Preferences.Language);
+
+    private string LanguageOptionLabel(string language) => language.Trim().ToLowerInvariant() switch
+    {
+        "es" => T("settings.language.es"),
+        _ => T("settings.language.en")
+    };
+
+    private bool IsCurrentLanguage(string language) =>
+        Preferences.Language.Equals(language, StringComparison.OrdinalIgnoreCase);
+
+    private string CurrentThemeBinaryLabel() => IsDarkThemeActive()
+        ? T("settings.theme.dark")
+        : T("settings.theme.light");
+
+    private string ThemeIconPath() => IsDarkThemeActive()
+        ? "/images/menu/theme-dark.svg"
+        : "/images/menu/theme-light.svg";
+
+    private bool IsDarkThemeActive()
+    {
+        var mode = Preferences.ThemeMode.Trim().ToLowerInvariant();
+        return mode == "dark";
+    }
+
+    private string T(string key) => Preferences.Translate(key);
+
+    public void Dispose()
+    {
+        Preferences.Changed -= OnPreferencesChanged;
+    }
 }

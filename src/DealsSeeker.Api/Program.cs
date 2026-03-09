@@ -124,6 +124,44 @@ api.MapGet("/account/me", async (HttpContext httpContext, IAuthService auth, Can
     .WithName("GetMyAccountProfile")
     .WithSummary("ACCOUNT.PROFILE.001: Get profile for authenticated user.");
 
+api.MapGet("/account/offers", async (HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var response = await offers.GetOwnedOffersAsync(profile.UserId, cancellationToken);
+        return Results.Ok(response);
+    })
+    .WithName("GetMyOffers")
+    .WithSummary("ACCOUNT.PROFILE.001: Get offers created by the authenticated user.");
+
+api.MapGet("/account/offers/{offerId}", async (string offerId, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var draft = await offers.GetOwnedOfferDraftAsync(offerId, profile.UserId, cancellationToken);
+        return draft is null ? Results.NotFound() : Results.Ok(draft);
+    })
+    .WithName("GetMyOfferDraft")
+    .WithSummary("ACCOUNT.PROFILE.001 + ADD.OFFER.LAYOUT.001: Get editable draft data for a user-owned offer.");
+
 api.MapPost("/offers/search", async (SearchOffersRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
     {
         if (!TryGetAccessToken(httpContext, out var accessToken))
@@ -141,7 +179,7 @@ api.MapPost("/offers/search", async (SearchOffersRequest request, HttpContext ht
         return Results.Ok(response);
     })
     .WithName("SearchOffers")
-    .WithSummary("OFFERS.SEARCH.001 + OFFERS.LIST.ACTIONS.001: Search offers by tags and include current-user vote state.");
+    .WithSummary("OFFERS.SEARCH.001 + OFFERS.SEARCH.SMART.001 + OFFERS.FAVORITES.001: Search offers with smart ranking and current-user state.");
 
 api.MapPost("/offers/{offerId}/availability", async (string offerId, OfferAvailabilityVoteRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
     {
@@ -177,13 +215,88 @@ api.MapPost("/offers/{offerId}/report", async (string offerId, ReportOfferReques
     .WithName("ReportOffer")
     .WithSummary("OFFERS.LIST.ACTIONS.001: Report an offer.");
 
-api.MapPost("/offers", async (AddOfferRequest request, IOfferService offers, CancellationToken cancellationToken) =>
+api.MapPost("/offers/{offerId}/favorite", async (string offerId, SetFavoriteRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
     {
-        var result = await offers.AddAsync(request, cancellationToken);
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await offers.SetFavoriteAsync(offerId, profile.UserId, request, cancellationToken);
+        if (result.Success)
+        {
+            return Results.Ok(result);
+        }
+
+        return result.Message.StartsWith("Offer not found.", StringComparison.OrdinalIgnoreCase)
+            ? Results.NotFound(result)
+            : Results.BadRequest(result);
+    })
+    .WithName("SetFavorite")
+    .WithSummary("OFFERS.FAVORITES.001: Save or remove offer from user favorites.");
+
+api.MapPost("/offers", async (AddOfferRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await offers.AddAsync(request, profile.UserId, cancellationToken);
         return Results.Created($"/api/offers/{result.OfferId}", result);
     })
     .WithName("CreateOffer")
     .WithSummary("ADD.OFFER.*: Create a new offer from add-offer view inputs.");
+
+api.MapPut("/offers/{offerId}", async (string offerId, AddOfferRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await offers.UpdateAsync(offerId, request, profile.UserId, cancellationToken);
+        return result is null ? Results.NotFound() : Results.Ok(result);
+    })
+    .WithName("UpdateOffer")
+    .WithSummary("ACCOUNT.PROFILE.001 + ADD.OFFER.LAYOUT.001: Update a user-owned offer from edit mode.");
+
+api.MapDelete("/offers/{offerId}", async (string offerId, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await offers.DeleteAsync(offerId, profile.UserId, cancellationToken);
+        return result.Success ? Results.Ok(result) : Results.NotFound(result);
+    })
+    .WithName("DeleteOffer")
+    .WithSummary("ACCOUNT.PROFILE.001: Delete a user-owned offer after confirmation.");
 
 api.MapGet("/locations/search", async (string query, ILocationLookupService lookup, CancellationToken cancellationToken) =>
     {
@@ -207,7 +320,7 @@ api.MapPost("/suggestions", async (SuggestionRequest request, IFeedbackService f
         return result.Success ? Results.Ok(result) : Results.BadRequest(result);
     })
     .WithName("CreateSuggestion")
-    .WithSummary("App shell section: submit suggestion.");
+    .WithSummary("SUGGESTIONS.SUBMIT.001: Submit a suggestion with required message and optional contact details.");
 
 api.MapPost("/reports", async (ReportRequest request, IFeedbackService feedback, CancellationToken cancellationToken) =>
     {
@@ -215,7 +328,7 @@ api.MapPost("/reports", async (ReportRequest request, IFeedbackService feedback,
         return result.Success ? Results.Ok(result) : Results.BadRequest(result);
     })
     .WithName("CreateReport")
-    .WithSummary("App shell section: submit report.");
+    .WithSummary("REPORTS.SUBMIT.001 + REPORTS.OFFER.PREFILL.001: Submit a generic or offer-prefilled report.");
 
 api.MapPost("/complaints", async (ReportRequest request, IFeedbackService feedback, CancellationToken cancellationToken) =>
     {
@@ -223,7 +336,7 @@ api.MapPost("/complaints", async (ReportRequest request, IFeedbackService feedba
         return result.Success ? Results.Ok(result) : Results.BadRequest(result);
     })
     .WithName("CreateComplaintAlias")
-    .WithSummary("Backward-compatible alias for report submission.");
+    .WithSummary("REPORTS.SUBMIT.001: Backward-compatible alias for report submission.");
 
 try
 {

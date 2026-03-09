@@ -1,11 +1,14 @@
+using DealsSeeker.Mobile.Services.Ui;
 using DealsSeeker.Shared.Models;
 
 namespace DealsSeeker.Mobile.Services.Device;
 
-public sealed class DeviceLocationService : IDeviceLocationService
+public sealed class DeviceLocationService(IViewBusyService busy) : IDeviceLocationService
 {
     public async Task<GeoPoint?> TryGetCurrentLocationAsync(CancellationToken cancellationToken)
     {
+        using var _ = busy.Begin();
+
         try
         {
             var permission = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
@@ -29,4 +32,3 @@ public sealed class DeviceLocationService : IDeviceLocationService
         }
     }
 }
-

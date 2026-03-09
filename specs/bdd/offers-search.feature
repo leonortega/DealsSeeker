@@ -1,13 +1,13 @@
-Feature: Search offers by tags in Offers view
+Feature: Search offers in Offers view
   As a user
-  I want to search offers by product text
+  I want to search offers by query text and distance radius
   So that I can quickly find relevant deals near me
 
   Scenario: Search query filters list and map markers
-    Given active offers exist with tags including "coffee"
+    Given active offers exist with searchable terms including "coffee"
     And businesses are visible on the Offers map
     When the user searches for "coffee"
-    Then only offers with matching tags are shown in the list
+    Then only offers with matching terms are shown in the list
     And only businesses with matching active offers are shown as markers
 
   Scenario: Clearing query resets all results
@@ -16,9 +16,9 @@ Feature: Search offers by tags in Offers view
     Then the full active offer set is shown
     And markers reflect the full active offer set
 
-  Scenario: No matching tags returns empty state
+  Scenario: No matches returns empty state
     Given active offers exist
-    When the user searches for "nonexistenttag"
+    When the user searches for "nonexistentterm"
     Then no offers are shown
     And no business markers are shown
 
@@ -45,3 +45,10 @@ Feature: Search offers by tags in Offers view
     And the offer list is refreshed
     And map markers are refreshed
     And map zoom is adjusted to show the selected coverage radius
+
+  Scenario: Required location/search loading blocks Offers interactions
+    Given the Offers view is resolving current location or executing search
+    When the request is still loading
+    Then an animated loading overlay is shown
+    And interactions with map and offer controls are blocked
+    And when loading completes the overlay is hidden

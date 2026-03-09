@@ -1,15 +1,36 @@
-<div class="action-row" @onclick:stopPropagation="true">
-    <span class="availability-label">Available?</span>
-    <button class="btn-main btn-vote"
-            title="@UpVoteTitle"
-            @onclick="VoteUpAsync"
-            disabled="@VotesDisabled">&#128077; @Offer.PositiveAvailabilityCount</button>
-    <button class="btn-main btn-warning btn-vote"
-            title="@DownVoteTitle"
-            @onclick="VoteDownAsync"
-            disabled="@VotesDisabled">&#128078; @Offer.NegativeAvailabilityCount</button>
-    <button class="btn-main btn-danger"
-            @onclick="ReportAsync">Report</button>
+@inject IAppPreferencesService Preferences
+
+<div class="offer-actions" @onclick:stopPropagation="true">
+    <div class="availability-header">
+        <span class="availability-label">@T("offers.availableQuestion")</span>
+        @if (VotesDisabled)
+        {
+            <span class="availability-state">@T("offers.feedbackRegistered")</span>
+        }
+    </div>
+
+    <div class="availability-buttons">
+        <button class="btn-secondary btn-vote btn-vote-positive"
+                title="@UpVoteTitle"
+                @onclick="VoteUpAsync"
+                disabled="@VotesDisabled">
+            <span class="vote-icon" aria-hidden="true">&#128077;</span>
+            <span>@Offer.PositiveAvailabilityCount</span>
+        </button>
+        <button class="btn-secondary btn-vote btn-vote-negative"
+                title="@DownVoteTitle"
+                @onclick="VoteDownAsync"
+                disabled="@VotesDisabled">
+            <span class="vote-icon" aria-hidden="true">&#128078;</span>
+            <span>@Offer.NegativeAvailabilityCount</span>
+        </button>
+    </div>
+
+    <div class="report-row">
+        <span class="report-prompt">@T("offers.anyProblem")</span>
+        <button class="btn-link-inline"
+                @onclick="ReportAsync">@T("offers.reportAction")</button>
+    </div>
 </div>
 
 @code {
@@ -25,13 +46,15 @@
     [Parameter]
     public EventCallback<OfferItemDto> OnReport { get; set; }
 
-    private string? UpVoteTitle => VotesDisabled ? null : "Thumbs up";
+    private string? UpVoteTitle => VotesDisabled ? null : T("offers.thumbsUp");
 
-    private string? DownVoteTitle => VotesDisabled ? null : "Thumbs down";
+    private string? DownVoteTitle => VotesDisabled ? null : T("offers.thumbsDown");
 
     private Task VoteUpAsync() => OnVote.InvokeAsync(OfferAvailabilityVoteType.ThumbsUp);
 
     private Task VoteDownAsync() => OnVote.InvokeAsync(OfferAvailabilityVoteType.ThumbsDown);
 
     private Task ReportAsync() => OnReport.InvokeAsync(Offer);
+
+    private string T(string key) => Preferences.Translate(key);
 }

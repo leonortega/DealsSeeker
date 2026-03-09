@@ -22,3 +22,27 @@ Feature: Manage tags from Add Offer description
     Given the existing tags include "coffee"
     When the user taps the detected word "Coffee"
     Then no duplicate tag is created
+
+  Scenario: Remove selected tag
+    Given the existing tags include "coffee"
+    When the user removes the tag "coffee"
+    Then the tag list no longer includes "coffee"
+
+  Scenario: Clearing description removes selected tags
+    Given the existing tags include "coffee" and "discount"
+    When the user clears the description text
+    Then the tag list is empty
+
+  Scenario: Save is blocked when description is empty
+    Given the existing tags include "coffee"
+    And the description is empty or whitespace-only
+    When the user presses save
+    Then the offer request is not sent
+    And a description-required validation error is shown
+
+  Scenario: Save is blocked when no tag is selected
+    Given the description is "Fresh coffee near station"
+    And the existing tags are empty
+    When the user presses save
+    Then the offer request is not sent
+    And a tag-required validation error is shown

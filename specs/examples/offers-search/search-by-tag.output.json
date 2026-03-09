@@ -10,7 +10,19 @@
         "breakfast"
       ],
       "imageUrl": "/images/offers/off-100.jpg",
+      "imageUrls": [
+        "/images/offers/off-100.jpg",
+        "/images/offers/off-100-2.jpg"
+      ],
       "isActive": true,
+      "isPromoted": false,
+      "isFavorite": true,
+      "isReported": false,
+      "relevanceScore": 0.93,
+      "matchStrategies": [
+        "exact",
+        "synonym"
+      ],
       "location": {
         "lat": 40.7131,
         "lng": -74.0055

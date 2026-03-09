@@ -39,3 +39,17 @@ Feature: Add Offer location suggestions and mini map
     When the user presses Edit Location
     Then Edit Location becomes disabled
     And Confirm Location becomes enabled
+
+  Scenario: Save is blocked when location is not confirmed
+    Given the draft has an auto-populated or selected location
+    And Confirm Location is enabled
+    When the user presses save
+    Then the offer request is not sent
+    And a location-confirmation validation error is shown
+
+  Scenario: Edit mode map shows the stored offer location
+    Given the user opens Add Offer view in edit mode for a user-owned offer
+    And the owned offer has a stored location in the database
+    When the edit draft finishes loading
+    Then the location textbox shows the stored location label
+    And the mini map preview shows the stored offer location

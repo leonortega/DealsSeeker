@@ -30,3 +30,24 @@ Feature: Application shell and session-aware landing
     When the user submits with valid data
     And the response is successful with no errors
     Then the app redirects to Offers view
+
+  Scenario: Main menu includes instant language and theme controls
+    Given the user is authenticated
+    When the user opens the main navigation menu
+    Then language-change control is visible
+    And theme-change control is visible
+    And selecting a language or theme option applies immediately in the current view
+
+  Scenario: Startup splash is displayed before first interactive view
+    Given the DealsSeeker mobile application is launchable
+    When the user starts the application
+    Then a branded splash screen is shown for about 2 seconds
+    And the splash screen uses startup animation and smooth exit transition
+    And the first view becomes interactive after splash exit
+
+  Scenario: Blocking loading overlay appears while required data is loading
+    Given the user is on a view that is waiting for required data
+    When a required request is in progress
+    Then an animated loading overlay is visible
+    And interaction with the underlying view is blocked
+    And when loading finishes the overlay disappears

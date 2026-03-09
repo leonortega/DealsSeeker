@@ -4,13 +4,16 @@
     "bakery",
     "discount"
   ],
-  "image": {
-    "source": "camera",
-    "mimeType": "image/jpeg",
-    "sizeBytes": 502211,
-    "width": 1080,
-    "height": 1920
-  },
+  "images": [
+    {
+      "source": "camera",
+      "mimeType": "image/jpeg",
+      "sizeBytes": 502211,
+      "width": 1080,
+      "height": 1920,
+      "order": 0
+    }
+  ],
   "location": {
     "source": "search",
     "label": "Broadway Market",
@@ -18,4 +21,3 @@
     "lng": -74.0035
   }
 }
-

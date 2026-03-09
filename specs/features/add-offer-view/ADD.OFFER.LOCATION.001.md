@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer Location Auto-Populate, Confirm, and Live Suggestions
-- **Version**: `v1.5`
+- **Version**: `v1.7`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -36,6 +36,8 @@ Define location lifecycle during add-offer flow.
 - `ADD.OFFER.LOCATION.001-R17`: Raw coordinate values (`lat`, `lng`) shall not be displayed to users in Add Offer location UI.
 - `ADD.OFFER.LOCATION.001-R18`: Raw coordinate values (`lat`, `lng`) shall remain in draft data and be persisted to backend/database storage.
 - `ADD.OFFER.LOCATION.001-R19`: If reverse-geocoding cannot resolve an address label, the UI shall show a generic location label without exposing numeric coordinates.
+- `ADD.OFFER.LOCATION.001-R20`: The save action shall require the current location to be explicitly confirmed before create-offer or edit-offer submission proceeds.
+- `ADD.OFFER.LOCATION.001-R21`: In edit mode, after the owned offer draft is loaded from backend storage, the mini map shall display the location persisted for that offer in the database.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -74,6 +76,20 @@ Scenario: Confirm and edit toggle state
   When the user presses Edit Location
   Then Edit Location shall be disabled
   And Confirm Location shall be enabled
+
+Scenario: Save is blocked when location is not confirmed
+  Given the draft has an auto-populated or selected location
+  And the current location is not confirmed
+  When the user submits save
+  Then the system shall block submission
+  And the system shall show a location-confirmation validation error
+
+Scenario: Edit mode shows stored offer location on the mini map
+  Given the user opens Add Offer view in edit mode for a user-owned offer
+  And the owned offer has a persisted location in backend storage
+  When the draft data finishes loading
+  Then the location textbox shall show the stored location label
+  And the mini map shall display the stored offer location from the database
 ```
 
 ## Example Inputs/Outputs
@@ -86,6 +102,8 @@ Scenario: Confirm and edit toggle state
 - Search returns no results.
 - User confirms location without auto-populated value.
 - Reverse-geocoding returns no address for GPS coordinates; UI shows fallback non-coordinate label.
+- Auto-populated or selected location does not satisfy save validation until the user explicitly confirms it.
+- In edit mode, the mini map shall wait for owned-offer draft data instead of showing an unrelated default location as the persisted preview.
 
 ## Non-Functional Constraints
 - Location state should remain consistent across view updates within the same draft.

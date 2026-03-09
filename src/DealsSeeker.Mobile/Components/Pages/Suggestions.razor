@@ -1,17 +1,28 @@
 @page "/suggestions"
 @inject IDealsSeekerApiClient ApiClient
+@inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
 
-<h1>Suggestions</h1>
+<section class="page-hero">
+    <div class="page-hero-copy">
+        <h1>@T("suggestions.title")</h1>
+    </div>
+</section>
 
-<section class="card-block">
-    <label class="field-label" for="suggestionMessage">Suggestion</label>
-    <textarea id="suggestionMessage" name="suggestionMessage" class="field-input" @bind="_message" rows="4"></textarea>
+<section class="card-block compose-section">
+    <div class="section-heading">
+        <div>
+            <h2>@T("suggestions.send")</h2>
+        </div>
+    </div>
 
-    <label class="field-label" for="suggestionContact">Contact (optional)</label>
+    <label class="field-label" for="suggestionMessage">@T("suggestions.suggestion")</label>
+    <textarea id="suggestionMessage" name="suggestionMessage" class="field-input field-textarea" @bind="_message" rows="5"></textarea>
+
+    <label class="field-label" for="suggestionContact">@T("suggestions.contactOptional")</label>
     <input id="suggestionContact" name="suggestionContact" class="field-input" @bind="_contact" />
 
-    <button class="btn-main" @onclick="SubmitAsync" disabled="@_submitting">Send Suggestion</button>
+    <button class="btn-main btn-main-accent" @onclick="SubmitAsync" disabled="@_submitting">@T("suggestions.send")</button>
     @if (!string.IsNullOrWhiteSpace(_statusMessage))
     {
         <p class="status-line">@_statusMessage</p>
@@ -30,17 +41,27 @@
         try
         {
             var result = await ApiClient.SubmitSuggestionAsync(new SuggestionRequest(_message.Trim(), string.IsNullOrWhiteSpace(_contact) ? null : _contact.Trim()), CancellationToken.None);
-            _statusMessage = result.Message;
             if (result.Success)
             {
+                _statusMessage = T("suggestions.submitSuccess");
                 _message = string.Empty;
                 _contact = string.Empty;
                 Navigation.NavigateTo("/offers", forceLoad: false);
             }
+            else
+            {
+                _statusMessage = T("suggestions.submitFailed");
+            }
+        }
+        catch (Exception)
+        {
+            _statusMessage = T("suggestions.submitFailed");
         }
         finally
         {
             _submitting = false;
         }
     }
+
+    private string T(string key) => Preferences.Translate(key);
 }

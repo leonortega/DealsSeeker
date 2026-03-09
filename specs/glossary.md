@@ -10,7 +10,7 @@
 - **Active session**: Persisted authenticated state that identifies a logged-in user across app launches.
 - **Login view**: Entry view shown to unauthenticated users with credential form and link to Create User view.
 - **Create User view**: View used to register a new account with validation rules for email and password.
-- **Offer**: A promotional item with image, description, tags, and location.
+- **Offer**: A promotional item with image/photos, description, tags, and location.
 - **Session persistence**: Behavior where active authenticated session data is saved on device for reuse after app restart.
 - **Reverse geocoding**: Converting GPS coordinates into a nearest human-readable address label.
 - **Serilog minimum level**: The configured threshold that determines which log events are emitted.
@@ -21,4 +21,14 @@
 - **User location**: The current geolocation of the user device, if permission is granted.
 - **Coordinate privacy in UI**: Add Offer and Offers views must not expose raw `lat`/`lng` values to users; coordinates are internal data used for map, navigation, and persistence.
 - **User vote**: A single availability feedback action (thumbs up or thumbs down) cast by one authenticated user for one offer.
-- **Walking navigation**: External maps navigation mode that uses walking directions.
+- **Directions travel mode**: User-selected navigation mode used when launching external maps directions.
+- **Pedestrian navigation**: External maps navigation mode that uses walking directions.
+- **Driving navigation**: External maps navigation mode that uses car directions.
+- **Smart search**: Search flow that combines exact match, fuzzy similarity matching, and synonym expansion.
+- **Similarity ratio threshold**: Configurable cutoff used to accept or reject fuzzy dictionary candidates.
+- **Synonym expansion**: Addition of semantically related terms during query processing.
+- **Promoted offer**: Sponsored offer content prioritized in the pre-search home feed.
+- **Favorite offer**: Offer saved by a specific user account for later retrieval.
+- **Reported offer**: Offer flagged by user reports and demoted in ranking with red visual indicator.
+- **Localization resources**: Externalized language files that provide translated UI strings.
+- **Offer photo carousel**: Swipeable ordered image viewer for multi-photo offers.

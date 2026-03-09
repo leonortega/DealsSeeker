@@ -1,14 +1,167 @@
 @inherits LayoutComponentBase
+@inject IUserSessionService Session
+@inject IAppPreferencesService Preferences
+@inject IViewBusyService Busy
+@inject IJSRuntime JS
+@implements IDisposable
 
-<div class="page">
-    <main>
-        <div class="top-row px-4">
-            <NavMenu />
-            <span class="app-title">DealsSeeker</span>
+<div class="page @GetThemeClass()">
+    @if (Busy.IsBusy)
+    {
+        <div class="view-busy-overlay" role="status" aria-live="polite">
+            <div class="view-busy-spinner" aria-hidden="true"></div>
         </div>
+    }
 
-        <article class="content px-4">
+    @if (_menuVisible)
+    {
+        <button class="menu-block-overlay @(_menuOpen ? "open" : string.Empty)"
+                type="button"
+                aria-label="Close navigation menu"
+                @onclick="CloseMenu">
+        </button>
+
+        <NavMenu IsOpen="_menuOpen" IsOpenChanged="OnMenuOpenChanged" ShowToggle="false" ShowSheet="true" />
+    }
+
+    <div class="shell-backdrop" aria-hidden="true">
+        <span class="shell-orb shell-orb-one"></span>
+        <span class="shell-orb shell-orb-two"></span>
+        <span class="shell-grid"></span>
+    </div>
+
+    <main class="app-main">
+        <header class="top-row">
+            <div class="top-row-inner">
+                <div class="top-row-leading">
+                    <NavMenu IsOpen="_menuOpen" IsOpenChanged="OnMenuOpenChanged" ShowToggle="true" ShowSheet="false" />
+                </div>
+
+                <div class="app-brand">
+                    <img src="/images/dealseeker-icon.svg" alt="" class="app-brand-icon" />
+                    <div class="app-brand-copy">
+                        <span class="app-title">DealsSeeker</span>
+                    </div>
+                </div>
+
+                @if (Session.CurrentSession is { } activeSession)
+                {
+                    <div class="top-row-user-block" title="@activeSession.Email" aria-label="@activeSession.DisplayName">
+                        <div class="top-row-user">
+                            @GetUserInitial(activeSession.DisplayName)
+                        </div>
+                        <span class="top-row-user-name">@activeSession.DisplayName</span>
+                    </div>
+                }
+            </div>
+        </header>
+
+        <article class="content" @key="_bodyRenderKey">
             @Body
         </article>
     </main>
 </div>
+
+@code {
+    private const int MenuAnimationDurationMs = 220;
+    private string _bodyRenderKey = "en";
+    private bool _menuOpen;
+    private bool _menuVisible;
+    private CancellationTokenSource? _menuAnimationCts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Preferences.Changed += OnPreferencesChanged;
+        Busy.Changed += OnBusyChanged;
+        await Preferences.InitializeAsync(Session.CurrentSession?.UserId, CancellationToken.None);
+        _bodyRenderKey = BuildBodyRenderKey();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("DealsSeekerStartup.complete");
+        }
+    }
+
+    private void OnPreferencesChanged()
+    {
+        _bodyRenderKey = BuildBodyRenderKey();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void OnBusyChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnMenuOpenChanged(bool isOpen)
+    {
+        CancelMenuAnimation();
+
+        if (isOpen)
+        {
+            _menuVisible = true;
+            _menuOpen = false;
+            await InvokeAsync(StateHasChanged);
+            await Task.Yield();
+            _menuOpen = true;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        _menuOpen = false;
+        await InvokeAsync(StateHasChanged);
+
+        _menuAnimationCts = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(MenuAnimationDurationMs, _menuAnimationCts.Token);
+            _menuVisible = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private Task CloseMenu()
+    {
+        return OnMenuOpenChanged(false);
+    }
+
+    private string GetThemeClass() => Preferences.ThemeMode switch
+    {
+        "light" => "theme-light",
+        "dark" => "theme-dark",
+        _ => "theme-system"
+    };
+
+    public void Dispose()
+    {
+        Preferences.Changed -= OnPreferencesChanged;
+        Busy.Changed -= OnBusyChanged;
+        _menuAnimationCts?.Cancel();
+        _menuAnimationCts?.Dispose();
+    }
+
+    private string BuildBodyRenderKey() => Preferences.Language;
+
+    private void CancelMenuAnimation()
+    {
+        _menuAnimationCts?.Cancel();
+        _menuAnimationCts?.Dispose();
+        _menuAnimationCts = null;
+    }
+
+    private static string GetUserInitial(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "D";
+        }
+
+        return char.ToUpperInvariant(value.Trim()[0]).ToString();
+    }
+}

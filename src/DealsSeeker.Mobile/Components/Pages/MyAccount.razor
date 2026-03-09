@@ -1,35 +1,149 @@
 @page "/my-account"
 @inject IDealsSeekerApiClient ApiClient
 @inject IUserSessionService Session
+@inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
-
-<h1>My Account</h1>
 
 @if (_loading)
 {
     <section class="card-block">
-        <p class="muted">Loading account...</p>
+        <p class="muted">@T("account.loading")</p>
     </section>
 }
 else
 {
-    <section class="card-block">
-        <h2>Profile</h2>
-        @if (_profile is null)
+    <section class="card-block account-hero">
+        <div class="account-summary">
+            <div class="account-avatar">@ProfileInitial()</div>
+            <div class="account-summary-copy">
+                <h1>@(_profile?.DisplayName ?? T("account.title"))</h1>
+            </div>
+        </div>
+
+        <div class="account-actions">
+            <button class="btn-main" @onclick="RefreshProfileAsync" disabled="@_working">@T("account.refresh")</button>
+            <button class="btn-secondary btn-danger" @onclick="LogoutAsync" disabled="@_working">@T("account.logout")</button>
+        </div>
+    </section>
+
+    <section class="account-grid">
+        <section class="card-block account-panel">
+            <div class="section-heading">
+                <div>
+                    <h2>@T("account.profile")</h2>
+                </div>
+            </div>
+
+            @if (_profile is null)
+            {
+                <p class="muted">@T("account.noProfile")</p>
+            }
+            else
+            {
+                <div class="account-detail-list">
+                    <div class="account-detail-card">
+                        <span class="account-detail-label">@T("account.name")</span>
+                        <strong class="account-detail-value">@_profile.DisplayName</strong>
+                    </div>
+                    <div class="account-detail-card">
+                        <span class="account-detail-label">@T("account.email")</span>
+                        <strong class="account-detail-value">@_profile.Email</strong>
+                    </div>
+                    <div class="account-detail-card">
+                        <span class="account-detail-label">@T("account.userId")</span>
+                        <strong class="account-detail-value">@_profile.UserId</strong>
+                    </div>
+                </div>
+            }
+        </section>
+
+        <section class="card-block account-panel">
+            <div class="section-heading">
+                <div>
+                    <h2>@T("account.settings")</h2>
+                </div>
+            </div>
+
+            <div class="settings-stack">
+                <label class="settings-card" for="themeMode">
+                    <span class="settings-label">@T("settings.theme")</span>
+                    <select id="themeMode" class="field-input field-select" value="@Preferences.ThemeMode" @onchange="OnThemeChangedAsync">
+                        <option value="system">@T("settings.theme.system")</option>
+                        <option value="light">@T("settings.theme.light")</option>
+                        <option value="dark">@T("settings.theme.dark")</option>
+                    </select>
+                </label>
+
+                <label class="settings-card" for="languageMode">
+                    <span class="settings-label">@T("settings.language")</span>
+                    <select id="languageMode" class="field-input field-select" value="@Preferences.Language" @onchange="OnLanguageChangedAsync">
+                        <option value="en">@T("settings.language.en")</option>
+                        <option value="es">@T("settings.language.es")</option>
+                    </select>
+                </label>
+
+                <label class="settings-card" for="navigationMode">
+                    <span class="settings-label">@T("settings.navigationMode")</span>
+                    <select id="navigationMode" class="field-input field-select" value="@Preferences.NavigationMode" @onchange="OnNavigationModeChangedAsync">
+                        <option value="@NavigationModes.Pedestrian">@T("settings.navigationMode.pedestrian")</option>
+                        <option value="@NavigationModes.Car">@T("settings.navigationMode.car")</option>
+                    </select>
+                </label>
+            </div>
+        </section>
+    </section>
+
+    <section class="card-block account-panel">
+        <div class="section-heading">
+            <div>
+                <h2>@T("account.myOffers")</h2>
+            </div>
+        </div>
+
+        @if (_ownedOffers.Count == 0)
         {
-            <p class="muted">No profile data available.</p>
+            <p class="muted">@T("account.noOffers")</p>
         }
         else
         {
-            <p><strong>Name:</strong> @_profile.DisplayName</p>
-            <p><strong>Email:</strong> @_profile.Email</p>
-            <p><strong>User ID:</strong> @_profile.UserId</p>
-        }
+            <div class="offer-grid">
+                @foreach (var offer in _ownedOffers)
+                {
+                    <article class="offer-card-square offer-card-modern @(offer.IsReported ? "offer-card-reported" : string.Empty)">
+                        <img src="@ResolveOfferImage(offer.ImageUrl)"
+                             alt="@T("offers.imageAlt")"
+                             class="offer-image-square"
+                             onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
 
-        <div class="action-row">
-            <button class="btn-main" @onclick="RefreshProfileAsync" disabled="@_working">Refresh</button>
-            <button class="btn-main btn-danger" @onclick="LogoutAsync" disabled="@_working">Logout</button>
-        </div>
+                        <div class="offer-square-body">
+                            <div class="offer-card-heading">
+                                <h3>@offer.BusinessName</h3>
+                                <p class="offer-description-preview">@ShortDescription(offer.Description)</p>
+                            </div>
+
+                            @if (offer.Tags.Count > 0)
+                            {
+                                <div class="tag-list offer-tag-list">
+                                    @foreach (var tag in offer.Tags.Take(3))
+                                    {
+                                        <span class="tag-pill">@tag</span>
+                                    }
+                                </div>
+                            }
+
+                            <div class="action-row">
+                                <button class="btn-main"
+                                        @onclick="() => EditOwnedOffer(offer.OfferId)"
+                                        disabled="@_working">@T("account.editOffer")</button>
+                                <button class="btn-secondary btn-danger"
+                                        @onclick="() => PromptRemoveOwnedOffer(offer)"
+                                        disabled="@_working">@T("account.removeOffer")</button>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
     </section>
 }
 
@@ -47,12 +161,37 @@ else
     </section>
 }
 
+@if (_offerPendingRemoval is not null)
+{
+    <div class="modal-backdrop"></div>
+    <section class="offer-detail-modal" role="dialog" aria-modal="true">
+        <div class="offer-detail-header">
+            <div>
+                <h2>@T("account.removeOffer")</h2>
+            </div>
+        </div>
+
+        <p class="offer-detail-description">@string.Format(T("account.removeOfferPrompt"), _offerPendingRemoval.BusinessName)</p>
+
+        <div class="action-row detail-action-row">
+            <button class="btn-danger btn-secondary"
+                    @onclick="ConfirmRemoveOwnedOfferAsync"
+                    disabled="@_working">@T("account.confirmYes")</button>
+            <button class="btn-secondary"
+                    @onclick="CancelRemoveOwnedOffer"
+                    disabled="@_working">@T("account.confirmNo")</button>
+        </div>
+    </section>
+}
+
 @code {
     private string? _status;
     private string? _error;
     private bool _loading;
     private bool _working;
     private UserProfileDto? _profile;
+    private List<OfferItemDto> _ownedOffers = [];
+    private OfferItemDto? _offerPendingRemoval;
 
     protected override async Task OnInitializedAsync()
     {
@@ -62,6 +201,7 @@ else
             return;
         }
 
+        await Preferences.InitializeAsync(Session.CurrentSession?.UserId, CancellationToken.None);
         await RefreshProfileAsync();
     }
 
@@ -80,12 +220,12 @@ else
             await ApiClient.LogoutAsync(CancellationToken.None);
             await Session.ClearSessionAsync(CancellationToken.None);
             _profile = null;
-            _status = "Logged out.";
+            _status = T("account.loggedOut");
             Navigation.NavigateTo("/login", forceLoad: false);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _error = $"Logout failed: {ex.Message}";
+            _error = T("account.logoutFailed");
         }
         finally
         {
@@ -109,16 +249,120 @@ else
             if (_profile is null)
             {
                 await Session.ClearSessionAsync(CancellationToken.None);
-                _status = "Your session expired. Please login again.";
+                _status = T("account.sessionExpired");
+                Navigation.NavigateTo("/login", forceLoad: false);
+                return;
             }
+
+            var offers = await ApiClient.GetMyOffersAsync(CancellationToken.None);
+            if (offers is null)
+            {
+                await Session.ClearSessionAsync(CancellationToken.None);
+                _status = T("account.sessionExpired");
+                Navigation.NavigateTo("/login", forceLoad: false);
+                return;
+            }
+
+            _ownedOffers = offers.ToList();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _error = $"Profile load failed: {ex.Message}";
+            _error = T("account.offersLoadFailed");
         }
         finally
         {
             _loading = false;
         }
     }
+
+    private async Task OnThemeChangedAsync(ChangeEventArgs args)
+    {
+        var nextTheme = args.Value?.ToString() ?? "system";
+        await Preferences.SetThemeModeAsync(nextTheme, Session.CurrentSession?.UserId, CancellationToken.None);
+        _status = T("settings.themeUpdated");
+    }
+
+    private async Task OnLanguageChangedAsync(ChangeEventArgs args)
+    {
+        var nextLanguage = args.Value?.ToString() ?? "en";
+        await Preferences.SetLanguageAsync(nextLanguage, Session.CurrentSession?.UserId, CancellationToken.None);
+        _status = T("settings.languageUpdated");
+    }
+
+    private async Task OnNavigationModeChangedAsync(ChangeEventArgs args)
+    {
+        var nextNavigationMode = args.Value?.ToString() ?? NavigationModes.Pedestrian;
+        await Preferences.SetNavigationModeAsync(nextNavigationMode, Session.CurrentSession?.UserId, CancellationToken.None);
+        _status = T("settings.navigationModeUpdated");
+    }
+
+    private string ProfileInitial()
+    {
+        var source = _profile?.DisplayName ?? Session.CurrentSession?.DisplayName ?? "D";
+        return string.IsNullOrWhiteSpace(source)
+            ? "D"
+            : char.ToUpperInvariant(source.Trim()[0]).ToString();
+    }
+
+    private void EditOwnedOffer(string offerId) =>
+        Navigation.NavigateTo($"/add-offer?offerId={Uri.EscapeDataString(offerId)}", forceLoad: false);
+
+    private void PromptRemoveOwnedOffer(OfferItemDto offer)
+    {
+        _offerPendingRemoval = offer;
+        _error = null;
+    }
+
+    private void CancelRemoveOwnedOffer()
+    {
+        _offerPendingRemoval = null;
+    }
+
+    private async Task ConfirmRemoveOwnedOfferAsync()
+    {
+        if (_offerPendingRemoval is null)
+        {
+            return;
+        }
+
+        _working = true;
+        _error = null;
+        try
+        {
+            var result = await ApiClient.DeleteOfferAsync(_offerPendingRemoval.OfferId, CancellationToken.None);
+            if (!result.Success)
+            {
+                _error = T("account.offerRemoveFailed");
+                return;
+            }
+
+            _ownedOffers.RemoveAll(offer => offer.OfferId.Equals(_offerPendingRemoval.OfferId, StringComparison.OrdinalIgnoreCase));
+            _status = T("account.offerRemoved");
+            _offerPendingRemoval = null;
+        }
+        catch (Exception)
+        {
+            _error = T("account.offerRemoveFailed");
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+
+    private static string ResolveOfferImage(string imageUrl) =>
+        string.IsNullOrWhiteSpace(imageUrl) ? "/images/offer-placeholder.svg" : imageUrl;
+
+    private static string ShortDescription(string description)
+    {
+        var trimmed = (description ?? string.Empty).Trim();
+        if (trimmed.Length <= 120)
+        {
+            return trimmed;
+        }
+
+        return string.Concat(trimmed[..117].TrimEnd(), "...");
+    }
+
+    private string T(string key) => Preferences.Translate(key);
 }

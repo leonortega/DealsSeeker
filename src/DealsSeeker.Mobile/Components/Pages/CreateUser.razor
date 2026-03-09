@@ -1,30 +1,49 @@
 @page "/create-user"
 @inject IDealsSeekerApiClient ApiClient
 @inject IUserSessionService Session
+@inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
 
-<h1>Create User</h1>
+<section class="page-hero auth-hero">
+    <div class="page-hero-copy">
+        <h1>@T("auth.createUserTitle")</h1>
+    </div>
+</section>
 
-<section class="card-block">
-    <form @onsubmit="OnSubmitAsync" autocomplete="on">
-        <label class="field-label" for="registerName">Name</label>
-        <input id="registerName" name="registerName" class="field-input" autocomplete="name" @bind="_displayName" />
+<section class="auth-grid">
+    <section class="card-block auth-brand-panel">
+        <img src="/images/dealseeker-icon.svg" alt="" class="auth-brand-icon" />
+        <h2>DealsSeeker</h2>
+        <p class="muted">@T("auth.passwordHint")</p>
+    </section>
 
-        <label class="field-label" for="registerEmail">Email</label>
-        <input id="registerEmail" name="registerEmail" class="field-input" type="email" autocomplete="username" @bind="_email" />
+    <section class="card-block auth-panel">
+        <div class="section-heading">
+            <div>
+                <h2>@T("auth.createUserButton")</h2>
+            </div>
+        </div>
 
-        <label class="field-label" for="registerPassword">Password</label>
-        <input id="registerPassword" name="registerPassword" class="field-input" type="password" autocomplete="new-password" @bind="_password" />
+        <form class="form-stack" @onsubmit="OnSubmitAsync" autocomplete="on">
+            <label class="field-label" for="registerName">@T("auth.name")</label>
+            <input id="registerName" name="registerName" class="field-input" autocomplete="name" @bind="_displayName" />
 
-        <p class="muted">Password must have at least 8 chars, with letters and numbers.</p>
+            <label class="field-label" for="registerEmail">@T("auth.email")</label>
+            <input id="registerEmail" name="registerEmail" class="field-input" type="email" autocomplete="username" @bind="_email" />
 
-        <button class="btn-main" type="submit" disabled="@_working">Create User</button>
+            <label class="field-label" for="registerPassword">@T("auth.password")</label>
+            <input id="registerPassword" name="registerPassword" class="field-input" type="password" autocomplete="new-password" @bind="_password" />
 
-        <p class="muted auth-link-row">
-            Already have an account?
-            <a href="/login">Login</a>
-        </p>
-    </form>
+            <p class="muted">@T("auth.passwordHint")</p>
+
+            <button class="btn-main btn-main-accent" type="submit" disabled="@_working">@T("auth.createUserButton")</button>
+
+            <p class="muted auth-link-row">
+                @T("auth.alreadyHaveAccount")
+                <a href="/login">@T("auth.loginLink")</a>
+            </p>
+        </form>
+    </section>
 </section>
 
 @if (!string.IsNullOrWhiteSpace(_status))
@@ -70,19 +89,19 @@
 
         if (string.IsNullOrWhiteSpace(displayName))
         {
-            _error = "Name is required.";
+            _error = T("auth.nameRequired");
             return;
         }
 
         if (!IsValidEmail(email))
         {
-            _error = "Please enter a valid email.";
+            _error = T("auth.validEmailRequired");
             return;
         }
 
         if (!IsStrongPassword(password))
         {
-            _error = "Password must have at least 8 chars, with letters and numbers.";
+            _error = T("auth.passwordStrongRequired");
             return;
         }
 
@@ -97,24 +116,24 @@
 
             if (!registerResult.Success)
             {
-                _error = registerResult.Message;
+                _error = T("auth.createUserRejected");
                 return;
             }
 
             var session = await ApiClient.LoginAsync(new LoginRequest(email, password), CancellationToken.None);
             if (session is null)
             {
-                _error = "User created but login failed. Please login manually.";
+                _error = T("auth.userCreatedLoginFailed");
                 return;
             }
 
             await Session.SetSessionAsync(session, CancellationToken.None);
-            _status = "User created.";
+            _status = T("auth.userCreated");
             Navigation.NavigateTo("/offers", forceLoad: false);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _error = $"Create user failed: {ex.Message}";
+            _error = T("auth.createUserFailedPrefix");
         }
         finally
         {
@@ -134,4 +153,6 @@
         password.Length >= 8 &&
         password.Any(char.IsLetter) &&
         password.Any(char.IsDigit);
+
+    private string T(string key) => Preferences.Translate(key);
 }

@@ -13,20 +13,38 @@ public sealed class MediaCaptureService : IMediaCaptureService
         }
 
         var file = await MediaPicker.Default.CapturePhotoAsync();
-        return file is null ? null : await ToPickedImageAsync(file, "camera", cancellationToken);
+        return file is null ? null : await ToPickedImageAsync(file, "camera", 0, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<PickedImage>> PickPhotosAsync(CancellationToken cancellationToken)
+    {
+        var files = await MediaPicker.Default.PickPhotosAsync(new MediaPickerOptions
+        {
+            Title = "Select images"
+        });
+
+        var images = new List<PickedImage>();
+        var order = 0;
+        foreach (var file in files)
+        {
+            var picked = await ToPickedImageAsync(file, "gallery", order, cancellationToken);
+            if (picked is not null)
+            {
+                images.Add(picked);
+                order++;
+            }
+        }
+
+        return images;
     }
 
     public async Task<PickedImage?> PickPhotoAsync(CancellationToken cancellationToken)
     {
-        var files = await MediaPicker.Default.PickPhotosAsync(new MediaPickerOptions
-        {
-            Title = "Select image"
-        });
-        var file = files.FirstOrDefault();
-        return file is null ? null : await ToPickedImageAsync(file, "gallery", cancellationToken);
+        var photos = await PickPhotosAsync(cancellationToken);
+        return photos.FirstOrDefault();
     }
 
-    private static async Task<PickedImage?> ToPickedImageAsync(FileResult file, string source, CancellationToken cancellationToken)
+    private static async Task<PickedImage?> ToPickedImageAsync(FileResult file, string source, int order, CancellationToken cancellationToken)
     {
         await using var stream = await file.OpenReadAsync();
         using var memory = new MemoryStream();
@@ -51,6 +69,7 @@ public sealed class MediaCaptureService : IMediaCaptureService
             bytes.Length,
             null,
             null,
+            order,
             file.FileName,
             dataUrl);
 

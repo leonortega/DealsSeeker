@@ -1,5 +1,5 @@
 using DealsSeeker.Shared.Contracts.Account;
-using Microsoft.Maui.Storage;
+using MauiPreferences = Microsoft.Maui.Storage.Preferences;
 
 namespace DealsSeeker.Mobile.Services.Auth;
 
@@ -22,34 +22,34 @@ public sealed class UserSessionService : IUserSessionService
     public Task SetSessionAsync(AuthSessionDto session, CancellationToken cancellationToken)
     {
         CurrentSession = session;
-        Preferences.Set(TokenKey, session.AccessToken);
-        Preferences.Set(UserIdKey, session.UserId);
-        Preferences.Set(DisplayNameKey, session.DisplayName);
-        Preferences.Set(EmailKey, session.Email);
+        MauiPreferences.Set(TokenKey, session.AccessToken);
+        MauiPreferences.Set(UserIdKey, session.UserId);
+        MauiPreferences.Set(DisplayNameKey, session.DisplayName);
+        MauiPreferences.Set(EmailKey, session.Email);
         return Task.CompletedTask;
     }
 
     public Task ClearSessionAsync(CancellationToken cancellationToken)
     {
         CurrentSession = null;
-        Preferences.Remove(TokenKey);
-        Preferences.Remove(UserIdKey);
-        Preferences.Remove(DisplayNameKey);
-        Preferences.Remove(EmailKey);
+        MauiPreferences.Remove(TokenKey);
+        MauiPreferences.Remove(UserIdKey);
+        MauiPreferences.Remove(DisplayNameKey);
+        MauiPreferences.Remove(EmailKey);
         return Task.CompletedTask;
     }
 
     private static AuthSessionDto? LoadSession()
     {
-        var token = Preferences.Get(TokenKey, string.Empty);
+        var token = MauiPreferences.Get(TokenKey, string.Empty);
         if (string.IsNullOrWhiteSpace(token))
         {
             return null;
         }
 
-        var userId = Preferences.Get(UserIdKey, string.Empty);
-        var displayName = Preferences.Get(DisplayNameKey, string.Empty);
-        var email = Preferences.Get(EmailKey, string.Empty);
+        var userId = MauiPreferences.Get(UserIdKey, string.Empty);
+        var displayName = MauiPreferences.Get(DisplayNameKey, string.Empty);
+        var email = MauiPreferences.Get(EmailKey, string.Empty);
         if (string.IsNullOrWhiteSpace(userId) ||
             string.IsNullOrWhiteSpace(displayName) ||
             string.IsNullOrWhiteSpace(email))

@@ -1,14 +1,14 @@
 # Spec: `OFFERS.MAP.001`
 
 ## Metadata
-- **Title**: Map Display and Walking Navigation Launch
-- **Version**: `v1.5`
+- **Title**: Map Display and Configured Navigation Launch
+- **Version**: `v1.6`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
 
 ## Purpose
-Show user and business locations and support walking navigation to selected business.
+Show user and business locations and support navigation to selected business using the configured travel mode.
 
 ## Preconditions
 - User is in Offers view.
@@ -23,10 +23,10 @@ Show user and business locations and support walking navigation to selected busi
 - `OFFERS.MAP.001-R3`: The system shall display a distance indicator bar representing coverage radius.
 - `OFFERS.MAP.001-R4`: Offers map rendering provider shall be resolved from internal configuration.
 - `OFFERS.MAP.001-R5`: The map rendering layer shall support configured provider modules including Google Maps API and OpenLayers API.
-- `OFFERS.MAP.001-R6`: On business marker selection, the system shall open walking navigation with selected location preloaded.
-- `OFFERS.MAP.001-R7`: On offer item selection for directions, the system shall open walking navigation with selected offer location preloaded.
+- `OFFERS.MAP.001-R6`: On business marker selection, the system shall open navigation with the configured travel mode and selected location preloaded.
+- `OFFERS.MAP.001-R7`: On offer item selection for directions, the system shall open navigation with the configured travel mode and selected offer location preloaded.
 - `OFFERS.MAP.001-R8`: Navigation redirect provider shall be resolved from internal configuration independently from map rendering provider.
-- `OFFERS.MAP.001-R9`: Navigation launch shall be platform-aware: desktop opens browser walking directions; mobile opens native map app when available, otherwise browser fallback.
+- `OFFERS.MAP.001-R9`: Navigation launch shall be platform-aware: desktop opens browser directions; mobile opens native map app when available, otherwise browser fallback.
 - `OFFERS.MAP.001-R10`: Offers view location text shown to users shall use human-readable address labels.
 - `OFFERS.MAP.001-R11`: Raw coordinate values (`lat`, `lng`) shall not be displayed to users in Offers view UI text.
 - `OFFERS.MAP.001-R12`: Raw coordinate values (`lat`, `lng`) shall remain available in internal data for map rendering, filtering, navigation, and persistence.
@@ -35,32 +35,36 @@ Show user and business locations and support walking navigation to selected busi
 - `OFFERS.MAP.001-R15`: When coverage radius changes, map marker set shall refresh according to the new radius filter.
 - `OFFERS.MAP.001-R16`: Offer click/marker click navigation redirect shall use the configured navigation redirect provider even when map rendering uses a different provider.
 - `OFFERS.MAP.001-R17`: When coverage radius changes, map zoom shall adjust to visualize the selected radius coverage around the user location.
+- `OFFERS.MAP.001-R18`: Navigation travel mode shall be resolved from user preferences, defaulting to pedestrian when no override exists.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
-Scenario: User opens walking directions from selected marker
+Scenario: User opens directions from selected marker
   Given the Offers map displays a business marker with active offers
   And map rendering provider is resolved from internal configuration
   And navigation redirect provider is resolved from internal configuration
+  And directions mode is configured as pedestrian
   When the user selects that marker
-  Then walking navigation shall open
+  Then navigation shall open
   And the selected business location shall be preloaded
-  And navigation mode shall be set to walking directions
+  And navigation mode shall be set to pedestrian directions
 
-Scenario: User opens walking directions from selected offer item
+Scenario: User opens directions from selected offer item
   Given the Offers list displays an offer with a location
   And map rendering provider is resolved from internal configuration
   And navigation redirect provider is resolved from internal configuration
+  And directions mode is configured as car
   When the user selects the offer item for directions
-  Then walking navigation shall open with the offer location preloaded
+  Then navigation shall open with the offer location preloaded
   And desktop clients shall open browser directions
-  And mobile clients shall open native map app in walking mode when available
+  And mobile clients shall open native map app in car mode when available
   And browser fallback shall be used when native app is unavailable
 
 Scenario: Rendering and redirect providers can be different
   Given map rendering provider is configured as OpenLayers
   And navigation redirect provider is configured as Google Maps
-  When the user opens walking directions from an offer
+  And directions mode is configured as pedestrian
+  When the user opens directions from an offer
   Then in-view map shall continue using OpenLayers
   And navigation redirect shall use Google Maps
 
@@ -81,13 +85,13 @@ Scenario: Coverage radius change refreshes map coverage and markers
 
 ## Example Inputs/Outputs
 - Example input: Tap business marker at known coordinates.
-- Expected output: External walking directions open with selected destination.
+- Expected output: External directions open with selected destination using the configured travel mode.
 - Example input: Tap offer item destination action on desktop.
-- Expected output: Browser opens walking directions with selected destination.
+- Expected output: Browser opens directions with selected destination using the configured travel mode.
 
 ## Edge Cases
 - Location permission denied: map still shows business markers when available.
-- Native map app unavailable on mobile: system falls back to browser walking directions.
+- Native map app unavailable on mobile: system falls back to browser directions.
 - Address label unavailable: UI shows generic location label without numeric coordinates.
 
 ## Non-Functional Constraints
@@ -96,3 +100,5 @@ Scenario: Coverage radius change refreshes map coverage and markers
 ## Related Specs
 - `OFFERS.SEARCH.001`
 - `APP.CONFIG.MAPS.001`
+- `OFFERS.DETAIL.ACTIONS.001`
+- `APP.NAVIGATION.MODE.001`

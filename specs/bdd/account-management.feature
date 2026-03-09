@@ -51,6 +51,36 @@ Feature: Account management for user lifecycle
     Given the user is authenticated
     When the user opens the My Account section
     Then the user profile information is shown
+    And the user's created offers are shown
+
+  Scenario: User logs out from My Account
+    Given the user is authenticated
+    When the user selects logout from My Account
+    Then the user session ends
+    And the Login view is shown
+
+  Scenario: User edits an owned offer from My Account
+    Given the user is authenticated
+    And My Account shows an offer created by the user
+    When the user selects edit for that offer
+    Then the Add Offer view is shown in edit mode
+    And the title shown is Edit Offer
+
+  Scenario: User confirms owned offer removal from My Account
+    Given the user is authenticated
+    And My Account shows an offer created by the user
+    When the user selects remove for that offer
+    Then a Yes and No confirmation prompt is shown
+    When the user selects Yes
+    Then the offer is removed from the user's created offers list
+
+  Scenario: User cancels owned offer removal from My Account
+    Given the user is authenticated
+    And My Account shows an offer created by the user
+    When the user selects remove for that offer
+    Then a Yes and No confirmation prompt is shown
+    When the user selects No
+    Then the offer remains in the user's created offers list
 
   Scenario: Unauthenticated user opens My Account
     Given the user is not authenticated

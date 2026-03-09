@@ -1,18 +1,23 @@
 # Decision Tables
 
-## Search Matching Rules (`OFFERS.SEARCH.001`)
+## Search Matching and Ranking Rules (`OFFERS.SEARCH.001`, `OFFERS.SEARCH.SMART.001`)
 
 | Decision Point | Default Rule | Notes |
 |---|---|---|
-| Match scope | Tag values only | Description text is out of scope for v1.0 |
-| Case handling | Case-insensitive | Normalize both query and tags to lowercase for comparison |
-| Partial match | Prefix and substring allowed | `cof` matches `coffee` |
-| Empty query | No filtering | Full active offer set is shown |
-| Multiple words | AND semantics | All words must match at least one tag |
-| Radius change with active query | Re-run search automatically | Applies tag + distance filtering |
+| Match scope | Offer searchable terms plus dictionary expansions | Supports exact query terms, fuzzy dictionary candidates, and synonyms |
+| Exact match | Enabled | Query normalized for case-insensitive comparison |
+| Fuzzy match | Enabled | Uses configurable similarity ratio threshold (default TBD) |
+| Synonym expansion | Enabled | Uses selected-language dictionary with multilingual support |
+| Dictionary by language | Use selected app language | Falls back to default language dictionary when missing |
+| Dictionary unavailable | Exact match fallback | Search remains available |
+| Result merge | Union with de-duplication | Matches from multiple strategies appear once |
+| Multiple words | AND semantics | All query tokens must be satisfied by merged strategy hits |
+| Empty query | No text matching | Full active offer set is shown before optional promoted/report ordering |
+| Radius change with active query | Re-run search automatically | Applies search matching + distance filtering |
 | Radius change with empty query | Re-run search automatically | Applies distance-only filtering |
 | Radius change map zoom | Adjust map zoom to keep selected radius visible | Applies with and without search text |
-| Result sort | Distance ascending | If distance unavailable, keep stable input order |
+| Result sort | Relevance descending, then distance ascending | Relevance score computed from strategy weights and similarity score |
+| Reported demotion | Applied after ranking | Reported offers are pushed to bottom |
 
 ## Offer List Distance Display Rules (`OFFERS.LIST.ITEM.001`)
 
@@ -22,7 +27,7 @@
 | Distance visibility | Show per offer in meters | User-facing value in offer list item |
 | Distance format | Rounded integer meters | Example `235 m` |
 
-## Tag Creation Rules (`ADD.OFFER.DESCRIPTION.TAGS.001`)
+## Tag Creation and Suggestion Rules (`ADD.OFFER.DESCRIPTION.TAGS.001`, `ADD.OFFER.TAGS.SUGGESTIONS.001`)
 
 | Decision Point | Default Rule | Notes |
 |---|---|---|
@@ -32,7 +37,95 @@
 | Normalization | Lowercase and trim punctuation except `%` | Prevent duplicates like `Coffee` vs `coffee` while preserving `50%` |
 | Percent handling | Preserve trailing percent symbol | `50%` remains `50%` |
 | Duplicate tags | Prevent duplicates | Existing tag remains highlighted or unchanged |
-| Manual tags | Allowed | Same normalization and duplicate rules apply |
+| Manual tags | Not available | Tags are created from detected description words or accepted suggested tags |
+| Description cleared | Clear selected tags | Prevent stale selected/suggested tag state when text is erased |
+| Suggestion scope | Related terms for selected tags | Includes dictionary synonyms plus singular/plural variants |
+| Suggestion threshold | Configurable | Similarity ratio threshold default is TBD |
+| Suggestion presentation | Optional chips/pills | Non-blocking UX |
+| Suggestion persistence | Explicit accept only | Suggested chips are not saved until tapped |
+| Suggestion language | Use selected app language | Fallback to default language resources |
+
+## Offer Photos and Rendering Rules (`ADD.OFFER.IMAGE.001`, `OFFERS.IMAGE.RENDERING.001`, `OFFERS.PHOTOS.CAROUSEL.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Upload count | Multiple photos allowed | Maximum count configurable (default TBD) |
+| Gallery selection | Multi-file selection allowed | Add Offer supports selecting multiple files in one action |
+| Photo order | User-defined order | Reordering persists and drives preview/carousel order |
+| Primary preview | First ordered photo | Used for grid/summary by default |
+| Upload normalization | Resize/crop on processing | Target aspect ratio is uniform |
+| Render mode | `square-crop` default | Optional `stretched-fill` mode supported by config |
+| Detail display | Swipeable carousel | Supports all stored photos |
+| Processing failure | Placeholder fallback | Layout remains stable |
+
+## Favorites Rules (`OFFERS.FAVORITES.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Favorite control | Heart/star toggle per offer card | Visible in grid cards |
+| Save semantics | Toggle saved state for current user | Idempotent per offer/user |
+| Persistence | Account-backed | Not local-only storage |
+| Sync scope | Cross-session and cross-device | Based on authenticated account |
+| My Favorites source | Saved offers only | Uses same offer entity data model |
+| My Favorites removal | Explicit remove action per saved item | Removes item from saved set and list |
+| My Favorites directions | Walking directions action per saved item | Uses the saved offer location |
+| My Favorites unauthenticated access | Redirect to `Login` | Saved list requires authenticated context |
+
+## Promoted Offers Rules (`OFFERS.FEED.PROMOTED.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Display trigger | Initial Offers load before user search | Pre-search feed behavior |
+| Placement | Top of feed or dedicated promoted section | Must be visually distinct |
+| Labeling | Explicit sponsored/promoted label | Avoid ambiguity |
+| Monetization role | Primary feed monetization mechanism | Product policy requirement |
+| Retrieval failure | Graceful degradation | Show standard feed without blocking |
+
+## Reported Offer Demotion Rules (`OFFERS.REPORTED.DEMOTION.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Main feed ordering | Reported offers at bottom | Non-reported shown first |
+| Search ordering | Reported offers at bottom | Applied after relevance ranking |
+| Visual indicator | Red border or red background | Must be visible in both themes |
+| Missing report state | Conservative demotion when uncertain | Safer default for moderation flow |
+
+## Theme Rules (`APP.THEME.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Initial theme source | Device/OS preference | Light or dark |
+| Manual override precedence | Override wins over OS theme | Until user resets to system |
+| Quick theme control location | Main navigation menu | Also configurable from settings |
+| Theme apply timing from menu | Immediate runtime apply | No app restart required |
+| Reset behavior | Return to system-follow mode | Uses current OS preference |
+| Theme coverage | Both themes fully implemented | Applies across all app views |
+
+## Localization Rules (`APP.LOCALIZATION.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Default language value | Device/system locale | Applied at startup when no override |
+| Manual language override | Available in app settings | Persists for user account |
+| Quick language control location | Main navigation menu | Also configurable from settings |
+| Language apply timing from menu | Immediate runtime apply | UI text and language dictionaries refresh in current view |
+| UI string source | Externalized resource files | No hardcoded UI text |
+| Search dictionaries | Load by selected language | Used by smart search and tag suggestions |
+| Missing translation key | Fallback to default language | Prevents blank UI text |
+| Missing language dictionary | Feature-level fallback | Non-blocking exact match and selected-tag suggestion flow remains available |
+
+## Startup Splash and Blocking Loading Rules (`APP.SHELL.001`, `OFFERS.SEARCH.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Splash display trigger | App startup | Runs before first interactive view |
+| Splash duration | About 2 seconds | Target duration, not hard real-time |
+| Splash behavior | Branded animated intro with smooth exit | Keeps startup identity consistent |
+| Global loading trigger | Any required in-view data request in progress | Includes initial location fetch and search |
+| Loading UI | Blocking overlay with animated indicator | Prevents accidental double actions |
+| Interaction during loading | Disabled for underlying view | Overlay blocks taps/clicks/inputs |
+| Concurrent requests | Reference-counted busy state | Overlay hides only when all required requests complete |
+| Request failure | Hide overlay and show normal error/empty UI state | Failure must not leave UI blocked |
 
 ## Location Selection Rules (`ADD.OFFER.LOCATION.001`)
 
@@ -61,7 +154,7 @@
 | Provider configuration source | Internal app configuration | Not hardcoded in feature behavior |
 | Supported providers | Google Maps API and OpenLayers API | Additional providers may be added later |
 | In-view map renderer provider | Configured independently | Applies to Offers/Add Offer rendered maps |
-| Navigation redirect provider | Configured independently | Applies when user opens directions from offers/markers |
+| Navigation redirect provider | Configured independently | Applies when user opens directions from offers/markers/detail button |
 | Offers map renderer | Use configured in-view renderer provider | Applies to map display and markers |
 | Add Offer location search | Use configured in-view renderer provider | Applies to business/address text lookup |
 | Offer click redirect | Use configured navigation redirect provider | May differ from in-view renderer |
@@ -90,7 +183,7 @@
 | Counter default | `0` | Used when no prior feedback exists |
 | Counter display | Positive as integer, negative as integer count | Example `12` up and `3` down |
 
-## Report Prefill Rules (`OFFERS.LIST.ACTIONS.001`, `REPORTS.OFFER.PREFILL.001`)
+## Report Prefill and Generic Report Rules (`OFFERS.LIST.ACTIONS.001`, `REPORTS.OFFER.PREFILL.001`, `REPORTS.SUBMIT.001`)
 
 | Decision Point | Default Rule | Notes |
 |---|---|---|
@@ -99,8 +192,19 @@
 | Prefilled metadata | `userId`, `offerId`, report date/time, text | Captured at report-button press time |
 | Direct Reports access | No preview required | User can still submit generic report |
 | Report payload from offer flow | Include message + metadata | Includes `userId`, `offerId`, and report date/time |
+| Reports route alias | Legacy complaints entry uses same report behavior | Backward-compatible access path |
+| Reports authentication | Active session required for Reports view | Unauthenticated user is redirected to `Login` |
 
-## Account Session and Post-Submit Navigation Rules (`APP.SHELL.001`, `ACCOUNT.AUTH.*`, `ACCOUNT.PROFILE.001`, `ADD.OFFER.LAYOUT.001`, `REPORTS.OFFER.PREFILL.001`)
+## Suggestions Submission Rules (`SUGGESTIONS.SUBMIT.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Suggestion message | Required | Blank suggestion is rejected |
+| Contact field | Optional | Stored when provided |
+| Success navigation | Redirect to `Offers` | Applies only after successful submission |
+| Failure behavior | Stay in Suggestions and show status/error | No redirect on failed submission |
+
+## Account Session and Post-Submit Navigation Rules (`APP.SHELL.001`, `ACCOUNT.AUTH.*`, `ACCOUNT.PROFILE.001`, `ADD.OFFER.LAYOUT.001`, `REPORTS.OFFER.PREFILL.001`, `REPORTS.SUBMIT.001`, `SUGGESTIONS.SUBMIT.001`)
 
 | Decision Point | Default Rule | Notes |
 |---|---|---|
@@ -114,10 +218,16 @@
 | Session persistence | Persist on device | User remains logged in across app restarts |
 | Startup with expired persisted session | Clear session and redirect to `Login` | Prevent access with invalid token |
 | My Account unauthenticated access | Redirect to `Login` | Profile requires active session |
+| My Account owned offers source | Authenticated user's created offers only | Excludes offers created by other users |
+| My Account owned offer actions | `Edit` and `Remove` only | Favorite and availability controls are not shown in My Account list |
+| Owned offer remove confirmation | Explicit `Yes` / `No` prompt | Prevents accidental deletion |
+| Owned offer remove cancel | Keep offer unchanged | `No` closes confirmation with no mutation |
+| Owned offer edit navigation | Open Add Offer in edit mode | Target offer is preloaded into the editor |
 | Logout behavior | Clear session and redirect to `Login` | Applies from My Account context |
 | Suggestions submit success | Redirect to `Offers` | Applies only when response has no errors |
 | Reports submit success | Redirect to `Offers` | Applies only when response has no errors |
 | Add Offer submit success | Redirect to `Offers` | Applies only when offer create response has no errors |
+| Edit Offer submit success | Redirect to `My Account` | Applies only when offer update response has no errors |
 | Any submit error | Stay in current view and show error/status | No redirect on failed response |
 
 ## Logging Rules (`APP.LOGGING.001`)

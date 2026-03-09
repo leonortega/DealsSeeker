@@ -13,6 +13,7 @@ Implementation stack:
 
 ## Spec Mapping
 - `APP.SHELL.001`: Bottom navigation with `My Account`, `Offers`, `Suggestions`, `Reports`; default route redirects to `/offers`.
+- `APP.NAVIGATION.MODE.001`: Per-user directions mode preference (`pedestrian` or `car`) applied to offer navigation actions.
 - `OFFERS.*`: Offers page with tag search, map section, distance bar, offer list, actions, and add-offer navigation.
 - `ADD.OFFER.*`: Add Offer page with image capture/upload, auto location, location search, confirm location, and tag long-press logic.
 

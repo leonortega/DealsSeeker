@@ -12,7 +12,14 @@
 </head>
 <body>
     <div class="status-bar-safe-area"></div>
-    <div id="app">Loading...</div>
+    <div id="startup-splash" class="startup-host-splash" aria-hidden="true">
+        <div class="startup-host-splash-content">
+            <img src="/images/dealseeker-icon.svg" alt="" class="startup-host-splash-icon" />
+            <p class="startup-host-splash-title">DealsSeeker</p>
+            <p class="startup-host-splash-subtitle">Find nearby deals instantly</p>
+        </div>
+    </div>
+    <div id="app" class="app-host app-host-loading"></div>
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>
@@ -20,12 +27,57 @@
     </div>
     <script>
         (function () {
+            var startupStartedAt = Date.now();
+            var startupMinDurationMs = 2000;
+            var startupRevealDelayMs = 450;
+            var startupCompleted = false;
+
+            function revealApp() {
+                var appHost = document.getElementById("app");
+                if (appHost) {
+                    appHost.classList.remove("app-host-loading");
+                }
+            }
+
+            function removeStartupSplash() {
+                var splash = document.getElementById("startup-splash");
+                revealApp();
+
+                if (!splash) {
+                    return;
+                }
+
+                splash.classList.add("startup-host-splash-exit");
+                window.setTimeout(function () {
+                    if (splash.parentNode) {
+                        splash.parentNode.removeChild(splash);
+                    }
+                }, startupRevealDelayMs);
+            }
+
+            function completeStartup() {
+                if (startupCompleted) {
+                    return;
+                }
+
+                startupCompleted = true;
+
+                var elapsedMs = Date.now() - startupStartedAt;
+                var remainingMs = Math.max(0, startupMinDurationMs - elapsedMs);
+                window.setTimeout(removeStartupSplash, remainingMs);
+            }
+
+            window.DealsSeekerStartup = {
+                complete: completeStartup
+            };
+
             function appendErrorDetails(message) {
                 var host = document.getElementById("blazor-error-ui");
                 if (!host || !message) {
                     return;
                 }
 
+                completeStartup();
                 host.style.display = "block";
 
                 var details = host.querySelector(".error-details");

@@ -11,7 +11,13 @@ Feature: Offers layout and navigation to Add Offer
     And a coverage radius control below the search textbox is visible
     And a plus button near the search bar is visible
     And a map component is visible
-    And an offer list below the map is visible
+    And an offers feed area below the map is visible
+
+  Scenario: Initial load can show promoted offers section
+    Given promoted offers are available
+    And the user has not executed a search
+    When the Offers view is rendered
+    Then a promoted offers section is visible above standard offers
 
   Scenario: Plus button opens Add Offer view
     Given the user is authenticated

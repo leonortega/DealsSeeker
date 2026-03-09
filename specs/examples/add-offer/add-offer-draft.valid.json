@@ -4,13 +4,24 @@
     "coffee",
     "fresh"
   ],
-  "image": {
-    "source": "gallery",
-    "mimeType": "image/jpeg",
-    "sizeBytes": 423112,
-    "width": 1200,
-    "height": 900
-  },
+  "images": [
+    {
+      "source": "gallery",
+      "mimeType": "image/jpeg",
+      "sizeBytes": 423112,
+      "width": 1200,
+      "height": 900,
+      "order": 0
+    },
+    {
+      "source": "gallery",
+      "mimeType": "image/jpeg",
+      "sizeBytes": 398221,
+      "width": 1024,
+      "height": 1024,
+      "order": 1
+    }
+  ],
   "location": {
     "source": "auto",
     "label": "5th Avenue Station",
@@ -18,4 +29,3 @@
     "lng": -74.0061
   }
 }
-
