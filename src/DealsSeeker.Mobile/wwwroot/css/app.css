@@ -1036,6 +1036,43 @@ mark {
     color: var(--color-primary);
 }
 
+.close-button {
+    width: 2.85rem;
+    height: 2.85rem;
+    border: 0;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: linear-gradient(180deg, rgba(82, 86, 92, 0.9), rgba(58, 62, 68, 0.94));
+    color: #f7f8fa;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 14px 24px rgba(18, 20, 24, 0.24);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, opacity 160ms ease;
+}
+
+.close-button:hover,
+.close-button:focus-visible {
+    transform: translateY(-1px);
+    background: linear-gradient(180deg, rgba(92, 96, 102, 0.94), rgba(64, 68, 74, 0.98));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 18px 28px rgba(18, 20, 24, 0.3);
+}
+
+.close-button:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.7);
+    outline-offset: 2px;
+}
+
+.close-button-glyph {
+    display: block;
+    font-size: 1.75rem;
+    line-height: 1;
+    font-weight: 300;
+    transform: translateY(-0.07rem);
+}
+
 .btn-icon-ghost {
     width: 2.75rem;
     height: 2.75rem;
@@ -1526,6 +1563,13 @@ mark {
     box-shadow: none;
 }
 
+.page.theme-dark .close-button {
+    background: linear-gradient(180deg, rgba(88, 92, 98, 0.92), rgba(60, 64, 70, 0.96));
+    color: #f7f8fa;
+    border-color: transparent;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 16px 28px rgba(0, 0, 0, 0.26);
+}
+
 .page.theme-dark .field-input::placeholder {
     color: #c9d2cd;
     opacity: 1;
@@ -1649,6 +1693,13 @@ mark {
         color: var(--color-text);
         border-color: rgba(112, 129, 120, 0.92);
         box-shadow: none;
+    }
+
+    .page.theme-system .close-button {
+        background: linear-gradient(180deg, rgba(88, 92, 98, 0.92), rgba(60, 64, 70, 0.96));
+        color: #f7f8fa;
+        border-color: transparent;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 16px 28px rgba(0, 0, 0, 0.26);
     }
 
     .page.theme-system .field-input::placeholder {

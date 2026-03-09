@@ -370,7 +370,13 @@
     <value>View details</value>
   </data>
   <data name="offers.directions" xml:space="preserve">
-    <value>Get Walking Directions</value>
+    <value>Show directions</value>
+  </data>
+  <data name="offers.directions.car" xml:space="preserve">
+    <value>Get Driving Directions</value>
+  </data>
+  <data name="offers.directions.pedestrian" xml:space="preserve">
+    <value>Get Pedestrian Directions</value>
   </data>
   <data name="offers.distance" xml:space="preserve">
     <value>Distance</value>
@@ -509,6 +515,18 @@
   </data>
   <data name="settings.languageUpdated" xml:space="preserve">
     <value>Language updated.</value>
+  </data>
+  <data name="settings.navigationMode" xml:space="preserve">
+    <value>Directions mode</value>
+  </data>
+  <data name="settings.navigationMode.car" xml:space="preserve">
+    <value>Car</value>
+  </data>
+  <data name="settings.navigationMode.pedestrian" xml:space="preserve">
+    <value>Pedestrian</value>
+  </data>
+  <data name="settings.navigationModeUpdated" xml:space="preserve">
+    <value>Directions mode updated.</value>
   </data>
   <data name="settings.theme" xml:space="preserve">
     <value>Theme</value>

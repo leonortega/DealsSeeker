@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offer Item Visual Structure
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -21,7 +21,7 @@ Define mandatory content displayed per offer list item.
 - `OFFERS.LIST.ITEM.001-R2`: The system shall display a short offer description.
 - `OFFERS.LIST.ITEM.001-R3`: The system shall highlight keywords in the description.
 - `OFFERS.LIST.ITEM.001-R4`: The system shall display associated tags below the description.
-- `OFFERS.LIST.ITEM.001-R5`: Each offer item shall provide a selectable destination action that opens walking directions per `OFFERS.MAP.001`.
+- `OFFERS.LIST.ITEM.001-R5`: Each offer item shall provide a selectable destination action that opens directions using the configured travel mode per `OFFERS.MAP.001`.
 - `OFFERS.LIST.ITEM.001-R6`: Each offer item shall display the distance in meters from the current user location.
 
 ## Acceptance Criteria (BDD)
@@ -38,7 +38,7 @@ Scenario: Offer item displays required content blocks
 Scenario: Offer item supports destination selection
   Given an offer item with valid location is displayed
   When the user selects the offer item destination action
-  Then walking directions shall open to that offer location
+  Then directions shall open to that offer location using the configured travel mode
 ```
 
 ## Example Inputs/Outputs

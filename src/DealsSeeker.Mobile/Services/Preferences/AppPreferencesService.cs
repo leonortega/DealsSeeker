@@ -9,6 +9,7 @@ public sealed class AppPreferencesService : IAppPreferencesService, IDisposable
 {
     private const string ThemeKeyPrefix = "ui.theme.";
     private const string LanguageKeyPrefix = "ui.language.";
+    private const string NavigationModeKeyPrefix = "ui.navigation-mode.";
     private static readonly IReadOnlyList<string> Languages = ["en", "es"];
 
     private readonly ICultureService _cultureService;
@@ -17,6 +18,8 @@ public sealed class AppPreferencesService : IAppPreferencesService, IDisposable
     public string ThemeMode { get; private set; } = "system";
 
     public string Language => NormalizeLanguage(_cultureService.CurrentCulture.TwoLetterISOLanguageName, "en");
+
+    public string NavigationMode { get; private set; } = NavigationModes.Pedestrian;
 
     public IReadOnlyList<string> SupportedLanguages => Languages;
 
@@ -37,6 +40,11 @@ public sealed class AppPreferencesService : IAppPreferencesService, IDisposable
         var themeChanged = !string.Equals(ThemeMode, nextTheme, StringComparison.OrdinalIgnoreCase);
         ThemeMode = nextTheme;
 
+        var nextNavigationMode = NavigationModes.Normalize(
+            MauiPreferences.Get(NavigationModePreferenceKey(userId), NavigationModes.Pedestrian));
+        var navigationModeChanged = !string.Equals(NavigationMode, nextNavigationMode, StringComparison.OrdinalIgnoreCase);
+        NavigationMode = nextNavigationMode;
+
         var defaultLanguage = ResolveSystemLanguage();
         var selectedLanguage = NormalizeLanguage(
             MauiPreferences.Get(LanguagePreferenceKey(userId), defaultLanguage),
@@ -48,7 +56,7 @@ public sealed class AppPreferencesService : IAppPreferencesService, IDisposable
             _cultureService.SetCulture(selectedLanguage);
         }
 
-        if (themeChanged || !languageChanged)
+        if (themeChanged || navigationModeChanged || !languageChanged)
         {
             Changed?.Invoke();
         }
@@ -87,6 +95,16 @@ public sealed class AppPreferencesService : IAppPreferencesService, IDisposable
         return Task.CompletedTask;
     }
 
+    public Task SetNavigationModeAsync(string mode, string? userId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        NavigationMode = NavigationModes.Normalize(mode);
+        MauiPreferences.Set(NavigationModePreferenceKey(userId), NavigationMode);
+        Changed?.Invoke();
+        return Task.CompletedTask;
+    }
+
     public string Translate(string key)
     {
         var culture = _cultureService.CurrentCulture;
@@ -115,6 +133,9 @@ public sealed class AppPreferencesService : IAppPreferencesService, IDisposable
 
     private static string LanguagePreferenceKey(string? userId) =>
         string.IsNullOrWhiteSpace(userId) ? $"{LanguageKeyPrefix}global" : $"{LanguageKeyPrefix}{userId}";
+
+    private static string NavigationModePreferenceKey(string? userId) =>
+        string.IsNullOrWhiteSpace(userId) ? $"{NavigationModeKeyPrefix}global" : $"{NavigationModeKeyPrefix}{userId}";
 
     private static string NormalizeThemeMode(string? mode)
     {

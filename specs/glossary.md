@@ -21,7 +21,9 @@
 - **User location**: The current geolocation of the user device, if permission is granted.
 - **Coordinate privacy in UI**: Add Offer and Offers views must not expose raw `lat`/`lng` values to users; coordinates are internal data used for map, navigation, and persistence.
 - **User vote**: A single availability feedback action (thumbs up or thumbs down) cast by one authenticated user for one offer.
-- **Walking navigation**: External maps navigation mode that uses walking directions.
+- **Directions travel mode**: User-selected navigation mode used when launching external maps directions.
+- **Pedestrian navigation**: External maps navigation mode that uses walking directions.
+- **Driving navigation**: External maps navigation mode that uses car directions.
 - **Smart search**: Search flow that combines exact match, fuzzy similarity matching, and synonym expansion.
 - **Similarity ratio threshold**: Configurable cutoff used to accept or reject fuzzy dictionary candidates.
 - **Synonym expansion**: Addition of semantically related terms during query processing.

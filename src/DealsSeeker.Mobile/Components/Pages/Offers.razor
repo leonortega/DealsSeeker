@@ -249,7 +249,9 @@
             <div>
                 <h2>@_detailOffer.BusinessName</h2>
             </div>
-            <button class="btn-icon-ghost" @onclick="CloseDetail" aria-label="@T("nav.closeMenu")">x</button>
+            <button class="close-button" @onclick="CloseDetail" aria-label="@T("nav.closeMenu")">
+                <span class="close-button-glyph" aria-hidden="true">&times;</span>
+            </button>
         </div>
 
         <div class="offer-detail-carousel">
@@ -285,7 +287,7 @@
         }
 
         <div class="action-row detail-action-row">
-            <button class="btn-main" @onclick="() => OpenDirectionsAsync(_detailOffer.Location)">@T("offers.directions")</button>
+            <button class="btn-main" @onclick="() => OpenDirectionsAsync(_detailOffer.Location)">@DirectionsButtonText()</button>
             <button class="btn-secondary btn-favorite @(_detailOffer.IsFavorite ? "active" : string.Empty)"
                     @onclick="() => ToggleFavoriteAsync(_detailOffer)">
                 <span class="favorite-heart" aria-hidden="true">&#10084;</span>
@@ -299,7 +301,9 @@
 {
     <div class="modal-backdrop" @onclick="CloseFullscreen"></div>
     <section class="image-fullscreen-modal" role="dialog" aria-modal="true">
-        <button class="btn-icon-ghost image-modal-close" @onclick="CloseFullscreen" aria-label="@T("nav.closeMenu")">x</button>
+        <button class="close-button image-modal-close" @onclick="CloseFullscreen" aria-label="@T("nav.closeMenu")">
+            <span class="close-button-glyph" aria-hidden="true">&times;</span>
+        </button>
         <img src="@CurrentDetailImage()"
              alt="@T("offers.fullscreenImageAlt")"
              class="image-fullscreen"
@@ -442,7 +446,7 @@
 
     private async Task OpenDirectionsAsync(GeoPoint destination)
     {
-        await MapLauncher.OpenWalkingDirectionsAsync(destination, CancellationToken.None);
+        await MapLauncher.OpenDirectionsAsync(destination, Preferences.NavigationMode, CancellationToken.None);
     }
 
     private async Task ToggleFavoriteAsync(OfferItemDto offer)
@@ -644,6 +648,11 @@
     private void NavigateToAddOffer() => Navigation.NavigateTo("/add-offer");
 
     private string T(string key) => Preferences.Translate(key);
+
+    private string DirectionsButtonText() =>
+        Preferences.NavigationMode == NavigationModes.Car
+            ? T("offers.directions.car")
+            : T("offers.directions.pedestrian");
 
     private string CurrentLocationFallback() => T("offers.currentLocation");
 

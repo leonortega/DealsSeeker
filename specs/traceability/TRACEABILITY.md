@@ -22,6 +22,7 @@
 | `APP.CONFIG.MAPS.001` | `bdd/map-provider-configuration.feature` | N/A | N/A |
 | `APP.THEME.001` | `bdd/app-theme.feature` | N/A | N/A |
 | `APP.LOCALIZATION.001` | `bdd/app-localization.feature` | N/A | N/A |
+| `APP.NAVIGATION.MODE.001` | `bdd/app-navigation-mode.feature` | N/A | N/A |
 | `ACCOUNT.AUTH.LOGIN.001` | `bdd/account-management.feature` | N/A | N/A |
 | `ACCOUNT.AUTH.REGISTER.001` | `bdd/account-management.feature` | N/A | N/A |
 | `ACCOUNT.PROFILE.001` | `bdd/account-management.feature` | N/A | N/A |

@@ -6,6 +6,8 @@ public interface IAppPreferencesService
 
     string Language { get; }
 
+    string NavigationMode { get; }
+
     IReadOnlyList<string> SupportedLanguages { get; }
 
     event Action? Changed;
@@ -15,6 +17,8 @@ public interface IAppPreferencesService
     Task SetThemeModeAsync(string mode, string? userId, CancellationToken cancellationToken);
 
     Task SetLanguageAsync(string language, string? userId, CancellationToken cancellationToken);
+
+    Task SetNavigationModeAsync(string mode, string? userId, CancellationToken cancellationToken);
 
     string Translate(string key);
 }

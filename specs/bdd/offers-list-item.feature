@@ -40,8 +40,8 @@ Feature: Offer list item content and actions
     And thumbs down with negative counter is visible
     And both availability buttons are enabled for the user
 
-  Scenario: Selecting offer item opens walking directions
+  Scenario: Selecting offer item opens configured directions
     Given an offer item has a valid location
     When the user selects the offer item destination action
-    Then walking directions open for that location
-    And walking mode is selected
+    Then directions open for that location
+    And the configured travel mode is selected

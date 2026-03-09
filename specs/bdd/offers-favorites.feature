@@ -26,7 +26,7 @@ Feature: Offer favorites and My Favorites section
     Given an authenticated user is on My Favorites
     And a saved offer has a valid location
     When the user taps directions for that offer
-    Then walking directions open for that location
+    Then directions open for that location using the configured travel mode
 
   Scenario: Unauthenticated user opens My Favorites
     Given the user is not authenticated

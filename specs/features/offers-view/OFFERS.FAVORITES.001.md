@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offer Favorites and My Favorites View
-- **Version**: `v0.2`
+- **Version**: `v0.3`
 - **Status**: Draft
 - **Context/View**: Offers View
 - **Priority**: High
@@ -25,7 +25,7 @@ Allow users to save offers and manage them from a dedicated favorites section.
 - `OFFERS.FAVORITES.001-R5`: Favorites shall sync across user sessions and devices.
 - `OFFERS.FAVORITES.001-R6`: Favorite suggestion chips or optional UI elements shall not block standard browsing/search flows.
 - `OFFERS.FAVORITES.001-R7`: Each item in `My Favorites` shall provide an action to remove that offer from saved favorites.
-- `OFFERS.FAVORITES.001-R8`: Each item in `My Favorites` shall provide a directions action that opens walking navigation for the offer location.
+- `OFFERS.FAVORITES.001-R8`: Each item in `My Favorites` shall provide a directions action that opens navigation for the offer location using the configured travel mode.
 - `OFFERS.FAVORITES.001-R9`: Unauthenticated access to `My Favorites` shall redirect to `Login`.
 
 ## Acceptance Criteria (BDD)
@@ -53,7 +53,7 @@ Scenario: User opens directions from My Favorites
   Given an authenticated user is on My Favorites
   And a saved offer has a valid location
   When the user selects directions for that offer
-  Then walking directions shall open for the offer location
+  Then directions shall open for the offer location using the configured travel mode
 
 Scenario: Unauthenticated user opens My Favorites
   Given the user is not authenticated
@@ -76,3 +76,4 @@ Scenario: Unauthenticated user opens My Favorites
 ## Related Specs
 - `OFFERS.GRID.CARDS.001`
 - `ACCOUNT.PROFILE.001`
+- `APP.NAVIGATION.MODE.001`

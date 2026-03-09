@@ -81,6 +81,14 @@ else
                         <option value="es">@T("settings.language.es")</option>
                     </select>
                 </label>
+
+                <label class="settings-card" for="navigationMode">
+                    <span class="settings-label">@T("settings.navigationMode")</span>
+                    <select id="navigationMode" class="field-input field-select" value="@Preferences.NavigationMode" @onchange="OnNavigationModeChangedAsync">
+                        <option value="@NavigationModes.Pedestrian">@T("settings.navigationMode.pedestrian")</option>
+                        <option value="@NavigationModes.Car">@T("settings.navigationMode.car")</option>
+                    </select>
+                </label>
             </div>
         </section>
     </section>
@@ -189,6 +197,13 @@ else
         var nextLanguage = args.Value?.ToString() ?? "en";
         await Preferences.SetLanguageAsync(nextLanguage, Session.CurrentSession?.UserId, CancellationToken.None);
         _status = T("settings.languageUpdated");
+    }
+
+    private async Task OnNavigationModeChangedAsync(ChangeEventArgs args)
+    {
+        var nextNavigationMode = args.Value?.ToString() ?? NavigationModes.Pedestrian;
+        await Preferences.SetNavigationModeAsync(nextNavigationMode, Session.CurrentSession?.UserId, CancellationToken.None);
+        _status = T("settings.navigationModeUpdated");
     }
 
     private string ProfileInitial()

@@ -68,7 +68,7 @@
                         }
 
                         <div class="action-row">
-                            <button class="btn-main" @onclick="() => OpenDirectionsAsync(offer.Location)">@T("offers.directions")</button>
+                            <button class="btn-main" @onclick="() => OpenDirectionsAsync(offer.Location)">@DirectionsButtonText()</button>
                             <button class="btn-secondary btn-danger" @onclick="() => RemoveFavoriteAsync(offer.OfferId)">@T("offers.favoriteRemove")</button>
                         </div>
                     </div>
@@ -143,9 +143,14 @@
     }
 
     private Task OpenDirectionsAsync(GeoPoint destination) =>
-        MapLauncher.OpenWalkingDirectionsAsync(destination, CancellationToken.None);
+        MapLauncher.OpenDirectionsAsync(destination, Preferences.NavigationMode, CancellationToken.None);
 
     private string T(string key) => Preferences.Translate(key);
+
+    private string DirectionsButtonText() =>
+        Preferences.NavigationMode == NavigationModes.Car
+            ? T("offers.directions.car")
+            : T("offers.directions.pedestrian");
 
     private static string ResolveOfferImage(string imageUrl) =>
         string.IsNullOrWhiteSpace(imageUrl) ? "/images/offer-placeholder.svg" : imageUrl;
