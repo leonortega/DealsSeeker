@@ -3,16 +3,26 @@
 @inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
 
-<h1>@T("suggestions.title")</h1>
+<section class="page-hero">
+    <div class="page-hero-copy">
+        <h1>@T("suggestions.title")</h1>
+    </div>
+</section>
 
-<section class="card-block">
+<section class="card-block compose-section">
+    <div class="section-heading">
+        <div>
+            <h2>@T("suggestions.send")</h2>
+        </div>
+    </div>
+
     <label class="field-label" for="suggestionMessage">@T("suggestions.suggestion")</label>
-    <textarea id="suggestionMessage" name="suggestionMessage" class="field-input" @bind="_message" rows="4"></textarea>
+    <textarea id="suggestionMessage" name="suggestionMessage" class="field-input field-textarea" @bind="_message" rows="5"></textarea>
 
     <label class="field-label" for="suggestionContact">@T("suggestions.contactOptional")</label>
     <input id="suggestionContact" name="suggestionContact" class="field-input" @bind="_contact" />
 
-    <button class="btn-main" @onclick="SubmitAsync" disabled="@_submitting">@T("suggestions.send")</button>
+    <button class="btn-main btn-main-accent" @onclick="SubmitAsync" disabled="@_submitting">@T("suggestions.send")</button>
     @if (!string.IsNullOrWhiteSpace(_statusMessage))
     {
         <p class="status-line">@_statusMessage</p>

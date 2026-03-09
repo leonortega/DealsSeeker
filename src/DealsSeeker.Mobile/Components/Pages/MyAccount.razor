@@ -4,8 +4,6 @@
 @inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
 
-<h1>@T("account.title")</h1>
-
 @if (_loading)
 {
     <section class="card-block">
@@ -14,40 +12,77 @@
 }
 else
 {
-    <section class="card-block">
-        <h2>@T("account.profile")</h2>
-        @if (_profile is null)
-        {
-            <p class="muted">@T("account.noProfile")</p>
-        }
-        else
-        {
-            <p><strong>@T("account.name"):</strong> @_profile.DisplayName</p>
-            <p><strong>@T("account.email"):</strong> @_profile.Email</p>
-            <p><strong>@T("account.userId"):</strong> @_profile.UserId</p>
-        }
+    <section class="card-block account-hero">
+        <div class="account-summary">
+            <div class="account-avatar">@ProfileInitial()</div>
+            <div class="account-summary-copy">
+                <h1>@(_profile?.DisplayName ?? T("account.title"))</h1>
+            </div>
+        </div>
 
-        <div class="action-row">
+        <div class="account-actions">
             <button class="btn-main" @onclick="RefreshProfileAsync" disabled="@_working">@T("account.refresh")</button>
-            <button class="btn-main btn-danger" @onclick="LogoutAsync" disabled="@_working">@T("account.logout")</button>
+            <button class="btn-secondary btn-danger" @onclick="LogoutAsync" disabled="@_working">@T("account.logout")</button>
         </div>
     </section>
 
-    <section class="card-block">
-        <h2>@T("account.settings")</h2>
+    <section class="account-grid">
+        <section class="card-block account-panel">
+            <div class="section-heading">
+                <div>
+                    <h2>@T("account.profile")</h2>
+                </div>
+            </div>
 
-        <label class="field-label" for="themeMode">@T("settings.theme")</label>
-        <select id="themeMode" class="field-input" value="@Preferences.ThemeMode" @onchange="OnThemeChangedAsync">
-            <option value="system">@T("settings.theme.system")</option>
-            <option value="light">@T("settings.theme.light")</option>
-            <option value="dark">@T("settings.theme.dark")</option>
-        </select>
+            @if (_profile is null)
+            {
+                <p class="muted">@T("account.noProfile")</p>
+            }
+            else
+            {
+                <div class="account-detail-list">
+                    <div class="account-detail-card">
+                        <span class="account-detail-label">@T("account.name")</span>
+                        <strong class="account-detail-value">@_profile.DisplayName</strong>
+                    </div>
+                    <div class="account-detail-card">
+                        <span class="account-detail-label">@T("account.email")</span>
+                        <strong class="account-detail-value">@_profile.Email</strong>
+                    </div>
+                    <div class="account-detail-card">
+                        <span class="account-detail-label">@T("account.userId")</span>
+                        <strong class="account-detail-value">@_profile.UserId</strong>
+                    </div>
+                </div>
+            }
+        </section>
 
-        <label class="field-label" for="languageMode">@T("settings.language")</label>
-        <select id="languageMode" class="field-input" value="@Preferences.Language" @onchange="OnLanguageChangedAsync">
-            <option value="en">@T("settings.language.en")</option>
-            <option value="es">@T("settings.language.es")</option>
-        </select>
+        <section class="card-block account-panel">
+            <div class="section-heading">
+                <div>
+                    <h2>@T("account.settings")</h2>
+                </div>
+            </div>
+
+            <div class="settings-stack">
+                <label class="settings-card" for="themeMode">
+                    <span class="settings-label">@T("settings.theme")</span>
+                    <select id="themeMode" class="field-input field-select" value="@Preferences.ThemeMode" @onchange="OnThemeChangedAsync">
+                        <option value="system">@T("settings.theme.system")</option>
+                        <option value="light">@T("settings.theme.light")</option>
+                        <option value="dark">@T("settings.theme.dark")</option>
+                    </select>
+                </label>
+
+                <label class="settings-card" for="languageMode">
+                    <span class="settings-label">@T("settings.language")</span>
+                    <select id="languageMode" class="field-input field-select" value="@Preferences.Language" @onchange="OnLanguageChangedAsync">
+                        <option value="en">@T("settings.language.en")</option>
+                        <option value="es">@T("settings.language.es")</option>
+                    </select>
+                </label>
+            </div>
+        </section>
     </section>
 }
 
@@ -154,6 +189,14 @@ else
         var nextLanguage = args.Value?.ToString() ?? "en";
         await Preferences.SetLanguageAsync(nextLanguage, Session.CurrentSession?.UserId, CancellationToken.None);
         _status = T("settings.languageUpdated");
+    }
+
+    private string ProfileInitial()
+    {
+        var source = _profile?.DisplayName ?? Session.CurrentSession?.DisplayName ?? "D";
+        return string.IsNullOrWhiteSpace(source)
+            ? "D"
+            : char.ToUpperInvariant(source.Trim()[0]).ToString();
     }
 
     private string T(string key) => Preferences.Translate(key);

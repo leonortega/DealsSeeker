@@ -6,21 +6,35 @@
 @inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
 
-<h1>@T("reports.title")</h1>
+<section class="page-hero">
+    <div class="page-hero-copy">
+        <h1>@T("reports.title")</h1>
+    </div>
+</section>
 
 @if (_previewOffer is not null)
 {
     <section class="card-block">
-        <h2>@T("reports.offerPreview")</h2>
-        <article class="offer-card report-preview-card">
-            <img src="@ResolveOfferImage(_previewOffer.ImageUrl)"
-                 alt="@T("offers.imageAlt")"
-                 class="offer-image"
-                 onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
-            <div class="offer-body">
-                <h3>@_previewOffer.BusinessName</h3>
-                <p>@_previewOffer.Description</p>
-                <div class="tag-list">
+        <div class="section-heading">
+            <div>
+                <h2>@T("reports.offerPreview")</h2>
+            </div>
+        </div>
+
+        <article class="offer-card-square offer-card-modern report-preview-card">
+            <div class="offer-image-button">
+                <img src="@ResolveOfferImage(_previewOffer.ImageUrl)"
+                     alt="@T("offers.imageAlt")"
+                     class="offer-image-square"
+                     onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
+                <span class="offer-image-scrim"></span>
+            </div>
+            <div class="offer-square-body">
+                <div class="offer-card-heading">
+                    <h3>@_previewOffer.BusinessName</h3>
+                    <p class="offer-description-preview">@_previewOffer.Description</p>
+                </div>
+                <div class="tag-list offer-tag-list">
                     @foreach (var tag in _previewOffer.Tags)
                     {
                         <span class="tag-pill">@tag</span>
@@ -31,12 +45,18 @@
     </section>
 }
 
-<section class="card-block">
+<section class="card-block compose-section">
+    <div class="section-heading">
+        <div>
+            <h2>@T("reports.sendReport")</h2>
+        </div>
+    </div>
+
     <label class="field-label" for="reportUserId">@T("reports.userId")</label>
     <input id="reportUserId" name="reportUserId" class="field-input" @bind="_userId" readonly />
 
     <label class="field-label" for="reportMessage">@T("reports.reportText")</label>
-    <textarea id="reportMessage" name="reportMessage" class="field-input" @bind="_message" rows="4"></textarea>
+    <textarea id="reportMessage" name="reportMessage" class="field-input field-textarea" @bind="_message" rows="5"></textarea>
 
     <label class="field-label" for="reportOfferId">@T("reports.offerId")</label>
     <input id="reportOfferId" name="reportOfferId" class="field-input" @bind="_offerId" readonly="@_fromOfferSelection" />
@@ -44,7 +64,7 @@
     <label class="field-label" for="reportDate">@T("reports.dateUtc")</label>
     <input id="reportDate" name="reportDate" class="field-input" value="@FormatUtc(_reportedAtUtc)" readonly />
 
-    <button class="btn-main btn-danger" @onclick="SubmitAsync" disabled="@_submitting">@T("reports.sendReport")</button>
+    <button class="btn-secondary btn-danger" @onclick="SubmitAsync" disabled="@_submitting">@T("reports.sendReport")</button>
     @if (!string.IsNullOrWhiteSpace(_statusMessage))
     {
         <p class="status-line">@_statusMessage</p>

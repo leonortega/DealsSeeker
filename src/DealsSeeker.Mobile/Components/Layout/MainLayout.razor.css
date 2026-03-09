@@ -3,48 +3,158 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: var(--color-bg, #eef3e6);
+    overflow: hidden;
+    background:
+        radial-gradient(120% 100% at 0% 0%, var(--color-accent-wash, rgba(73, 152, 118, 0.18)), transparent 52%),
+        radial-gradient(90% 80% at 100% 10%, var(--color-secondary-wash, rgba(255, 182, 73, 0.12)), transparent 55%),
+        linear-gradient(180deg, var(--color-bg, #f5f0e8), var(--color-bg-elevated, #f1ece2));
     color: var(--color-text, #1d271b);
 }
 
-main {
+.shell-backdrop {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.shell-orb {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(14px);
+    opacity: 0.9;
+}
+
+.shell-orb-one {
+    width: 18rem;
+    height: 18rem;
+    left: -4rem;
+    top: 3.5rem;
+    background: var(--color-accent-wash-strong, rgba(73, 152, 118, 0.2));
+}
+
+.shell-orb-two {
+    width: 15rem;
+    height: 15rem;
+    right: -3rem;
+    top: 6rem;
+    background: var(--color-secondary-wash-strong, rgba(255, 182, 73, 0.16));
+}
+
+.shell-grid {
+    position: absolute;
+    inset: 0;
+    opacity: 0.32;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 75%);
+}
+
+.app-main {
     flex: 1;
     min-height: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .top-row {
-    background: var(--color-surface-soft, #f3f7ec);
-    border-bottom: 1px solid var(--color-border, #d8decf);
-    color: var(--color-text, #1f2f19);
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-weight: 700;
+    padding: 0.9rem 1rem 0;
     position: sticky;
     top: 0;
-    z-index: 2;
+    z-index: 20;
+}
+
+.top-row-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    min-height: 4.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 0.95rem;
+    border: 1px solid var(--color-shell-border, rgba(255, 255, 255, 0.52));
+    border-radius: 24px;
+    background: var(--color-shell-surface, rgba(255, 255, 255, 0.72));
+    box-shadow: 0 22px 48px var(--color-shadow-ambient, rgba(31, 31, 25, 0.12));
+    backdrop-filter: blur(16px);
+}
+
+.top-row-leading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .app-title {
-    font-size: 1.05rem;
-    letter-spacing: 0.01em;
+    font-size: 1rem;
+    letter-spacing: 0.015em;
+    font-weight: 800;
+    line-height: 1.1;
 }
 
 .app-brand {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.7rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.app-brand-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .app-brand-icon {
-    width: 1.45rem;
-    height: 1.45rem;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 auto;
+    filter: drop-shadow(0 10px 20px rgba(34, 88, 63, 0.14));
+}
+
+.top-row-user-block {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.top-row-user {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        linear-gradient(135deg, var(--color-accent-strong, #30795c), var(--color-accent, #5ba878));
+    color: var(--color-primary-contrast, #fffdf8);
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    box-shadow: 0 12px 22px rgba(40, 96, 70, 0.24);
+}
+
+.top-row-user-name {
+    max-width: 5.5rem;
+    color: var(--color-muted, #576451);
+    font-size: 0.74rem;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
 }
 
 .content {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    max-width: 1080px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1rem 1rem 1.6rem;
 }
 
 .view-busy-overlay {
@@ -55,6 +165,28 @@ main {
     place-items: center;
     background: rgba(7, 12, 9, 0.42);
     backdrop-filter: blur(1.8px);
+}
+
+.menu-block-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
+    display: block;
+    width: auto;
+    height: auto;
+    border: none;
+    margin: 0;
+    padding: 0;
+    background: rgba(7, 12, 9, 0.42);
+    backdrop-filter: blur(1.8px);
+    appearance: none;
+    -webkit-appearance: none;
+    opacity: 0;
+    transition: opacity 220ms ease;
+}
+
+.menu-block-overlay.open {
+    opacity: 1;
 }
 
 .view-busy-spinner {
@@ -74,5 +206,38 @@ main {
 
     to {
         transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 720px) {
+    .top-row {
+        padding: 0.75rem 0.75rem 0;
+    }
+
+    .top-row-inner {
+        min-height: 3.9rem;
+        padding: 0.65rem 0.7rem;
+        border-radius: 20px;
+        gap: 0.6rem;
+    }
+
+    .top-row-user {
+        width: 2.2rem;
+        height: 2.2rem;
+        font-size: 0.82rem;
+    }
+
+    .top-row-user-name {
+        max-width: 4.2rem;
+        font-size: 0.68rem;
+    }
+
+    .app-brand-icon {
+        width: 1.8rem;
+        height: 1.8rem;
+    }
+
+    .content {
+        padding: 0.9rem 0.75rem 1.35rem;
     }
 }

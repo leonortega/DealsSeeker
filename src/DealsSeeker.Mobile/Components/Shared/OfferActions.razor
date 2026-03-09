@@ -1,20 +1,34 @@
 @inject IAppPreferencesService Preferences
 
 <div class="offer-actions" @onclick:stopPropagation="true">
-    <div class="availability-controls">
+    <div class="availability-header">
         <span class="availability-label">@T("offers.availableQuestion")</span>
-        <button class="btn-main btn-vote"
+        @if (VotesDisabled)
+        {
+            <span class="availability-state">@T("offers.feedbackRegistered")</span>
+        }
+    </div>
+
+    <div class="availability-buttons">
+        <button class="btn-secondary btn-vote btn-vote-positive"
                 title="@UpVoteTitle"
                 @onclick="VoteUpAsync"
-                disabled="@VotesDisabled">&#128077; @Offer.PositiveAvailabilityCount</button>
-        <button class="btn-main btn-warning btn-vote"
+                disabled="@VotesDisabled">
+            <span class="vote-icon" aria-hidden="true">&#128077;</span>
+            <span>@Offer.PositiveAvailabilityCount</span>
+        </button>
+        <button class="btn-secondary btn-vote btn-vote-negative"
                 title="@DownVoteTitle"
                 @onclick="VoteDownAsync"
-                disabled="@VotesDisabled">&#128078; @Offer.NegativeAvailabilityCount</button>
+                disabled="@VotesDisabled">
+            <span class="vote-icon" aria-hidden="true">&#128078;</span>
+            <span>@Offer.NegativeAvailabilityCount</span>
+        </button>
     </div>
+
     <div class="report-row">
         <span class="report-prompt">@T("offers.anyProblem")</span>
-        <button class="btn-main btn-danger"
+        <button class="btn-link-inline"
                 @onclick="ReportAsync">@T("offers.reportAction")</button>
     </div>
 </div>

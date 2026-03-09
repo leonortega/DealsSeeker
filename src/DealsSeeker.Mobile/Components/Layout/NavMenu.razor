@@ -2,33 +2,37 @@
 @inject IUserSessionService Session
 @implements IDisposable
 
-<div class="hamburger-root @( _open ? "open" : string.Empty)">
-    <button class="hamburger-button"
-            title="@(_open ? T("nav.closeMenu") : T("nav.openMenu"))"
-            aria-label="@(_open ? T("nav.closeNavigationMenu") : T("nav.openNavigationMenu"))"
-            aria-expanded="@_open"
-            @onclick="ToggleMenu">
-        <span class="hamburger-lines">
-            <span></span>
-            <span></span>
-            <span></span>
-        </span>
-    </button>
+@if (ShowToggle)
+{
+    <div class="hamburger-root @( IsOpen ? "open" : string.Empty)">
+        <button class="hamburger-button"
+                title="@(IsOpen ? T("nav.closeMenu") : T("nav.openMenu"))"
+                aria-label="@(IsOpen ? T("nav.closeNavigationMenu") : T("nav.openNavigationMenu"))"
+                aria-expanded="@IsOpen"
+                @onclick="ToggleMenu">
+            <span class="hamburger-lines">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+        </button>
+    </div>
+}
 
-    <button class="menu-backdrop @( _open ? "open" : string.Empty)"
-            aria-label="@T("nav.closeNavigationMenu")"
-            @onclick="CloseMenu">
-    </button>
-
-    <aside class="menu-sheet @( _open ? "open" : string.Empty)"
+@if (ShowSheet)
+{
+    <aside class="menu-sheet @( IsOpen ? "open" : string.Empty)"
            role="navigation"
            aria-label="@T("nav.mainNavigationMenu")"
-           aria-hidden="@(!_open)">
+           aria-hidden="@(!IsOpen)">
         <div class="sheet-header">
-            <div class="sheet-brand">
-                <img src="/images/dealseeker-icon.svg" alt="" class="sheet-brand-icon" />
-                <span class="sheet-title">DealsSeeker</span>
+            <div class="sheet-header-copy">
+                <div class="sheet-brand">
+                    <img src="/images/dealseeker-icon.svg" alt="" class="sheet-brand-icon" />
+                    <span class="sheet-title">DealsSeeker</span>
+                </div>
             </div>
+
             <button class="sheet-close" aria-label="@T("nav.closeMenu")" @onclick="CloseMenu">
                 <img src="/images/menu/close.svg" alt="" class="sheet-close-icon" />
             </button>
@@ -137,12 +141,23 @@
             </nav>
         </div>
     </aside>
-</div>
+}
 
 @code {
     private static readonly string[] LanguageOptions = ["en", "es"];
-    private bool _open;
     private bool _languageListOpen;
+
+    [Parameter]
+    public bool ShowToggle { get; set; } = true;
+
+    [Parameter]
+    public bool ShowSheet { get; set; } = true;
+
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsOpenChanged { get; set; }
 
     protected override void OnInitialized()
     {
@@ -151,19 +166,21 @@
 
     private void OnPreferencesChanged() => InvokeAsync(StateHasChanged);
 
-    private void ToggleMenu()
+    private Task ToggleMenu()
     {
-        _open = !_open;
-        if (!_open)
+        var nextOpen = !IsOpen;
+        if (!nextOpen)
         {
             _languageListOpen = false;
         }
+
+        return IsOpenChanged.InvokeAsync(nextOpen);
     }
 
-    private void CloseMenu()
+    private Task CloseMenu()
     {
-        _open = false;
         _languageListOpen = false;
+        return IsOpenChanged.InvokeAsync(false);
     }
 
     private void ToggleLanguageList() => _languageListOpen = !_languageListOpen;

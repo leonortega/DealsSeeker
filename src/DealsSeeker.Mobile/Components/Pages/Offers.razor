@@ -10,13 +10,26 @@
 @inject NavigationManager Navigation
 @implements IDisposable
 
-<h1>@T("offers.title")</h1>
+<section class="page-hero">
+    <div class="page-hero-copy">
+        <h1>@T("offers.title")</h1>
+    </div>
 
-<div class="offers-top-actions">
-    <button class="btn-main add-offer-button" @onclick="NavigateToAddOffer" title="@T("nav.addOffer")">+ @T("nav.addOffer")</button>
-</div>
+    <button class="btn-main btn-main-accent add-offer-button"
+            @onclick="NavigateToAddOffer"
+            title="@T("nav.addOffer")">
+        <span class="button-glyph" aria-hidden="true">+</span>
+        <span>@T("nav.addOffer")</span>
+    </button>
+</section>
 
-<section class="card-block offers-search-panel">
+<section class="card-block feature-panel offers-search-panel">
+    <div class="section-heading">
+        <div>
+            <h2>@T("offers.searchButton")</h2>
+        </div>
+    </div>
+
     <label class="field-label" for="offersSearchQuery">@T("offers.searchLabel")</label>
     <div class="search-row">
         <input id="offersSearchQuery"
@@ -29,9 +42,10 @@
     </div>
 
     <div class="distance-row">
-        <label for="coverageRadius">@T("offers.radius"): @_radiusMeters m</label>
+        <label class="field-label" for="coverageRadius">@T("offers.radius"): @_radiusMeters m</label>
         <input id="coverageRadius"
                name="coverageRadius"
+               class="range-input"
                type="range"
                min="100"
                max="5000"
@@ -45,41 +59,94 @@
         <input type="checkbox" @bind="_favoritesOnly" @bind:after="SearchAsync" />
         <span>@T("offers.favoritesOnly")</span>
     </label>
+
+    @if (!string.IsNullOrWhiteSpace(_status))
+    {
+        <p class="status-line">@_status</p>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <p class="status-line error">@_error</p>
+    }
 </section>
 
-<section class="card-block">
-    <h2>@T("offers.nearbyMap")</h2>
-    <p class="muted">@T("offers.yourLocation"): @_userLocationLabel | @T("offers.provider"): @MapRendering.ActiveProvider</p>
-    <iframe class="map-frame" src="@BuildMapEmbedUrl()" loading="lazy"></iframe>
+<section class="card-block map-panel">
+    <div class="section-heading">
+        <div>
+            <h2>@T("offers.nearbyMap")</h2>
+        </div>
+    </div>
+
+    <p class="muted">@T("offers.yourLocation"): @_userLocationLabel</p>
+    <iframe class="map-frame map-frame-large" src="@BuildMapEmbedUrl()" loading="lazy"></iframe>
 </section>
 
 @if (_promotedOffers.Count > 0)
 {
     <section class="card-block">
-        <h2>@T("offers.promoted")</h2>
+        <div class="section-heading">
+            <div>
+                <h2>@T("offers.promoted")</h2>
+            </div>
+        </div>
+
         <div class="offer-grid promoted-grid">
             @foreach (var offer in _promotedOffers)
             {
-                <article class="offer-card-square @(offer.IsReported ? "offer-card-reported" : string.Empty)">
+                <article class="offer-card-square offer-card-modern @(offer.IsReported ? "offer-card-reported" : string.Empty)">
                     <button class="offer-image-button" title="@T("offers.details")" @onclick="() => OpenDetail(offer)">
                         <img src="@ResolveOfferImage(offer.ImageUrl)"
                              alt="@T("offers.imageAlt")"
                              class="offer-image-square"
                              onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
-                        <span class="offer-badge offer-badge-promoted">@T("offers.promoted")</span>
-                        @if (offer.IsReported)
-                        {
-                            <span class="offer-badge offer-badge-reported">@T("offers.reported")</span>
-                        }
+                        <span class="offer-image-scrim"></span>
+                        <div class="offer-card-badges">
+                            <span class="offer-badge offer-badge-promoted">@T("offers.promoted")</span>
+                            @if (offer.IsReported)
+                            {
+                                <span class="offer-badge offer-badge-reported">@T("offers.reported")</span>
+                            }
+                        </div>
+                        <div class="offer-visual-meta">
+                            <span class="offer-distance-chip">@FormatDistanceMeters(offer.DistanceMeters)</span>
+                            @if (offer.ImageUrls.Count > 1)
+                            {
+                                <span class="offer-distance-chip offer-distance-chip-soft">@offer.ImageUrls.Count</span>
+                            }
+                        </div>
                     </button>
+
                     <div class="offer-square-body">
-                        <p class="offer-meta"><span class="offer-meta-label">@T("offers.address"):</span> @offer.BusinessName</p>
-                        <p class="offer-meta"><span class="offer-meta-label">@T("offers.distance"):</span> @FormatDistanceMeters(offer.DistanceMeters)</p>
-                        <button class="btn-main btn-favorite @(offer.IsFavorite ? "active" : string.Empty)"
+                        <div class="offer-card-heading">
+                            <h3>@offer.BusinessName</h3>
+                            <p class="offer-description-preview">@((MarkupString)HighlightText(ShortDescription(offer.Description)))</p>
+                        </div>
+
+                        @if (offer.Tags.Count > 0)
+                        {
+                            <div class="tag-list offer-tag-list">
+                                @foreach (var tag in VisibleTags(offer))
+                                {
+                                    <span class="tag-pill">@tag</span>
+                                }
+                            </div>
+                        }
+
+                        <div class="offer-meta-row">
+                            <span class="offer-meta-pill">@T("offers.distance"): @FormatDistanceMeters(offer.DistanceMeters)</span>
+                            @if (offer.HasCurrentUserVoted)
+                            {
+                                <span class="offer-meta-pill">@T("offers.availableQuestion")</span>
+                            }
+                        </div>
+
+                        <button class="btn-secondary btn-favorite @(offer.IsFavorite ? "active" : string.Empty)"
                                 @onclick="() => ToggleFavoriteAsync(offer)">
                             <span class="favorite-heart" aria-hidden="true">&#10084;</span>
                             <span>@T("offers.favorite")</span>
                         </button>
+
                         <OfferActions Offer="offer"
                                       VotesDisabled="@IsVoteDisabled(offer)"
                                       OnVote="@(vote => VoteAsync(offer.OfferId, vote))"
@@ -92,16 +159,13 @@
 }
 
 <section class="card-block">
-    <h2>@T("offers.results")</h2>
-    @if (!string.IsNullOrWhiteSpace(_status))
-    {
-        <p class="status-line">@_status</p>
-    }
-    @if (!string.IsNullOrWhiteSpace(_error))
-    {
-        <p class="status-line error">@_error</p>
-    }
-    else if (_loading)
+    <div class="section-heading">
+        <div>
+            <h2>@T("offers.results")</h2>
+        </div>
+    </div>
+
+    @if (_loading)
     {
         <p class="muted">@T("offers.loading")</p>
     }
@@ -114,25 +178,58 @@
         <div class="offer-grid">
             @foreach (var offer in _feedOffers)
             {
-                <article class="offer-card-square @(offer.IsReported ? "offer-card-reported" : string.Empty)">
+                <article class="offer-card-square offer-card-modern @(offer.IsReported ? "offer-card-reported" : string.Empty)">
                     <button class="offer-image-button" title="@T("offers.details")" @onclick="() => OpenDetail(offer)">
                         <img src="@ResolveOfferImage(offer.ImageUrl)"
                              alt="@T("offers.imageAlt")"
                              class="offer-image-square"
                              onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
-                        @if (offer.IsReported)
-                        {
-                            <span class="offer-badge offer-badge-reported">@T("offers.reported")</span>
-                        }
+                        <span class="offer-image-scrim"></span>
+                        <div class="offer-card-badges">
+                            @if (offer.IsReported)
+                            {
+                                <span class="offer-badge offer-badge-reported">@T("offers.reported")</span>
+                            }
+                        </div>
+                        <div class="offer-visual-meta">
+                            <span class="offer-distance-chip">@FormatDistanceMeters(offer.DistanceMeters)</span>
+                            @if (offer.ImageUrls.Count > 1)
+                            {
+                                <span class="offer-distance-chip offer-distance-chip-soft">@offer.ImageUrls.Count</span>
+                            }
+                        </div>
                     </button>
+
                     <div class="offer-square-body">
-                        <p class="offer-meta"><span class="offer-meta-label">@T("offers.address"):</span> @offer.BusinessName</p>
-                        <p class="offer-meta"><span class="offer-meta-label">@T("offers.distance"):</span> @FormatDistanceMeters(offer.DistanceMeters)</p>
-                        <button class="btn-main btn-favorite @(offer.IsFavorite ? "active" : string.Empty)"
+                        <div class="offer-card-heading">
+                            <h3>@offer.BusinessName</h3>
+                            <p class="offer-description-preview">@((MarkupString)HighlightText(ShortDescription(offer.Description)))</p>
+                        </div>
+
+                        @if (offer.Tags.Count > 0)
+                        {
+                            <div class="tag-list offer-tag-list">
+                                @foreach (var tag in VisibleTags(offer))
+                                {
+                                    <span class="tag-pill">@tag</span>
+                                }
+                            </div>
+                        }
+
+                        <div class="offer-meta-row">
+                            <span class="offer-meta-pill">@T("offers.distance"): @FormatDistanceMeters(offer.DistanceMeters)</span>
+                            @if (offer.HasCurrentUserVoted)
+                            {
+                                <span class="offer-meta-pill">@T("offers.availableQuestion")</span>
+                            }
+                        </div>
+
+                        <button class="btn-secondary btn-favorite @(offer.IsFavorite ? "active" : string.Empty)"
                                 @onclick="() => ToggleFavoriteAsync(offer)">
                             <span class="favorite-heart" aria-hidden="true">&#10084;</span>
                             <span>@T("offers.favorite")</span>
                         </button>
+
                         <OfferActions Offer="offer"
                                       VotesDisabled="@IsVoteDisabled(offer)"
                                       OnVote="@(vote => VoteAsync(offer.OfferId, vote))"
@@ -149,32 +246,47 @@
     <div class="modal-backdrop" @onclick="CloseDetail"></div>
     <section class="offer-detail-modal" role="dialog" aria-modal="true">
         <div class="offer-detail-header">
-            <h2>@_detailOffer.BusinessName</h2>
-            <button class="btn-main btn-danger" @onclick="CloseDetail">x</button>
+            <div>
+                <h2>@_detailOffer.BusinessName</h2>
+            </div>
+            <button class="btn-icon-ghost" @onclick="CloseDetail" aria-label="@T("nav.closeMenu")">x</button>
         </div>
 
         <div class="offer-detail-carousel">
-            <button class="btn-main" @onclick="PreviousImage" disabled="@(GetDetailImages().Count <= 1)">&#8592;</button>
-            <img src="@CurrentDetailImage()"
-                 alt="@T("offers.imageAlt")"
-                 class="offer-detail-image"
-                 @onclick="OpenFullscreen"
-                 onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
-            <button class="btn-main" @onclick="NextImage" disabled="@(GetDetailImages().Count <= 1)">&#8594;</button>
+            <button class="btn-icon-ghost" @onclick="PreviousImage" disabled="@(GetDetailImages().Count <= 1)">&#8592;</button>
+            <div class="offer-detail-visual">
+                <img src="@CurrentDetailImage()"
+                     alt="@T("offers.imageAlt")"
+                     class="offer-detail-image"
+                     @onclick="OpenFullscreen"
+                     onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
+                <span class="photo-preview-count">@DetailImageCountLabel()</span>
+            </div>
+            <button class="btn-icon-ghost" @onclick="NextImage" disabled="@(GetDetailImages().Count <= 1)">&#8594;</button>
         </div>
 
-        <p>@((MarkupString)HighlightText(_detailOffer.Description))</p>
-        <p class="muted">@T("offers.distance"): @FormatDistanceMeters(_detailOffer.DistanceMeters)</p>
-        <div class="tag-list">
-            @foreach (var tag in _detailOffer.Tags)
+        <p class="offer-detail-description">@((MarkupString)HighlightText(_detailOffer.Description))</p>
+        <div class="offer-meta-row">
+            <span class="offer-meta-pill">@T("offers.distance"): @FormatDistanceMeters(_detailOffer.DistanceMeters)</span>
+            @if (_detailOffer.IsPromoted)
             {
-                <span class="tag-pill">@tag</span>
+                <span class="offer-meta-pill">@T("offers.promoted")</span>
             }
         </div>
 
-        <div class="action-row">
+        @if (_detailOffer.Tags.Count > 0)
+        {
+            <div class="tag-list offer-tag-list">
+                @foreach (var tag in _detailOffer.Tags)
+                {
+                    <span class="tag-pill">@tag</span>
+                }
+            </div>
+        }
+
+        <div class="action-row detail-action-row">
             <button class="btn-main" @onclick="() => OpenDirectionsAsync(_detailOffer.Location)">@T("offers.directions")</button>
-            <button class="btn-main btn-favorite @(_detailOffer.IsFavorite ? "active" : string.Empty)"
+            <button class="btn-secondary btn-favorite @(_detailOffer.IsFavorite ? "active" : string.Empty)"
                     @onclick="() => ToggleFavoriteAsync(_detailOffer)">
                 <span class="favorite-heart" aria-hidden="true">&#10084;</span>
                 <span>@T("offers.favorite")</span>
@@ -187,7 +299,7 @@
 {
     <div class="modal-backdrop" @onclick="CloseFullscreen"></div>
     <section class="image-fullscreen-modal" role="dialog" aria-modal="true">
-        <button class="btn-main btn-danger" @onclick="CloseFullscreen">x</button>
+        <button class="btn-icon-ghost image-modal-close" @onclick="CloseFullscreen" aria-label="@T("nav.closeMenu")">x</button>
         <img src="@CurrentDetailImage()"
              alt="@T("offers.fullscreenImageAlt")"
              class="image-fullscreen"
@@ -564,4 +676,22 @@
 
         return imageUrl;
     }
+
+    private static string ShortDescription(string description)
+    {
+        var trimmed = (description ?? string.Empty).Trim();
+        if (trimmed.Length <= 120)
+        {
+            return trimmed;
+        }
+
+        return string.Concat(trimmed[..117].TrimEnd(), "...");
+    }
+
+    private static IEnumerable<string> VisibleTags(OfferItemDto offer) =>
+        offer.Tags
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Take(3);
+
+    private string DetailImageCountLabel() => $"{Math.Clamp(_detailImageIndex + 1, 1, GetDetailImages().Count)} / {GetDetailImages().Count}";
 }

@@ -4,23 +4,40 @@
 @inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
 
-<h1>@T("auth.loginTitle")</h1>
+<section class="page-hero auth-hero">
+    <div class="page-hero-copy">
+        <h1>@T("auth.loginTitle")</h1>
+    </div>
+</section>
 
-<section class="card-block">
-    <form @onsubmit="OnSubmitAsync" autocomplete="on">
-        <label class="field-label" for="loginUser">@T("auth.userEmail")</label>
-        <input id="loginUser" name="loginUser" class="field-input" type="email" autocomplete="username" @bind="_email" />
+<section class="auth-grid">
+    <section class="card-block auth-brand-panel">
+        <img src="/images/dealseeker-icon.svg" alt="" class="auth-brand-icon" />
+        <h2>DealsSeeker</h2>
+    </section>
 
-        <label class="field-label" for="loginPassword">@T("auth.password")</label>
-        <input id="loginPassword" name="loginPassword" class="field-input" type="password" autocomplete="current-password" @bind="_password" />
+    <section class="card-block auth-panel">
+        <div class="section-heading">
+            <div>
+                <h2>@T("auth.loginButton")</h2>
+            </div>
+        </div>
 
-        <button class="btn-main" type="submit" disabled="@_working">@T("auth.loginButton")</button>
+        <form class="form-stack" @onsubmit="OnSubmitAsync" autocomplete="on">
+            <label class="field-label" for="loginUser">@T("auth.userEmail")</label>
+            <input id="loginUser" name="loginUser" class="field-input" type="email" autocomplete="username" @bind="_email" />
 
-        <p class="muted auth-link-row">
-            @T("auth.newUser")
-            <a href="/create-user">@T("auth.createUserLink")</a>
-        </p>
-    </form>
+            <label class="field-label" for="loginPassword">@T("auth.password")</label>
+            <input id="loginPassword" name="loginPassword" class="field-input" type="password" autocomplete="current-password" @bind="_password" />
+
+            <button class="btn-main btn-main-accent" type="submit" disabled="@_working">@T("auth.loginButton")</button>
+
+            <p class="muted auth-link-row">
+                @T("auth.newUser")
+                <a href="/create-user">@T("auth.createUserLink")</a>
+            </p>
+        </form>
+    </section>
 </section>
 
 @if (!string.IsNullOrWhiteSpace(_status))

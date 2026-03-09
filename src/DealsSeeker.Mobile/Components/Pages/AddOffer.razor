@@ -8,10 +8,18 @@
 @inject NavigationManager Navigation
 @implements IDisposable
 
-<h1>@T("addOffer.title")</h1>
+<section class="page-hero">
+    <div class="page-hero-copy">
+        <h1>@T("addOffer.title")</h1>
+    </div>
+</section>
 
-<section class="card-block">
-    <h2>@T("addOffer.images")</h2>
+<section class="card-block compose-section">
+    <div class="section-heading">
+        <div>
+            <h2>@T("addOffer.images")</h2>
+        </div>
+    </div>
     <div class="photo-preview-shell">
         @if (_images.Count == 0)
         {
@@ -44,29 +52,46 @@
                 }
                 <span class="photo-preview-count">@CurrentImageNumber() / @_images.Count</span>
             </div>
+
+            @if (_images.Count > 1)
+            {
+                <div class="photo-thumbnail-rail">
+                    @for (var index = 0; index < _images.Count; index++)
+                    {
+                        var selected = index == _selectedImageIndex;
+                        var image = _images[index];
+                        var snapshotIndex = index;
+                        <button class="photo-thumbnail @(selected ? "active" : string.Empty)"
+                                @onclick="() => SelectImage(snapshotIndex)"
+                                aria-label="@($"{T("addOffer.previewAlt")} {snapshotIndex + 1}")">
+                            <img src="@image.DataUrl" alt="" class="photo-thumbnail-image" />
+                        </button>
+                    }
+                </div>
+            }
         }
     </div>
 
     <div class="action-row photo-action-bar">
         <button class="btn-main" @onclick="CaptureFromCameraAsync">@T("addOffer.takePhoto")</button>
-        <button class="btn-main" @onclick="UploadFromGalleryAsync">@T("addOffer.uploadPhotos")</button>
+        <button class="btn-main btn-main-accent" @onclick="UploadFromGalleryAsync">@T("addOffer.uploadPhotos")</button>
         @if (_images.Count > 0)
         {
-            <button class="btn-main btn-order"
+            <button class="btn-secondary btn-order"
                     @onclick="() => MoveCurrentImage(-1)"
                     disabled="@(!CanMoveCurrentImage(-1))"
                     aria-label="@T("addOffer.movePhotoEarlier")">
                 <span class="btn-order-icon" aria-hidden="true">&#8678;</span>
                 <span>@T("addOffer.movePhotoEarlier")</span>
             </button>
-            <button class="btn-main btn-order"
+            <button class="btn-secondary btn-order"
                     @onclick="() => MoveCurrentImage(1)"
                     disabled="@(!CanMoveCurrentImage(1))"
                     aria-label="@T("addOffer.movePhotoLater")">
                 <span class="btn-order-icon" aria-hidden="true">&#8680;</span>
                 <span>@T("addOffer.movePhotoLater")</span>
             </button>
-            <button class="btn-main btn-danger" @onclick="RemoveCurrentImage">@T("addOffer.remove")</button>
+            <button class="btn-danger btn-secondary" @onclick="RemoveCurrentImage">@T("addOffer.remove")</button>
         }
     </div>
 
@@ -76,8 +101,12 @@
     }
 </section>
 
-<section class="card-block">
-    <h2>@T("addOffer.location")</h2>
+<section class="card-block compose-section">
+    <div class="section-heading">
+        <div>
+            <h2>@T("addOffer.location")</h2>
+        </div>
+    </div>
     <p class="muted">@T("addOffer.currentAddress"): @FormatLocation(_location)</p>
 
     <label class="field-label" for="locationQuery">@T("addOffer.searchAddressLabel")</label>
@@ -116,25 +145,33 @@
         </div>
     }
 
-    <h3>@T("addOffer.locationPreview")</h3>
-    <iframe class="map-frame" src="@BuildLocationMapUrl()" loading="lazy"></iframe>
+    <div class="section-heading section-heading-compact">
+        <div>
+            <h3>@T("addOffer.locationPreview")</h3>
+        </div>
+    </div>
+    <iframe class="map-frame map-frame-large" src="@BuildLocationMapUrl()" loading="lazy"></iframe>
     <div class="action-row">
         <button class="btn-main"
                 @onclick="ConfirmLocation"
                 disabled="@(_isLocationConfirmed || _location is null)">@T("addOffer.confirmLocation")</button>
-        <button class="btn-main btn-warning"
+        <button class="btn-secondary"
                 @onclick="EditLocation"
                 disabled="@(!_isLocationConfirmed)">@T("addOffer.editLocation")</button>
     </div>
 </section>
 
-<section class="card-block">
-    <h2>@T("addOffer.tags")</h2>
+<section class="card-block compose-section">
+    <div class="section-heading">
+        <div>
+            <h2>@T("addOffer.tags")</h2>
+        </div>
+    </div>
     <label class="field-label" for="descriptionInput">@T("addOffer.description")</label>
     <textarea id="descriptionInput"
               name="descriptionInput"
-              class="field-input"
-              rows="4"
+              class="field-input field-textarea"
+              rows="5"
               value="@_description"
               @oninput="OnDescriptionInput"></textarea>
 
@@ -209,8 +246,14 @@
     </div>
 </section>
 
-<section class="card-block">
-    <button class="btn-main" @onclick="CreateOfferAsync" disabled="@_saving">@T("addOffer.create")</button>
+<section class="card-block submit-panel">
+    <div class="section-heading">
+        <div>
+            <h2>@T("addOffer.create")</h2>
+        </div>
+    </div>
+
+    <button class="btn-main btn-main-accent" @onclick="CreateOfferAsync" disabled="@_saving">@T("addOffer.create")</button>
     @if (!string.IsNullOrWhiteSpace(_status))
     {
         <p class="status-line">@_status</p>
@@ -379,6 +422,16 @@
         }
 
         _selectedImageIndex = (_selectedImageIndex + 1) % _images.Count;
+    }
+
+    private void SelectImage(int index)
+    {
+        if (index < 0 || index >= _images.Count)
+        {
+            return;
+        }
+
+        _selectedImageIndex = index;
     }
 
     private void MoveCurrentImage(int delta) => MoveImage(_selectedImageIndex, delta);

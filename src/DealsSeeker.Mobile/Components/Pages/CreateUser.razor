@@ -4,28 +4,46 @@
 @inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
 
-<h1>@T("auth.createUserTitle")</h1>
+<section class="page-hero auth-hero">
+    <div class="page-hero-copy">
+        <h1>@T("auth.createUserTitle")</h1>
+    </div>
+</section>
 
-<section class="card-block">
-    <form @onsubmit="OnSubmitAsync" autocomplete="on">
-        <label class="field-label" for="registerName">@T("auth.name")</label>
-        <input id="registerName" name="registerName" class="field-input" autocomplete="name" @bind="_displayName" />
-
-        <label class="field-label" for="registerEmail">@T("auth.email")</label>
-        <input id="registerEmail" name="registerEmail" class="field-input" type="email" autocomplete="username" @bind="_email" />
-
-        <label class="field-label" for="registerPassword">@T("auth.password")</label>
-        <input id="registerPassword" name="registerPassword" class="field-input" type="password" autocomplete="new-password" @bind="_password" />
-
+<section class="auth-grid">
+    <section class="card-block auth-brand-panel">
+        <img src="/images/dealseeker-icon.svg" alt="" class="auth-brand-icon" />
+        <h2>DealsSeeker</h2>
         <p class="muted">@T("auth.passwordHint")</p>
+    </section>
 
-        <button class="btn-main" type="submit" disabled="@_working">@T("auth.createUserButton")</button>
+    <section class="card-block auth-panel">
+        <div class="section-heading">
+            <div>
+                <h2>@T("auth.createUserButton")</h2>
+            </div>
+        </div>
 
-        <p class="muted auth-link-row">
-            @T("auth.alreadyHaveAccount")
-            <a href="/login">@T("auth.loginLink")</a>
-        </p>
-    </form>
+        <form class="form-stack" @onsubmit="OnSubmitAsync" autocomplete="on">
+            <label class="field-label" for="registerName">@T("auth.name")</label>
+            <input id="registerName" name="registerName" class="field-input" autocomplete="name" @bind="_displayName" />
+
+            <label class="field-label" for="registerEmail">@T("auth.email")</label>
+            <input id="registerEmail" name="registerEmail" class="field-input" type="email" autocomplete="username" @bind="_email" />
+
+            <label class="field-label" for="registerPassword">@T("auth.password")</label>
+            <input id="registerPassword" name="registerPassword" class="field-input" type="password" autocomplete="new-password" @bind="_password" />
+
+            <p class="muted">@T("auth.passwordHint")</p>
+
+            <button class="btn-main btn-main-accent" type="submit" disabled="@_working">@T("auth.createUserButton")</button>
+
+            <p class="muted auth-link-row">
+                @T("auth.alreadyHaveAccount")
+                <a href="/login">@T("auth.loginLink")</a>
+            </p>
+        </form>
+    </section>
 </section>
 
 @if (!string.IsNullOrWhiteSpace(_status))
