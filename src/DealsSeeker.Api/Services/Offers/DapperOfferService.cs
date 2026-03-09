@@ -6,6 +6,7 @@ using DealsSeeker.Shared.Contracts.AddOffer;
 using DealsSeeker.Shared.Contracts.Common;
 using DealsSeeker.Shared.Contracts.Offers;
 using DealsSeeker.Shared.Models;
+using DealsSeeker.Shared.Tags;
 using Microsoft.Data.Sqlite;
 
 namespace DealsSeeker.Api.Services.Offers;
@@ -14,27 +15,6 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
 {
     private const string PlaceholderImageUrl = "/images/offer-placeholder.svg";
     private const double FuzzySimilarityThreshold = 0.72d;
-
-    private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, IReadOnlyList<string>>> SynonymsByLanguage
-        = new Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<string>>>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["en"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["coffee"] = ["cafe", "espresso", "latte"],
-                ["tea"] = ["chai", "infusion"],
-                ["bakery"] = ["bread", "pastry"],
-                ["discount"] = ["deal", "promo", "sale"],
-                ["fresh"] = ["organic", "new"]
-            },
-            ["es"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["cafe"] = ["coffee", "espresso"],
-                ["te"] = ["tea", "infusion"],
-                ["panaderia"] = ["bakery", "bread"],
-                ["descuento"] = ["discount", "deal", "promo"],
-                ["fresco"] = ["fresh", "organic"]
-            }
-        };
 
     public async Task<SearchOffersResponse> SearchAsync(SearchOffersRequest request, string userId, CancellationToken cancellationToken)
     {
@@ -230,6 +210,174 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
         return new SearchOffersResponse(orderedOffers, businesses);
     }
 
+    public async Task<IReadOnlyList<OfferItemDto>> GetOwnedOffersAsync(string userId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return [];
+        }
+
+        await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        var offerRows = (await connection.QueryAsync<OfferRow>(
+            """
+            SELECT
+                offer_id AS OfferId,
+                business_id AS BusinessId,
+                business_name AS BusinessName,
+                description AS Description,
+                image_url AS ImageUrl,
+                is_active AS IsActive,
+                lat AS Lat,
+                lng AS Lng,
+                positive_availability_count AS PositiveAvailabilityCount,
+                negative_availability_count AS NegativeAvailabilityCount,
+                report_count AS ReportCount
+            FROM offers
+            WHERE created_by_user_id = @UserId
+            ORDER BY created_at_utc DESC, offer_id DESC;
+            """,
+            new { UserId = userId })).ToList();
+
+        if (offerRows.Count == 0)
+        {
+            return [];
+        }
+
+        var offerIds = offerRows.Select(row => row.OfferId).ToArray();
+        var tagRows = (await connection.QueryAsync<OfferTagRow>(
+            """
+            SELECT offer_id AS OfferId, tag AS Tag
+            FROM offer_tags
+            WHERE offer_id IN @OfferIds;
+            """,
+            new { OfferIds = offerIds })).ToList();
+
+        var imageRows = (await connection.QueryAsync<OfferImageRow>(
+            """
+            SELECT
+                offer_id AS OfferId,
+                image_url AS ImageUrl,
+                sort_order AS SortOrder
+            FROM offer_images
+            WHERE offer_id IN @OfferIds;
+            """,
+            new { OfferIds = offerIds })).ToList();
+
+        var tagsByOffer = tagRows
+            .GroupBy(row => row.OfferId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<string>)group.Select(row => row.Tag).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+
+        var imageUrlsByOffer = imageRows
+            .GroupBy(row => row.OfferId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<string>)group
+                    .OrderBy(row => row.SortOrder)
+                    .ThenBy(row => row.ImageUrl, StringComparer.OrdinalIgnoreCase)
+                    .Select(row => row.ImageUrl)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+
+        return offerRows
+            .Select(row =>
+            {
+                var imageUrls = imageUrlsByOffer.GetValueOrDefault(row.OfferId) ?? [row.ImageUrl];
+                return new OfferItemDto(
+                    row.OfferId,
+                    row.BusinessId,
+                    row.BusinessName,
+                    row.Description,
+                    tagsByOffer.GetValueOrDefault(row.OfferId) ?? [],
+                    imageUrls.FirstOrDefault() ?? row.ImageUrl,
+                    imageUrls,
+                    row.IsActive != 0,
+                    false,
+                    false,
+                    row.ReportCount > 0,
+                    0d,
+                    ["exact"],
+                    new GeoPoint(row.Lat, row.Lng),
+                    0d,
+                    (int)row.PositiveAvailabilityCount,
+                    (int)row.NegativeAvailabilityCount,
+                    false);
+            })
+            .ToArray();
+    }
+
+    public async Task<AddOfferRequest?> GetOwnedOfferDraftAsync(string offerId, string userId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(offerId))
+        {
+            return null;
+        }
+
+        await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        var offer = await connection.QuerySingleOrDefaultAsync<OwnedOfferDraftRow>(
+            """
+            SELECT
+                offer_id AS OfferId,
+                business_name AS BusinessName,
+                description AS Description,
+                lat AS Lat,
+                lng AS Lng
+            FROM offers
+            WHERE offer_id = @OfferId AND created_by_user_id = @UserId
+            LIMIT 1;
+            """,
+            new { OfferId = offerId, UserId = userId });
+
+        if (offer is null)
+        {
+            return null;
+        }
+
+        var tags = (await connection.QueryAsync<string>(
+            """
+            SELECT tag
+            FROM offer_tags
+            WHERE offer_id = @OfferId
+            ORDER BY tag;
+            """,
+            new { OfferId = offerId }))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var images = (await connection.QueryAsync<OwnedOfferImageRow>(
+            """
+            SELECT
+                image_url AS ImageUrl,
+                mime_type AS MimeType,
+                width AS Width,
+                height AS Height,
+                sort_order AS SortOrder
+            FROM offer_images
+            WHERE offer_id = @OfferId
+            ORDER BY sort_order ASC, image_url ASC;
+            """,
+            new { OfferId = offerId }))
+            .Select(image => new OfferImageDto(
+                Source: "gallery",
+                MimeType: ResolveOwnedImageMimeType(image.ImageUrl, image.MimeType),
+                SizeBytes: 1,
+                Width: image.Width is null ? null : (int?)image.Width,
+                Height: image.Height is null ? null : (int?)image.Height,
+                Order: (int)image.SortOrder,
+                FileName: null,
+                DataUrl: image.ImageUrl))
+            .ToArray();
+
+        return new AddOfferRequest(
+            offer.Description,
+            tags,
+            images,
+            new OfferLocationDto("manual-confirmed", offer.BusinessName, new GeoPoint(offer.Lat, offer.Lng)));
+    }
+
     public async Task<CommandResult> VoteAvailabilityAsync(string offerId, string userId, OfferAvailabilityVoteRequest request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(userId))
@@ -382,26 +530,21 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
         return new CommandResult(true, "Offer removed from favorites.");
     }
 
-    public async Task<OfferItemDto> AddAsync(AddOfferRequest request, CancellationToken cancellationToken)
+    public async Task<OfferItemDto> AddAsync(AddOfferRequest request, string userId, CancellationToken cancellationToken)
     {
-        var offerId = $"off-{Guid.NewGuid():N}"[..12];
-        var businessId = $"biz-{offerId[4..8]}";
-        var businessName = request.Location?.Label?.Trim();
-        if (string.IsNullOrWhiteSpace(businessName))
+        if (string.IsNullOrWhiteSpace(userId))
         {
-            businessName = "User Submitted Business";
+            throw new InvalidOperationException("Authenticated user is required.");
         }
 
-        var description = request.Description?.Trim() ?? string.Empty;
-        var location = request.Location?.Position ?? new GeoPoint(40.7128, -74.0060);
-
-        var normalizedTags = request.Tags
-            .Select(NormalizeTag)
-            .Where(tag => !string.IsNullOrWhiteSpace(tag))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        var normalizedImages = NormalizeImages(request.Images ?? []);
+        var offerId = $"off-{Guid.NewGuid():N}"[..12];
+        var businessId = $"biz-{offerId[4..8]}";
+        var normalizedOffer = NormalizeOfferRequest(request);
+        var businessName = normalizedOffer.BusinessName;
+        var description = normalizedOffer.Description;
+        var location = normalizedOffer.Location;
+        var normalizedTags = normalizedOffer.Tags;
+        var normalizedImages = normalizedOffer.Images;
         var primaryImageUrl = normalizedImages[0].ImageUrl;
 
         await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
@@ -412,10 +555,10 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                 """
                 INSERT INTO offers (
                     offer_id, business_id, business_name, description, image_url, is_active, lat, lng,
-                    positive_availability_count, negative_availability_count, report_count, created_at_utc
+                    positive_availability_count, negative_availability_count, report_count, created_at_utc, created_by_user_id
                 ) VALUES (
                     @OfferId, @BusinessId, @BusinessName, @Description, @ImageUrl, 1, @Lat, @Lng,
-                    0, 0, 0, @CreatedAtUtc
+                    0, 0, 0, @CreatedAtUtc, @CreatedByUserId
                 );
                 """,
                 new
@@ -427,11 +570,12 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                     ImageUrl = primaryImageUrl,
                     Lat = location.Lat,
                     Lng = location.Lng,
-                    CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O")
+                    CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O"),
+                    CreatedByUserId = userId
                 },
                 transaction);
 
-            if (normalizedTags.Length > 0)
+            if (normalizedTags.Count > 0)
             {
                 await connection.ExecuteAsync(
                     """
@@ -488,6 +632,143 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
             false);
     }
 
+    public async Task<OfferItemDto?> UpdateAsync(string offerId, AddOfferRequest request, string userId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(offerId))
+        {
+            return null;
+        }
+
+        await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        var existing = await connection.QuerySingleOrDefaultAsync<OwnedOfferIdentityRow>(
+            """
+            SELECT offer_id AS OfferId, business_id AS BusinessId, business_name AS BusinessName
+            FROM offers
+            WHERE offer_id = @OfferId AND created_by_user_id = @UserId
+            LIMIT 1;
+            """,
+            new { OfferId = offerId, UserId = userId });
+
+        if (existing is null)
+        {
+            return null;
+        }
+
+        var normalizedOffer = NormalizeOfferRequest(request, existing.BusinessName);
+        var primaryImageUrl = normalizedOffer.Images[0].ImageUrl;
+
+        await using var transaction = connection.BeginTransaction();
+        try
+        {
+            await connection.ExecuteAsync(
+                """
+                UPDATE offers
+                SET business_name = @BusinessName,
+                    description = @Description,
+                    image_url = @ImageUrl,
+                    lat = @Lat,
+                    lng = @Lng
+                WHERE offer_id = @OfferId AND created_by_user_id = @UserId;
+                """,
+                new
+                {
+                    OfferId = offerId,
+                    UserId = userId,
+                    BusinessName = normalizedOffer.BusinessName,
+                    Description = normalizedOffer.Description,
+                    ImageUrl = primaryImageUrl,
+                    Lat = normalizedOffer.Location.Lat,
+                    Lng = normalizedOffer.Location.Lng
+                },
+                transaction);
+
+            await connection.ExecuteAsync(
+                "DELETE FROM offer_tags WHERE offer_id = @OfferId;",
+                new { OfferId = offerId },
+                transaction);
+
+            if (normalizedOffer.Tags.Count > 0)
+            {
+                await connection.ExecuteAsync(
+                    """
+                    INSERT INTO offer_tags (offer_id, tag)
+                    VALUES (@OfferId, @Tag);
+                    """,
+                    normalizedOffer.Tags.Select(tag => new { OfferId = offerId, Tag = tag }),
+                    transaction);
+            }
+
+            await connection.ExecuteAsync(
+                "DELETE FROM offer_images WHERE offer_id = @OfferId;",
+                new { OfferId = offerId },
+                transaction);
+
+            await connection.ExecuteAsync(
+                """
+                INSERT INTO offer_images (offer_id, image_url, mime_type, width, height, sort_order, created_at_utc)
+                VALUES (@OfferId, @ImageUrl, @MimeType, @Width, @Height, @SortOrder, @CreatedAtUtc);
+                """,
+                normalizedOffer.Images.Select(image => new
+                {
+                    OfferId = offerId,
+                    image.ImageUrl,
+                    image.MimeType,
+                    image.Width,
+                    image.Height,
+                    SortOrder = image.SortOrder,
+                    CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O")
+                }),
+                transaction);
+
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+
+        return new OfferItemDto(
+            offerId,
+            existing.BusinessId,
+            normalizedOffer.BusinessName,
+            normalizedOffer.Description,
+            normalizedOffer.Tags,
+            primaryImageUrl,
+            normalizedOffer.Images.Select(image => image.ImageUrl).ToArray(),
+            true,
+            false,
+            false,
+            false,
+            0d,
+            ["exact"],
+            normalizedOffer.Location,
+            0d,
+            0,
+            0,
+            false);
+    }
+
+    public async Task<CommandResult> DeleteAsync(string offerId, string userId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(offerId))
+        {
+            return new CommandResult(false, "Offer not found.");
+        }
+
+        await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        var rowsAffected = await connection.ExecuteAsync(
+            """
+            DELETE FROM offers
+            WHERE offer_id = @OfferId AND created_by_user_id = @UserId;
+            """,
+            new { OfferId = offerId, UserId = userId });
+
+        return rowsAffected > 0
+            ? new CommandResult(true, "Offer removed.")
+            : new CommandResult(false, "Offer not found.");
+    }
+
     private static IReadOnlyList<string> SplitQuery(string query) =>
         Regex.Split(query ?? string.Empty, "\\s+")
             .Select(word => NormalizeSearchTerm(word))
@@ -497,46 +778,8 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
 
     private static IReadOnlyDictionary<string, IReadOnlyList<string>> ExpandQueryWithSynonyms(
         IReadOnlyList<string> queryTokens,
-        string? locale)
-    {
-        var languageCode = ResolveLanguageCode(locale);
-        if (!SynonymsByLanguage.TryGetValue(languageCode, out var languageDictionary))
-        {
-            return new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        var expanded = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var token in queryTokens)
-        {
-            if (languageDictionary.TryGetValue(token, out var synonyms) && synonyms.Count > 0)
-            {
-                expanded[token] = synonyms.Select(NormalizeSearchTerm).Where(x => x.Length > 0).ToArray();
-            }
-            else
-            {
-                expanded[token] = [];
-            }
-        }
-
-        return expanded;
-    }
-
-    private static string ResolveLanguageCode(string? locale)
-    {
-        if (string.IsNullOrWhiteSpace(locale))
-        {
-            return "en";
-        }
-
-        var normalized = locale.Trim();
-        var separatorIndex = normalized.IndexOf('-');
-        if (separatorIndex <= 0)
-        {
-            separatorIndex = normalized.IndexOf('_');
-        }
-
-        return (separatorIndex > 0 ? normalized[..separatorIndex] : normalized).ToLowerInvariant();
-    }
+        string? locale) =>
+        TagLexicon.ExpandQueryWithRelatedTerms(queryTokens, locale);
 
     private static IReadOnlyList<string> BuildSearchTerms(string description, IReadOnlyList<string> tags)
     {
@@ -716,6 +959,33 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
     private static int GetPromotionPriority(IReadOnlyDictionary<string, int> promotedPriorities, string offerId) =>
         promotedPriorities.TryGetValue(offerId, out var priority) ? priority : 0;
 
+    private static NormalizedOfferRequest NormalizeOfferRequest(AddOfferRequest request, string? fallbackBusinessName = null)
+    {
+        var businessName = request.Location?.Label?.Trim();
+        if (string.IsNullOrWhiteSpace(businessName))
+        {
+            businessName = string.IsNullOrWhiteSpace(fallbackBusinessName)
+                ? "User Submitted Business"
+                : fallbackBusinessName.Trim();
+        }
+
+        var description = request.Description?.Trim() ?? string.Empty;
+        var location = request.Location?.Position ?? new GeoPoint(40.7128, -74.0060);
+        var normalizedTags = request.Tags
+            .Select(NormalizeTag)
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var normalizedImages = NormalizeImages(request.Images ?? []);
+
+        return new NormalizedOfferRequest(
+            businessName,
+            description,
+            location,
+            normalizedTags,
+            normalizedImages);
+    }
+
     private static IReadOnlyList<NormalizedImage> NormalizeImages(IReadOnlyList<OfferImageDto> images)
     {
         var normalized = images
@@ -752,14 +1022,39 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
 
     private static double DegreesToRadians(double degrees) => degrees * Math.PI / 180;
 
-    private static string NormalizeTag(string value) =>
-        (value ?? string.Empty)
-            .Trim()
-            .Trim('.', ',', ';', ':', '!', '?', '"', '\'', '(', ')', '[', ']', '{', '}')
-            .ToLower(CultureInfo.InvariantCulture);
+    private static string NormalizeTag(string value) => TagLexicon.NormalizeTag(value);
 
-    private static string NormalizeSearchTerm(string value) =>
-        string.Concat(NormalizeTag(value).Where(ch => !char.IsWhiteSpace(ch)));
+    private static string NormalizeSearchTerm(string value) => TagLexicon.NormalizeSearchTerm(value);
+
+    private static string ResolveOwnedImageMimeType(string imageUrl, string? mimeType)
+    {
+        if (!string.IsNullOrWhiteSpace(mimeType))
+        {
+            return mimeType;
+        }
+
+        if (imageUrl.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+        {
+            return "image/svg+xml";
+        }
+
+        if (imageUrl.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+        {
+            return "image/png";
+        }
+
+        if (imageUrl.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
+        {
+            return "image/gif";
+        }
+
+        if (imageUrl.EndsWith(".webp", StringComparison.OrdinalIgnoreCase))
+        {
+            return "image/webp";
+        }
+
+        return "image/jpeg";
+    }
 
     private sealed record OfferRow(
         string OfferId,
@@ -777,6 +1072,23 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
     private sealed record OfferTagRow(string OfferId, string Tag);
 
     private sealed record OfferImageRow(string OfferId, string ImageUrl, long SortOrder);
+
+    private sealed class OwnedOfferImageRow
+    {
+        public string ImageUrl { get; init; } = string.Empty;
+
+        public string? MimeType { get; init; }
+
+        public long? Width { get; init; }
+
+        public long? Height { get; init; }
+
+        public long SortOrder { get; init; }
+    }
+
+    private sealed record OwnedOfferDraftRow(string OfferId, string BusinessName, string Description, double Lat, double Lng);
+
+    private sealed record OwnedOfferIdentityRow(string OfferId, string BusinessId, string BusinessName);
 
     private sealed record PromotedOfferRow(string OfferId, long Priority, string? StartsAtUtc, string? EndsAtUtc);
 
@@ -799,4 +1111,11 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
         int? Width,
         int? Height,
         int SortOrder);
+
+    private sealed record NormalizedOfferRequest(
+        string BusinessName,
+        string Description,
+        GeoPoint Location,
+        IReadOnlyList<string> Tags,
+        IReadOnlyList<NormalizedImage> Images);
 }

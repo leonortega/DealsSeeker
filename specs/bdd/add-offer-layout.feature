@@ -21,3 +21,23 @@ Feature: Add Offer layout required controls
     When the user presses Create Offer
     And the create-offer request succeeds with no errors
     Then the app redirects to Offers view
+
+  Scenario: Edit Offer view shows edit title and prefilled data
+    Given the user opens Add Offer view in edit mode for a user-owned offer
+    When the view loads
+    Then the title shown is Edit Offer
+    And the existing description, tags, images, and location are shown
+    And the mini map shows the stored offer location
+
+  Scenario: Successful edit-offer submit redirects to My Account
+    Given the user is in Edit Offer view with valid updated data
+    When the user presses Edit Offer
+    And the edit-offer request succeeds with no errors
+    Then the app redirects to My Account view
+
+  Scenario: Save is blocked when required offer content is missing
+    Given the user is in Add Offer view
+    And at least one of photo, description, selected tag, or confirmed location is missing
+    When the user presses Create Offer
+    Then the create-offer request is not sent
+    And a validation error state is shown

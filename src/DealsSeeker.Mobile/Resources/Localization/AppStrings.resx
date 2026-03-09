@@ -18,6 +18,12 @@
   <data name="account.loading" xml:space="preserve">
     <value>Loading account...</value>
   </data>
+  <data name="account.myOffers" xml:space="preserve">
+    <value>My Offers</value>
+  </data>
+  <data name="account.noOffers" xml:space="preserve">
+    <value>You have not created any offers yet.</value>
+  </data>
   <data name="account.loggedOut" xml:space="preserve">
     <value>Logged out.</value>
   </data>
@@ -39,8 +45,32 @@
   <data name="account.profileLoadFailed" xml:space="preserve">
     <value>Profile load failed.</value>
   </data>
+  <data name="account.offersLoadFailed" xml:space="preserve">
+    <value>Account data load failed.</value>
+  </data>
   <data name="account.refresh" xml:space="preserve">
     <value>Refresh</value>
+  </data>
+  <data name="account.editOffer" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="account.removeOffer" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="account.removeOfferPrompt" xml:space="preserve">
+    <value>Are you sure you want to remove "{0}"?</value>
+  </data>
+  <data name="account.confirmYes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="account.confirmNo" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="account.offerRemoved" xml:space="preserve">
+    <value>Offer removed.</value>
+  </data>
+  <data name="account.offerRemoveFailed" xml:space="preserve">
+    <value>Offer removal failed.</value>
   </data>
   <data name="account.sessionExpired" xml:space="preserve">
     <value>Your session expired. Please login again.</value>
@@ -102,6 +132,12 @@
   <data name="addOffer.editLocation" xml:space="preserve">
     <value>Edit Location</value>
   </data>
+  <data name="addOffer.editTitle" xml:space="preserve">
+    <value>Edit Offer</value>
+  </data>
+  <data name="addOffer.editSubmit" xml:space="preserve">
+    <value>Edit Offer</value>
+  </data>
   <data name="addOffer.images" xml:space="preserve">
     <value>Photos</value>
   </data>
@@ -131,6 +167,9 @@
   </data>
   <data name="addOffer.locationUnavailable" xml:space="preserve">
     <value>Unavailable</value>
+  </data>
+  <data name="addOffer.loadFailed" xml:space="preserve">
+    <value>Offer data could not be loaded for editing.</value>
   </data>
   <data name="addOffer.maxPhotosReached" xml:space="preserve">
     <value>Maximum of {0} photos reached.</value>
@@ -215,6 +254,24 @@
   </data>
   <data name="addOffer.typeAtLeast3Chars" xml:space="preserve">
     <value>Type at least 3 characters to see suggestions.</value>
+  </data>
+  <data name="addOffer.updated" xml:space="preserve">
+    <value>Offer updated.</value>
+  </data>
+  <data name="addOffer.updateFailed" xml:space="preserve">
+    <value>Offer update failed.</value>
+  </data>
+  <data name="addOffer.validationDescriptionRequired" xml:space="preserve">
+    <value>Description is required.</value>
+  </data>
+  <data name="addOffer.validationPhotoRequired" xml:space="preserve">
+    <value>At least 1 photo is required.</value>
+  </data>
+  <data name="addOffer.validationTagRequired" xml:space="preserve">
+    <value>At least 1 tag is required.</value>
+  </data>
+  <data name="addOffer.validationLocationConfirmationRequired" xml:space="preserve">
+    <value>Location must be confirmed before saving.</value>
   </data>
   <data name="addOffer.uploadPhotos" xml:space="preserve">
     <value>Upload Photos</value>
@@ -434,6 +491,9 @@
   </data>
   <data name="offers.reported" xml:space="preserve">
     <value>Reported</value>
+  </data>
+  <data name="offers.reportedWarning" xml:space="preserve">
+    <value>Warning: this offer has been reported.</value>
   </data>
   <data name="offers.results" xml:space="preserve">
     <value>Offers feed</value>

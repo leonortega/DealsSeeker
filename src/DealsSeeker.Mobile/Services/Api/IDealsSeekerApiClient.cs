@@ -17,6 +17,10 @@ public interface IDealsSeekerApiClient
 
     Task<UserProfileDto?> GetMyProfileAsync(CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<OfferItemDto>?> GetMyOffersAsync(CancellationToken cancellationToken);
+
+    Task<AddOfferRequest?> GetMyOfferDraftAsync(string offerId, CancellationToken cancellationToken);
+
     Task<SearchOffersResponse> SearchOffersAsync(SearchOffersRequest request, CancellationToken cancellationToken);
 
     Task<CommandResult> VoteOfferAvailabilityAsync(string offerId, OfferAvailabilityVoteRequest request, CancellationToken cancellationToken);
@@ -26,6 +30,10 @@ public interface IDealsSeekerApiClient
     Task<CommandResult> SetOfferFavoriteAsync(string offerId, SetFavoriteRequest request, CancellationToken cancellationToken);
 
     Task<OfferItemDto?> CreateOfferAsync(AddOfferRequest request, CancellationToken cancellationToken);
+
+    Task<OfferItemDto?> UpdateOfferAsync(string offerId, AddOfferRequest request, CancellationToken cancellationToken);
+
+    Task<CommandResult> DeleteOfferAsync(string offerId, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<LocationSearchResultDto>> SearchLocationsAsync(string query, CancellationToken cancellationToken);
 

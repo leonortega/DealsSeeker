@@ -123,6 +123,11 @@
                             <p class="offer-description-preview">@((MarkupString)HighlightText(ShortDescription(offer.Description)))</p>
                         </div>
 
+                        @if (offer.IsReported)
+                        {
+                            <p class="offer-reported-warning">@T("offers.reportedWarning")</p>
+                        }
+
                         @if (offer.Tags.Count > 0)
                         {
                             <div class="tag-list offer-tag-list">
@@ -205,6 +210,11 @@
                             <h3>@offer.BusinessName</h3>
                             <p class="offer-description-preview">@((MarkupString)HighlightText(ShortDescription(offer.Description)))</p>
                         </div>
+
+                        @if (offer.IsReported)
+                        {
+                            <p class="offer-reported-warning">@T("offers.reportedWarning")</p>
+                        }
 
                         @if (offer.Tags.Count > 0)
                         {
@@ -410,20 +420,25 @@
         var isPreSearch = string.IsNullOrWhiteSpace(_query);
         if (isPreSearch)
         {
-            _promotedOffers = _results.Offers
+            _promotedOffers = OrderReportedLast(_results.Offers
                 .Where(offer => offer.IsPromoted && !offer.IsReported)
-                .ToList();
+                .ToList());
 
             var promotedIds = _promotedOffers.Select(x => x.OfferId).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            _feedOffers = _results.Offers
+            _feedOffers = OrderReportedLast(_results.Offers
                 .Where(offer => !promotedIds.Contains(offer.OfferId))
-                .ToList();
+                .ToList());
             return;
         }
 
         _promotedOffers = [];
-        _feedOffers = _results.Offers.ToList();
+        _feedOffers = OrderReportedLast(_results.Offers.ToList());
     }
+
+    private static List<OfferItemDto> OrderReportedLast(List<OfferItemDto> offers) =>
+        offers
+            .OrderBy(offer => offer.IsReported ? 1 : 0)
+            .ToList();
 
     private void OnCoverageRadiusInput(ChangeEventArgs args)
     {

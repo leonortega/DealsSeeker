@@ -59,6 +59,34 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         return await response.Content.ReadFromJsonAsync<UserProfileDto>(cancellationToken: cancellationToken);
     }
 
+    public async Task<IReadOnlyList<OfferItemDto>?> GetMyOffersAsync(CancellationToken cancellationToken)
+    {
+        using var _ = busy.Begin();
+        var request = CreateRequest(HttpMethod.Get, "/api/account/offers", requiresAuth: true);
+        var response = await httpClient.SendAsync(request, cancellationToken);
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<IReadOnlyList<OfferItemDto>>(cancellationToken: cancellationToken) ?? [];
+    }
+
+    public async Task<AddOfferRequest?> GetMyOfferDraftAsync(string offerId, CancellationToken cancellationToken)
+    {
+        using var _ = busy.Begin();
+        var request = CreateRequest(HttpMethod.Get, $"/api/account/offers/{offerId}", requiresAuth: true);
+        var response = await httpClient.SendAsync(request, cancellationToken);
+        if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<AddOfferRequest>(cancellationToken: cancellationToken);
+    }
+
     public async Task<SearchOffersResponse> SearchOffersAsync(SearchOffersRequest request, CancellationToken cancellationToken)
     {
         using var _ = busy.Begin();
@@ -98,13 +126,36 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
     public async Task<OfferItemDto?> CreateOfferAsync(AddOfferRequest request, CancellationToken cancellationToken)
     {
         using var _ = busy.Begin();
-        var response = await httpClient.PostAsJsonAsync("/api/offers", request, cancellationToken);
+        var httpRequest = CreateRequest(HttpMethod.Post, "/api/offers", request, requiresAuth: true);
+        var response = await httpClient.SendAsync(httpRequest, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             return null;
         }
 
         return await response.Content.ReadFromJsonAsync<OfferItemDto>(cancellationToken: cancellationToken);
+    }
+
+    public async Task<OfferItemDto?> UpdateOfferAsync(string offerId, AddOfferRequest request, CancellationToken cancellationToken)
+    {
+        using var _ = busy.Begin();
+        var httpRequest = CreateRequest(HttpMethod.Put, $"/api/offers/{offerId}", request, requiresAuth: true);
+        var response = await httpClient.SendAsync(httpRequest, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadFromJsonAsync<OfferItemDto>(cancellationToken: cancellationToken);
+    }
+
+    public async Task<CommandResult> DeleteOfferAsync(string offerId, CancellationToken cancellationToken)
+    {
+        using var _ = busy.Begin();
+        var request = CreateRequest(HttpMethod.Delete, $"/api/offers/{offerId}", requiresAuth: true);
+        var response = await httpClient.SendAsync(request, cancellationToken);
+        return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
+               ?? new CommandResult(response.IsSuccessStatusCode, response.ReasonPhrase ?? "Offer deletion processed.");
     }
 
     public async Task<IReadOnlyList<LocationSearchResultDto>> SearchLocationsAsync(string query, CancellationToken cancellationToken)

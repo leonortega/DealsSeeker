@@ -6,11 +6,12 @@
 @inject IUserSessionService Session
 @inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
+@using DealsSeeker.Shared.Tags
 @implements IDisposable
 
 <section class="page-hero">
     <div class="page-hero-copy">
-        <h1>@T("addOffer.title")</h1>
+        <h1>@PageTitle()</h1>
     </div>
 </section>
 
@@ -249,11 +250,13 @@
 <section class="card-block submit-panel">
     <div class="section-heading">
         <div>
-            <h2>@T("addOffer.create")</h2>
+            <h2>@SubmitButtonText()</h2>
         </div>
     </div>
 
-    <button class="btn-main btn-main-accent" @onclick="CreateOfferAsync" disabled="@_saving">@T("addOffer.create")</button>
+    <button class="btn-main btn-main-accent"
+            @onclick="CreateOfferAsync"
+            disabled="@(_saving || (_loadingOwnedOffer && IsEditMode) || (_offerLoadFailed && IsEditMode))">@SubmitButtonText()</button>
     @if (!string.IsNullOrWhiteSpace(_status))
     {
         <p class="status-line">@_status</p>
@@ -262,28 +265,10 @@
 
 @code {
     private const int MaxPhotos = 8;
-    private const double SuggestionThreshold = 0.72d;
+    private const string PlaceholderOfferImageUrl = "/images/offer-placeholder.svg";
 
-    private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, IReadOnlyList<string>>> SuggestionDictionary
-        = new Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<string>>>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["en"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["coffee"] = ["coffees", "cafe", "cafes", "espresso", "espressos", "latte", "lattes"],
-                ["tea"] = ["teas", "chai", "infusion", "infusions"],
-                ["bakery"] = ["bakeries", "bread", "breads", "pastry", "pastries"],
-                ["discount"] = ["discounts", "deal", "deals", "promo", "promos", "sale", "sales"],
-                ["offer"] = ["offers", "deal", "deals", "promo", "promos"]
-            },
-            ["es"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["cafe"] = ["cafes", "coffee", "espresso", "espressos"],
-                ["te"] = ["tes", "tea", "infusion", "infusiones"],
-                ["panaderia"] = ["panaderias", "bakery", "bread", "pan"],
-                ["descuento"] = ["descuentos", "discount", "deal", "promo", "promos"],
-                ["oferta"] = ["ofertas", "deal", "deals", "promo", "promos"]
-            }
-        };
+    [SupplyParameterFromQuery(Name = "offerId")]
+    public string? OfferId { get; set; }
 
     private readonly List<PickedImage> _images = [];
     private OfferLocationDto? _location;
@@ -295,10 +280,14 @@
     private bool _saving;
     private bool _searchingLocation;
     private bool _isLocationConfirmed;
+    private bool _initialized;
+    private bool _loadingOwnedOffer;
+    private bool _offerLoadFailed;
     private CancellationTokenSource? _locationSearchCts;
     private readonly List<string> _tags = [];
     private readonly List<LocationSearchResultDto> _locationResults = [];
     private int _selectedImageIndex;
+    private string? _loadedOfferId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -309,7 +298,34 @@
         }
 
         await Preferences.InitializeAsync(Session.CurrentSession?.UserId, CancellationToken.None);
-        await TryAutoPopulateLocationAsync();
+        _initialized = true;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!_initialized || !Session.IsAuthenticated)
+        {
+            return;
+        }
+
+        var normalizedOfferId = string.IsNullOrWhiteSpace(OfferId) ? null : OfferId.Trim();
+        if (string.Equals(_loadedOfferId, normalizedOfferId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _loadedOfferId = normalizedOfferId;
+        _status = string.Empty;
+        _offerLoadFailed = false;
+
+        if (string.IsNullOrWhiteSpace(normalizedOfferId))
+        {
+            ResetDraft();
+            await TryAutoPopulateLocationAsync();
+            return;
+        }
+
+        await LoadOwnedOfferAsync(normalizedOfferId);
     }
 
     private async Task CaptureFromCameraAsync()
@@ -330,6 +346,7 @@
         _images.Add(captured);
         _selectedImageIndex = _images.Count - 1;
         _imageStatus = T("addOffer.photoAttached");
+        _status = string.Empty;
         await TryAutoPopulateLocationAsync();
     }
 
@@ -365,6 +382,7 @@
         }
 
         _imageStatus = T("addOffer.imagesAttachedFromGallery");
+        _status = string.Empty;
         await TryAutoPopulateLocationAsync();
     }
 
@@ -398,6 +416,7 @@
         _images.RemoveAt(index);
         ClampSelectedImageIndex();
         _imageStatus = T("addOffer.photoRemoved");
+        _status = string.Empty;
     }
 
     private PickedImage CurrentImage() => _images[Math.Clamp(_selectedImageIndex, 0, _images.Count - 1)];
@@ -489,12 +508,14 @@
         _location = _location with { Source = "manual-confirmed" };
         _isLocationConfirmed = true;
         _locationStatus = T("addOffer.locationConfirmed");
+        _status = string.Empty;
     }
 
     private void EditLocation()
     {
         _isLocationConfirmed = false;
         _locationStatus = T("addOffer.locationEditEnabled");
+        _status = string.Empty;
     }
 
     private async Task OnLocationQueryInputAsync(ChangeEventArgs args)
@@ -569,11 +590,13 @@
         _isLocationConfirmed = false;
         _locationStatus = T("addOffer.locationSelectedFromSuggestions");
         _locationResults.Clear();
+        _status = string.Empty;
     }
 
     private void OnDescriptionInput(ChangeEventArgs args)
     {
         _description = args.Value?.ToString() ?? string.Empty;
+        _status = string.Empty;
         if (string.IsNullOrWhiteSpace(_description))
         {
             _tags.Clear();
@@ -582,7 +605,7 @@
 
     private void AddTag(string value)
     {
-        var normalized = NormalizeTag(value);
+        var normalized = TagLexicon.NormalizeTag(value);
         if (string.IsNullOrWhiteSpace(normalized))
         {
             return;
@@ -594,217 +617,31 @@
         }
 
         _tags.Add(normalized);
+        _status = string.Empty;
     }
 
     private void RemoveTag(string tag)
     {
         _tags.Remove(tag);
+        _status = string.Empty;
     }
 
     private IReadOnlyList<string> GetSuggestedTags()
-    {
-        if (_tags.Count == 0)
-        {
-            return [];
-        }
-
-        var language = Preferences.Language;
-        if (!SuggestionDictionary.TryGetValue(language, out var dictionary))
-        {
-            dictionary = SuggestionDictionary["en"];
-        }
-
-        var suggestions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var selectedTag in _tags.Select(NormalizeTag))
-        {
-            if (string.IsNullOrWhiteSpace(selectedTag))
-            {
-                continue;
-            }
-
-            foreach (var variant in ExpandTagVariants(selectedTag, language))
-            {
-                suggestions.Add(variant);
-            }
-
-            foreach (var relatedTag in FindRelatedTags(selectedTag, language, dictionary))
-            {
-                suggestions.Add(relatedTag);
-            }
-        }
-
-        return suggestions
-            .Where(x => !_tags.Contains(x, StringComparer.OrdinalIgnoreCase))
-            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
-            .Take(12)
-            .ToArray();
-    }
-
-    private static IEnumerable<string> FindRelatedTags(
-        string selectedTag,
-        string language,
-        IReadOnlyDictionary<string, IReadOnlyList<string>> dictionary)
-    {
-        var selectedForms = ExpandComparisonForms(selectedTag, language);
-
-        foreach (var entry in dictionary)
-        {
-            var normalizedKey = NormalizeTag(entry.Key);
-            if (string.IsNullOrWhiteSpace(normalizedKey))
-            {
-                continue;
-            }
-
-            var keyForms = ExpandComparisonForms(normalizedKey, language);
-            var matches = selectedForms.Overlaps(keyForms) ||
-                selectedForms.Any(form => SimilarityRatio(normalizedKey, form) >= SuggestionThreshold);
-
-            if (!matches)
-            {
-                continue;
-            }
-
-            yield return normalizedKey;
-            foreach (var synonym in entry.Value.Select(NormalizeTag).Where(x => !string.IsNullOrWhiteSpace(x)))
-            {
-                yield return synonym;
-            }
-        }
-    }
-
-    private static HashSet<string> ExpandComparisonForms(string value, string language)
-    {
-        var forms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var variant in ExpandTagVariants(value, language))
-        {
-            forms.Add(variant);
-        }
-
-        return forms;
-    }
-
-    private static IEnumerable<string> ExpandTagVariants(string value, string language)
-    {
-        var normalized = NormalizeTag(value);
-        if (string.IsNullOrWhiteSpace(normalized))
-        {
-            yield break;
-        }
-
-        var variants = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            normalized,
-            ToSingular(normalized, language),
-            ToPlural(normalized, language)
-        };
-
-        foreach (var variant in variants.Where(x => !string.IsNullOrWhiteSpace(x)))
-        {
-            yield return variant;
-        }
-    }
-
-    private static string ToSingular(string value, string language)
-    {
-        if (string.IsNullOrWhiteSpace(value) || value.EndsWith('%'))
-        {
-            return value;
-        }
-
-        if (string.Equals(language, "es", StringComparison.OrdinalIgnoreCase))
-        {
-            if (value.EndsWith("ces", StringComparison.OrdinalIgnoreCase) && value.Length > 3)
-            {
-                return value[..^3] + "z";
-            }
-
-            if (value.EndsWith('s') && value.Length > 3)
-            {
-                if (value.EndsWith("es", StringComparison.OrdinalIgnoreCase) &&
-                    !IsVowel(value[value.Length - 3]) &&
-                    !value.EndsWith("aes", StringComparison.OrdinalIgnoreCase) &&
-                    !value.EndsWith("ees", StringComparison.OrdinalIgnoreCase) &&
-                    !value.EndsWith("oes", StringComparison.OrdinalIgnoreCase))
-                {
-                    return value[..^2];
-                }
-
-                return value[..^1];
-            }
-
-            return value;
-        }
-
-        if (value.EndsWith("ies", StringComparison.OrdinalIgnoreCase) && value.Length > 3)
-        {
-            return value[..^3] + "y";
-        }
-
-        if ((value.EndsWith("ches", StringComparison.OrdinalIgnoreCase) ||
-            value.EndsWith("shes", StringComparison.OrdinalIgnoreCase) ||
-            value.EndsWith("sses", StringComparison.OrdinalIgnoreCase) ||
-            value.EndsWith("xes", StringComparison.OrdinalIgnoreCase) ||
-            value.EndsWith("zes", StringComparison.OrdinalIgnoreCase)) &&
-            value.Length > 2)
-        {
-            return value[..^2];
-        }
-
-        if (value.EndsWith('s') && !value.EndsWith("ss", StringComparison.OrdinalIgnoreCase) && value.Length > 1)
-        {
-            return value[..^1];
-        }
-
-        return value;
-    }
-
-    private static string ToPlural(string value, string language)
-    {
-        if (string.IsNullOrWhiteSpace(value) || value.EndsWith('%'))
-        {
-            return value;
-        }
-
-        if (!string.Equals(ToSingular(value, language), value, StringComparison.OrdinalIgnoreCase))
-        {
-            return value;
-        }
-
-        if (string.Equals(language, "es", StringComparison.OrdinalIgnoreCase))
-        {
-            if (value.EndsWith('z'))
-            {
-                return value[..^1] + "ces";
-            }
-
-            return IsVowel(value[^1]) ? string.Concat(value, "s") : string.Concat(value, "es");
-        }
-
-        if (value.EndsWith('y') && value.Length > 1 && !IsVowel(value[^2]))
-        {
-            return value[..^1] + "ies";
-        }
-
-        if (value.EndsWith('s') ||
-            value.EndsWith('x') ||
-            value.EndsWith('z') ||
-            value.EndsWith("ch", StringComparison.OrdinalIgnoreCase) ||
-            value.EndsWith("sh", StringComparison.OrdinalIgnoreCase))
-        {
-            return string.Concat(value, "es");
-        }
-
-        return string.Concat(value, "s");
-    }
-
-    private static bool IsVowel(char value)
-    {
-        var lowered = char.ToLowerInvariant(value);
-        return lowered is 'a' or 'e' or 'i' or 'o' or 'u';
-    }
+        => TagLexicon.GetSuggestedTags(_tags, Preferences.Language, maxSuggestions: 12);
 
     private async Task CreateOfferAsync()
     {
+        if (IsEditMode && (_offerLoadFailed || string.IsNullOrWhiteSpace(_loadedOfferId)))
+        {
+            _status = T("addOffer.loadFailed");
+            return;
+        }
+
+        if (!ValidateOfferBeforeSave())
+        {
+            return;
+        }
+
         _saving = true;
         _status = string.Empty;
         try
@@ -819,15 +656,30 @@
                 orderedImages,
                 _location);
 
-            var created = await ApiClient.CreateOfferAsync(request, CancellationToken.None);
-            if (created is null)
+            if (IsEditMode)
             {
-                _status = T("addOffer.createFailed");
-                return;
-            }
+                var updated = await ApiClient.UpdateOfferAsync(_loadedOfferId!, request, CancellationToken.None);
+                if (updated is null)
+                {
+                    _status = T("addOffer.updateFailed");
+                    return;
+                }
 
-            _status = string.Format(T("addOffer.createdWithId"), created.OfferId);
-            Navigation.NavigateTo("/offers", forceLoad: false);
+                _status = T("addOffer.updated");
+                Navigation.NavigateTo("/my-account", forceLoad: false);
+            }
+            else
+            {
+                var created = await ApiClient.CreateOfferAsync(request, CancellationToken.None);
+                if (created is null)
+                {
+                    _status = T("addOffer.createFailed");
+                    return;
+                }
+
+                _status = string.Format(T("addOffer.createdWithId"), created.OfferId);
+                Navigation.NavigateTo("/offers", forceLoad: false);
+            }
         }
         finally
         {
@@ -835,11 +687,107 @@
         }
     }
 
-    private static string NormalizeTag(string value) =>
-        (value ?? string.Empty)
-            .Trim()
-            .Trim('.', ',', ';', ':', '!', '?', '"', '\'', '(', ')', '[', ']', '{', '}')
-            .ToLowerInvariant();
+    private bool ValidateOfferBeforeSave()
+    {
+        var errors = new List<string>();
+
+        if (!HasAttachedImage())
+        {
+            errors.Add(T("addOffer.validationPhotoRequired"));
+        }
+
+        if (string.IsNullOrWhiteSpace(_description))
+        {
+            errors.Add(T("addOffer.validationDescriptionRequired"));
+        }
+
+        if (_tags.Count == 0)
+        {
+            errors.Add(T("addOffer.validationTagRequired"));
+        }
+
+        if (_location is null || !_isLocationConfirmed)
+        {
+            errors.Add(T("addOffer.validationLocationConfirmationRequired"));
+        }
+
+        _status = errors.Count == 0
+            ? string.Empty
+            : string.Join(" ", errors);
+
+        return errors.Count == 0;
+    }
+
+    private bool HasAttachedImage() =>
+        _images.Any(image => !string.Equals(image.DataUrl, PlaceholderOfferImageUrl, StringComparison.OrdinalIgnoreCase));
+
+    private async Task LoadOwnedOfferAsync(string offerId)
+    {
+        _loadingOwnedOffer = true;
+        _offerLoadFailed = false;
+        try
+        {
+            var draft = await ApiClient.GetMyOfferDraftAsync(offerId, CancellationToken.None);
+            if (draft is null)
+            {
+                ResetDraft();
+                _offerLoadFailed = true;
+                _status = T("addOffer.loadFailed");
+                return;
+            }
+
+            ApplyDraft(draft);
+        }
+        finally
+        {
+            _loadingOwnedOffer = false;
+        }
+    }
+
+    private void ApplyDraft(AddOfferRequest draft)
+    {
+        _description = draft.Description ?? string.Empty;
+
+        _tags.Clear();
+        _tags.AddRange((draft.Tags ?? [])
+            .Select(TagLexicon.NormalizeTag)
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Distinct(StringComparer.OrdinalIgnoreCase));
+
+        _images.Clear();
+        foreach (var image in (draft.Images ?? []).OrderBy(image => image.Order))
+        {
+            var dataUrl = string.IsNullOrWhiteSpace(image.DataUrl) ? "/images/offer-placeholder.svg" : image.DataUrl!;
+            var metadata = image with { DataUrl = dataUrl };
+            _images.Add(new PickedImage(dataUrl, metadata));
+        }
+
+        _location = draft.Location;
+        _locationQuery = draft.Location?.Label ?? string.Empty;
+        _isLocationConfirmed = draft.Location is not null;
+        _locationResults.Clear();
+        _locationStatus = string.Empty;
+        _imageStatus = string.Empty;
+        ClampSelectedImageIndex();
+    }
+
+    private void ResetDraft()
+    {
+        _images.Clear();
+        _location = null;
+        _description = string.Empty;
+        _locationQuery = string.Empty;
+        _status = string.Empty;
+        _locationStatus = string.Empty;
+        _imageStatus = string.Empty;
+        _searchingLocation = false;
+        _isLocationConfirmed = false;
+        _tags.Clear();
+        _locationResults.Clear();
+        _selectedImageIndex = 0;
+    }
+
+    private static string NormalizeTag(string value) => TagLexicon.NormalizeTag(value);
 
     private static IReadOnlyList<string> ExtractWords(string text) =>
         Regex.Matches(text ?? string.Empty, "\\b[\\p{L}\\p{Nd}][\\p{L}\\p{Nd}\\-']*%?(?=\\b|\\s|$|[.,;:!?])")
@@ -855,6 +803,11 @@
 
     private string BuildLocationMapUrl()
     {
+        if (IsEditMode && _loadingOwnedOffer && _location is null)
+        {
+            return "about:blank";
+        }
+
         if (_location is null)
         {
             return MapRendering.BuildMapEmbedUrl(new GeoPoint(40.7128, -74.0060), [], zoom: 14);
@@ -879,6 +832,12 @@
 
         return T("addOffer.currentLocation");
     }
+
+    private bool IsEditMode => !string.IsNullOrWhiteSpace(_loadedOfferId);
+
+    private string PageTitle() => IsEditMode ? T("addOffer.editTitle") : T("addOffer.title");
+
+    private string SubmitButtonText() => IsEditMode ? T("addOffer.editSubmit") : T("addOffer.create");
 
     private string T(string key) => Preferences.Translate(key);
 

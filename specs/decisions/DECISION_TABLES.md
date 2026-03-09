@@ -218,10 +218,16 @@
 | Session persistence | Persist on device | User remains logged in across app restarts |
 | Startup with expired persisted session | Clear session and redirect to `Login` | Prevent access with invalid token |
 | My Account unauthenticated access | Redirect to `Login` | Profile requires active session |
+| My Account owned offers source | Authenticated user's created offers only | Excludes offers created by other users |
+| My Account owned offer actions | `Edit` and `Remove` only | Favorite and availability controls are not shown in My Account list |
+| Owned offer remove confirmation | Explicit `Yes` / `No` prompt | Prevents accidental deletion |
+| Owned offer remove cancel | Keep offer unchanged | `No` closes confirmation with no mutation |
+| Owned offer edit navigation | Open Add Offer in edit mode | Target offer is preloaded into the editor |
 | Logout behavior | Clear session and redirect to `Login` | Applies from My Account context |
 | Suggestions submit success | Redirect to `Offers` | Applies only when response has no errors |
 | Reports submit success | Redirect to `Offers` | Applies only when response has no errors |
 | Add Offer submit success | Redirect to `Offers` | Applies only when offer create response has no errors |
+| Edit Offer submit success | Redirect to `My Account` | Applies only when offer update response has no errors |
 | Any submit error | Stay in current view and show error/status | No redirect on failed response |
 
 ## Logging Rules (`APP.LOGGING.001`)

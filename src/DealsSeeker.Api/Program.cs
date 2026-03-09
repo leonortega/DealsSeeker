@@ -124,6 +124,44 @@ api.MapGet("/account/me", async (HttpContext httpContext, IAuthService auth, Can
     .WithName("GetMyAccountProfile")
     .WithSummary("ACCOUNT.PROFILE.001: Get profile for authenticated user.");
 
+api.MapGet("/account/offers", async (HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var response = await offers.GetOwnedOffersAsync(profile.UserId, cancellationToken);
+        return Results.Ok(response);
+    })
+    .WithName("GetMyOffers")
+    .WithSummary("ACCOUNT.PROFILE.001: Get offers created by the authenticated user.");
+
+api.MapGet("/account/offers/{offerId}", async (string offerId, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var draft = await offers.GetOwnedOfferDraftAsync(offerId, profile.UserId, cancellationToken);
+        return draft is null ? Results.NotFound() : Results.Ok(draft);
+    })
+    .WithName("GetMyOfferDraft")
+    .WithSummary("ACCOUNT.PROFILE.001 + ADD.OFFER.LAYOUT.001: Get editable draft data for a user-owned offer.");
+
 api.MapPost("/offers/search", async (SearchOffersRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
     {
         if (!TryGetAccessToken(httpContext, out var accessToken))
@@ -203,13 +241,62 @@ api.MapPost("/offers/{offerId}/favorite", async (string offerId, SetFavoriteRequ
     .WithName("SetFavorite")
     .WithSummary("OFFERS.FAVORITES.001: Save or remove offer from user favorites.");
 
-api.MapPost("/offers", async (AddOfferRequest request, IOfferService offers, CancellationToken cancellationToken) =>
+api.MapPost("/offers", async (AddOfferRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
     {
-        var result = await offers.AddAsync(request, cancellationToken);
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await offers.AddAsync(request, profile.UserId, cancellationToken);
         return Results.Created($"/api/offers/{result.OfferId}", result);
     })
     .WithName("CreateOffer")
     .WithSummary("ADD.OFFER.*: Create a new offer from add-offer view inputs.");
+
+api.MapPut("/offers/{offerId}", async (string offerId, AddOfferRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await offers.UpdateAsync(offerId, request, profile.UserId, cancellationToken);
+        return result is null ? Results.NotFound() : Results.Ok(result);
+    })
+    .WithName("UpdateOffer")
+    .WithSummary("ACCOUNT.PROFILE.001 + ADD.OFFER.LAYOUT.001: Update a user-owned offer from edit mode.");
+
+api.MapDelete("/offers/{offerId}", async (string offerId, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await offers.DeleteAsync(offerId, profile.UserId, cancellationToken);
+        return result.Success ? Results.Ok(result) : Results.NotFound(result);
+    })
+    .WithName("DeleteOffer")
+    .WithSummary("ACCOUNT.PROFILE.001: Delete a user-owned offer after confirmation.");
 
 api.MapGet("/locations/search", async (string query, ILocationLookupService lookup, CancellationToken cancellationToken) =>
     {

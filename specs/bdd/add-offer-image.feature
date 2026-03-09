@@ -21,3 +21,9 @@ Feature: Attach photos and populate location in Add Offer
     When the user taps the image upload area
     Then no photo is attached
     And the user receives a permission error state
+
+  Scenario: Save is blocked when no photo is attached
+    Given the user is in Add Offer view with no attached user image
+    When the user presses save
+    Then the offer request is not sent
+    And a photo-required validation error is shown

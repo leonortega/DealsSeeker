@@ -92,6 +92,59 @@ else
             </div>
         </section>
     </section>
+
+    <section class="card-block account-panel">
+        <div class="section-heading">
+            <div>
+                <h2>@T("account.myOffers")</h2>
+            </div>
+        </div>
+
+        @if (_ownedOffers.Count == 0)
+        {
+            <p class="muted">@T("account.noOffers")</p>
+        }
+        else
+        {
+            <div class="offer-grid">
+                @foreach (var offer in _ownedOffers)
+                {
+                    <article class="offer-card-square offer-card-modern @(offer.IsReported ? "offer-card-reported" : string.Empty)">
+                        <img src="@ResolveOfferImage(offer.ImageUrl)"
+                             alt="@T("offers.imageAlt")"
+                             class="offer-image-square"
+                             onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
+
+                        <div class="offer-square-body">
+                            <div class="offer-card-heading">
+                                <h3>@offer.BusinessName</h3>
+                                <p class="offer-description-preview">@ShortDescription(offer.Description)</p>
+                            </div>
+
+                            @if (offer.Tags.Count > 0)
+                            {
+                                <div class="tag-list offer-tag-list">
+                                    @foreach (var tag in offer.Tags.Take(3))
+                                    {
+                                        <span class="tag-pill">@tag</span>
+                                    }
+                                </div>
+                            }
+
+                            <div class="action-row">
+                                <button class="btn-main"
+                                        @onclick="() => EditOwnedOffer(offer.OfferId)"
+                                        disabled="@_working">@T("account.editOffer")</button>
+                                <button class="btn-secondary btn-danger"
+                                        @onclick="() => PromptRemoveOwnedOffer(offer)"
+                                        disabled="@_working">@T("account.removeOffer")</button>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
 }
 
 @if (!string.IsNullOrWhiteSpace(_status))
@@ -108,12 +161,37 @@ else
     </section>
 }
 
+@if (_offerPendingRemoval is not null)
+{
+    <div class="modal-backdrop"></div>
+    <section class="offer-detail-modal" role="dialog" aria-modal="true">
+        <div class="offer-detail-header">
+            <div>
+                <h2>@T("account.removeOffer")</h2>
+            </div>
+        </div>
+
+        <p class="offer-detail-description">@string.Format(T("account.removeOfferPrompt"), _offerPendingRemoval.BusinessName)</p>
+
+        <div class="action-row detail-action-row">
+            <button class="btn-danger btn-secondary"
+                    @onclick="ConfirmRemoveOwnedOfferAsync"
+                    disabled="@_working">@T("account.confirmYes")</button>
+            <button class="btn-secondary"
+                    @onclick="CancelRemoveOwnedOffer"
+                    disabled="@_working">@T("account.confirmNo")</button>
+        </div>
+    </section>
+}
+
 @code {
     private string? _status;
     private string? _error;
     private bool _loading;
     private bool _working;
     private UserProfileDto? _profile;
+    private List<OfferItemDto> _ownedOffers = [];
+    private OfferItemDto? _offerPendingRemoval;
 
     protected override async Task OnInitializedAsync()
     {
@@ -173,11 +251,23 @@ else
                 await Session.ClearSessionAsync(CancellationToken.None);
                 _status = T("account.sessionExpired");
                 Navigation.NavigateTo("/login", forceLoad: false);
+                return;
             }
+
+            var offers = await ApiClient.GetMyOffersAsync(CancellationToken.None);
+            if (offers is null)
+            {
+                await Session.ClearSessionAsync(CancellationToken.None);
+                _status = T("account.sessionExpired");
+                Navigation.NavigateTo("/login", forceLoad: false);
+                return;
+            }
+
+            _ownedOffers = offers.ToList();
         }
         catch (Exception)
         {
-            _error = T("account.profileLoadFailed");
+            _error = T("account.offersLoadFailed");
         }
         finally
         {
@@ -212,6 +302,66 @@ else
         return string.IsNullOrWhiteSpace(source)
             ? "D"
             : char.ToUpperInvariant(source.Trim()[0]).ToString();
+    }
+
+    private void EditOwnedOffer(string offerId) =>
+        Navigation.NavigateTo($"/add-offer?offerId={Uri.EscapeDataString(offerId)}", forceLoad: false);
+
+    private void PromptRemoveOwnedOffer(OfferItemDto offer)
+    {
+        _offerPendingRemoval = offer;
+        _error = null;
+    }
+
+    private void CancelRemoveOwnedOffer()
+    {
+        _offerPendingRemoval = null;
+    }
+
+    private async Task ConfirmRemoveOwnedOfferAsync()
+    {
+        if (_offerPendingRemoval is null)
+        {
+            return;
+        }
+
+        _working = true;
+        _error = null;
+        try
+        {
+            var result = await ApiClient.DeleteOfferAsync(_offerPendingRemoval.OfferId, CancellationToken.None);
+            if (!result.Success)
+            {
+                _error = T("account.offerRemoveFailed");
+                return;
+            }
+
+            _ownedOffers.RemoveAll(offer => offer.OfferId.Equals(_offerPendingRemoval.OfferId, StringComparison.OrdinalIgnoreCase));
+            _status = T("account.offerRemoved");
+            _offerPendingRemoval = null;
+        }
+        catch (Exception)
+        {
+            _error = T("account.offerRemoveFailed");
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+
+    private static string ResolveOfferImage(string imageUrl) =>
+        string.IsNullOrWhiteSpace(imageUrl) ? "/images/offer-placeholder.svg" : imageUrl;
+
+    private static string ShortDescription(string description)
+    {
+        var trimmed = (description ?? string.Empty).Trim();
+        if (trimmed.Length <= 120)
+        {
+            return trimmed;
+        }
+
+        return string.Concat(trimmed[..117].TrimEnd(), "...");
     }
 
     private string T(string key) => Preferences.Translate(key);

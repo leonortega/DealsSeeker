@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Description Input and Selected Tag Management
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -25,6 +25,8 @@ Allow users to write description and manage tags instantly from typed words and 
 - `ADD.OFFER.DESCRIPTION.TAGS.001-R6`: If a detected word includes a trailing percent symbol (example `50%`), the created tag shall preserve the percent symbol.
 - `ADD.OFFER.DESCRIPTION.TAGS.001-R7`: Tag normalization and duplicate handling shall follow the decision table.
 - `ADD.OFFER.DESCRIPTION.TAGS.001-R8`: When the description text is erased to empty or whitespace-only, the system shall clear the selected tag list.
+- `ADD.OFFER.DESCRIPTION.TAGS.001-R9`: The save action shall require a non-empty description before create-offer or edit-offer submission proceeds.
+- `ADD.OFFER.DESCRIPTION.TAGS.001-R10`: The save action shall require at least one selected tag before create-offer or edit-offer submission proceeds.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -53,6 +55,20 @@ Scenario: Clearing description removes selected tags
   Given the selected tag list includes "coffee" and "discount"
   When the user erases the description text completely
   Then the selected tag list shall be empty
+
+Scenario: Save is blocked when description is empty
+  Given the selected tag list includes "coffee"
+  And the description is empty or whitespace-only
+  When the user submits save
+  Then the system shall block submission
+  And the system shall show a description-required validation error
+
+Scenario: Save is blocked when no tags are selected
+  Given the description is "Fresh coffee near station"
+  And the selected tag list is empty
+  When the user submits save
+  Then the system shall block submission
+  And the system shall show a tag-required validation error
 ```
 
 ## Example Inputs/Outputs
@@ -66,6 +82,7 @@ Scenario: Clearing description removes selected tags
 - Detected word list updates continuously as the description changes.
 - User removes existing tag and list updates immediately.
 - Clearing the description removes all selected tags so no stale tag state remains.
+- Description-required and tag-required validation applies before both create-offer and edit-offer submission.
 
 ## Non-Functional Constraints
 - Tag actions should provide immediate visual feedback.
