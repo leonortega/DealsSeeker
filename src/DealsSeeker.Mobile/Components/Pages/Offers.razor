@@ -1,5 +1,6 @@
 @page "/offers"
 @using System.Globalization
+@using Microsoft.JSInterop
 @inject IDealsSeekerApiClient ApiClient
 @inject IDeviceLocationService DeviceLocation
 @inject IMapLauncherService MapLauncher
@@ -8,7 +9,9 @@
 @inject IReportDraftContext ReportDraftContext
 @inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 @implements IDisposable
+@implements IAsyncDisposable
 
 <section class="page-hero">
     <div class="page-hero-copy">
@@ -152,6 +155,10 @@
                             <span>@T("offers.favorite")</span>
                         </button>
 
+                        <button class="btn-secondary" @onclick="() => OpenDirectionsAsync(offer.Location)">
+                            @DirectionsButtonText()
+                        </button>
+
                         <OfferActions Offer="offer"
                                       VotesDisabled="@IsVoteDisabled(offer)"
                                       OnVote="@(vote => VoteAsync(offer.OfferId, vote))"
@@ -238,6 +245,10 @@
                                 @onclick="() => ToggleFavoriteAsync(offer)">
                             <span class="favorite-heart" aria-hidden="true">&#10084;</span>
                             <span>@T("offers.favorite")</span>
+                        </button>
+
+                        <button class="btn-secondary" @onclick="() => OpenDirectionsAsync(offer.Location)">
+                            @DirectionsButtonText()
                         </button>
 
                         <OfferActions Offer="offer"
@@ -338,6 +349,8 @@
     private int _detailImageIndex;
     private bool _fullscreenImageOpen;
     private string _renderedLanguage = "en";
+    private DotNetObjectReference<Offers>? _markerSelectionReference;
+    private string? _markerSelectionListenerId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -374,17 +387,32 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || !Session.IsAuthenticated)
+        if (!Session.IsAuthenticated)
         {
             return;
         }
 
-        try
+        if (firstRender)
         {
-            await _searchQueryInput.FocusAsync();
-        }
-        catch
-        {
+            _markerSelectionReference = DotNetObjectReference.Create(this);
+            try
+            {
+                _markerSelectionListenerId = await JS.InvokeAsync<string>(
+                    "DealsSeekerMaps.registerMarkerSelection",
+                    _markerSelectionReference);
+            }
+            catch
+            {
+                _markerSelectionListenerId = null;
+            }
+
+            try
+            {
+                await _searchQueryInput.FocusAsync();
+            }
+            catch
+            {
+            }
         }
     }
 
@@ -463,6 +491,10 @@
     {
         await MapLauncher.OpenDirectionsAsync(destination, Preferences.NavigationMode, CancellationToken.None);
     }
+
+    [JSInvokable]
+    public Task HandleMapMarkerSelection(double lat, double lng, string? name) =>
+        OpenDirectionsAsync(new GeoPoint(lat, lng));
 
     private async Task ToggleFavoriteAsync(OfferItemDto offer)
     {
@@ -689,6 +721,25 @@
     public void Dispose()
     {
         Preferences.Changed -= OnPreferencesChanged;
+        _markerSelectionReference?.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Dispose();
+
+        if (string.IsNullOrWhiteSpace(_markerSelectionListenerId))
+        {
+            return;
+        }
+
+        try
+        {
+            await JS.InvokeVoidAsync("DealsSeekerMaps.unregisterMarkerSelection", _markerSelectionListenerId);
+        }
+        catch
+        {
+        }
     }
 
     private static string ResolveOfferImage(string imageUrl)

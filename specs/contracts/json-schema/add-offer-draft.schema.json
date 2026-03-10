@@ -52,16 +52,36 @@
             "maximum": 5242880
           },
           "width": {
-            "type": "integer",
+            "type": [
+              "integer",
+              "null"
+            ],
             "minimum": 1
           },
           "height": {
-            "type": "integer",
+            "type": [
+              "integer",
+              "null"
+            ],
             "minimum": 1
           },
           "order": {
             "type": "integer",
             "minimum": 0
+          },
+          "fileName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 260
+          },
+          "dataUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Inline preview payload used by the mobile draft before backend persistence."
           }
         },
         "additionalProperties": false
@@ -75,8 +95,7 @@
       ],
       "required": [
         "source",
-        "lat",
-        "lng"
+        "position"
       ],
       "properties": {
         "source": {
@@ -90,17 +109,27 @@
         "label": {
           "type": "string",
           "maxLength": 250,
-          "description": "Human-readable address/location label for UI display. Raw numeric coordinates are persisted separately in lat/lng and should not be shown directly to users."
+          "description": "Human-readable address/location label for UI display. Raw numeric coordinates are persisted inside position and should not be shown directly to users."
         },
-        "lat": {
-          "type": "number",
-          "minimum": -90,
-          "maximum": 90
-        },
-        "lng": {
-          "type": "number",
-          "minimum": -180,
-          "maximum": 180
+        "position": {
+          "type": "object",
+          "required": [
+            "lat",
+            "lng"
+          ],
+          "properties": {
+            "lat": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "lng": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

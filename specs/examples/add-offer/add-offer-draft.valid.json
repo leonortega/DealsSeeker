@@ -11,7 +11,8 @@
       "sizeBytes": 423112,
       "width": 1200,
       "height": 900,
-      "order": 0
+      "order": 0,
+      "fileName": "coffee-1.jpg"
     },
     {
       "source": "gallery",
@@ -19,13 +20,16 @@
       "sizeBytes": 398221,
       "width": 1024,
       "height": 1024,
-      "order": 1
+      "order": 1,
+      "fileName": "coffee-2.jpg"
     }
   ],
   "location": {
     "source": "auto",
     "label": "5th Avenue Station",
-    "lat": 40.7129,
-    "lng": -74.0061
+    "position": {
+      "lat": 40.7129,
+      "lng": -74.0061
+    }
   }
 }

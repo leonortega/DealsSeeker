@@ -19,7 +19,7 @@ Show user and business locations and support navigation to selected business usi
 
 ## Requirements
 - `OFFERS.MAP.001-R1`: The system shall display the user current location on the map when available.
-- `OFFERS.MAP.001-R2`: The system shall display nearby businesses that have active offers.
+- `OFFERS.MAP.001-R2`: The system shall display nearby businesses that have active offers as map markers.
 - `OFFERS.MAP.001-R3`: The system shall display a distance indicator bar representing coverage radius.
 - `OFFERS.MAP.001-R4`: Offers map rendering provider shall be resolved from internal configuration.
 - `OFFERS.MAP.001-R5`: The map rendering layer shall support configured provider modules including Google Maps API and OpenLayers API.
@@ -33,7 +33,7 @@ Show user and business locations and support navigation to selected business usi
 - `OFFERS.MAP.001-R13`: If an address label is unavailable, the UI shall show a generic non-coordinate location label.
 - `OFFERS.MAP.001-R14`: The map distance/coverage indicator shall reflect the current selected coverage radius value.
 - `OFFERS.MAP.001-R15`: When coverage radius changes, map marker set shall refresh according to the new radius filter.
-- `OFFERS.MAP.001-R16`: Offer click/marker click navigation redirect shall use the configured navigation redirect provider even when map rendering uses a different provider.
+- `OFFERS.MAP.001-R16`: Offer click or marker click navigation redirect shall use the configured navigation redirect provider even when map rendering uses a different provider.
 - `OFFERS.MAP.001-R17`: When coverage radius changes, map zoom shall adjust to visualize the selected radius coverage around the user location.
 - `OFFERS.MAP.001-R18`: Navigation travel mode shall be resolved from user preferences, defaulting to pedestrian when no override exists.
 

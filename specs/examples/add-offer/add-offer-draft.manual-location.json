@@ -11,13 +11,16 @@
       "sizeBytes": 502211,
       "width": 1080,
       "height": 1920,
-      "order": 0
+      "order": 0,
+      "fileName": "bakery.jpg"
     }
   ],
   "location": {
     "source": "search",
     "label": "Broadway Market",
-    "lat": 40.7165,
-    "lng": -74.0035
+    "position": {
+      "lat": 40.7165,
+      "lng": -74.0035
+    }
   }
 }

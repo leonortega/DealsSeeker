@@ -19,6 +19,35 @@
 <div id="map"></div>
 <script src="/libs/openlayers/ol.js"></script>
 <script>
+    var startupTranslations = {
+        mapTitle: "DealsSeeker map",
+        mapUnavailable: "Map library unavailable. Please check network access."
+    };
+
+    function resolveStartupLanguage() {
+        var locale = (navigator.language || "en").toLowerCase();
+        return locale.indexOf("es") === 0 ? "es" : "en";
+    }
+
+    function loadStartupTranslations() {
+        var resourcePath = "/localization/startup." + resolveStartupLanguage() + ".json";
+        return fetch(resourcePath)
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("startup localization fetch failed");
+                }
+
+                return response.json();
+            })
+            .then(function (translations) {
+                startupTranslations = Object.assign({}, startupTranslations, translations || {});
+                document.title = startupTranslations.mapTitle;
+            })
+            .catch(function () {
+                document.title = startupTranslations.mapTitle;
+            });
+    }
+
     function toNumber(value, fallback) {
         var parsed = Number.parseFloat(value);
         return Number.isFinite(parsed) ? parsed : fallback;
@@ -65,15 +94,19 @@
     var markerData = parseMarkerData(params.get("markers"));
     var showUser = params.get("showUser") !== "0";
 
-    if (!window.ol || !ol.Map || !ol.layer || !ol.proj) {
-        document.getElementById("map").innerHTML =
-            "<div style='padding:16px;font-family:Arial,sans-serif;color:#1e3a2f;'>Map library unavailable. Please check network access.</div>";
-    } else {
+    function initializeMap() {
+        if (!window.ol || !ol.Map || !ol.layer || !ol.proj) {
+            document.getElementById("map").innerHTML =
+                "<div style='padding:16px;font-family:Arial,sans-serif;color:#1e3a2f;'>" + startupTranslations.mapUnavailable + "</div>";
+            return;
+        }
+
         var features = [];
         if (showUser) {
             var userFeature = new ol.Feature({
                 geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat]))
             });
+            userFeature.set("isUserMarker", true);
             userFeature.setStyle(new ol.style.Style({
                 image: new ol.style.Circle({
                     radius: 7,
@@ -89,6 +122,8 @@
                 geometry: new ol.geom.Point(ol.proj.fromLonLat([marker.lng, marker.lat])),
                 name: marker.name
             });
+            feature.set("markerLat", marker.lat);
+            feature.set("markerLng", marker.lng);
 
             feature.setStyle(new ol.style.Style({
                 image: new ol.style.Circle({
@@ -131,15 +166,46 @@
             controls.clear();
         }
 
-        var interactions = map.getInteractions && map.getInteractions();
-        if (interactions && typeof interactions.forEach === "function") {
-            interactions.forEach(function (interaction) {
-                if (interaction && typeof interaction.setActive === "function") {
-                    interaction.setActive(false);
-                }
+        map.on("pointermove", function (event) {
+            var feature = map.forEachFeatureAtPixel(event.pixel, function (hitFeature) {
+                return hitFeature;
+            }, {
+                hitTolerance: 10
             });
-        }
+
+            var isMarker = feature && !feature.get("isUserMarker");
+            map.getTargetElement().style.cursor = isMarker ? "pointer" : "";
+        });
+
+        map.on("singleclick", function (event) {
+            var feature = map.forEachFeatureAtPixel(event.pixel, function (hitFeature) {
+                return hitFeature;
+            }, {
+                hitTolerance: 10
+            });
+
+            if (!feature || feature.get("isUserMarker")) {
+                return;
+            }
+
+            var markerLat = feature.get("markerLat");
+            var markerLng = feature.get("markerLng");
+            if (!Number.isFinite(markerLat) || !Number.isFinite(markerLng)) {
+                return;
+            }
+
+            if (window.parent && typeof window.parent.postMessage === "function") {
+                window.parent.postMessage({
+                    type: "dealseeker-map-marker-selected",
+                    lat: markerLat,
+                    lng: markerLng,
+                    name: feature.get("name") || ""
+                }, "*");
+            }
+        });
     }
+
+    loadStartupTranslations().finally(initializeMap);
 </script>
 </body>
 </html>

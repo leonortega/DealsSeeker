@@ -20,8 +20,8 @@ Improve offer discovery by combining exact, fuzzy, and synonym-based search.
 
 ## Requirements
 - `OFFERS.SEARCH.SMART.001-R1`: The system shall execute exact matching on the normalized query string.
-- `OFFERS.SEARCH.SMART.001-R2`: The system shall execute fuzzy/similarity matching against a configurable dictionary.
-- `OFFERS.SEARCH.SMART.001-R3`: Fuzzy matching shall use a configurable similarity ratio threshold, with default value marked as TBD.
+- `OFFERS.SEARCH.SMART.001-R2`: The system shall execute fuzzy/similarity matching against normalized searchable offer terms derived from descriptions, tags, and multilingual related-term expansion.
+- `OFFERS.SEARCH.SMART.001-R3`: Fuzzy matching shall use a product-defined similarity ratio threshold that is consistent across equivalent search providers.
 - `OFFERS.SEARCH.SMART.001-R4`: The system shall execute synonym expansion to include semantically related terms from a multilingual dictionary.
 - `OFFERS.SEARCH.SMART.001-R5`: The system shall merge exact, fuzzy, and synonym match result sets into one de-duplicated result set.
 - `OFFERS.SEARCH.SMART.001-R6`: The system shall assign a relevance score to every result using match strategy and score strength.

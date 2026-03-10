@@ -15,15 +15,15 @@
     <div id="startup-splash" class="startup-host-splash" aria-hidden="true">
         <div class="startup-host-splash-content">
             <img src="/images/dealseeker-icon.svg" alt="" class="startup-host-splash-icon" />
-            <p class="startup-host-splash-title">DealsSeeker</p>
-            <p class="startup-host-splash-subtitle">Find nearby deals instantly</p>
+            <p class="startup-host-splash-title" data-startup-text="appTitle">DealsSeeker</p>
+            <p class="startup-host-splash-subtitle" data-startup-text="startupSubtitle">Find nearby deals instantly</p>
         </div>
     </div>
     <div id="app" class="app-host app-host-loading"></div>
     <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
+        <span data-startup-text="unhandledError">An unhandled error has occurred.</span>
+        <a href="" class="reload" data-startup-text="reload">Reload</a>
+        <a class="dismiss" data-startup-text="dismiss">🗙</a>
     </div>
     <script>
         (function () {
@@ -31,6 +31,49 @@
             var startupMinDurationMs = 2000;
             var startupRevealDelayMs = 450;
             var startupCompleted = false;
+            var startupTranslations = {
+                appTitle: "DealsSeeker",
+                startupSubtitle: "Find nearby deals instantly",
+                unhandledError: "An unhandled error has occurred.",
+                reload: "Reload",
+                dismiss: "Dismiss",
+                mapTitle: "DealsSeeker map",
+                mapUnavailable: "Map library unavailable. Please check network access."
+            };
+
+            function resolveStartupLanguage() {
+                var locale = (navigator.language || "en").toLowerCase();
+                return locale.indexOf("es") === 0 ? "es" : "en";
+            }
+
+            function applyStartupTranslations(translations) {
+                Object.keys(translations).forEach(function (key) {
+                    var nodes = document.querySelectorAll("[data-startup-text='" + key + "']");
+                    nodes.forEach(function (node) {
+                        node.textContent = translations[key];
+                    });
+                });
+            }
+
+            function loadStartupTranslations() {
+                var language = resolveStartupLanguage();
+                var resourcePath = "/localization/startup." + language + ".json";
+                return fetch(resourcePath)
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error("startup localization fetch failed");
+                        }
+
+                        return response.json();
+                    })
+                    .then(function (translations) {
+                        startupTranslations = Object.assign({}, startupTranslations, translations || {});
+                        applyStartupTranslations(startupTranslations);
+                    })
+                    .catch(function () {
+                        applyStartupTranslations(startupTranslations);
+                    });
+            }
 
             function revealApp() {
                 var appHost = document.getElementById("app");
@@ -70,6 +113,49 @@
             window.DealsSeekerStartup = {
                 complete: completeStartup
             };
+
+            window.DealsSeekerMaps = (function () {
+                var nextListenerId = 0;
+                var listeners = new Map();
+
+                function registerMarkerSelection(dotNetRef) {
+                    var listenerId = "dealseeker-map-listener-" + (++nextListenerId);
+                    var handler = function (event) {
+                        if (!event || !event.data || event.data.type !== "dealseeker-map-marker-selected") {
+                            return;
+                        }
+
+                        if (typeof event.data.lat !== "number" || typeof event.data.lng !== "number") {
+                            return;
+                        }
+
+                        dotNetRef.invokeMethodAsync(
+                            "HandleMapMarkerSelection",
+                            event.data.lat,
+                            event.data.lng,
+                            event.data.name || "");
+                    };
+
+                    window.addEventListener("message", handler);
+                    listeners.set(listenerId, handler);
+                    return listenerId;
+                }
+
+                function unregisterMarkerSelection(listenerId) {
+                    var handler = listeners.get(listenerId);
+                    if (!handler) {
+                        return;
+                    }
+
+                    window.removeEventListener("message", handler);
+                    listeners.delete(listenerId);
+                }
+
+                return {
+                    registerMarkerSelection: registerMarkerSelection,
+                    unregisterMarkerSelection: unregisterMarkerSelection
+                };
+            })();
 
             function appendErrorDetails(message) {
                 var host = document.getElementById("blazor-error-ui");
@@ -135,6 +221,8 @@
 
                 window.Blazor.__dealsSeekerStartWrapped = true;
             };
+
+            loadStartupTranslations();
         })();
     </script>
     <script src="_framework/blazor.webview.js" autostart="false" onload="window.__patchBlazorStart && window.__patchBlazorStart()"></script>

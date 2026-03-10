@@ -29,6 +29,8 @@
           "matchStrategies",
           "location",
           "distanceMeters",
+          "positiveAvailabilityCount",
+          "negativeAvailabilityCount",
           "hasCurrentUserVoted"
         ],
         "properties": {
@@ -127,6 +129,16 @@
             "type": "number",
             "minimum": 0,
             "description": "Distance from current user location to this offer destination in meters."
+          },
+          "positiveAvailabilityCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Current thumbs-up availability count for this offer."
+          },
+          "negativeAvailabilityCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Current thumbs-down availability count for this offer."
           },
           "hasCurrentUserVoted": {
             "type": "boolean",

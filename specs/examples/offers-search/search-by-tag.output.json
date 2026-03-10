@@ -28,6 +28,8 @@
         "lng": -74.0055
       },
       "distanceMeters": 145.2,
+      "positiveAvailabilityCount": 12,
+      "negativeAvailabilityCount": 2,
       "hasCurrentUserVoted": false
     }
   ],

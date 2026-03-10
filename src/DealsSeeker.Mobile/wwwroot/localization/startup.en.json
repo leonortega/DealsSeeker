@@ -1,0 +1,9 @@
+{
+  "appTitle": "DealsSeeker",
+  "startupSubtitle": "Find nearby deals instantly",
+  "unhandledError": "An unhandled error has occurred.",
+  "reload": "Reload",
+  "dismiss": "Dismiss",
+  "mapTitle": "DealsSeeker map",
+  "mapUnavailable": "Map library unavailable. Please check network access."
+}

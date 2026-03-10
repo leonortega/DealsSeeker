@@ -19,7 +19,7 @@ Enhance offer detail interactions with full-screen image zoom and direct navigat
 
 ## Requirements
 - `OFFERS.DETAIL.ACTIONS.001-R1`: Tapping the offer image shall open a full-screen image viewer.
-- `OFFERS.DETAIL.ACTIONS.001-R2`: Full-screen image viewer shall support pinch-to-zoom gestures.
+- `OFFERS.DETAIL.ACTIONS.001-R2`: Full-screen image viewer shall preserve host-surface zoom gestures when the active platform supports them.
 - `OFFERS.DETAIL.ACTIONS.001-R3`: Offer detail view shall include a directions button.
 - `OFFERS.DETAIL.ACTIONS.001-R4`: Directions button text shall reflect the user-selected travel mode.
 - `OFFERS.DETAIL.ACTIONS.001-R5`: Selecting the directions button shall launch the device default maps application with the configured travel mode and offer destination preloaded.
@@ -32,7 +32,7 @@ Scenario: User zooms offer image in full-screen viewer
   And the offer has an image
   When the user taps the image
   Then a full-screen image viewer shall open
-  And pinch gestures shall zoom the image
+  And the active host surface shall preserve its native zoom gesture behavior for the image viewer
 
 Scenario: User opens directions from offer detail
   Given the user is on offer detail view for an offer with valid location
