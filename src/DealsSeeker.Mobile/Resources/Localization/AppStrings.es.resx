@@ -276,6 +276,9 @@
   <data name="addOffer.uploadPhotos" xml:space="preserve">
     <value>Subir fotos</value>
   </data>
+  <data name="app.title" xml:space="preserve">
+    <value>DealsSeeker</value>
+  </data>
   <data name="auth.alreadyHaveAccount" xml:space="preserve">
     <value>¿Ya tienes una cuenta?</value>
   </data>
@@ -347,6 +350,12 @@
   </data>
   <data name="common.unknown" xml:space="preserve">
     <value>Desconocido</value>
+  </data>
+  <data name="maps.selectedLocation" xml:space="preserve">
+    <value>Ubicación seleccionada</value>
+  </data>
+  <data name="media.selectImages" xml:space="preserve">
+    <value>Seleccionar imágenes</value>
   </data>
   <data name="favorites.empty" xml:space="preserve">
     <value>Todavía no hay favoritos.</value>

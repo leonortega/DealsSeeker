@@ -1,8 +1,9 @@
 using DealsSeeker.Shared.Contracts.AddOffer;
+using Microsoft.Extensions.Localization;
 
 namespace DealsSeeker.Mobile.Services.Device;
 
-public sealed class MediaCaptureService : IMediaCaptureService
+public sealed class MediaCaptureService(IStringLocalizer<AppStrings> localizer) : IMediaCaptureService
 {
     public async Task<PickedImage?> CapturePhotoAsync(CancellationToken cancellationToken)
     {
@@ -20,7 +21,7 @@ public sealed class MediaCaptureService : IMediaCaptureService
     {
         var files = await MediaPicker.Default.PickPhotosAsync(new MediaPickerOptions
         {
-            Title = "Select images"
+            Title = Translate("media.selectImages", "Select images")
         });
 
         var images = new List<PickedImage>();
@@ -74,5 +75,11 @@ public sealed class MediaCaptureService : IMediaCaptureService
             dataUrl);
 
         return new PickedImage(dataUrl, metadata);
+    }
+
+    private string Translate(string key, string fallback)
+    {
+        var value = localizer[key];
+        return value.ResourceNotFound ? fallback : value.Value;
     }
 }

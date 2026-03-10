@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DealsSeeker Google Map</title>
+    <style>
+        html, body, #map {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #edf3e7;
+        }
+
+        .map-message {
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            padding: 16px;
+            font-family: Arial, sans-serif;
+            color: #1e3a2f;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    var startupTranslations = {
+        mapTitle: "DealsSeeker map",
+        mapUnavailable: "Map library unavailable. Please check network access."
+    };
+
+    function resolveStartupLanguage() {
+        var locale = (navigator.language || "en").toLowerCase();
+        return locale.indexOf("es") === 0 ? "es" : "en";
+    }
+
+    function loadStartupTranslations() {
+        var resourcePath = "/localization/startup." + resolveStartupLanguage() + ".json";
+        return fetch(resourcePath)
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("startup localization fetch failed");
+                }
+
+                return response.json();
+            })
+            .then(function (translations) {
+                startupTranslations = Object.assign({}, startupTranslations, translations || {});
+                document.title = startupTranslations.mapTitle;
+            })
+            .catch(function () {
+                document.title = startupTranslations.mapTitle;
+            });
+    }
+
+    function toNumber(value, fallback) {
+        var parsed = Number.parseFloat(value);
+        return Number.isFinite(parsed) ? parsed : fallback;
+    }
+
+    function parseMarkerData(raw) {
+        if (!raw) {
+            return [];
+        }
+
+        var items = [];
+        var entries = raw.split(";");
+        for (var i = 0; i < entries.length; i++) {
+            var entry = entries[i];
+            if (!entry) {
+                continue;
+            }
+
+            var parts = entry.split("|");
+            if (parts.length < 2) {
+                continue;
+            }
+
+            var lat = toNumber(parts[0], NaN);
+            var lng = toNumber(parts[1], NaN);
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                continue;
+            }
+
+            items.push({
+                lat: lat,
+                lng: lng,
+                name: parts.length > 2 ? parts.slice(2).join("|") : "Business"
+            });
+        }
+
+        return items;
+    }
+
+    var params = new URLSearchParams(window.location.search);
+    var lat = toNumber(params.get("lat"), 40.7128);
+    var lng = toNumber(params.get("lng"), -74.0060);
+    var zoom = toNumber(params.get("zoom"), 14);
+    var markerData = parseMarkerData(params.get("markers"));
+    var showUser = params.get("showUser") !== "0";
+    var apiKey = params.get("key") || "";
+    var fallbackProvider = (params.get("fallback") || "").toLowerCase();
+
+    function buildFallbackUrl() {
+        var nextQuery = new URLSearchParams(window.location.search);
+        nextQuery.delete("key");
+        nextQuery.delete("fallback");
+        return "/maps/openlayers.html?" + nextQuery.toString();
+    }
+
+    function showUnavailable() {
+        document.getElementById("map").innerHTML =
+            "<div class='map-message'>" + startupTranslations.mapUnavailable + "</div>";
+    }
+
+    function applyFallback() {
+        if (fallbackProvider === "openlayers") {
+            window.location.replace(buildFallbackUrl());
+            return true;
+        }
+
+        showUnavailable();
+        return false;
+    }
+
+    function postMarkerSelection(marker) {
+        if (window.parent && typeof window.parent.postMessage === "function") {
+            window.parent.postMessage({
+                type: "dealseeker-map-marker-selected",
+                lat: marker.lat,
+                lng: marker.lng,
+                name: marker.name || ""
+            }, "*");
+        }
+    }
+
+    function initializeMap() {
+        if (!window.google || !google.maps || !google.maps.Map) {
+            applyFallback();
+            return;
+        }
+
+        var map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat: lat, lng: lng },
+            zoom: Math.max(2, Math.min(18, zoom)),
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            rotateControl: false,
+            clickableIcons: false
+        });
+
+        var bounds = new google.maps.LatLngBounds();
+        var hasBounds = false;
+
+        if (showUser) {
+            new google.maps.Marker({
+                position: { lat: lat, lng: lng },
+                map: map,
+                title: startupTranslations.mapTitle,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 7,
+                    fillColor: "#2f6e46",
+                    fillOpacity: 1,
+                    strokeColor: "#ffffff",
+                    strokeWeight: 2
+                }
+            });
+
+            bounds.extend({ lat: lat, lng: lng });
+            hasBounds = true;
+        }
+
+        markerData.forEach(function (marker) {
+            var mapMarker = new google.maps.Marker({
+                position: { lat: marker.lat, lng: marker.lng },
+                map: map,
+                title: marker.name || ""
+            });
+
+            mapMarker.addListener("click", function () {
+                postMarkerSelection(marker);
+            });
+
+            bounds.extend({ lat: marker.lat, lng: marker.lng });
+            hasBounds = true;
+        });
+
+        if (hasBounds && (markerData.length + (showUser ? 1 : 0)) > 1) {
+            map.fitBounds(bounds, 40);
+        }
+    }
+
+    function loadGoogleMapsApi() {
+        if (!apiKey) {
+            applyFallback();
+            return;
+        }
+
+        var script = document.createElement("script");
+        script.src = "https://maps.googleapis.com/maps/api/js?key=" + encodeURIComponent(apiKey);
+        script.async = true;
+        script.defer = true;
+        script.onload = initializeMap;
+        script.onerror = applyFallback;
+        document.head.appendChild(script);
+    }
+
+    loadStartupTranslations().finally(loadGoogleMapsApi);
+</script>
+</body>
+</html>

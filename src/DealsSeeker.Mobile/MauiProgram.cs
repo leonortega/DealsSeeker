@@ -35,6 +35,7 @@ public static class MauiProgram
         builder.Services.AddSingleton(new ApiSettings
         {
             BaseUrl = apiConfiguration["BaseUrl"] ?? defaultApiSettings.BaseUrl,
+            GoogleMapsApiKey = apiConfiguration["GoogleMapsApiKey"] ?? defaultApiSettings.GoogleMapsApiKey,
             MapDisplayProvider = apiConfiguration["MapDisplayProvider"]
                                  ?? apiConfiguration["MapProvider"]
                                  ?? defaultApiSettings.MapDisplayProvider,

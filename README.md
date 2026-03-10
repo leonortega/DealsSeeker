@@ -44,9 +44,11 @@ API config (`src/DealsSeeker.Api/appsettings.json`):
 - `GoogleMaps:ApiKey` (required only when `GoogleMaps` is active/fallback and used)
 
 Mobile internal config:
+- `Api:GoogleMapsApiKey` (required when in-app rendering uses `GoogleMaps` and no fallback is desired)
 - `Api:MapDisplayProvider` / `Api:MapDisplayProviderFallback`
 - `Api:MapRedirectProvider` / `Api:MapRedirectProviderFallback`
 - environment variables also supported:
+  - `DEALSEEKER_GOOGLE_MAPS_API_KEY`
   - `DEALSEEKER_MAP_DISPLAY_PROVIDER`
   - `DEALSEEKER_MAP_DISPLAY_PROVIDER_FALLBACK`
   - `DEALSEEKER_MAP_REDIRECT_PROVIDER`
