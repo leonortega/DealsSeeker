@@ -1,9 +1,10 @@
 using DealsSeeker.Shared.Contracts.AddOffer;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 
 namespace DealsSeeker.Mobile.Services.Device;
 
-public sealed class MediaCaptureService(IStringLocalizer<AppStrings> localizer) : IMediaCaptureService
+public sealed class MediaCaptureService(IStringLocalizer<AppStrings> localizer, ILogger<MediaCaptureService> logger) : IMediaCaptureService
 {
     public async Task<PickedImage?> CapturePhotoAsync(CancellationToken cancellationToken)
     {
@@ -13,8 +14,21 @@ public sealed class MediaCaptureService(IStringLocalizer<AppStrings> localizer) 
             return null;
         }
 
-        var file = await MediaPicker.Default.CapturePhotoAsync();
-        return file is null ? null : await ToPickedImageAsync(file, "camera", 0, cancellationToken);
+        try
+        {
+            var file = await MediaPicker.Default.CapturePhotoAsync();
+            return file is null ? null : await ToPickedImageAsync(file, "camera", 0, cancellationToken);
+        }
+        catch (FeatureNotSupportedException ex)
+        {
+            logger.LogWarning(ex, "Camera capture is not supported on this device or emulator.");
+            return null;
+        }
+        catch (PermissionException ex)
+        {
+            logger.LogWarning(ex, "Camera capture failed due to a permission issue.");
+            return null;
+        }
     }
 
     public async Task<IReadOnlyList<PickedImage>> PickPhotosAsync(CancellationToken cancellationToken)

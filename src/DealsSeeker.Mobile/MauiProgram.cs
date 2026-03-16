@@ -110,7 +110,8 @@ public static class MauiProgram
 
         var app = builder.Build();
         var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("DealsSeeker.Mobile.Startup");
-        startupLogger.LogInformation("DealsSeeker.Mobile startup completed. LogPath={LogPath}", mobileLogPath);
+        var apiSettings = app.Services.GetRequiredService<ApiSettings>();
+        startupLogger.LogInformation("DealsSeeker.Mobile startup completed. LogPath={LogPath} ApiBaseUrl={ApiBaseUrl}", mobileLogPath, apiSettings.BaseUrl);
         return app;
     }
     catch (Exception ex)

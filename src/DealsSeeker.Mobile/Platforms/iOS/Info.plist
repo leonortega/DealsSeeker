@@ -28,5 +28,11 @@
     </array>
     <key>XSAppIconAssets</key>
     <string>Assets.xcassets/appicon.appiconset</string>
+    <key>NSCameraUsageDescription</key>
+    <string>DealsSeeker needs camera access so you can attach photos to your offers.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>DealsSeeker needs your location to show nearby offers and maps.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>DealsSeeker needs photo library access so you can attach images to your offers.</string>
 </dict>
 </plist>

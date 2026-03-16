@@ -64,8 +64,8 @@ public sealed class InMemoryOfferService : IOfferService
                 x.Offer.BusinessName,
                 x.Offer.Description,
                 x.Offer.Tags,
-                x.Offer.ImageUrls[0],
-                x.Offer.ImageUrls,
+                EnsureDisplayImageUrls(x.Offer.ImageUrls)[0],
+                EnsureDisplayImageUrls(x.Offer.ImageUrls),
                 x.Offer.IsActive,
                 x.Offer.IsPromoted,
                 x.IsFavorite,
@@ -112,8 +112,8 @@ public sealed class InMemoryOfferService : IOfferService
                 offer.BusinessName,
                 offer.Description,
                 offer.Tags,
-                offer.ImageUrls[0],
-                offer.ImageUrls,
+                EnsureDisplayImageUrls(offer.ImageUrls)[0],
+                EnsureDisplayImageUrls(offer.ImageUrls),
                 offer.IsActive,
                 offer.IsPromoted,
                 false,
@@ -251,11 +251,7 @@ public sealed class InMemoryOfferService : IOfferService
             .Select(image => image.DataUrl!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-
-        if (imageUrls.Length == 0)
-        {
-            imageUrls = [PlaceholderImageUrl];
-        }
+        var displayImageUrls = EnsureDisplayImageUrls(imageUrls);
 
         var record = new OfferRecord(
             offerId,
@@ -280,8 +276,8 @@ public sealed class InMemoryOfferService : IOfferService
             record.BusinessName,
             record.Description,
             record.Tags,
-            record.ImageUrls[0],
-            record.ImageUrls,
+            displayImageUrls[0],
+            displayImageUrls,
             record.IsActive,
             record.IsPromoted,
             false,
@@ -322,11 +318,7 @@ public sealed class InMemoryOfferService : IOfferService
                 .Select(image => image.DataUrl!)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-
-            if (imageUrls.Length == 0)
-            {
-                imageUrls = [PlaceholderImageUrl];
-            }
+            var displayImageUrls = EnsureDisplayImageUrls(imageUrls);
 
             var updated = existing with
             {
@@ -345,8 +337,8 @@ public sealed class InMemoryOfferService : IOfferService
                 updated.BusinessName,
                 updated.Description,
                 updated.Tags,
-                updated.ImageUrls[0],
-                updated.ImageUrls,
+                displayImageUrls[0],
+                displayImageUrls,
                 updated.IsActive,
                 updated.IsPromoted,
                 false,
@@ -565,6 +557,9 @@ public sealed class InMemoryOfferService : IOfferService
 
     private static string NormalizeSearchTerm(string value) => TagLexicon.NormalizeSearchTerm(value);
 
+    private static IReadOnlyList<string> EnsureDisplayImageUrls(IReadOnlyList<string> imageUrls) =>
+        imageUrls.Count > 0 ? imageUrls : [PlaceholderImageUrl];
+
     private bool HasUserVoted(string offerId, string userId)
     {
         if (string.IsNullOrWhiteSpace(userId))
@@ -597,7 +592,7 @@ public sealed class InMemoryOfferService : IOfferService
                 "Main Street Cafe",
                 "Buy one coffee and get one free",
                 ["coffee", "breakfast"],
-                [PlaceholderImageUrl],
+                [],
                 true,
                 true,
                 new GeoPoint(40.7131, -74.0055),
@@ -611,7 +606,7 @@ public sealed class InMemoryOfferService : IOfferService
                 "Broadway Market",
                 "Bakery discount before closing time",
                 ["bakery", "discount", "bread"],
-                [PlaceholderImageUrl],
+                [],
                 true,
                 false,
                 new GeoPoint(40.7165, -74.0035),
@@ -625,7 +620,7 @@ public sealed class InMemoryOfferService : IOfferService
                 "Green Leaf Shop",
                 "Fresh tea selection with seasonal promos",
                 ["tea", "fresh", "seasonal"],
-                [PlaceholderImageUrl],
+                [],
                 true,
                 false,
                 new GeoPoint(40.7105, -74.0080),

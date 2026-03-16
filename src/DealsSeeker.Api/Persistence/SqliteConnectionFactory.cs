@@ -22,24 +22,6 @@ public sealed class SqliteConnectionFactory(
 
     private string BuildConnectionString()
     {
-        var builder = new SqliteConnectionStringBuilder(_options.ConnectionString);
-        if (string.IsNullOrWhiteSpace(builder.DataSource) ||
-            builder.DataSource.Equals(":memory:", StringComparison.OrdinalIgnoreCase))
-        {
-            return builder.ConnectionString;
-        }
-
-        if (!Path.IsPathRooted(builder.DataSource))
-        {
-            builder.DataSource = Path.GetFullPath(Path.Combine(environment.ContentRootPath, builder.DataSource));
-        }
-
-        var directory = Path.GetDirectoryName(builder.DataSource);
-        if (!string.IsNullOrWhiteSpace(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        return builder.ConnectionString;
+        return SqlitePathResolver.NormalizeConnectionString(_options.ConnectionString, environment.ContentRootPath);
     }
 }
