@@ -1,0 +1,15 @@
+{
+  "input": {
+    "route": "AddOffer"
+  },
+  "expected": {
+    "visibleBlocks": [
+      "photoSection",
+      "locationSection",
+      "descriptionSection",
+      "selectedTagsSection",
+      "suggestedTagsSection",
+      "saveAction"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "input": {
+    "selectedTravelMode": "car",
+    "offerId": "off-100"
+  },
+  "expected": {
+    "directionsActionLabel": "Car directions",
+    "navigationLaunchMode": "car"
+  }
+}

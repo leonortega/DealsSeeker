@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dealseeker.local/schemas/offer-search-response.schema.json",
   "title": "OfferSearchResponse",
-  "description": "Contract for ranked offers and map businesses. Spec IDs: OFFERS.SEARCH.001, OFFERS.SEARCH.SMART.001, OFFERS.FEED.PROMOTED.001, OFFERS.FAVORITES.001, OFFERS.REPORTED.DEMOTION.001, OFFERS.PHOTOS.CAROUSEL.001, OFFERS.LIST.ACTIONS.001",
+  "description": "Contract for ranked offers and map businesses. Mirrors DealsSeeker.Shared.Contracts.Offers.SearchOffersResponse. Spec IDs: OFFERS.SEARCH.001, OFFERS.SEARCH.SMART.001, OFFERS.FEED.PROMOTED.001, OFFERS.FAVORITES.001, OFFERS.REPORTED.DEMOTION.001, OFFERS.PHOTOS.CAROUSEL.001, OFFERS.LIST.ACTIONS.001",
   "type": "object",
   "required": [
     "offers",
@@ -12,187 +12,13 @@
     "offers": {
       "type": "array",
       "items": {
-        "type": "object",
-        "required": [
-          "offerId",
-          "businessId",
-          "businessName",
-          "description",
-          "tags",
-          "imageUrl",
-          "imageUrls",
-          "isActive",
-          "isPromoted",
-          "isFavorite",
-          "isReported",
-          "relevanceScore",
-          "matchStrategies",
-          "location",
-          "distanceMeters",
-          "positiveAvailabilityCount",
-          "negativeAvailabilityCount",
-          "hasCurrentUserVoted"
-        ],
-        "properties": {
-          "offerId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "businessId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "businessName": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 1000
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64
-            },
-            "uniqueItems": true
-          },
-          "imageUrl": {
-            "type": "string",
-            "format": "uri-reference",
-            "description": "Primary preview image URL."
-          },
-          "imageUrls": {
-            "type": "array",
-            "description": "Ordered image list for carousel display.",
-            "items": {
-              "type": "string",
-              "format": "uri-reference"
-            },
-            "minItems": 1
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "isPromoted": {
-            "type": "boolean"
-          },
-          "isFavorite": {
-            "type": "boolean",
-            "description": "True when current user saved this offer in favorites."
-          },
-          "isReported": {
-            "type": "boolean",
-            "description": "True when offer is currently flagged as reported for demotion styling/order."
-          },
-          "relevanceScore": {
-            "type": "number",
-            "minimum": 0
-          },
-          "matchStrategies": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "exact",
-                "fuzzy",
-                "synonym"
-              ]
-            },
-            "minItems": 1,
-            "uniqueItems": true
-          },
-          "location": {
-            "type": "object",
-            "required": [
-              "lat",
-              "lng"
-            ],
-            "properties": {
-              "lat": {
-                "type": "number",
-                "minimum": -90,
-                "maximum": 90
-              },
-              "lng": {
-                "type": "number",
-                "minimum": -180,
-                "maximum": 180
-              }
-            },
-            "additionalProperties": false
-          },
-          "distanceMeters": {
-            "type": "number",
-            "minimum": 0,
-            "description": "Distance from current user location to this offer destination in meters."
-          },
-          "positiveAvailabilityCount": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Current thumbs-up availability count for this offer."
-          },
-          "negativeAvailabilityCount": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Current thumbs-down availability count for this offer."
-          },
-          "hasCurrentUserVoted": {
-            "type": "boolean",
-            "description": "True when the current authenticated user already cast availability feedback for this offer."
-          }
-        },
-        "additionalProperties": false
+        "$ref": "offer-item.schema.json"
       }
     },
     "businesses": {
       "type": "array",
       "items": {
-        "type": "object",
-        "required": [
-          "businessId",
-          "name",
-          "location",
-          "distanceMeters"
-        ],
-        "properties": {
-          "businessId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "name": {
-            "type": "string",
-            "minLength": 1
-          },
-          "location": {
-            "type": "object",
-            "required": [
-              "lat",
-              "lng"
-            ],
-            "properties": {
-              "lat": {
-                "type": "number",
-                "minimum": -90,
-                "maximum": 90
-              },
-              "lng": {
-                "type": "number",
-                "minimum": -180,
-                "maximum": 180
-              }
-            },
-            "additionalProperties": false
-          },
-          "distanceMeters": {
-            "type": "number",
-            "minimum": 0
-          }
-        },
-        "additionalProperties": false
+        "$ref": "business-marker.schema.json"
       }
     }
   },

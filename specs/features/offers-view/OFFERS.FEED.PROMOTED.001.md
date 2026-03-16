@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Promoted Offers on Initial Home Feed
 - **Version**: `v0.1`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Offers View (Home Feed)
 - **Priority**: High
 

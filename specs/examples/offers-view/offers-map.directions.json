@@ -1,0 +1,15 @@
+{
+  "input": {
+    "action": "tapMarker",
+    "destination": {
+      "lat": 40.7131,
+      "lng": -74.0055
+    },
+    "travelMode": "pedestrian"
+  },
+  "expected": {
+    "navigationProviderOpened": true,
+    "travelMode": "pedestrian",
+    "destinationLoaded": true
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/location-search-results-response.schema.json",
+  "title": "LocationSearchResultsResponse",
+  "description": "GET /api/locations/search success response. Array of DealsSeeker.Shared.Contracts.AddOffer.LocationSearchResultDto.",
+  "type": "array",
+  "items": {
+    "$ref": "location-search-result.schema.json"
+  }
+}

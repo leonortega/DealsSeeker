@@ -1,0 +1,10 @@
+{
+  "input": {
+    "systemLocale": "es-AR",
+    "appLanguageOverride": null
+  },
+  "expected": {
+    "uiLanguage": "es",
+    "resourceFamily": "Spanish"
+  }
+}

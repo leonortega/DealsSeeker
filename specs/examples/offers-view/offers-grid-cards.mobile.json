@@ -1,0 +1,12 @@
+{
+  "input": {
+    "offerCount": 20,
+    "viewport": "mobile"
+  },
+  "expected": {
+    "layout": "compact-grid",
+    "imageFraming": "consistent",
+    "contentReadable": true,
+    "actionsVisible": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "input": {
+    "mapDisplayProvider": "OpenLayers",
+    "mapRedirectProvider": "GoogleMaps"
+  },
+  "expected": {
+    "offersMapProvider": "OpenLayers",
+    "addOfferMapProvider": "OpenLayers",
+    "navigationRedirectProvider": "GoogleMaps"
+  },
+  "alternate": {
+    "input": {
+      "mapDisplayProvider": "GoogleMaps",
+      "mapRedirectProvider": "GoogleMaps"
+    },
+    "expected": {
+      "offersMapProvider": "GoogleMaps",
+      "addOfferMapProvider": "GoogleMaps",
+      "navigationRedirectProvider": "GoogleMaps"
+    }
+  }
+}

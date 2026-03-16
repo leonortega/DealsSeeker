@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/auth-session.schema.json",
+  "title": "AuthSession",
+  "description": "POST /api/auth/login success response. Mirrors DealsSeeker.Shared.Contracts.Account.AuthSessionDto.",
+  "type": "object",
+  "required": [
+    "userId",
+    "displayName",
+    "email",
+    "accessToken"
+  ],
+  "properties": {
+    "userId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "accessToken": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

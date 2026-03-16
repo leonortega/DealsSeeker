@@ -2,137 +2,41 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dealseeker.local/schemas/add-offer-draft.schema.json",
   "title": "AddOfferDraft",
-  "description": "Draft state for Add Offer view. Spec IDs: ADD.OFFER.LAYOUT.001, ADD.OFFER.IMAGE.001, ADD.OFFER.LOCATION.001, ADD.OFFER.DESCRIPTION.TAGS.001, ADD.OFFER.TAGS.SUGGESTIONS.001, OFFERS.PHOTOS.CAROUSEL.001, OFFERS.IMAGE.RENDERING.001",
+  "description": "Draft and API request contract for add-offer flows. Mirrors DealsSeeker.Shared.Contracts.AddOffer.AddOfferRequest. Spec IDs: ADD.OFFER.LAYOUT.001, ADD.OFFER.IMAGE.001, ADD.OFFER.LOCATION.001, ADD.OFFER.DESCRIPTION.TAGS.001, ADD.OFFER.TAGS.SUGGESTIONS.001, OFFERS.PHOTOS.CAROUSEL.001, OFFERS.IMAGE.RENDERING.001",
   "type": "object",
   "required": [
     "description",
     "tags",
-    "images",
-    "location"
+    "images"
   ],
   "properties": {
     "description": {
-      "type": "string",
-      "maxLength": 1000
+      "type": "string"
     },
     "tags": {
       "type": "array",
       "items": {
-        "type": "string",
-        "pattern": "^[a-z0-9%][a-z0-9%\\- ]{0,63}$"
+        "type": "string"
       },
-      "uniqueItems": true
+      "description": "Tags are normalized and de-duplicated server-side."
     },
     "images": {
       "type": "array",
       "description": "Ordered photo list for offer preview and detail carousel.",
       "items": {
-        "type": "object",
-        "required": [
-          "source",
-          "mimeType",
-          "sizeBytes",
-          "order"
-        ],
-        "properties": {
-          "source": {
-            "type": "string",
-            "enum": [
-              "camera",
-              "gallery"
-            ]
-          },
-          "mimeType": {
-            "type": "string",
-            "minLength": 1
-          },
-          "sizeBytes": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 5242880
-          },
-          "width": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "minimum": 1
-          },
-          "height": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "minimum": 1
-          },
-          "order": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "fileName": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "maxLength": 260
-          },
-          "dataUrl": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Inline preview payload used by the mobile draft before backend persistence."
-          }
-        },
-        "additionalProperties": false
+        "$ref": "offer-image.schema.json"
       },
       "minItems": 0
     },
     "location": {
-      "type": [
-        "object",
-        "null"
-      ],
-      "required": [
-        "source",
-        "position"
-      ],
-      "properties": {
-        "source": {
-          "type": "string",
-          "enum": [
-            "auto",
-            "search",
-            "manual-confirmed"
-          ]
+      "oneOf": [
+        {
+          "$ref": "offer-location.schema.json"
         },
-        "label": {
-          "type": "string",
-          "maxLength": 250,
-          "description": "Human-readable address/location label for UI display. Raw numeric coordinates are persisted inside position and should not be shown directly to users."
-        },
-        "position": {
-          "type": "object",
-          "required": [
-            "lat",
-            "lng"
-          ],
-          "properties": {
-            "lat": {
-              "type": "number",
-              "minimum": -90,
-              "maximum": 90
-            },
-            "lng": {
-              "type": "number",
-              "minimum": -180,
-              "maximum": 180
-            }
-          },
-          "additionalProperties": false
+        {
+          "type": "null"
         }
-      },
-      "additionalProperties": false
+      ]
     }
   },
   "additionalProperties": false

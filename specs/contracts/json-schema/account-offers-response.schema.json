@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/account-offers-response.schema.json",
+  "title": "AccountOffersResponse",
+  "description": "GET /api/account/offers success response. Array of DealsSeeker.Shared.Models.OfferItemDto.",
+  "type": "array",
+  "items": {
+    "$ref": "offer-item.schema.json"
+  }
+}

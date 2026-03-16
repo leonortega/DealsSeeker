@@ -1,0 +1,18 @@
+{
+  "input": {
+    "serilogMinimumLevel": "Warning",
+    "databaseSinkMinimumLevel": "Error"
+  },
+  "expected": {
+    "filteredOutLevels": [
+      "Verbose",
+      "Debug",
+      "Information"
+    ],
+    "databaseSinkStores": [
+      "Error",
+      "Fatal"
+    ],
+    "fileSinkFollowsSerilogMinimumLevel": true
+  }
+}

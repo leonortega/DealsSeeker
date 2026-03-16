@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Reported Offer Demotion and Visual Flagging
 - **Version**: `v0.1`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
 

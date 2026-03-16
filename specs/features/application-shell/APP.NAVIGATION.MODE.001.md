@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: User-Selectable Directions Travel Mode
 - **Version**: `v0.1`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: Medium
 

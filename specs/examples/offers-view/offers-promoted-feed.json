@@ -1,0 +1,10 @@
+{
+  "input": {
+    "query": "",
+    "feedContainsPromotedOffers": true
+  },
+  "expected": {
+    "promotedSectionVisible": true,
+    "promotedOffersAppearBeforeRegularOffers": true
+  }
+}

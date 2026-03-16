@@ -1,0 +1,12 @@
+{
+  "input": {
+    "offerId": "off-100",
+    "gesture": "pinch",
+    "travelMode": "car"
+  },
+  "expected": {
+    "fullScreenViewerOpened": true,
+    "imageScales": true,
+    "directionsLaunchMode": "car"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/offer-location.schema.json",
+  "title": "OfferLocation",
+  "description": "DealsSeeker.Shared.Contracts.AddOffer.OfferLocationDto.",
+  "type": "object",
+  "required": [
+    "source",
+    "position"
+  ],
+  "properties": {
+    "source": {
+      "type": "string",
+      "description": "Current clients typically use values such as auto, search, or manual-confirmed."
+    },
+    "label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Human-readable location label used by the UI and stored as business name."
+    },
+    "position": {
+      "$ref": "geo-point.schema.json"
+    }
+  },
+  "additionalProperties": false
+}

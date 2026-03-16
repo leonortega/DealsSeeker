@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: System-Aware Theme with Manual Override
 - **Version**: `v0.2`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: Medium
 

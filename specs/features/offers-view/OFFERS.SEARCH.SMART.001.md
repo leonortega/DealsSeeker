@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Smart Search Matching and Relevance Ranking
 - **Version**: `v0.1`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
 

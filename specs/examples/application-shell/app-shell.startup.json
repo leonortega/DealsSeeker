@@ -1,0 +1,16 @@
+{
+  "input": {
+    "activeSession": false
+  },
+  "expected": {
+    "initialRoute": "Login"
+  },
+  "alternate": {
+    "input": {
+      "activeSession": true
+    },
+    "expected": {
+      "initialRoute": "Offers"
+    }
+  }
+}

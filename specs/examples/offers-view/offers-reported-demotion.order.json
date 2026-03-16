@@ -1,0 +1,21 @@
+{
+  "input": {
+    "results": [
+      {
+        "offerId": "off-100",
+        "isReported": false
+      },
+      {
+        "offerId": "off-101",
+        "isReported": true
+      }
+    ]
+  },
+  "expected": {
+    "orderedOfferIds": [
+      "off-100",
+      "off-101"
+    ],
+    "reportedOfferStyle": "red"
+  }
+}

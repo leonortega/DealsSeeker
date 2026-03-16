@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/business-marker.schema.json",
+  "title": "BusinessMarker",
+  "description": "DealsSeeker.Shared.Models.BusinessMarkerDto.",
+  "type": "object",
+  "required": [
+    "businessId",
+    "name",
+    "location",
+    "distanceMeters"
+  ],
+  "properties": {
+    "businessId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "location": {
+      "$ref": "geo-point.schema.json"
+    },
+    "distanceMeters": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

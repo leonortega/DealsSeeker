@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Offer Favorites and My Favorites View
 - **Version**: `v0.3`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
 

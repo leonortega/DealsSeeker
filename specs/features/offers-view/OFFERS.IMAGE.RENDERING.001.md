@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Normalized Offer Image Rendering
 - **Version**: `v0.1`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Add Offer + Offers Grid + Offer Detail
 - **Priority**: High
 

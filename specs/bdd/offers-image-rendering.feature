@@ -3,10 +3,10 @@ Feature: Normalized offer image rendering
   I want images displayed consistently in cards and details
   So that visual quality and layout are predictable
 
-  Scenario: Different source image sizes are normalized
+  Scenario: Different source image sizes render inside a shared frame
     Given the user uploads images with mixed dimensions
-    When image processing completes
-    Then images are normalized to the configured aspect ratio
+    When the images are shown in add-offer preview, cards, and detail view
+    Then images are rendered inside a common visual frame
     And cards and detail views use consistent framing
 
   Scenario: Failed image processing uses placeholder

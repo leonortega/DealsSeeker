@@ -1,0 +1,20 @@
+{
+  "input": {
+    "imageOrderBefore": [
+      "img-1",
+      "img-2",
+      "img-3"
+    ],
+    "move": {
+      "imageId": "img-3",
+      "newIndex": 0
+    }
+  },
+  "expected": {
+    "imageOrderAfter": [
+      "img-3",
+      "img-1",
+      "img-2"
+    ]
+  }
+}

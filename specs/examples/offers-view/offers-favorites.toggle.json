@@ -1,0 +1,12 @@
+{
+  "input": {
+    "offerId": "off-100",
+    "action": "toggleFavoriteOn"
+  },
+  "expected": {
+    "favoriteState": true,
+    "myFavoritesContains": [
+      "off-100"
+    ]
+  }
+}
