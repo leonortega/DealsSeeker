@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Compact Responsive Offer Grid Cards
 - **Version**: `v0.2`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
 
@@ -39,8 +39,8 @@ Scenario: Grid adapts to screen size
 ```
 
 ## Example Inputs/Outputs
-- Example input: 20 offers on a mobile viewport.
-- Expected output: Responsive compact-card grid with consistent image framing and readable content/action areas.
+- Example input: 20 offers rendered at `390px` and `820px` viewport widths.
+- Expected output: A compact card grid that keeps consistent framing and readability while increasing the visible column count on the wider viewport.
 
 ## Edge Cases
 - Very long descriptions truncate without overflowing card bounds.

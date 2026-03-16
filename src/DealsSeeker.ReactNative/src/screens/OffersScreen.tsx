@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import * as Location from 'expo-location';
 import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '../api/types';
 import { MapPreview } from '../components/MapPreview';
@@ -14,6 +14,7 @@ const radiusOptions = [500, 1000, 1500, 2500, 5000];
 
 export function OffersScreen() {
   const { activeTab, api, openAddOffer, palette, preferences, setReportDraft, t } = useApp();
+  const { width: viewportWidth } = useWindowDimensions();
   const [query, setQuery] = useState('');
   const [radiusMeters, setRadiusMeters] = useState(1500);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
@@ -98,6 +99,11 @@ export function OffersScreen() {
   }
 
   const sections = partitionOffers(results.offers, query);
+  const gridColumns = viewportWidth >= 1080 ? 3 : viewportWidth >= 720 ? 2 : 1;
+  const cardWidth = Math.max(
+    220,
+    (Math.max(320, viewportWidth - 32) - (gridColumns - 1) * 12) / gridColumns
+  );
 
   async function toggleFavorite(offer: OfferItemDto) {
     const result = await api.setOfferFavorite(offer.offerId, { isFavorite: !offer.isFavorite });
@@ -200,36 +206,48 @@ export function OffersScreen() {
         {sections.promoted.length > 0 ? (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('offers.promoted')}</Text>
-            {sections.promoted.map((offer) => (
-              <OfferCard
-                key={`promoted-${offer.offerId}`}
-                offer={offer}
-                onDirections={openOfferDirections}
-                onFavorite={toggleFavorite}
-                onOpenDetail={setDetailOffer}
-                onReport={setReportDraft}
-                onVote={vote}
-                query={query}
-              />
-            ))}
+            <View style={styles.grid}>
+              {sections.promoted.map((offer) => (
+                <View
+                  key={`promoted-${offer.offerId}`}
+                  style={gridColumns === 1 ? styles.gridCellFull : [styles.gridCell, { width: cardWidth }]}
+                >
+                  <OfferCard
+                    offer={offer}
+                    onDirections={openOfferDirections}
+                    onFavorite={toggleFavorite}
+                    onOpenDetail={setDetailOffer}
+                    onReport={setReportDraft}
+                    onVote={vote}
+                    query={query}
+                  />
+                </View>
+              ))}
+            </View>
           </View>
         ) : null}
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('nav.offers')}</Text>
           {sections.feed.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('offers.noResults')}</Text> : null}
-          {sections.feed.map((offer) => (
-            <OfferCard
-              key={offer.offerId}
-              offer={offer}
-              onDirections={openOfferDirections}
-              onFavorite={toggleFavorite}
-              onOpenDetail={setDetailOffer}
-              onReport={setReportDraft}
-              onVote={vote}
-              query={query}
-            />
-          ))}
+          <View style={styles.grid}>
+            {sections.feed.map((offer) => (
+              <View
+                key={offer.offerId}
+                style={gridColumns === 1 ? styles.gridCellFull : [styles.gridCell, { width: cardWidth }]}
+              >
+                <OfferCard
+                  offer={offer}
+                  onDirections={openOfferDirections}
+                  onFavorite={toggleFavorite}
+                  onOpenDetail={setDetailOffer}
+                  onReport={setReportDraft}
+                  onVote={vote}
+                  query={query}
+                />
+              </View>
+            ))}
+          </View>
         </View>
         {status ? <Text style={[styles.status, { color: palette.ink }]}>{status}</Text> : null}
       </ScrollView>
@@ -312,6 +330,17 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: 10,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  gridCell: {
+    minWidth: 0,
+  },
+  gridCellFull: {
+    width: '100%',
   },
   sectionTitle: {
     fontFamily: 'Georgia',

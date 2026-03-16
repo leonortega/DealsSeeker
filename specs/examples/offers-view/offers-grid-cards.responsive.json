@@ -1,0 +1,31 @@
+{
+  "input": {
+    "offerCount": 20,
+    "viewports": [
+      {
+        "name": "phone",
+        "widthPx": 390
+      },
+      {
+        "name": "tablet",
+        "widthPx": 820
+      }
+    ]
+  },
+  "expected": {
+    "layout": "compact-grid",
+    "imageFraming": "consistent",
+    "contentReadable": true,
+    "actionsVisible": true,
+    "columnBehavior": [
+      {
+        "viewport": "phone",
+        "minimumVisibleColumns": 1
+      },
+      {
+        "viewport": "tablet",
+        "minimumVisibleColumns": 2
+      }
+    ]
+  }
+}

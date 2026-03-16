@@ -1,11 +1,13 @@
 {
   "input": {
     "offerId": "off-100",
-    "gesture": "pinch",
+    "hostSurface": "zoom-capable",
+    "gesture": "native-zoom",
     "travelMode": "car"
   },
   "expected": {
     "fullScreenViewerOpened": true,
+    "zoomGesturePreserved": true,
     "imageScales": true,
     "directionsLaunchMode": "car"
   }

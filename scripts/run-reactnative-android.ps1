@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$JavaHome = "C:\Program Files (x86)\Java\jdk-21.0.10",
+    [string]$JavaHome = "C:\Users\mlortega\Java",
     [string]$AndroidSdkRoot = "C:\Users\mlortega\AppData\Local\Android\Sdk",
     [string]$JunctionPath = "C:\Endava\EndevLocal\rn",
     [string]$ApiBaseUrl = "http://10.0.2.2:5005",

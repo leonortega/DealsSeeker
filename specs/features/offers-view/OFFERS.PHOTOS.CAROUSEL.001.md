@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Multi-Photo Upload and Offer Detail Carousel
 - **Version**: `v0.1`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Add Offer + Offer Detail View
 - **Priority**: High
 

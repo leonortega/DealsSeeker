@@ -7,7 +7,7 @@ Feature: Offer detail interactions for zoom and directions
     Given an offer detail has at least one image
     When the user taps the image
     Then a full-screen viewer opens
-    And pinch-to-zoom gestures are supported
+    And native zoom gestures remain available when the active host surface supports them
 
   Scenario: User opens configured directions from detail view
     Given an offer detail has a valid location

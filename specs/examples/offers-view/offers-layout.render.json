@@ -6,7 +6,7 @@
     "visibleBlocks": [
       "searchBar",
       "radiusControl",
-      "offersList",
+      "offersGrid",
       "offersMap",
       "addOfferButton"
     ]

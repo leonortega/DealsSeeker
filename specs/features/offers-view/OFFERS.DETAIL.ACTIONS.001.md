@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Offer Detail Image Zoom and Configured Directions Action
 - **Version**: `v0.2`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Offer Detail View
 - **Priority**: Medium
 
@@ -43,8 +43,8 @@ Scenario: User opens directions from offer detail
 ```
 
 ## Example Inputs/Outputs
-- Example input: Tap detail image and perform pinch gesture.
-- Expected output: Image scales in full-screen viewer.
+- Example input: Tap the detail image on a zoom-capable host surface, then perform a native zoom gesture in the full-screen viewer.
+- Expected output: The full-screen viewer opens immediately, preserves the host surface zoom gesture, and scales the image while the directions action remains available for the configured travel mode.
 
 ## Edge Cases
 - Invalid location disables directions button with visible unavailable state.

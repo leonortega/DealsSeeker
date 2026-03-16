@@ -177,7 +177,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 26,
     borderWidth: 1,
-    marginBottom: 16,
     overflow: 'hidden',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
