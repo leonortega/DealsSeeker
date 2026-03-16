@@ -35,6 +35,7 @@ public static class MauiProgram
         builder.Services.AddSingleton(new ApiSettings
         {
             BaseUrl = apiConfiguration["BaseUrl"] ?? defaultApiSettings.BaseUrl,
+            GoogleMapsApiKey = apiConfiguration["GoogleMapsApiKey"] ?? defaultApiSettings.GoogleMapsApiKey,
             MapDisplayProvider = apiConfiguration["MapDisplayProvider"]
                                  ?? apiConfiguration["MapProvider"]
                                  ?? defaultApiSettings.MapDisplayProvider,
@@ -109,7 +110,8 @@ public static class MauiProgram
 
         var app = builder.Build();
         var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("DealsSeeker.Mobile.Startup");
-        startupLogger.LogInformation("DealsSeeker.Mobile startup completed. LogPath={LogPath}", mobileLogPath);
+        var apiSettings = app.Services.GetRequiredService<ApiSettings>();
+        startupLogger.LogInformation("DealsSeeker.Mobile startup completed. LogPath={LogPath} ApiBaseUrl={ApiBaseUrl}", mobileLogPath, apiSettings.BaseUrl);
         return app;
     }
     catch (Exception ex)

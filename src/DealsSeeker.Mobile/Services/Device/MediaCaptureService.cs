@@ -1,8 +1,10 @@
 using DealsSeeker.Shared.Contracts.AddOffer;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 
 namespace DealsSeeker.Mobile.Services.Device;
 
-public sealed class MediaCaptureService : IMediaCaptureService
+public sealed class MediaCaptureService(IStringLocalizer<AppStrings> localizer, ILogger<MediaCaptureService> logger) : IMediaCaptureService
 {
     public async Task<PickedImage?> CapturePhotoAsync(CancellationToken cancellationToken)
     {
@@ -12,15 +14,28 @@ public sealed class MediaCaptureService : IMediaCaptureService
             return null;
         }
 
-        var file = await MediaPicker.Default.CapturePhotoAsync();
-        return file is null ? null : await ToPickedImageAsync(file, "camera", 0, cancellationToken);
+        try
+        {
+            var file = await MediaPicker.Default.CapturePhotoAsync();
+            return file is null ? null : await ToPickedImageAsync(file, "camera", 0, cancellationToken);
+        }
+        catch (FeatureNotSupportedException ex)
+        {
+            logger.LogWarning(ex, "Camera capture is not supported on this device or emulator.");
+            return null;
+        }
+        catch (PermissionException ex)
+        {
+            logger.LogWarning(ex, "Camera capture failed due to a permission issue.");
+            return null;
+        }
     }
 
     public async Task<IReadOnlyList<PickedImage>> PickPhotosAsync(CancellationToken cancellationToken)
     {
         var files = await MediaPicker.Default.PickPhotosAsync(new MediaPickerOptions
         {
-            Title = "Select images"
+            Title = Translate("media.selectImages", "Select images")
         });
 
         var images = new List<PickedImage>();
@@ -74,5 +89,11 @@ public sealed class MediaCaptureService : IMediaCaptureService
             dataUrl);
 
         return new PickedImage(dataUrl, metadata);
+    }
+
+    private string Translate(string key, string fallback)
+    {
+        var value = localizer[key];
+        return value.ResourceNotFound ? fallback : value.Value;
     }
 }

@@ -1,0 +1,14 @@
+{
+  "input": {
+    "route": "Offers"
+  },
+  "expected": {
+    "visibleBlocks": [
+      "searchBar",
+      "radiusControl",
+      "offersGrid",
+      "offersMap",
+      "addOfferButton"
+    ]
+  }
+}

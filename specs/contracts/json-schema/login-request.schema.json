@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/login-request.schema.json",
+  "title": "LoginRequest",
+  "description": "POST /api/auth/login request. Mirrors DealsSeeker.Shared.Contracts.Account.LoginRequest.",
+  "type": "object",
+  "required": [
+    "email",
+    "password"
+  ],
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email",
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+    },
+    "password": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": ".*\\S.*"
+    }
+  },
+  "additionalProperties": false
+}

@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Application Localization and Language Selection
 - **Version**: `v0.3`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
 

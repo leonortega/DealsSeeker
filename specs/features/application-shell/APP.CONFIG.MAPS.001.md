@@ -22,9 +22,9 @@ Define internal configuration rules for map provider modules used by the app.
 - `APP.CONFIG.MAPS.001-R3`: Map provider for external navigation redirect (offer click / marker click) shall be selected from internal app configuration independently from in-app rendering provider.
 - `APP.CONFIG.MAPS.001-R4`: The system shall support `Google Maps API` provider module.
 - `APP.CONFIG.MAPS.001-R5`: The system shall support `OpenLayers API` provider module.
-- `APP.CONFIG.MAPS.001-R6`: Offers/Add Offer map rendering shall use the configured in-app rendering provider.
-- `APP.CONFIG.MAPS.001-R7`: Offer navigation redirect shall use the configured navigation redirect provider.
-- `APP.CONFIG.MAPS.001-R8`: If configured provider is unavailable at runtime, the system shall fail gracefully and use configured fallback behavior.
+- `APP.CONFIG.MAPS.001-R6`: Offers/Add Offer map rendering shall use the configured in-app rendering provider, while allowing provider-specific interaction depth.
+- `APP.CONFIG.MAPS.001-R7`: Offer navigation redirect shall use the configured navigation redirect provider from offer cards, detail actions, and any available in-map interaction UI.
+- `APP.CONFIG.MAPS.001-R8`: If configured provider is unavailable at runtime or does not expose rich embedded marker interaction, the system shall fail gracefully and use configured fallback behavior without removing navigation access.
 
 ## Acceptance Criteria (BDD)
 ```gherkin

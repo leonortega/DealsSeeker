@@ -4,9 +4,9 @@
 
 | Decision Point | Default Rule | Notes |
 |---|---|---|
-| Match scope | Offer searchable terms plus dictionary expansions | Supports exact query terms, fuzzy dictionary candidates, and synonyms |
+| Match scope | Offer searchable terms plus multilingual related-term expansion | Supports exact query terms, fuzzy similarity against searchable terms, and synonyms |
 | Exact match | Enabled | Query normalized for case-insensitive comparison |
-| Fuzzy match | Enabled | Uses configurable similarity ratio threshold (default TBD) |
+| Fuzzy match | Enabled | Uses a product-defined similarity ratio threshold |
 | Synonym expansion | Enabled | Uses selected-language dictionary with multilingual support |
 | Dictionary by language | Use selected app language | Falls back to default language dictionary when missing |
 | Dictionary unavailable | Exact match fallback | Search remains available |
@@ -40,7 +40,7 @@
 | Manual tags | Not available | Tags are created from detected description words or accepted suggested tags |
 | Description cleared | Clear selected tags | Prevent stale selected/suggested tag state when text is erased |
 | Suggestion scope | Related terms for selected tags | Includes dictionary synonyms plus singular/plural variants |
-| Suggestion threshold | Configurable | Similarity ratio threshold default is TBD |
+| Suggestion threshold | No fuzzy threshold applied | Current implementation uses direct dictionary synonyms plus singular/plural variants without similarity scoring |
 | Suggestion presentation | Optional chips/pills | Non-blocking UX |
 | Suggestion persistence | Explicit accept only | Suggested chips are not saved until tapped |
 | Suggestion language | Use selected app language | Fallback to default language resources |
@@ -49,12 +49,12 @@
 
 | Decision Point | Default Rule | Notes |
 |---|---|---|
-| Upload count | Multiple photos allowed | Maximum count configurable (default TBD) |
+| Upload count | Multiple photos allowed | Current mobile implementation enforces a default maximum of 8 photos |
 | Gallery selection | Multi-file selection allowed | Add Offer supports selecting multiple files in one action |
 | Photo order | User-defined order | Reordering persists and drives preview/carousel order |
 | Primary preview | First ordered photo | Used for grid/summary by default |
-| Upload normalization | Resize/crop on processing | Target aspect ratio is uniform |
-| Render mode | `square-crop` default | Optional `stretched-fill` mode supported by config |
+| Upload normalization | Not mandatory | Consistent framing may be applied at render time |
+| Render mode | Shared framing rules | Preview, grid, and detail use the same display policy |
 | Detail display | Swipeable carousel | Supports all stored photos |
 | Processing failure | Placeholder fallback | Layout remains stable |
 
@@ -157,7 +157,7 @@
 | Navigation redirect provider | Configured independently | Applies when user opens directions from offers/markers/detail button |
 | Offers map renderer | Use configured in-view renderer provider | Applies to map display and markers |
 | Add Offer location search | Use configured in-view renderer provider | Applies to business/address text lookup |
-| Offer click redirect | Use configured navigation redirect provider | May differ from in-view renderer |
+| Offer click redirect | Use configured navigation redirect provider | May differ from in-view renderer; applies to cards, detail actions, and markers |
 | Provider initialization failure | Apply configured fallback behavior | App remains available |
 | Provider switch lifecycle | Effective after config reload/app restart policy | Controlled by app configuration policy |
 

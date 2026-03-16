@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/offer-image.schema.json",
+  "title": "OfferImage",
+  "description": "DealsSeeker.Shared.Contracts.AddOffer.OfferImageDto.",
+  "type": "object",
+  "required": [
+    "source",
+    "mimeType",
+    "sizeBytes",
+    "order"
+  ],
+  "properties": {
+    "source": {
+      "type": "string",
+      "description": "Current clients typically send values such as camera or gallery."
+    },
+    "mimeType": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sizeBytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "width": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "height": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "order": {
+      "type": "integer"
+    },
+    "fileName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dataUrl": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The API only persists images that include a non-empty dataUrl."
+    }
+  },
+  "additionalProperties": false
+}

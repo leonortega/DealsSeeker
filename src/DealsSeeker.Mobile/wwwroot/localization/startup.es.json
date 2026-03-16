@@ -1,0 +1,9 @@
+{
+  "appTitle": "DealsSeeker",
+  "startupSubtitle": "Encontrá ofertas cercanas al instante",
+  "unhandledError": "Ocurrió un error no controlado.",
+  "reload": "Recargar",
+  "dismiss": "Cerrar",
+  "mapTitle": "Mapa de DealsSeeker",
+  "mapUnavailable": "La biblioteca de mapas no está disponible. Verificá el acceso a la red."
+}

@@ -33,6 +33,21 @@ dotnet run --project src/DealsSeeker.Api
 dotnet build src/DealsSeeker.Mobile/DealsSeeker.Mobile.csproj -f net10.0-windows10.0.19041.0
 dotnet run --project src/DealsSeeker.Mobile/DealsSeeker.Mobile.csproj -f net10.0-windows10.0.19041.0
 ```
+4. Run mobile app (Android target):
+```powershell
+dotnet workload install maui
+adb devices
+$env:DEALSEEKER_API_BASEURL="http://10.0.2.2:5005"
+dotnet run --project src/DealsSeeker.Mobile/DealsSeeker.Mobile.csproj -f net10.0-android
+```
+
+Android notes:
+- Start the API with the HTTP launch profile when testing from the Android emulator:
+```powershell
+dotnet run --project .\src\DealsSeeker.Api --launch-profile http
+```
+- `10.0.2.2` is the Android emulator alias for the host machine. Do not use `localhost` from the emulator.
+- For a physical Android device, set `DEALSEEKER_API_BASEURL` to your PC's LAN IP instead of `10.0.2.2`.
 
 ## Map Provider Configuration
 The app supports configurable map provider modules (`GoogleMaps`, `OpenLayers`).
@@ -44,9 +59,11 @@ API config (`src/DealsSeeker.Api/appsettings.json`):
 - `GoogleMaps:ApiKey` (required only when `GoogleMaps` is active/fallback and used)
 
 Mobile internal config:
+- `Api:GoogleMapsApiKey` (required when in-app rendering uses `GoogleMaps` and no fallback is desired)
 - `Api:MapDisplayProvider` / `Api:MapDisplayProviderFallback`
 - `Api:MapRedirectProvider` / `Api:MapRedirectProviderFallback`
 - environment variables also supported:
+  - `DEALSEEKER_GOOGLE_MAPS_API_KEY`
   - `DEALSEEKER_MAP_DISPLAY_PROVIDER`
   - `DEALSEEKER_MAP_DISPLAY_PROVIDER_FALLBACK`
   - `DEALSEEKER_MAP_REDIRECT_PROVIDER`
@@ -57,7 +74,7 @@ Mobile internal config:
 - API persistence uses `Dapper` with `SQLite`.
 - DB schema is created/updated from SQL migrations at app startup.
 - Migration files: `src/DealsSeeker.Api/Persistence/Migrations/*.sql`
-- Default DB file: `Data/dealseeker.db` (configured via `Database:ConnectionString`).
+- Default DB file: `src/DealsSeeker.Api/Data/dealseeker.db` when running from the source tree. Relative SQLite paths are resolved against the API project root.
 
 Session persistence:
 - Auth sessions (tokens) are stored in SQLite table `auth_sessions`.

@@ -1,0 +1,21 @@
+{
+  "input": {
+    "query": "coffe",
+    "locale": "en-US",
+    "userLocation": {
+      "lat": 40.7128,
+      "lng": -74.006
+    },
+    "radiusMeters": 2000,
+    "favoritesOnly": false
+  },
+  "expected": {
+    "includesOfferTags": [
+      "coffee"
+    ],
+    "matchStrategies": [
+      "fuzzy",
+      "synonym"
+    ]
+  }
+}

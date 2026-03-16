@@ -1,5 +1,6 @@
 @page "/offers"
 @using System.Globalization
+@using Microsoft.JSInterop
 @inject IDealsSeekerApiClient ApiClient
 @inject IDeviceLocationService DeviceLocation
 @inject IMapLauncherService MapLauncher
@@ -8,7 +9,9 @@
 @inject IReportDraftContext ReportDraftContext
 @inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 @implements IDisposable
+@implements IAsyncDisposable
 
 <section class="page-hero">
     <div class="page-hero-copy">
@@ -152,6 +155,10 @@
                             <span>@T("offers.favorite")</span>
                         </button>
 
+                        <button class="btn-secondary" @onclick="() => OpenDirectionsAsync(offer.Location)">
+                            @DirectionsButtonText()
+                        </button>
+
                         <OfferActions Offer="offer"
                                       VotesDisabled="@IsVoteDisabled(offer)"
                                       OnVote="@(vote => VoteAsync(offer.OfferId, vote))"
@@ -240,6 +247,10 @@
                             <span>@T("offers.favorite")</span>
                         </button>
 
+                        <button class="btn-secondary" @onclick="() => OpenDirectionsAsync(offer.Location)">
+                            @DirectionsButtonText()
+                        </button>
+
                         <OfferActions Offer="offer"
                                       VotesDisabled="@IsVoteDisabled(offer)"
                                       OnVote="@(vote => VoteAsync(offer.OfferId, vote))"
@@ -266,7 +277,10 @@
 
         <div class="offer-detail-carousel">
             <button class="btn-icon-ghost" @onclick="PreviousImage" disabled="@(GetDetailImages().Count <= 1)">&#8592;</button>
-            <div class="offer-detail-visual">
+            <div class="offer-detail-visual"
+                 @onpointerdown="HandleDetailPointerDown"
+                 @onpointerup="HandleDetailPointerUp"
+                 @onpointercancel="HandleDetailPointerCancel">
                 <img src="@CurrentDetailImage()"
                      alt="@T("offers.imageAlt")"
                      class="offer-detail-image"
@@ -310,7 +324,12 @@
 @if (_fullscreenImageOpen)
 {
     <div class="modal-backdrop" @onclick="CloseFullscreen"></div>
-    <section class="image-fullscreen-modal" role="dialog" aria-modal="true">
+    <section class="image-fullscreen-modal"
+             role="dialog"
+             aria-modal="true"
+             @onpointerdown="HandleDetailPointerDown"
+             @onpointerup="HandleDetailPointerUp"
+             @onpointercancel="HandleDetailPointerCancel">
         <button class="close-button image-modal-close" @onclick="CloseFullscreen" aria-label="@T("nav.closeMenu")">
             <span class="close-button-glyph" aria-hidden="true">&times;</span>
         </button>
@@ -338,6 +357,12 @@
     private int _detailImageIndex;
     private bool _fullscreenImageOpen;
     private string _renderedLanguage = "en";
+    private DotNetObjectReference<Offers>? _markerSelectionReference;
+    private string? _markerSelectionListenerId;
+    private bool _detailSwipeTracking;
+    private long _detailSwipePointerId = -1;
+    private double _detailSwipeStartX;
+    private double _detailSwipeStartY;
 
     protected override async Task OnInitializedAsync()
     {
@@ -374,17 +399,32 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || !Session.IsAuthenticated)
+        if (!Session.IsAuthenticated)
         {
             return;
         }
 
-        try
+        if (firstRender)
         {
-            await _searchQueryInput.FocusAsync();
-        }
-        catch
-        {
+            _markerSelectionReference = DotNetObjectReference.Create(this);
+            try
+            {
+                _markerSelectionListenerId = await JS.InvokeAsync<string>(
+                    "DealsSeekerMaps.registerMarkerSelection",
+                    _markerSelectionReference);
+            }
+            catch
+            {
+                _markerSelectionListenerId = null;
+            }
+
+            try
+            {
+                await _searchQueryInput.FocusAsync();
+            }
+            catch
+            {
+            }
         }
     }
 
@@ -463,6 +503,10 @@
     {
         await MapLauncher.OpenDirectionsAsync(destination, Preferences.NavigationMode, CancellationToken.None);
     }
+
+    [JSInvokable]
+    public Task HandleMapMarkerSelection(double lat, double lng, string? name) =>
+        OpenDirectionsAsync(new GeoPoint(lat, lng));
 
     private async Task ToggleFavoriteAsync(OfferItemDto offer)
     {
@@ -552,6 +596,52 @@
     private void CloseFullscreen()
     {
         _fullscreenImageOpen = false;
+    }
+
+    private void HandleDetailPointerDown(PointerEventArgs args)
+    {
+        if (GetDetailImages().Count <= 1)
+        {
+            return;
+        }
+
+        _detailSwipeTracking = true;
+        _detailSwipePointerId = args.PointerId;
+        _detailSwipeStartX = args.ClientX;
+        _detailSwipeStartY = args.ClientY;
+    }
+
+    private void HandleDetailPointerUp(PointerEventArgs args)
+    {
+        if (!_detailSwipeTracking || args.PointerId != _detailSwipePointerId)
+        {
+            return;
+        }
+
+        var deltaX = args.ClientX - _detailSwipeStartX;
+        var deltaY = args.ClientY - _detailSwipeStartY;
+        ResetDetailSwipeTracking();
+
+        if (Math.Abs(deltaX) < 45 || Math.Abs(deltaX) <= Math.Abs(deltaY))
+        {
+            return;
+        }
+
+        if (deltaX < 0)
+        {
+            NextImage();
+            return;
+        }
+
+        PreviousImage();
+    }
+
+    private void HandleDetailPointerCancel(PointerEventArgs args)
+    {
+        if (_detailSwipeTracking && args.PointerId == _detailSwipePointerId)
+        {
+            ResetDetailSwipeTracking();
+        }
     }
 
     private void NextImage()
@@ -689,6 +779,26 @@
     public void Dispose()
     {
         Preferences.Changed -= OnPreferencesChanged;
+        _markerSelectionReference?.Dispose();
+        ResetDetailSwipeTracking();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Dispose();
+
+        if (string.IsNullOrWhiteSpace(_markerSelectionListenerId))
+        {
+            return;
+        }
+
+        try
+        {
+            await JS.InvokeVoidAsync("DealsSeekerMaps.unregisterMarkerSelection", _markerSelectionListenerId);
+        }
+        catch
+        {
+        }
     }
 
     private static string ResolveOfferImage(string imageUrl)
@@ -718,4 +828,12 @@
             .Take(3);
 
     private string DetailImageCountLabel() => $"{Math.Clamp(_detailImageIndex + 1, 1, GetDetailImages().Count)} / {GetDetailImages().Count}";
+
+    private void ResetDetailSwipeTracking()
+    {
+        _detailSwipeTracking = false;
+        _detailSwipePointerId = -1;
+        _detailSwipeStartX = 0;
+        _detailSwipeStartY = 0;
+    }
 }

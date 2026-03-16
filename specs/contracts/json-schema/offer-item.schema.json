@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/offer-item.schema.json",
+  "title": "OfferItem",
+  "description": "DealsSeeker.Shared.Models.OfferItemDto.",
+  "type": "object",
+  "required": [
+    "offerId",
+    "businessId",
+    "businessName",
+    "description",
+    "tags",
+    "imageUrl",
+    "imageUrls",
+    "isActive",
+    "isPromoted",
+    "isFavorite",
+    "isReported",
+    "relevanceScore",
+    "matchStrategies",
+    "location",
+    "distanceMeters",
+    "positiveAvailabilityCount",
+    "negativeAvailabilityCount",
+    "hasCurrentUserVoted"
+  ],
+  "properties": {
+    "offerId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "businessId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "businessName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "imageUrl": {
+      "type": "string",
+      "format": "uri-reference",
+      "description": "Primary preview image URL or data URL."
+    },
+    "imageUrls": {
+      "type": "array",
+      "description": "Ordered image list for detail carousel display.",
+      "items": {
+        "type": "string",
+        "format": "uri-reference"
+      },
+      "minItems": 1
+    },
+    "isActive": {
+      "type": "boolean"
+    },
+    "isPromoted": {
+      "type": "boolean"
+    },
+    "isFavorite": {
+      "type": "boolean"
+    },
+    "isReported": {
+      "type": "boolean"
+    },
+    "relevanceScore": {
+      "type": "number"
+    },
+    "matchStrategies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "exact",
+          "fuzzy",
+          "synonym"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "location": {
+      "$ref": "geo-point.schema.json"
+    },
+    "distanceMeters": {
+      "type": "number",
+      "minimum": 0
+    },
+    "positiveAvailabilityCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "negativeAvailabilityCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "hasCurrentUserVoted": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

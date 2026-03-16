@@ -1,0 +1,27 @@
+{
+  "description": "Bakery discount one hour before closing",
+  "tags": [
+    "bakery",
+    "discount"
+  ],
+  "images": [
+    {
+      "source": "gallery",
+      "mimeType": "image/jpeg",
+      "sizeBytes": 1,
+      "width": 1200,
+      "height": 900,
+      "order": 0,
+      "fileName": null,
+      "dataUrl": "/images/offers/off-220.jpg"
+    }
+  ],
+  "location": {
+    "source": "manual-confirmed",
+    "label": "Sunrise Bakery",
+    "position": {
+      "lat": 40.7144,
+      "lng": -74.0039
+    }
+  }
+}

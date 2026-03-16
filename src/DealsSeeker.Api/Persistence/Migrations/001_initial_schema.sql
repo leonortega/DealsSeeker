@@ -81,9 +81,9 @@ INSERT OR IGNORE INTO offers (
     offer_id, business_id, business_name, description, image_url, is_active, lat, lng,
     positive_availability_count, negative_availability_count, report_count, created_at_utc
 ) VALUES
-    ('off-100', 'biz-100', 'Main Street Cafe', 'Buy one coffee and get one free', '/images/offer-placeholder.svg', 1, 40.7131, -74.0055, 0, 0, 0, '2026-01-01T00:00:00.0000000+00:00'),
-    ('off-101', 'biz-101', 'Broadway Market', 'Bakery discount before closing time', '/images/offer-placeholder.svg', 1, 40.7165, -74.0035, 0, 0, 0, '2026-01-01T00:00:00.0000000+00:00'),
-    ('off-102', 'biz-102', 'Green Leaf Shop', 'Fresh tea selection with seasonal promos', '/images/offer-placeholder.svg', 1, 40.7105, -74.0080, 0, 0, 0, '2026-01-01T00:00:00.0000000+00:00');
+    ('off-100', 'biz-100', 'Main Street Cafe', 'Buy one coffee and get one free', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABGSURBVEhLY6jxNf1PS8yALkBtPEwtsFOTJgujmzOMLaAmHqYWoIctsRjdnGFsATXxMLUAPWyJxejmDGMLqIlHLSCIaW4BAJj4Ovv+Oxb0AAAAAElFTkSuQmCC', 1, 40.7131, -74.0055, 0, 0, 0, '2026-01-01T00:00:00.0000000+00:00'),
+    ('off-101', 'biz-101', 'Broadway Market', 'Bakery discount before closing time', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABGSURBVEhLY6jxNf1PS8yALkBtPEwtsFOTJgujmzOMLaAmHqYWoIctsRjdnGFsATXxMLUAPWyJxejmDGMLqIlHLSCIaW4BAJj4Ovv+Oxb0AAAAAElFTkSuQmCC', 1, 40.7165, -74.0035, 0, 0, 0, '2026-01-01T00:00:00.0000000+00:00'),
+    ('off-102', 'biz-102', 'Green Leaf Shop', 'Fresh tea selection with seasonal promos', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABGSURBVEhLY6jxNf1PS8yALkBtPEwtsFOTJgujmzOMLaAmHqYWoIctsRjdnGFsATXxMLUAPWyJxejmDGMLqIlHLSCIaW4BAJj4Ovv+Oxb0AAAAAElFTkSuQmCC', 1, 40.7105, -74.0080, 0, 0, 0, '2026-01-01T00:00:00.0000000+00:00');
 
 INSERT OR IGNORE INTO offer_tags (offer_id, tag) VALUES
     ('off-100', 'coffee'),

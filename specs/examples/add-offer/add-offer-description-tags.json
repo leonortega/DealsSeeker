@@ -1,0 +1,13 @@
+{
+  "input": {
+    "description": "cheap COFFEE 50% discount",
+    "selectedWord": "COFFEE",
+    "secondSelectedWord": "50%"
+  },
+  "expected": {
+    "tags": [
+      "coffee",
+      "50%"
+    ]
+  }
+}

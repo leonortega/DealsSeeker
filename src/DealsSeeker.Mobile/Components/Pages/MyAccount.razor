@@ -1,7 +1,9 @@
 @page "/my-account"
+@using Microsoft.Extensions.Logging
 @inject IDealsSeekerApiClient ApiClient
 @inject IUserSessionService Session
 @inject IAppPreferencesService Preferences
+@inject Microsoft.Extensions.Logging.ILogger<MyAccount> Logger
 @inject NavigationManager Navigation
 
 @if (_loading)
@@ -223,8 +225,9 @@ else
             _status = T("account.loggedOut");
             Navigation.NavigateTo("/login", forceLoad: false);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Logout failed in My Account view. UserId={UserId}", Session.CurrentSession?.UserId);
             _error = T("account.logoutFailed");
         }
         finally
@@ -248,6 +251,7 @@ else
             _profile = await ApiClient.GetMyProfileAsync(CancellationToken.None);
             if (_profile is null)
             {
+                Logger.LogWarning("Account profile returned no data. Treating session as expired. UserId={UserId}", Session.CurrentSession?.UserId);
                 await Session.ClearSessionAsync(CancellationToken.None);
                 _status = T("account.sessionExpired");
                 Navigation.NavigateTo("/login", forceLoad: false);
@@ -257,6 +261,7 @@ else
             var offers = await ApiClient.GetMyOffersAsync(CancellationToken.None);
             if (offers is null)
             {
+                Logger.LogWarning("Account offers returned no data because authorization was not valid. UserId={UserId}", Session.CurrentSession?.UserId);
                 await Session.ClearSessionAsync(CancellationToken.None);
                 _status = T("account.sessionExpired");
                 Navigation.NavigateTo("/login", forceLoad: false);
@@ -265,8 +270,9 @@ else
 
             _ownedOffers = offers.ToList();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Account data refresh failed. UserId={UserId}", Session.CurrentSession?.UserId);
             _error = T("account.offersLoadFailed");
         }
         finally
@@ -325,23 +331,34 @@ else
             return;
         }
 
+        var offerId = _offerPendingRemoval.OfferId;
         _working = true;
         _error = null;
         try
         {
-            var result = await ApiClient.DeleteOfferAsync(_offerPendingRemoval.OfferId, CancellationToken.None);
+            var result = await ApiClient.DeleteOfferAsync(offerId, CancellationToken.None);
             if (!result.Success)
             {
+                Logger.LogWarning(
+                    "Offer deletion returned an unsuccessful result. OfferId={OfferId} UserId={UserId} Message={Message}",
+                    offerId,
+                    Session.CurrentSession?.UserId,
+                    result.Message);
                 _error = T("account.offerRemoveFailed");
                 return;
             }
 
-            _ownedOffers.RemoveAll(offer => offer.OfferId.Equals(_offerPendingRemoval.OfferId, StringComparison.OrdinalIgnoreCase));
+            _ownedOffers.RemoveAll(offer => offer.OfferId.Equals(offerId, StringComparison.OrdinalIgnoreCase));
             _status = T("account.offerRemoved");
             _offerPendingRemoval = null;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(
+                ex,
+                "Offer deletion failed in My Account view. OfferId={OfferId} UserId={UserId}",
+                offerId,
+                Session.CurrentSession?.UserId);
             _error = T("account.offerRemoveFailed");
         }
         finally

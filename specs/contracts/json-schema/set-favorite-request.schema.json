@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/set-favorite-request.schema.json",
+  "title": "SetFavoriteRequest",
+  "description": "POST /api/offers/{offerId}/favorite request. Mirrors DealsSeeker.Shared.Contracts.Offers.SetFavoriteRequest.",
+  "type": "object",
+  "required": [
+    "isFavorite"
+  ],
+  "properties": {
+    "isFavorite": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

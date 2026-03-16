@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/command-result.schema.json",
+  "title": "CommandResult",
+  "description": "DealsSeeker.Shared.Contracts.Common.CommandResult.",
+  "type": "object",
+  "required": [
+    "success",
+    "message"
+  ],
+  "properties": {
+    "success": {
+      "type": "boolean"
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

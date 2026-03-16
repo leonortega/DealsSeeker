@@ -783,11 +783,13 @@ h2 {
     object-fit: cover;
     border-radius: 12px;
     cursor: zoom-in;
+    touch-action: pan-y pinch-zoom;
 }
 
 .image-fullscreen-modal {
     width: min(96vw, 960px);
     text-align: center;
+    overscroll-behavior: contain;
 }
 
 .image-fullscreen {

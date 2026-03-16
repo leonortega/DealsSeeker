@@ -27,7 +27,6 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                 business_id AS BusinessId,
                 business_name AS BusinessName,
                 description AS Description,
-                image_url AS ImageUrl,
                 is_active AS IsActive,
                 lat AS Lat,
                 lng AS Lng,
@@ -128,9 +127,9 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
             .Select(row =>
             {
                 var tags = tagsByOffer.TryGetValue(row.OfferId, out var rowTags) ? rowTags : [];
-                var imageUrls = imageUrlsByOffer.TryGetValue(row.OfferId, out var rowImages) && rowImages.Count > 0
-                    ? rowImages
-                    : [string.IsNullOrWhiteSpace(row.ImageUrl) ? PlaceholderImageUrl : row.ImageUrl];
+                var imageUrls = imageUrlsByOffer.TryGetValue(row.OfferId, out var rowImages)
+                    ? EnsureDisplayImageUrls(rowImages)
+                    : EnsureDisplayImageUrls([]);
                 var location = new GeoPoint(row.Lat, row.Lng);
                 var distanceMeters = DistanceMeters(request.UserLocation, location);
                 var isFavorite = favoriteOfferIds.Contains(row.OfferId);
@@ -225,7 +224,6 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                 business_id AS BusinessId,
                 business_name AS BusinessName,
                 description AS Description,
-                image_url AS ImageUrl,
                 is_active AS IsActive,
                 lat AS Lat,
                 lng AS Lng,
@@ -285,14 +283,16 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
         return offerRows
             .Select(row =>
             {
-                var imageUrls = imageUrlsByOffer.GetValueOrDefault(row.OfferId) ?? [row.ImageUrl];
+                var imageUrls = imageUrlsByOffer.TryGetValue(row.OfferId, out var rowImages)
+                    ? EnsureDisplayImageUrls(rowImages)
+                    : EnsureDisplayImageUrls([]);
                 return new OfferItemDto(
                     row.OfferId,
                     row.BusinessId,
                     row.BusinessName,
                     row.Description,
                     tagsByOffer.GetValueOrDefault(row.OfferId) ?? [],
-                    imageUrls.FirstOrDefault() ?? row.ImageUrl,
+                    imageUrls[0],
                     imageUrls,
                     row.IsActive != 0,
                     false,
@@ -545,7 +545,8 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
         var location = normalizedOffer.Location;
         var normalizedTags = normalizedOffer.Tags;
         var normalizedImages = normalizedOffer.Images;
-        var primaryImageUrl = normalizedImages[0].ImageUrl;
+        var imageUrls = normalizedImages.Select(x => x.ImageUrl).ToArray();
+        var displayImageUrls = EnsureDisplayImageUrls(imageUrls);
 
         await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         await using var transaction = connection.BeginTransaction();
@@ -554,10 +555,10 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
             await connection.ExecuteAsync(
                 """
                 INSERT INTO offers (
-                    offer_id, business_id, business_name, description, image_url, is_active, lat, lng,
+                    offer_id, business_id, business_name, description, is_active, lat, lng,
                     positive_availability_count, negative_availability_count, report_count, created_at_utc, created_by_user_id
                 ) VALUES (
-                    @OfferId, @BusinessId, @BusinessName, @Description, @ImageUrl, 1, @Lat, @Lng,
+                    @OfferId, @BusinessId, @BusinessName, @Description, 1, @Lat, @Lng,
                     0, 0, 0, @CreatedAtUtc, @CreatedByUserId
                 );
                 """,
@@ -567,7 +568,6 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                     BusinessId = businessId,
                     BusinessName = businessName,
                     Description = description,
-                    ImageUrl = primaryImageUrl,
                     Lat = location.Lat,
                     Lng = location.Lng,
                     CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O"),
@@ -586,22 +586,25 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                     transaction);
             }
 
-            await connection.ExecuteAsync(
-                """
-                INSERT INTO offer_images (offer_id, image_url, mime_type, width, height, sort_order, created_at_utc)
-                VALUES (@OfferId, @ImageUrl, @MimeType, @Width, @Height, @SortOrder, @CreatedAtUtc);
-                """,
-                normalizedImages.Select(image => new
-                {
-                    OfferId = offerId,
-                    image.ImageUrl,
-                    image.MimeType,
-                    image.Width,
-                    image.Height,
-                    SortOrder = image.SortOrder,
-                    CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O")
-                }),
-                transaction);
+            if (normalizedImages.Count > 0)
+            {
+                await connection.ExecuteAsync(
+                    """
+                    INSERT INTO offer_images (offer_id, image_url, mime_type, width, height, sort_order, created_at_utc)
+                    VALUES (@OfferId, @ImageUrl, @MimeType, @Width, @Height, @SortOrder, @CreatedAtUtc);
+                    """,
+                    normalizedImages.Select(image => new
+                    {
+                        OfferId = offerId,
+                        image.ImageUrl,
+                        image.MimeType,
+                        image.Width,
+                        image.Height,
+                        SortOrder = image.SortOrder,
+                        CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O")
+                    }),
+                    transaction);
+            }
 
             await transaction.CommitAsync(cancellationToken);
         }
@@ -617,8 +620,8 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
             businessName,
             description,
             normalizedTags,
-            primaryImageUrl,
-            normalizedImages.Select(x => x.ImageUrl).ToArray(),
+            displayImageUrls[0],
+            displayImageUrls,
             true,
             false,
             false,
@@ -655,7 +658,8 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
         }
 
         var normalizedOffer = NormalizeOfferRequest(request, existing.BusinessName);
-        var primaryImageUrl = normalizedOffer.Images[0].ImageUrl;
+        var imageUrls = normalizedOffer.Images.Select(image => image.ImageUrl).ToArray();
+        var displayImageUrls = EnsureDisplayImageUrls(imageUrls);
 
         await using var transaction = connection.BeginTransaction();
         try
@@ -665,7 +669,6 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                 UPDATE offers
                 SET business_name = @BusinessName,
                     description = @Description,
-                    image_url = @ImageUrl,
                     lat = @Lat,
                     lng = @Lng
                 WHERE offer_id = @OfferId AND created_by_user_id = @UserId;
@@ -676,7 +679,6 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                     UserId = userId,
                     BusinessName = normalizedOffer.BusinessName,
                     Description = normalizedOffer.Description,
-                    ImageUrl = primaryImageUrl,
                     Lat = normalizedOffer.Location.Lat,
                     Lng = normalizedOffer.Location.Lng
                 },
@@ -703,22 +705,25 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
                 new { OfferId = offerId },
                 transaction);
 
-            await connection.ExecuteAsync(
-                """
-                INSERT INTO offer_images (offer_id, image_url, mime_type, width, height, sort_order, created_at_utc)
-                VALUES (@OfferId, @ImageUrl, @MimeType, @Width, @Height, @SortOrder, @CreatedAtUtc);
-                """,
-                normalizedOffer.Images.Select(image => new
-                {
-                    OfferId = offerId,
-                    image.ImageUrl,
-                    image.MimeType,
-                    image.Width,
-                    image.Height,
-                    SortOrder = image.SortOrder,
-                    CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O")
-                }),
-                transaction);
+            if (normalizedOffer.Images.Count > 0)
+            {
+                await connection.ExecuteAsync(
+                    """
+                    INSERT INTO offer_images (offer_id, image_url, mime_type, width, height, sort_order, created_at_utc)
+                    VALUES (@OfferId, @ImageUrl, @MimeType, @Width, @Height, @SortOrder, @CreatedAtUtc);
+                    """,
+                    normalizedOffer.Images.Select(image => new
+                    {
+                        OfferId = offerId,
+                        image.ImageUrl,
+                        image.MimeType,
+                        image.Width,
+                        image.Height,
+                        SortOrder = image.SortOrder,
+                        CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O")
+                    }),
+                    transaction);
+            }
 
             await transaction.CommitAsync(cancellationToken);
         }
@@ -734,8 +739,8 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
             normalizedOffer.BusinessName,
             normalizedOffer.Description,
             normalizedOffer.Tags,
-            primaryImageUrl,
-            normalizedOffer.Images.Select(image => image.ImageUrl).ToArray(),
+            displayImageUrls[0],
+            displayImageUrls,
             true,
             false,
             false,
@@ -1004,8 +1009,11 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
             return normalized;
         }
 
-        return [new NormalizedImage(PlaceholderImageUrl, "image/svg+xml", null, null, 0)];
+        return [];
     }
+
+    private static IReadOnlyList<string> EnsureDisplayImageUrls(IReadOnlyList<string> imageUrls) =>
+        imageUrls.Count > 0 ? imageUrls : [PlaceholderImageUrl];
 
     private static double DistanceMeters(GeoPoint from, GeoPoint to)
     {
@@ -1031,6 +1039,11 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
         if (!string.IsNullOrWhiteSpace(mimeType))
         {
             return mimeType;
+        }
+
+        if (imageUrl.StartsWith("data:image/png", StringComparison.OrdinalIgnoreCase))
+        {
+            return "image/png";
         }
 
         if (imageUrl.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
@@ -1061,7 +1074,6 @@ public sealed class DapperOfferService(IDbConnectionFactory connectionFactory) :
         string BusinessId,
         string BusinessName,
         string Description,
-        string ImageUrl,
         long IsActive,
         double Lat,
         double Lng,

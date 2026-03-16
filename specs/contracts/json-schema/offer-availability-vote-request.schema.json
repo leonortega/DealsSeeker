@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/offer-availability-vote-request.schema.json",
+  "title": "OfferAvailabilityVoteRequest",
+  "description": "POST /api/offers/{offerId}/availability request. Mirrors DealsSeeker.Shared.Contracts.Offers.OfferAvailabilityVoteRequest. Enum values are serialized as integers by the current API.",
+  "type": "object",
+  "required": [
+    "vote"
+  ],
+  "properties": {
+    "vote": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ],
+      "description": "1 = ThumbsUp, 2 = ThumbsDown."
+    }
+  },
+  "additionalProperties": false
+}

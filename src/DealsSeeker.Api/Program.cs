@@ -14,6 +14,10 @@ using Microsoft.Data.Sqlite;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+var corsAllowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                         ?? (builder.Environment.IsDevelopment()
+                             ? ["http://localhost:8081", "http://127.0.0.1:8081", "http://localhost:19006", "http://127.0.0.1:19006"]
+                             : []);
 
 builder.Host.UseSerilog((context, _, loggerConfiguration) =>
 {
@@ -35,6 +39,21 @@ builder.Host.UseSerilog((context, _, loggerConfiguration) =>
 });
 
 builder.Services.AddOpenApi();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DealsSeekerFrontend", policy =>
+    {
+        if (corsAllowedOrigins.Length == 0)
+        {
+            return;
+        }
+
+        policy
+            .WithOrigins(corsAllowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection(DatabaseOptions.SectionName));
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
@@ -69,7 +88,7 @@ await using (var scope = app.Services.CreateAsyncScope())
 
 var configuredConnectionString = app.Configuration.GetSection(DatabaseOptions.SectionName)["ConnectionString"]
                                ?? "Data Source=Data/dealseeker.db";
-var resolvedDatabasePath = ResolveSqliteDataSource(configuredConnectionString, app.Environment.ContentRootPath);
+var resolvedDatabasePath = SqlitePathResolver.ResolveDataSourceFromConnectionString(configuredConnectionString, app.Environment.ContentRootPath);
 if (!string.IsNullOrWhiteSpace(resolvedDatabasePath))
 {
     app.Logger.LogInformation("SQLite database path: {DatabasePath}", resolvedDatabasePath);
@@ -77,7 +96,12 @@ if (!string.IsNullOrWhiteSpace(resolvedDatabasePath))
 
 app.Logger.LogInformation("DealsSeeker API startup completed. Serilog sinks configured (file + database).");
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+app.UseStaticFiles();
+app.UseCors("DealsSeekerFrontend");
 
 var api = app.MapGroup("/api");
 
@@ -359,18 +383,4 @@ static bool TryGetAccessToken(HttpContext httpContext, out string accessToken)
 
     accessToken = string.Empty;
     return false;
-}
-
-static string ResolveSqliteDataSource(string connectionString, string contentRootPath)
-{
-    var builder = new SqliteConnectionStringBuilder(connectionString);
-    if (string.IsNullOrWhiteSpace(builder.DataSource) ||
-        builder.DataSource.Equals(":memory:", StringComparison.OrdinalIgnoreCase))
-    {
-        return builder.DataSource ?? string.Empty;
-    }
-
-    return Path.IsPathRooted(builder.DataSource)
-        ? builder.DataSource
-        : Path.GetFullPath(Path.Combine(contentRootPath, builder.DataSource));
 }

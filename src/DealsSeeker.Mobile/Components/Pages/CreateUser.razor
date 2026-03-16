@@ -13,7 +13,7 @@
 <section class="auth-grid">
     <section class="card-block auth-brand-panel">
         <img src="/images/dealseeker-icon.svg" alt="" class="auth-brand-icon" />
-        <h2>DealsSeeker</h2>
+        <h2>@T("app.title")</h2>
         <p class="muted">@T("auth.passwordHint")</p>
     </section>
 
@@ -128,6 +128,7 @@
             }
 
             await Session.SetSessionAsync(session, CancellationToken.None);
+            await EnsureCameraPermissionAsync();
             _status = T("auth.userCreated");
             Navigation.NavigateTo("/offers", forceLoad: false);
         }
@@ -144,6 +145,21 @@
     private Task OnSubmitAsync()
     {
         return CreateUserAsync();
+    }
+
+    private static async Task EnsureCameraPermissionAsync()
+    {
+        try
+        {
+            var status = await Permissions.CheckStatusAsync<Permissions.Camera>();
+            if (status != PermissionStatus.Granted)
+            {
+                await Permissions.RequestAsync<Permissions.Camera>();
+            }
+        }
+        catch
+        {
+        }
     }
 
     private static bool IsValidEmail(string email) =>

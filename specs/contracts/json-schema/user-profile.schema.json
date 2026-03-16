@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/user-profile.schema.json",
+  "title": "UserProfile",
+  "description": "GET /api/account/me success response. Mirrors DealsSeeker.Shared.Contracts.Account.UserProfileDto.",
+  "type": "object",
+  "required": [
+    "userId",
+    "displayName",
+    "email"
+  ],
+  "properties": {
+    "userId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    }
+  },
+  "additionalProperties": false
+}

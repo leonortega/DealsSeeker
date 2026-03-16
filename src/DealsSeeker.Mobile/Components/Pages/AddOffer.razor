@@ -264,7 +264,7 @@
 </section>
 
 @code {
-    private const int MaxPhotos = 8;
+    private static readonly int MaxPhotos = ResolveMaxPhotos();
     private const string PlaceholderOfferImageUrl = "/images/offer-placeholder.svg";
 
     [SupplyParameterFromQuery(Name = "offerId")]
@@ -788,6 +788,18 @@
     }
 
     private static string NormalizeTag(string value) => TagLexicon.NormalizeTag(value);
+
+    private static int ResolveMaxPhotos()
+    {
+        const int fallback = 8;
+        var raw = Environment.GetEnvironmentVariable("DEALSEEKER_MAX_OFFER_PHOTOS");
+        if (!int.TryParse(raw, out var parsed))
+        {
+            return fallback;
+        }
+
+        return Math.Clamp(parsed, 1, 20);
+    }
 
     private static IReadOnlyList<string> ExtractWords(string text) =>
         Regex.Matches(text ?? string.Empty, "\\b[\\p{L}\\p{Nd}][\\p{L}\\p{Nd}\\-']*%?(?=\\b|\\s|$|[.,;:!?])")

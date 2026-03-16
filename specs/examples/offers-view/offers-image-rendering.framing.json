@@ -1,0 +1,14 @@
+{
+  "input": {
+    "imageAspectRatios": [
+      "4:3",
+      "16:9",
+      "3:4"
+    ]
+  },
+  "expected": {
+    "cardFraming": "uniform",
+    "detailFraming": "uniform",
+    "placeholderUsedOnFailure": true
+  }
+}

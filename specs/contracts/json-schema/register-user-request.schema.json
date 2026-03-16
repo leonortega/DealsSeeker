@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/register-user-request.schema.json",
+  "title": "RegisterUserRequest",
+  "description": "POST /api/auth/register request. Mirrors DealsSeeker.Shared.Contracts.Account.RegisterUserRequest.",
+  "type": "object",
+  "required": [
+    "displayName",
+    "email",
+    "password"
+  ],
+  "properties": {
+    "displayName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": ".*\\S.*"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+    },
+    "password": {
+      "type": "string",
+      "minLength": 8,
+      "pattern": "^(?=.*[A-Za-z])(?=.*\\d).{8,}$"
+    }
+  },
+  "additionalProperties": false
+}

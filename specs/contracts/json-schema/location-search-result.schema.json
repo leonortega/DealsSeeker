@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/location-search-result.schema.json",
+  "title": "LocationSearchResult",
+  "description": "DealsSeeker.Shared.Contracts.AddOffer.LocationSearchResultDto.",
+  "type": "object",
+  "required": [
+    "label",
+    "position"
+  ],
+  "properties": {
+    "label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "position": {
+      "$ref": "geo-point.schema.json"
+    }
+  },
+  "additionalProperties": false
+}

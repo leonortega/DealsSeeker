@@ -1,0 +1,9 @@
+{
+  "input": {
+    "osTheme": "dark",
+    "appOverride": null
+  },
+  "expected": {
+    "appliedTheme": "dark"
+  }
+}

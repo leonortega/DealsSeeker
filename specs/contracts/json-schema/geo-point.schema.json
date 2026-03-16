@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/geo-point.schema.json",
+  "title": "GeoPoint",
+  "description": "DealsSeeker.Shared.Models.GeoPoint.",
+  "type": "object",
+  "required": [
+    "lat",
+    "lng"
+  ],
+  "properties": {
+    "lat": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "lng": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    }
+  },
+  "additionalProperties": false
+}

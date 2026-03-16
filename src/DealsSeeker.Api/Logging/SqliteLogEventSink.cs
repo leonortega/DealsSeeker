@@ -1,4 +1,5 @@
 using System.Text.Json;
+using DealsSeeker.Api.Persistence;
 using Microsoft.Data.Sqlite;
 using Serilog.Core;
 using Serilog.Events;
@@ -13,7 +14,7 @@ public sealed class SqliteLogEventSink : ILogEventSink
 
     public SqliteLogEventSink(string connectionString, string contentRootPath)
     {
-        _connectionString = NormalizeConnectionString(connectionString, contentRootPath);
+        _connectionString = SqlitePathResolver.NormalizeConnectionString(connectionString, contentRootPath);
     }
 
     public void Emit(LogEvent logEvent)
@@ -125,28 +126,5 @@ public sealed class SqliteLogEventSink : ILogEventSink
         }
 
         return rendered;
-    }
-
-    private static string NormalizeConnectionString(string connectionString, string contentRootPath)
-    {
-        var builder = new SqliteConnectionStringBuilder(connectionString);
-        if (string.IsNullOrWhiteSpace(builder.DataSource) ||
-            builder.DataSource.Equals(":memory:", StringComparison.OrdinalIgnoreCase))
-        {
-            return builder.ConnectionString;
-        }
-
-        if (!Path.IsPathRooted(builder.DataSource))
-        {
-            builder.DataSource = Path.GetFullPath(Path.Combine(contentRootPath, builder.DataSource));
-        }
-
-        var directory = Path.GetDirectoryName(builder.DataSource);
-        if (!string.IsNullOrWhiteSpace(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        return builder.ConnectionString;
     }
 }

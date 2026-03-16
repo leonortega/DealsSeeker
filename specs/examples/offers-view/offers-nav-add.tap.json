@@ -1,0 +1,8 @@
+{
+  "input": {
+    "action": "tapPlusButton"
+  },
+  "expected": {
+    "route": "AddOffer"
+  }
+}

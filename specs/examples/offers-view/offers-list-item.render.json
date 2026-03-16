@@ -1,0 +1,21 @@
+{
+  "input": {
+    "offer": {
+      "offerId": "off-100",
+      "tags": [
+        "coffee",
+        "breakfast"
+      ],
+      "distanceMeters": 145
+    }
+  },
+  "expected": {
+    "visibleFields": [
+      "image",
+      "description",
+      "highlightedKeywords",
+      "tags",
+      "distanceMeters"
+    ]
+  }
+}

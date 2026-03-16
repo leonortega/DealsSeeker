@@ -1,4 +1,5 @@
 using Dapper;
+using System.Text.RegularExpressions;
 
 namespace DealsSeeker.Api.Persistence;
 
@@ -7,6 +8,10 @@ public sealed class SqliteMigrationRunner(
     IHostEnvironment environment,
     ILogger<SqliteMigrationRunner> logger) : IDatabaseMigrationRunner
 {
+    private static readonly Regex ExplicitTransactionRegex = new(
+        @"\b(BEGIN(\s+TRANSACTION)?|COMMIT|ROLLBACK|SAVEPOINT|RELEASE)\b",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
     public async Task ApplyMigrationsAsync(CancellationToken cancellationToken)
     {
         await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
@@ -44,6 +49,16 @@ public sealed class SqliteMigrationRunner(
             }
 
             var sql = await File.ReadAllTextAsync(migrationFile, cancellationToken);
+            if (UsesExplicitTransactionControl(sql))
+            {
+                await connection.ExecuteAsync(sql);
+                await connection.ExecuteAsync(
+                    "INSERT INTO schema_migrations (id, applied_at_utc) VALUES (@Id, @AppliedAtUtc);",
+                    new { Id = migrationId, AppliedAtUtc = DateTimeOffset.UtcNow.ToString("O") });
+                logger.LogInformation("Applied database migration {MigrationId}", migrationId);
+                continue;
+            }
+
             await using var transaction = connection.BeginTransaction();
             try
             {
@@ -61,6 +76,11 @@ public sealed class SqliteMigrationRunner(
                 throw;
             }
         }
+    }
+
+    private static bool UsesExplicitTransactionControl(string sql)
+    {
+        return ExplicitTransactionRegex.IsMatch(sql);
     }
 
     private string? ResolveMigrationDirectory()

@@ -1,0 +1,16 @@
+{
+  "input": {
+    "selectedTags": [
+      "coffee",
+      "offers"
+    ],
+    "locale": "en-US"
+  },
+  "expected": {
+    "suggestedTags": [
+      "cafe",
+      "espresso",
+      "offer"
+    ]
+  }
+}
