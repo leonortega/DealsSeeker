@@ -228,7 +228,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     session,
     isAuthenticated: Boolean(session?.accessToken),
     preferences,
-    palette: resolveTheme(preferences.themeMode, systemScheme === 'unspecified' ? null : systemScheme),
+    palette: resolveTheme(preferences.themeMode, systemScheme === 'light' ? 'light' : systemScheme === 'dark' ? 'dark' : null),
     reportDraft,
     loadingCount,
     api,

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
+    "postinstall": "node -e \"const fs=require('fs');const src='src/stubs/ReactDevToolsSettingsManager.js';const dst='node_modules/react-native/src/private/devsupport/rndevtools/ReactDevToolsSettingsManager.web.js';if(fs.existsSync(src)){fs.mkdirSync('node_modules/react-native/src/private/devsupport/rndevtools',{recursive:true});fs.copyFileSync(src,dst);}\"",
     "start": "expo start",
     "start:dev-client": "expo start --dev-client",
     "android": "powershell -ExecutionPolicy Bypass -File ..\\..\\scripts\\run-reactnative-android.ps1",
@@ -11,25 +12,26 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "expo": "~55.0.5",
-    "expo-dev-client": "~55.0.16",
-    "expo-file-system": "~55.0.10",
-    "expo-image-picker": "~55.0.12",
-    "expo-localization": "~55.0.8",
-    "expo-location": "~55.1.2",
-    "expo-secure-store": "~55.0.8",
-    "expo-status-bar": "~55.0.4",
-    "expo-system-ui": "~55.0.9",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "react-native": "0.83.2",
-    "react-native-safe-area-context": "~5.6.2",
-    "react-native-web": "^0.21.0",
-    "react-native-webview": "13.16.0"
+    "expo": "^58.0.23",
+    "expo-dev-client": "^58.0.18",
+    "expo-file-system": "^58.0.13",
+    "expo-image-picker": "^58.0.10",
+    "expo-localization": "^58.0.5",
+    "expo-location": "^58.0.20",
+    "expo-secure-store": "^58.0.2",
+    "expo-splash-screen": "~58.0.13",
+    "expo-status-bar": "^58.0.4",
+    "expo-system-ui": "^58.0.7",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "^0.88.1",
+    "react-native-safe-area-context": "^5.11.1",
+    "react-native-web": "^0.21.4",
+    "react-native-webview": "^14.0.1"
   },
   "devDependencies": {
-    "@types/react": "~19.2.2",
-    "typescript": "~5.9.2"
+    "@types/react": "^19.3.0",
+    "typescript": "~6.0.3"
   },
   "private": true
 }
