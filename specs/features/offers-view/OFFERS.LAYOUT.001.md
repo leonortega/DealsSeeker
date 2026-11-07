@@ -56,4 +56,5 @@ Scenario: Initial load supports promoted section
 - `OFFERS.MAP.001`
 - `OFFERS.GRID.CARDS.001`
 - `OFFERS.FEED.PROMOTED.001`
+- `OFFERS.FEED.IMMERSIVE.001`
 - `OFFERS.NAV.ADD.001`

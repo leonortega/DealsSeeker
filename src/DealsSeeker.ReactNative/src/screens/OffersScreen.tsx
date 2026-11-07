@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import * as Location from 'expo-location';
 import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '../api/types';
+import { ImmersiveOfferFeed } from '../components/ImmersiveOfferFeed';
 import { MapPreview } from '../components/MapPreview';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetailModal } from '../components/OfferDetailModal';
@@ -13,7 +14,7 @@ const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
 
 export function OffersScreen() {
-  const { activeTab, api, openAddOffer, palette, preferences, setReportDraft, t } = useApp();
+  const { activeTab, api, closeImmersiveOffers, immersiveOffers, openAddOffer, openImmersiveOffers, palette, preferences, setReportDraft, t } = useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const [query, setQuery] = useState('');
   const [radiusMeters, setRadiusMeters] = useState(1500);
@@ -136,6 +137,43 @@ export function OffersScreen() {
     await openDirections(offer.location, preferences.navigationMode);
   }
 
+  if (immersiveOffers) {
+    const combinedOffers = [...sections.promoted, ...sections.feed];
+
+    return (
+      <>
+        <ImmersiveOfferFeed
+          businesses={results.businesses}
+          offers={combinedOffers}
+          onBack={() => closeImmersiveOffers()}
+          onDirections={openOfferDirections}
+          onFavorite={toggleFavorite}
+          onOpenDetail={setDetailOffer}
+          onRadiusChange={(nextRadius) => {
+            setRadiusMeters(nextRadius);
+            void search(query, nextRadius, favoritesOnly);
+          }}
+          onReport={setReportDraft}
+          onSearch={(nextQuery) => {
+            setQuery(nextQuery);
+            void search(nextQuery, radiusMeters, favoritesOnly);
+          }}
+          onVote={vote}
+          query={query}
+          radiusMeters={radiusMeters}
+          userLocation={userLocation}
+        />
+        <OfferDetailModal
+          offer={detailOffer}
+          onClose={() => setDetailOffer(null)}
+          onDirections={openOfferDirections}
+          onFavorite={toggleFavorite}
+          visible={detailOffer !== null}
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <ScrollView contentContainerStyle={styles.content}>
@@ -148,6 +186,9 @@ export function OffersScreen() {
           </View>
           <Pressable style={[styles.addButton, { backgroundColor: palette.accent }]} onPress={() => openAddOffer()}>
             <Text style={styles.addButtonLabel}>＋</Text>
+          </Pressable>
+          <Pressable style={[styles.immersiveButton, { backgroundColor: palette.panel, borderColor: palette.border }]} onPress={() => openImmersiveOffers()}>
+            <Text style={{ color: palette.ink, fontWeight: '700' }}>{t('offers.immersiveTry')}</Text>
           </Pressable>
         </View>
 
@@ -289,6 +330,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 28,
     fontWeight: '700',
+  },
+  immersiveButton: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
   panel: {
     borderRadius: 28,

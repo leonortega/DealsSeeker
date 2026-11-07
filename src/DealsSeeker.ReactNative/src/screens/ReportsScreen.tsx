@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { useApp } from '../hooks/useApp';
 
 export function ReportsScreen() {
-  const { activeTab, clearReportDraft, openTab, palette, reportDraft, session, api, t } = useApp();
+  const { activeTab, clearReportDraft, immersiveOffers, openTab, palette, reportDraft, session, api, t } = useApp();
   const [message, setMessage] = useState('');
   const [offerId, setOfferId] = useState('');
   const [reportedAtUtc, setReportedAtUtc] = useState(new Date().toISOString());
@@ -63,7 +63,14 @@ export function ReportsScreen() {
       ) : null}
 
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.title, { color: palette.ink }]}>{t('reports.title')}</Text>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: palette.ink }]}>{t('reports.title')}</Text>
+          {immersiveOffers ? (
+            <Pressable onPress={() => openTab('offers')}>
+              <Text style={{ color: palette.accent, fontWeight: '700' }}>{t('common.back')}</Text>
+            </Pressable>
+          ) : null}
+        </View>
         <Text style={[styles.label, { color: palette.inkMuted }]}>{t('reports.userId')}</Text>
         <View style={[styles.readonly, { backgroundColor: palette.panel, borderColor: palette.border }]}>
           <Text style={{ color: palette.ink }}>{session?.userId ?? ''}</Text>
@@ -104,6 +111,11 @@ const styles = StyleSheet.create({
   content: {
     gap: 14,
     paddingBottom: 24,
+  },
+  header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   preview: {
     borderRadius: 24,

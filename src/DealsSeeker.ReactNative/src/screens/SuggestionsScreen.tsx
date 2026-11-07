@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { useApp } from '../hooks/useApp';
 
 export function SuggestionsScreen() {
-  const { activeTab, api, openTab, palette, t } = useApp();
+  const { activeTab, api, immersiveOffers, openTab, palette, t } = useApp();
   const [message, setMessage] = useState('');
   const [contact, setContact] = useState('');
   const [status, setStatus] = useState<string | null>(null);
@@ -32,7 +32,14 @@ export function SuggestionsScreen() {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.title, { color: palette.ink }]}>{t('suggestions.title')}</Text>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: palette.ink }]}>{t('suggestions.title')}</Text>
+          {immersiveOffers ? (
+            <Pressable onPress={() => openTab('offers')}>
+              <Text style={{ color: palette.accent, fontWeight: '700' }}>{t('common.back')}</Text>
+            </Pressable>
+          ) : null}
+        </View>
         <TextInput
           multiline
           onChangeText={setMessage}
@@ -63,6 +70,11 @@ export function SuggestionsScreen() {
 const styles = StyleSheet.create({
   content: {
     paddingBottom: 24,
+  },
+  header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   panel: {
     borderRadius: 28,

@@ -69,33 +69,35 @@ export function FavoritesScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: palette.ink }]}>{t('favorites.title')}</Text>
-        <Pressable onPress={closeOverlay}>
-          <Text style={{ color: palette.accent, fontWeight: '700' }}>{t('common.back')}</Text>
-        </Pressable>
-      </View>
-      {offers.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('favorites.empty')}</Text> : null}
-      {offers.map((offer) => (
-        <View key={offer.offerId} style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border }]}>
-          <Text style={[styles.offerTitle, { color: palette.ink }]}>{offer.businessName}</Text>
-          <Text style={{ color: palette.inkMuted }}>{shorten(offer.description, 110)}</Text>
-          <View style={styles.actionRow}>
-            <Pressable
-              style={[styles.button, { backgroundColor: palette.panel }]}
-              onPress={() => void openDirections(offer.location, preferences.navigationMode)}
-            >
-              <Text style={{ color: palette.ink }}>
-                {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
-              </Text>
-            </Pressable>
-            <Pressable style={[styles.button, { backgroundColor: palette.panelAlt }]} onPress={() => void removeFavorite(offer)}>
-              <Text style={{ color: palette.danger }}>{t('offers.favoriteRemove')}</Text>
-            </Pressable>
-          </View>
+      <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: palette.ink }]}>{t('favorites.title')}</Text>
+          <Pressable onPress={closeOverlay}>
+            <Text style={{ color: palette.accent, fontWeight: '700' }}>{t('common.back')}</Text>
+          </Pressable>
         </View>
-      ))}
-      {status ? <Text style={[styles.status, { color: palette.ink }]}>{status}</Text> : null}
+        {offers.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('favorites.empty')}</Text> : null}
+        {offers.map((offer) => (
+          <View key={offer.offerId} style={[styles.card, { backgroundColor: palette.panel, borderColor: palette.border }]}>
+            <Text style={[styles.offerTitle, { color: palette.ink }]}>{offer.businessName}</Text>
+            <Text style={{ color: palette.inkMuted }}>{shorten(offer.description, 110)}</Text>
+            <View style={styles.actionRow}>
+              <Pressable
+                style={[styles.button, { backgroundColor: palette.panelAlt }]}
+                onPress={() => void openDirections(offer.location, preferences.navigationMode)}
+              >
+                <Text style={{ color: palette.ink, fontWeight: '700', textAlign: 'center' }}>
+                  {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+                </Text>
+              </Pressable>
+              <Pressable style={[styles.button, { backgroundColor: palette.panelAlt }]} onPress={() => void removeFavorite(offer)}>
+                <Text style={{ color: palette.danger, fontWeight: '700', textAlign: 'center' }}>{t('offers.favoriteRemove')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        ))}
+        {status ? <Text style={[styles.status, { color: palette.ink }]}>{status}</Text> : null}
+      </View>
     </ScrollView>
   );
 }
@@ -104,6 +106,12 @@ const styles = StyleSheet.create({
   content: {
     gap: 14,
     paddingBottom: 24,
+  },
+  panel: {
+    borderRadius: 28,
+    borderWidth: 1,
+    gap: 12,
+    padding: 18,
   },
   header: {
     alignItems: 'center',
@@ -116,10 +124,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   card: {
-    borderRadius: 24,
+    borderRadius: 18,
     borderWidth: 1,
-    gap: 10,
-    padding: 16,
+    gap: 8,
+    padding: 14,
   },
   offerTitle: {
     fontSize: 16,
@@ -130,7 +138,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   button: {
-    borderRadius: 14,
+    borderRadius: 18,
     flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 12,

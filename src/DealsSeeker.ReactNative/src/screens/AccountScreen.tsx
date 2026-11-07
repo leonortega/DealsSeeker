@@ -5,7 +5,7 @@ import { useApp } from '../hooks/useApp';
 import { shorten } from '../utils/format';
 
 export function AccountScreen() {
-  const { activeTab, api, logout, openAddOffer, palette, preferences, setLanguage, setNavigationMode, setThemeMode, t } =
+  const { activeTab, api, immersiveOffers, logout, openAddOffer, openTab, palette, preferences, setLanguage, setNavigationMode, setThemeMode, t } =
     useApp();
   const [profile, setProfile] = useState<UserProfileDto | null>(null);
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
@@ -59,11 +59,18 @@ export function AccountScreen() {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[styles.heroTitle, { color: palette.ink }]}>{profile?.displayName ?? t('account.title')}</Text>
-          <Text style={{ color: palette.inkMuted }}>{profile?.email ?? ''}</Text>
+          <View style={{ alignItems: 'center', flexDirection: 'row', gap: 8, marginTop: 4 }}>
+            <Text style={{ color: palette.inkMuted }}>{profile?.email ?? ''}</Text>
+            <Pressable style={[styles.logout, { backgroundColor: palette.danger }]} onPress={() => void logout()}>
+              <Text style={styles.logoutLabel}>{t('account.logout')}</Text>
+            </Pressable>
+          </View>
         </View>
-        <Pressable style={[styles.logout, { backgroundColor: palette.danger }]} onPress={() => void logout()}>
-          <Text style={styles.logoutLabel}>{t('account.logout')}</Text>
-        </Pressable>
+        {immersiveOffers ? (
+          <Pressable onPress={() => openTab('offers')}>
+            <Text style={{ color: palette.accent, fontWeight: '700' }}>{t('common.back')}</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
@@ -121,6 +128,11 @@ const styles = StyleSheet.create({
   content: {
     gap: 14,
     paddingBottom: 24,
+  },
+  header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   hero: {
     alignItems: 'center',

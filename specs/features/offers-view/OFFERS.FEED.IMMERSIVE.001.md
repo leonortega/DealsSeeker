@@ -1,0 +1,178 @@
+# Spec: `OFFERS.FEED.IMMERSIVE.001`
+
+## Metadata
+- **Title**: Immersive Vertical Full-Screen Main Page Feed
+- **Version**: `v1.0`
+- **Status**: Approved
+- **Context/View**: Offers View (Main Page)
+- **Priority**: High
+
+## Purpose
+Define a new main-page browsing experience that presents offers as a vertical, full-screen, one-offer-per-viewport immersive feed, with application identity and discovery controls on the left, offer actions on the right, and offer text/tags in the lower-left description area.
+
+## Preconditions
+- User is authenticated and in the Offers section.
+- At least one offer is available for the current search/location context, or an empty state applies.
+
+## Trigger
+- Offers main page is rendered.
+
+## Requirements
+- `OFFERS.FEED.IMMERSIVE.001-R1`: The system shall present offers as a vertical full-screen feed where each offer occupies one viewport-sized page.
+- `OFFERS.FEED.IMMERSIVE.001-R2`: The system shall allow the user to move between offers by vertical scrolling/swiping, one offer at a time, without rendering the previous grid layout.
+- `OFFERS.FEED.IMMERSIVE.001-R3`: Each feed page shall use the offer image as the full-bleed primary visual background.
+- `OFFERS.FEED.IMMERSIVE.001-R4`: The left side of the screen shall display application identity (name and logo) and application menu entry points.
+- `OFFERS.FEED.IMMERSIVE.001-R5`: The left side of the screen shall provide search options and access to user profile and preferences.
+- `OFFERS.FEED.IMMERSIVE.001-R6`: The system shall keep application menu options available with their existing behavior and entry points.
+- `OFFERS.FEED.IMMERSIVE.001-R7`: The system shall keep bottom navigation available with its existing behavior and entry points.
+- `OFFERS.FEED.IMMERSIVE.001-R8`: Each feed page shall expose offer action controls in a vertical side rail on the right, including favorite, directions, availability voting (positive and negative), report, and open detail, preserving their existing behavior and state semantics.
+- `OFFERS.FEED.IMMERSIVE.001-R9`: Each feed page shall display business name, distance, description, and tags as an overlay in the lower-left area, analogous to a video description area.
+- `OFFERS.FEED.IMMERSIVE.001-R10`: The description in the overlay shall be truncated by default and provide a `more` control that reveals the full description and all associated tags.
+- `OFFERS.FEED.IMMERSIVE.001-R11`: Promoted offers shall remain visually labeled on their feed page.
+- `OFFERS.FEED.IMMERSIVE.001-R12`: Reported offers shall retain their reported visual indicator and demotion behavior.
+- `OFFERS.FEED.IMMERSIVE.001-R13`: When no offers are available, the system shall render an empty-state message instead of feed pages.
+- `OFFERS.FEED.IMMERSIVE.001-R14`: The view shall not expose raw `lat` or `lng` values to users.
+- `OFFERS.FEED.IMMERSIVE.001-R15`: The feed shall remain scrollable and responsive on small mobile screens.
+- `OFFERS.FEED.IMMERSIVE.001-R16`: The Offers main page shall provide a button that lets the user try the immersive feed; selecting it shall open the immersive feed view.
+- `OFFERS.FEED.IMMERSIVE.001-R17`: The immersive feed shall provide a button to open the map view; selecting it shall display the map for the current offers/location context.
+- `OFFERS.FEED.IMMERSIVE.001-R18`: In the immersive feed, the standard application header and bottom navigation bars shall not be rendered as separate bars.
+- `OFFERS.FEED.IMMERSIVE.001-R19`: The left section shall consolidate the entry points previously exposed by the header and bottom navigation, including application menu, search, profile, preferences, and main navigation destinations.
+- `OFFERS.FEED.IMMERSIVE.001-R20`: Main navigation destinations previously in the bottom bar shall be reachable through the menu option.
+- `OFFERS.FEED.IMMERSIVE.001-R21`: Preference and settings options shall be grouped under the preferences entry point.
+- `OFFERS.FEED.IMMERSIVE.001-R22`: The left menu shall remain static and shall not scroll with offer pages.
+- `OFFERS.FEED.IMMERSIVE.001-R23`: The map entry point shall be provided inside the left menu, not as a separate header button.
+- `OFFERS.FEED.IMMERSIVE.001-R24`: The immersive feed shall not render header buttons; all menu-level actions shall be accessed through the left menu.
+- `OFFERS.FEED.IMMERSIVE.001-R25`: Footer navigation destinations shall be presented as submenu items within the left menu.
+- `OFFERS.FEED.IMMERSIVE.001-R26`: The left panel shall contain all option buttons directly; no separate menu modal shall be required for immersive feed actions.
+- `OFFERS.FEED.IMMERSIVE.001-R27`: The search input shall be presented in the left/top area of the immersive feed.
+- `OFFERS.FEED.IMMERSIVE.001-R28`: The left panel shall remain static and shall not be part of offer page scrolling.
+- `OFFERS.FEED.IMMERSIVE.001-R29`: The left panel shall use a solid black background with a wider fixed width.
+- `OFFERS.FEED.IMMERSIVE.001-R30`: Each option in the left panel shall display both an icon and a text label.
+- `OFFERS.FEED.IMMERSIVE.001-R31`: The left panel shall occupy a dedicated side column; offers shall occupy the remaining screen width rather than rendering under the panel.
+- `OFFERS.FEED.IMMERSIVE.001-R32`: The top of the left panel shall display the application logo and application name.
+- `OFFERS.FEED.IMMERSIVE.001-R33`: The left panel shall not include profile, offers, language, theme, or navigation-mode toggle buttons.
+- `OFFERS.FEED.IMMERSIVE.001-R34`: The left panel shall display coverage distance buttons below the search input, using the same radius options as the standard offers view.
+- `OFFERS.FEED.IMMERSIVE.001-R35`: Text in the left panel, including the application name, shall use white color.
+- `OFFERS.FEED.IMMERSIVE.001-R36`: Offer images shall be contained within the page; when an image does not fill the width, dark gray bars shall appear on the left and right so the page background remains fully covered.
+
+## Acceptance Criteria (BDD)
+```gherkin
+Scenario: Main page renders as vertical full-screen feed
+  Given the user is on the Offers main page
+  And offers are available
+  When the view loads
+  Then each offer shall occupy one full-screen page
+  And the user shall be able to move vertically between offers
+  And the previous grid layout shall not be used
+
+Scenario: Left side exposes identity and discovery controls
+  Given the main page is displayed
+  When the user views the left side of the screen
+  Then the application name and logo shall be visible
+  And menu entry points shall be available
+  And search options shall be available
+  And user profile and preferences entry points shall be available
+
+Scenario: Offer controls remain available in side rail
+  Given an offer page is displayed
+  When the user views the offer
+  Then favorite, directions, availability voting, report, and open detail controls shall be available in a vertical side rail on the right
+  And their existing behavior and state shall be preserved
+
+Scenario: Description and tags use more control
+  Given an offer page with a long description and tags
+  When the page is displayed
+  Then the description shall be truncated by default
+  And a more control shall reveal the full description and tags
+
+Scenario: User can try the immersive feed
+  Given the user is on the Offers main page
+  When the user selects the try immersive feed button
+  Then the immersive feed view shall open
+
+Scenario: User can open map from immersive feed
+  Given the user is on the immersive feed
+  When the user selects the map button
+  Then the map view shall be displayed for the current offers and location context
+
+Scenario: Header and footer are consolidated on the left
+  Given the user is on the immersive feed
+  When the view loads
+  Then the standard header and bottom navigation bars shall not be rendered separately
+  And their entry points shall be available in the left section
+  And bottom navigation destinations shall be reachable through the menu
+  And preference options shall be grouped under preferences
+
+Scenario: Left menu is static and contains map and submenu destinations
+  Given the user is on the immersive feed
+  When the user scrolls between offers
+  Then the left menu shall remain visible in the same position
+  And the map option shall be available inside the menu
+  And no header buttons shall be rendered
+  And footer navigation destinations shall appear as submenu items inside the menu
+
+Scenario: Left panel contains all options and static search
+  Given the user is on the immersive feed
+  When the view loads
+  Then all option buttons shall be available in the left panel
+  And the search input shall be visible in the left/top area
+  And the left panel shall not scroll with offer pages
+
+Scenario: Left panel is a static black side column
+  Given the user is on the immersive feed
+  When the view loads
+  Then the left panel shall have a black background and wider fixed width
+  And each option shall show an icon and text label
+  And offers shall occupy the remaining screen width beside the panel
+
+Scenario: Left panel header and distance controls
+  Given the user is on the immersive feed
+  When the view loads
+  Then the application logo and name shall be visible at the top of the left panel
+  And profile, offers, language, theme, and navigation-mode toggle buttons shall not be present
+  And coverage distance buttons shall be visible below the search input
+
+Scenario: Left panel text and contained offer image
+  Given the user is on the immersive feed
+  When the view loads
+  Then left panel text, including the application name, shall be white
+  And offer images shall be contained within the page
+  And dark gray bars shall fill any remaining horizontal space
+
+Scenario: Empty feed state
+  Given no offers are available
+  When the main page loads
+  Then an empty-state message shall be displayed
+```
+
+## Example Inputs/Outputs
+- Example input: Offers main page with 5 offers at a `390px` viewport width.
+- Expected output: Five full-screen offer pages, each with full-bleed image, left identity/discovery controls, right side-rail controls, and truncated description/tags with a `more` control.
+
+## Edge Cases
+- Offers with missing images still render a full-screen page with placeholder visual.
+- Very long descriptions remain truncated until expanded.
+- Promoted and reported indicators remain visible in the overlay and/or side rail.
+- Empty offer result renders empty-state instead of blank feed.
+
+## Non-Functional Constraints
+- Vertical feed scrolling should remain smooth under typical offer counts.
+- Layout shall remain usable on small mobile screens.
+
+## Related Specs
+- `OFFERS.LAYOUT.001`
+- `OFFERS.SEARCH.001`
+- `OFFERS.FEED.PROMOTED.001`
+- `OFFERS.IMAGE.RENDERING.001`
+- `OFFERS.FAVORITES.001`
+- `OFFERS.REPORTED.DEMOTION.001`
+- `OFFERS.DETAIL.ACTIONS.001`
+- `OFFERS.PHOTOS.CAROUSEL.001`
+- `OFFERS.MAP.001`
+- `OFFERS.LIST.ITEM.001`
+- `OFFERS.LIST.ACTIONS.001`
+- `OFFERS.NAV.ADD.001`
+- `OFFERS.IMMERSIVE.001`
+- `APP.SHELL.001`
+- `APP.THEME.001`
+- `APP.LOCALIZATION.001`

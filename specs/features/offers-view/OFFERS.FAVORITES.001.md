@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offer Favorites and My Favorites View
-- **Version**: `v0.3`
+- **Version**: `v0.4`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -27,6 +27,7 @@ Allow users to save offers and manage them from a dedicated favorites section.
 - `OFFERS.FAVORITES.001-R7`: Each item in `My Favorites` shall provide an action to remove that offer from saved favorites.
 - `OFFERS.FAVORITES.001-R8`: Each item in `My Favorites` shall provide a directions action that opens navigation for the offer location using the configured travel mode.
 - `OFFERS.FAVORITES.001-R9`: Unauthenticated access to `My Favorites` shall redirect to `Login`.
+- `OFFERS.FAVORITES.001-R10`: The My Favorites view shall use the same panel, card, and button styling as other views such as the Suggestions view (panel wrapper, rounded cards, and consistent button styling).
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -77,3 +78,4 @@ Scenario: Unauthenticated user opens My Favorites
 - `OFFERS.GRID.CARDS.001`
 - `ACCOUNT.PROFILE.001`
 - `APP.NAVIGATION.MODE.001`
+- `OFFERS.IMMERSIVE.001`
