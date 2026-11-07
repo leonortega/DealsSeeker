@@ -79,7 +79,8 @@ Scenario: Left side exposes identity and discovery controls
 Scenario: Offer controls remain available in side rail
   Given an offer page is displayed
   When the user views the offer
-  Then favorite, directions, availability voting, report, and open detail controls shall be available in a vertical side rail on the right
+  Then favorite, directions, availability voting, and report controls shall be available in a vertical side rail on the right
+  And the open detail control shall not be available
   And their existing behavior and state shall be preserved
 
 Scenario: Description and tags use more control
@@ -87,6 +88,20 @@ Scenario: Description and tags use more control
   When the page is displayed
   Then the description shall be truncated by default
   And a more control shall reveal the full description and tags
+  And after expansion the more control shall disappear
+  And no back control shall be provided
+  And expanded tags shall be displayed as inline text prefixed with #
+
+Scenario: Offer with multiple photos supports photo navigation
+  Given an offer page with more than one photo
+  When the user presses the left or right arrow keys or scrolls horizontally
+  Then the displayed photo shall change
+  And photo navigation affordances shall be available
+
+Scenario: Offer with one photo hides photo navigation
+  Given an offer page with one photo
+  When the page is displayed
+  Then photo navigation affordances shall not be available
 
 Scenario: User can try the immersive feed
   Given the user is on the Offers main page
