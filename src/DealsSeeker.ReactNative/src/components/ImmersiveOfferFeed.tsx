@@ -1,9 +1,9 @@
-import { FlatList, Image, Modal, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
-import { useState } from 'react';
+import { FlatList, Image, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
-import { isSvgImageUri } from '../utils/images';
+import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
 import { openDirections } from '../utils/maps';
 import { MapPreview } from './MapPreview';
@@ -19,9 +19,31 @@ interface ImmersiveOfferFeedProps {
   onVote: (offer: OfferItemDto, vote: OfferAvailabilityVoteType) => void;
   onReport: (offer: OfferItemDto) => void;
   onDirections: (offer: OfferItemDto) => void;
-  onOpenDetail: (offer: OfferItemDto) => void;
   onSearch: (query: string) => void;
   onBack: () => void;
+}
+
+function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string; placeholderSymbol: string }) {
+  const imageUri = useOfferImageUri(imageUrl);
+  const canRenderImage = Boolean(imageUri) && !isSvgImageUri(imageUri);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  if (canRenderImage && !imageFailed) {
+    return (
+      <Image
+        resizeMode="contain"
+        source={{ uri: imageUri ?? undefined }}
+        style={styles.backgroundImage}
+        onError={() => setImageFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <View style={[styles.backgroundImage, { alignItems: 'center', backgroundColor: '#2a2a2a', justifyContent: 'center' }]}>
+      <Text style={{ color: '#fff', fontSize: 76, opacity: 0.45 }}>{placeholderSymbol}</Text>
+    </View>
+  );
 }
 
 function ImmersiveOfferPage({
@@ -30,35 +52,122 @@ function ImmersiveOfferPage({
   onVote,
   onReport,
   onDirections,
-  onOpenDetail,
 }: {
   offer: OfferItemDto;
   onFavorite: (offer: OfferItemDto) => void;
   onVote: (offer: OfferItemDto, vote: OfferAvailabilityVoteType) => void;
   onReport: (offer: OfferItemDto) => void;
   onDirections: (offer: OfferItemDto) => void;
-  onOpenDetail: (offer: OfferItemDto) => void;
 }) {
   const { palette, preferences, t } = useApp();
-  const imageUri = useOfferImageUri(offer.imageUrl);
-  const canRenderImage = Boolean(imageUri) && !isSvgImageUri(imageUri);
-  const [imageFailed, setImageFailed] = useState(false);
+  const { width: viewportWidth } = useWindowDimensions();
+  const sourceImages = Array.isArray(offer.imageUrls) && offer.imageUrls.length > 0 ? offer.imageUrls : [offer.imageUrl];
+  const detailImages = sourceImages.filter((imageUrl) => resolveOfferImageUri(imageUrl) !== null);
+  const images = detailImages.length > 0 ? detailImages : [offer.imageUrl];
+  const hasMultipleImages = images.length > 1;
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
+  const [pageWidth, setPageWidth] = useState(0);
+  const scrollRef = useRef<FlatList<string> | null>(null);
+
+  const carouselWidth = Math.max(320, pageWidth || viewportWidth - 220);
+
+  function scrollToImage(index: number, animated: boolean) {
+    scrollRef.current?.scrollToOffset({ offset: index * carouselWidth, animated });
+  }
+
+  function updateSelectedImage(index: number, animated: boolean) {
+    setSelectedImageIndex(index);
+    scrollToImage(index, animated);
+  }
+
+  function showPreviousImage() {
+    if (!hasMultipleImages) {
+      return;
+    }
+
+    updateSelectedImage((selectedImageIndex - 1 + images.length) % images.length, true);
+  }
+
+  function showNextImage() {
+    if (!hasMultipleImages) {
+      return;
+    }
+
+    updateSelectedImage((selectedImageIndex + 1) % images.length, true);
+  }
+
+  function handleCarouselEnd(event: { nativeEvent: { contentOffset: { x: number } } }) {
+    if (carouselWidth <= 0) {
+      return;
+    }
+
+    const nextIndex = Math.round(event.nativeEvent.contentOffset.x / carouselWidth);
+    setSelectedImageIndex(Math.max(0, Math.min(nextIndex, Math.max(images.length - 1, 0))));
+  }
+
+  useEffect(() => {
+    setSelectedImageIndex(0);
+    const handle = setTimeout(() => {
+      scrollRef.current?.scrollToOffset({ offset: 0, animated: false });
+    }, 0);
+
+    return () => clearTimeout(handle);
+  }, [offer.offerId, carouselWidth]);
+
+  useEffect(() => {
+    if (!hasMultipleImages || Platform.OS !== 'web') {
+      return;
+    }
+
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') {
+        showPreviousImage();
+      } else if (event.key === 'ArrowRight') {
+        showNextImage();
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [hasMultipleImages, selectedImageIndex, carouselWidth, images.length]);
 
   return (
-    <View style={styles.page}>
-      {canRenderImage && !imageFailed ? (
-        <Image
-          resizeMode="contain"
-          source={{ uri: imageUri ?? undefined }}
-          style={styles.backgroundImage}
-          onError={() => setImageFailed(true)}
+    <View style={styles.page} onLayout={(event) => setPageWidth(event.nativeEvent.layout.width)}>
+      {hasMultipleImages ? (
+        <FlatList
+          ref={scrollRef}
+          data={images}
+          horizontal
+          keyExtractor={(imageUrl, index) => `${imageUrl ?? 'placeholder'}-${index}`}
+          pagingEnabled
+          renderItem={({ item: imageUrl }) => (
+            <View style={{ height: '100%', width: carouselWidth }}>
+              <ImmersiveOfferImage imageUrl={imageUrl} placeholderSymbol="▣" />
+            </View>
+          )}
+          showsHorizontalScrollIndicator={hasMultipleImages}
+          snapToInterval={carouselWidth}
+          decelerationRate="fast"
+          onMomentumScrollEnd={handleCarouselEnd}
+          style={StyleSheet.absoluteFill}
         />
       ) : (
-        <View style={[styles.backgroundImage, { backgroundColor: '#2a2a2a' }]} />
+        <ImmersiveOfferImage imageUrl={images[0] ?? offer.imageUrl} placeholderSymbol="▤" />
       )}
 
-      <View style={styles.overlay} />
+      {hasMultipleImages ? (
+        <>
+          <Pressable accessibilityLabel={t('offers.previousImage')} onPress={showPreviousImage} style={styles.immersiveNavButtonLeft}>
+            <Text style={styles.immersiveNavButtonLabel}>‹</Text>
+          </Pressable>
+          <Pressable accessibilityLabel={t('offers.nextImage')} onPress={showNextImage} style={styles.immersiveNavButtonRight}>
+            <Text style={styles.immersiveNavButtonLabel}>›</Text>
+          </Pressable>
+        </>
+      ) : null}
+
+      <View pointerEvents="none" style={styles.overlay} />
 
       <View style={styles.rightRail}>
         <Pressable style={styles.railButton} onPress={() => onFavorite(offer)}>
@@ -86,9 +195,6 @@ function ImmersiveOfferPage({
         <Pressable style={styles.railButton} onPress={() => onReport(offer)}>
           <Text style={styles.railButtonText}>{t('offers.report')}</Text>
         </Pressable>
-        <Pressable style={styles.railButton} onPress={() => onOpenDetail(offer)}>
-          <Text style={styles.railButtonText}>{t('offers.details')}</Text>
-        </Pressable>
       </View>
 
       <View style={styles.bottomOverlay}>
@@ -108,17 +214,15 @@ function ImmersiveOfferPage({
           {expanded ? offer.description : shorten(offer.description, 100)}
         </Text>
         {offer.tags.length > 0 && expanded ? (
-          <View style={styles.tags}>
-            {offer.tags.map((tag) => (
-              <View key={tag} style={styles.tag}>
-                <Text style={styles.tagLabel}>{tag}</Text>
-              </View>
-            ))}
-          </View>
+          <Text style={styles.tagsText}>
+            {offer.tags.map((tag) => `#${tag}`).join(' ')}
+          </Text>
         ) : null}
-        <Pressable onPress={() => setExpanded((current) => !current)}>
-          <Text style={styles.moreButton}>{expanded ? t('common.back') : t('offers.more')}</Text>
-        </Pressable>
+        {!expanded ? (
+          <Pressable onPress={() => setExpanded(true)}>
+            <Text style={styles.moreButton}>{t('offers.more')}</Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
@@ -135,7 +239,6 @@ export function ImmersiveOfferFeed({
   onVote,
   onReport,
   onDirections,
-  onOpenDetail,
   onSearch,
   onBack,
 }: ImmersiveOfferFeedProps) {
@@ -228,7 +331,6 @@ export function ImmersiveOfferFeed({
               offer={item}
               onDirections={onDirections}
               onFavorite={onFavorite}
-              onOpenDetail={onOpenDetail}
               onReport={onReport}
               onVote={onVote}
             />
@@ -425,6 +527,12 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 8,
   },
+  tagsText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 8,
+  },
   tag: {
     backgroundColor: 'rgba(255,255,255,0.2)',
     borderRadius: 999,
@@ -460,6 +568,35 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.45,
+  },
+  immersiveNavButtonLeft: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: 999,
+    height: 44,
+    justifyContent: 'center',
+    left: 12,
+    position: 'absolute',
+    top: '50%',
+    width: 44,
+    zIndex: 3,
+  },
+  immersiveNavButtonRight: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: 999,
+    height: 44,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: 120,
+    top: '50%',
+    width: 44,
+    zIndex: 3,
+  },
+  immersiveNavButtonLabel: {
+    color: '#fff',
+    fontSize: 32,
+    fontWeight: '700',
   },
   modal: {
     flex: 1,

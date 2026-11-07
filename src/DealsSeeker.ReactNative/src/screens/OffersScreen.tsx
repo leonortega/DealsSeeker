@@ -148,7 +148,6 @@ export function OffersScreen() {
           onBack={() => closeImmersiveOffers()}
           onDirections={openOfferDirections}
           onFavorite={toggleFavorite}
-          onOpenDetail={setDetailOffer}
           onRadiusChange={(nextRadius) => {
             setRadiusMeters(nextRadius);
             void search(query, nextRadius, favoritesOnly);

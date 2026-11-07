@@ -22,7 +22,8 @@ Feature: Immersive vertical full-screen main page feed
   Scenario: Offer controls remain available in side rail
     Given an offer page is displayed
     When the user views the offer
-    Then favorite, directions, availability voting, report, and open detail controls are available in a vertical side rail on the right
+    Then favorite, directions, availability voting, and report controls are available in a vertical side rail on the right
+    And the open detail control is not available
     And their existing behavior and state are preserved
 
   Scenario: Description and tags use more control
@@ -30,6 +31,20 @@ Feature: Immersive vertical full-screen main page feed
     When the page is displayed
     Then the description is truncated by default
     And a more control reveals the full description and tags
+    And after expansion the more control disappears
+    And no back control is provided
+    And expanded tags are displayed as inline text prefixed with #
+
+  Scenario: Offer with multiple photos supports photo navigation
+    Given an offer page with more than one photo
+    When the user presses the left or right arrow keys or scrolls horizontally
+    Then the displayed photo changes
+    And photo navigation affordances are available
+
+  Scenario: Offer with one photo hides photo navigation
+    Given an offer page with one photo
+    When the page is displayed
+    Then photo navigation affordances are not available
 
   Scenario: User can try the immersive feed
     Given the user is on the Offers main page

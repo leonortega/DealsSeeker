@@ -25,9 +25,10 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R5`: The left side of the screen shall provide search options and access to user profile and preferences.
 - `OFFERS.FEED.IMMERSIVE.001-R6`: The system shall keep application menu options available with their existing behavior and entry points.
 - `OFFERS.FEED.IMMERSIVE.001-R7`: The system shall keep bottom navigation available with its existing behavior and entry points.
-- `OFFERS.FEED.IMMERSIVE.001-R8`: Each feed page shall expose offer action controls in a vertical side rail on the right, including favorite, directions, availability voting (positive and negative), report, and open detail, preserving their existing behavior and state semantics.
+- `OFFERS.FEED.IMMERSIVE.001-R8`: Each feed page shall expose offer action controls in a vertical side rail on the right, including favorite, directions, availability voting (positive and negative), and report, preserving their existing behavior and state semantics. The open detail control shall not be exposed.
 - `OFFERS.FEED.IMMERSIVE.001-R9`: Each feed page shall display business name, distance, description, and tags as an overlay in the lower-left area, analogous to a video description area.
-- `OFFERS.FEED.IMMERSIVE.001-R10`: The description in the overlay shall be truncated by default and provide a `more` control that reveals the full description and all associated tags.
+- `OFFERS.FEED.IMMERSIVE.001-R10`: The description in the overlay shall be truncated by default and provide a `more` control that reveals the full description and all associated tags. After expansion, the `more` control shall disappear and no back control shall be provided.
+- `OFFERS.FEED.IMMERSIVE.001-R39`: When expanded, associated tags shall be displayed as inline text prefixed with the `#` symbol.
 - `OFFERS.FEED.IMMERSIVE.001-R11`: Promoted offers shall remain visually labeled on their feed page.
 - `OFFERS.FEED.IMMERSIVE.001-R12`: Reported offers shall retain their reported visual indicator and demotion behavior.
 - `OFFERS.FEED.IMMERSIVE.001-R13`: When no offers are available, the system shall render an empty-state message instead of feed pages.
@@ -54,6 +55,8 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R34`: The left panel shall display coverage distance buttons below the search input, using the same radius options as the standard offers view.
 - `OFFERS.FEED.IMMERSIVE.001-R35`: Text in the left panel, including the application name, shall use white color.
 - `OFFERS.FEED.IMMERSIVE.001-R36`: Offer images shall be contained within the page; when an image does not fill the width, dark gray bars shall appear on the left and right so the page background remains fully covered.
+- `OFFERS.FEED.IMMERSIVE.001-R37`: When an offer has more than one photo, the immersive feed shall allow changing the displayed photo using left and right keyboard arrow keys and horizontal scrolling/swiping.
+- `OFFERS.FEED.IMMERSIVE.001-R38`: Photo navigation affordances shall only be displayed when the offer has more than one photo.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
