@@ -11,9 +11,9 @@
       "appName",
       "appLogo",
       "search",
+      "coverageRadius",
       "mapMode",
-      "userProfile",
-      "preferences",
+      "favorites",
       "navigationDestinations",
       "createOffer"
     ],
@@ -22,8 +22,7 @@
       "directions",
       "votePositive",
       "voteNegative",
-      "report",
-      "openDetail"
+      "report"
     ],
     "descriptionState": "truncated-with-more",
     "emptyStateSupported": true

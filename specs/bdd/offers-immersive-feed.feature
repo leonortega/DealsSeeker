@@ -15,9 +15,8 @@ Feature: Immersive vertical full-screen main page feed
     Given the main page is displayed
     When the user views the left side of the screen
     Then the application name and logo are visible
-    And menu entry points are available
     And search options are available
-    And user profile and preferences entry points are available
+    And entry points for the main navigation destinations are available
 
   Scenario: Offer controls remain available in side rail
     Given an offer page is displayed
@@ -70,6 +69,7 @@ Feature: Immersive vertical full-screen main page feed
     Given the user is in the immersive feed
     When the user selects the map entry point
     Then the standard offers view is displayed
+    And the map is displayed for the current offers and location context
     And the entry point is labeled `Map mode` in English and `Modo mapa` in Spanish
 
   Scenario: Immersive feed is the default offers presentation
@@ -84,26 +84,21 @@ Feature: Immersive vertical full-screen main page feed
     And the button is placed immediately to the left of the menu button
     And the button is labeled `Immersive view` in English and `Modo inmersivo` in Spanish
 
-  Scenario: User can open map from immersive feed
-    Given the user is on the immersive feed
-    When the user selects the map button
-    Then the map view is displayed for the current offers and location context
-
   Scenario: Header and footer are consolidated on the left
     Given the user is on the immersive feed
     When the view loads
     Then the standard header and bottom navigation bars are not rendered separately
     And their entry points are available in the left section
-    And bottom navigation destinations are reachable through the menu
-    And preference options are grouped under preferences
+    And bottom navigation destinations are reachable directly through left panel options
+    And preference options remain available in the Account destination
 
-  Scenario: Left menu is static and contains map and submenu destinations
+  Scenario: Left menu is static and contains map and navigation destinations
     Given the user is on the immersive feed
     When the user scrolls between offers
     Then the left menu remains visible in the same position
     And the map option is available inside the menu
     And no header buttons are rendered
-    And footer navigation destinations appear as submenu items inside the menu
+    And footer navigation destinations appear as options inside the menu
 
   Scenario: Empty feed state
     Given no offers are available

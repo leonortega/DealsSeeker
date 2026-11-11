@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive Vertical Full-Screen Main Page Feed
-- **Version**: `v1.4`
+- **Version**: `v1.5`
 - **Status**: Approved
 - **Context/View**: Offers View (Main Page)
 - **Priority**: High
@@ -21,10 +21,10 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R1`: The system shall present offers as a vertical full-screen feed where each offer occupies one viewport-sized page.
 - `OFFERS.FEED.IMMERSIVE.001-R2`: The system shall allow the user to move between offers by vertical scrolling/swiping, one offer at a time, without rendering the previous grid layout.
 - `OFFERS.FEED.IMMERSIVE.001-R3`: Each feed page shall use the offer image as the full-bleed primary visual background.
-- `OFFERS.FEED.IMMERSIVE.001-R4`: The left side of the screen shall display application identity (name and logo) and application menu entry points.
-- `OFFERS.FEED.IMMERSIVE.001-R5`: The left side of the screen shall provide search options and access to user profile and preferences.
-- `OFFERS.FEED.IMMERSIVE.001-R6`: The system shall keep application menu options available with their existing behavior and entry points.
-- `OFFERS.FEED.IMMERSIVE.001-R7`: The system shall keep bottom navigation available with its existing behavior and entry points.
+- `OFFERS.FEED.IMMERSIVE.001-R4`: The left side of the screen shall display application identity (name and logo) and discovery controls.
+- `OFFERS.FEED.IMMERSIVE.001-R5`: The left side of the screen shall provide search options and entry points for the main navigation destinations (favorites, account, suggestions, reports).
+- `OFFERS.FEED.IMMERSIVE.001-R6`: The system shall keep application menu options available with their existing behavior and entry points in the standard application header.
+- `OFFERS.FEED.IMMERSIVE.001-R7`: The system shall keep the main navigation destinations reachable with their existing behavior, either through the standard bottom navigation or through the left panel options of the immersive feed.
 - `OFFERS.FEED.IMMERSIVE.001-R8`: Each feed page shall expose offer action controls in a vertical side rail on the right, including favorite, directions, availability voting (positive and negative), and report, preserving their existing behavior and state semantics. The open detail control shall not be exposed.
 - `OFFERS.FEED.IMMERSIVE.001-R9`: Each feed page shall display business name, distance, description, and tags as an overlay in the lower-left area, analogous to a video description area.
 - `OFFERS.FEED.IMMERSIVE.001-R10`: The description in the overlay shall be truncated by default and provide a `more` control that reveals the full description and all associated tags. After expansion, the `more` control shall disappear and no back control shall be provided.
@@ -35,15 +35,15 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R14`: The view shall not expose raw `lat` or `lng` values to users.
 - `OFFERS.FEED.IMMERSIVE.001-R15`: The feed shall remain scrollable and responsive on small mobile screens.
 - `OFFERS.FEED.IMMERSIVE.001-R16`: The standard application header shall provide an immersive-view button, placed immediately to the left of the menu button, labeled `Immersive view` in English and `Modo inmersivo` in Spanish, and selecting it shall open the immersive feed view.
-- `OFFERS.FEED.IMMERSIVE.001-R17`: The immersive feed shall provide a button to open the map view; selecting it shall display the map for the current offers/location context.
+- `OFFERS.FEED.IMMERSIVE.001-R17`: The immersive feed shall provide a map entry point; selecting it shall open the standard offers view, which displays the map for the current offers/location context.
 - `OFFERS.FEED.IMMERSIVE.001-R18`: In the immersive feed, the standard application header and bottom navigation bars shall not be rendered as separate bars.
-- `OFFERS.FEED.IMMERSIVE.001-R19`: The left section shall consolidate the entry points previously exposed by the header and bottom navigation, including application menu, search, profile, preferences, and main navigation destinations.
-- `OFFERS.FEED.IMMERSIVE.001-R20`: Main navigation destinations previously in the bottom bar shall be reachable through the menu option.
-- `OFFERS.FEED.IMMERSIVE.001-R21`: Preference and settings options shall be grouped under the preferences entry point.
+- `OFFERS.FEED.IMMERSIVE.001-R19`: The left section shall consolidate the entry points previously exposed by the header and bottom navigation, including search and the main navigation destinations.
+- `OFFERS.FEED.IMMERSIVE.001-R20`: Main navigation destinations previously in the bottom bar shall be reachable directly through left panel options.
+- `OFFERS.FEED.IMMERSIVE.001-R21`: Preference and settings options shall remain available in the Account destination.
 - `OFFERS.FEED.IMMERSIVE.001-R22`: The left menu shall remain static and shall not scroll with offer pages.
-- `OFFERS.FEED.IMMERSIVE.001-R23`: The map entry point shall be provided inside the left menu, not as a separate header button.
-- `OFFERS.FEED.IMMERSIVE.001-R24`: The immersive feed shall not render header buttons; all menu-level actions shall be accessed through the left menu.
-- `OFFERS.FEED.IMMERSIVE.001-R25`: Footer navigation destinations shall be presented as submenu items within the left menu.
+- `OFFERS.FEED.IMMERSIVE.001-R23`: The map entry point shall be provided inside the left panel, not as a separate header button.
+- `OFFERS.FEED.IMMERSIVE.001-R24`: The immersive feed shall not render header buttons.
+- `OFFERS.FEED.IMMERSIVE.001-R25`: Footer navigation destinations shall be presented as options within the left panel.
 - `OFFERS.FEED.IMMERSIVE.001-R26`: The left panel shall contain all option buttons directly; no separate menu modal shall be required for immersive feed actions.
 - `OFFERS.FEED.IMMERSIVE.001-R27`: The search input shall be presented in the left/top area of the immersive feed.
 - `OFFERS.FEED.IMMERSIVE.001-R28`: The left panel shall remain static and shall not be part of offer page scrolling.
@@ -51,7 +51,7 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R30`: Each option in the left panel shall display both an icon and a text label.
 - `OFFERS.FEED.IMMERSIVE.001-R31`: The left panel shall occupy a dedicated side column; offers shall occupy the remaining screen width rather than rendering under the panel.
 - `OFFERS.FEED.IMMERSIVE.001-R32`: The top of the left panel shall display the application logo and application name.
-- `OFFERS.FEED.IMMERSIVE.001-R33`: The left panel shall not include profile, offers, language, theme, or navigation-mode toggle buttons.
+- `OFFERS.FEED.IMMERSIVE.001-R33`: The left panel shall not include language, theme, or navigation-mode toggle buttons; those controls shall remain in the Account destination.
 - `OFFERS.FEED.IMMERSIVE.001-R34`: The left panel shall display coverage distance buttons below the search input, using the same radius options as the standard offers view.
 - `OFFERS.FEED.IMMERSIVE.001-R35`: Text in the left panel, including the application name, shall use white color.
 - `OFFERS.FEED.IMMERSIVE.001-R36`: Offer images shall be contained within the page; when an image does not fill the width, dark gray bars shall appear on the left and right so the page background remains fully covered.
@@ -78,9 +78,8 @@ Scenario: Left side exposes identity and discovery controls
   Given the main page is displayed
   When the user views the left side of the screen
   Then the application name and logo shall be visible
-  And menu entry points shall be available
   And search options shall be available
-  And user profile and preferences entry points shall be available
+  And entry points for the main navigation destinations shall be available
 
 Scenario: Offer controls remain available in side rail
   Given an offer page is displayed
@@ -133,6 +132,7 @@ Scenario: Map entry point opens the standard offers view
   Given the user is in the immersive feed
   When the user selects the map entry point
   Then the standard offers view shall be displayed
+  And the map shall be displayed for the current offers and location context
   And the entry point shall be labeled `Map mode` in English and `Modo mapa` in Spanish
 
 Scenario: Immersive feed is the default offers presentation
@@ -147,26 +147,21 @@ Scenario: User can try the immersive feed from the header
   And the button shall be placed immediately to the left of the menu button
   And the button shall be labeled `Immersive view` in English and `Modo inmersivo` in Spanish
 
-Scenario: User can open map from immersive feed
-  Given the user is on the immersive feed
-  When the user selects the map button
-  Then the map view shall be displayed for the current offers and location context
-
 Scenario: Header and footer are consolidated on the left
   Given the user is on the immersive feed
   When the view loads
   Then the standard header and bottom navigation bars shall not be rendered separately
   And their entry points shall be available in the left section
-  And bottom navigation destinations shall be reachable through the menu
-  And preference options shall be grouped under preferences
+  And bottom navigation destinations shall be reachable directly through left panel options
+  And preference options shall remain available in the Account destination
 
-Scenario: Left menu is static and contains map and submenu destinations
+Scenario: Left menu is static and contains map and navigation destinations
   Given the user is on the immersive feed
   When the user scrolls between offers
   Then the left menu shall remain visible in the same position
   And the map option shall be available inside the menu
   And no header buttons shall be rendered
-  And footer navigation destinations shall appear as submenu items inside the menu
+  And footer navigation destinations shall appear as options inside the menu
 
 Scenario: Left panel contains all options and static search
   Given the user is on the immersive feed
@@ -186,7 +181,7 @@ Scenario: Left panel header and distance controls
   Given the user is on the immersive feed
   When the view loads
   Then the application logo and name shall be visible at the top of the left panel
-  And profile, offers, language, theme, and navigation-mode toggle buttons shall not be present
+  And language, theme, and navigation-mode toggle buttons shall not be present
   And coverage distance buttons shall be visible below the search input
 
 Scenario: Left panel text and contained offer image

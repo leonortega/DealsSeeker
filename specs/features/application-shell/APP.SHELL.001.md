@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v1.5`
+- **Version**: `v1.6`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -32,7 +32,7 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R12`: When any active view is waiting for required data (for example, location resolution or search execution), the system shall display a blocking animated loading state.
 - `APP.SHELL.001-R13`: While the blocking loading state is visible, user interaction with the underlying view shall be prevented.
 - `APP.SHELL.001-R14`: The blocking loading state shall be dismissed automatically when all pending required operations complete.
-- `APP.SHELL.001-R15`: The standard application header shall place the menu button on the trailing side and, when the Offers view is displayed without an open overlay, shall place an immersive-view button immediately to its left, labeled `Immersive view` in English and `Modo inmersivo` in Spanish.
+- `APP.SHELL.001-R15`: The standard application header shall place the menu button on the trailing side and, when the Offers view is displayed without an open overlay, shall place an immersive-view button immediately to its left, labeled `Immersive view` in English and `Modo inmersivo` in Spanish. Selecting it shall open the immersive offers feed.
 
 ## Acceptance Criteria (BDD)
 ```gherkin

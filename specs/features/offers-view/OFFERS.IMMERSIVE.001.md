@@ -1,8 +1,8 @@
 # Spec: `OFFERS.IMMERSIVE.001`
 
 ## Metadata
-- **Title**: Immersive View Back Navigation
-- **Version**: `v1.1`
+- **Title**: Immersive View Navigation
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Offers View (Immersive)
 - **Priority**: High
@@ -21,12 +21,12 @@ Define how the user returns from the immersive offers view to the standard offer
 - `OFFERS.IMMERSIVE.001-R2`: Selecting the map mode option shall close the immersive offers view and return the user to the standard offers view.
 - `OFFERS.IMMERSIVE.001-R3`: Returning to the standard offers view shall restore the standard application header and bottom navigation.
 - `OFFERS.IMMERSIVE.001-R4`: Closing the immersive view shall preserve the current search query, radius, and location context.
-- `OFFERS.IMMERSIVE.001-R5`: When a destination opened from the immersive left panel (account, suggestions, reports, or favorites) is displayed, it shall provide a back control.
+- `OFFERS.IMMERSIVE.001-R5`: When a destination opened from the immersive left panel (account, suggestions, or reports) is displayed, it shall provide a back control.
 - `OFFERS.IMMERSIVE.001-R6`: Selecting that back control shall return the user to the immersive offers view.
-- `OFFERS.IMMERSIVE.001-R7`: The back control in those destinations shall only be displayed while the immersive offers view is active.
+- `OFFERS.IMMERSIVE.001-R7`: The back control in those destinations shall only be displayed while the immersive offers mode is enabled.
 - `OFFERS.IMMERSIVE.001-R8`: In Account view, the back control shall be placed in the hero row on the right side, and the logout control shall be placed to the right of the email with a minimum gap.
 - `OFFERS.IMMERSIVE.001-R9`: In Suggestions and Reports views, the back control shall be placed in the panel header row on the right side, aligned with the title.
-- `OFFERS.IMMERSIVE.001-R10`: In Favorites view, the back control shall remain in the panel header row on the right side, aligned with the title.
+- `OFFERS.IMMERSIVE.001-R10`: In Favorites view, the back control shall remain in the panel header row on the right side, aligned with the title, and shall close the Favorites overlay.
 
 ## Acceptance Criteria (BDD)
 ```gherkin

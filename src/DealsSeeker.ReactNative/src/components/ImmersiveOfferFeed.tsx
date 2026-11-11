@@ -263,9 +263,6 @@ export function ImmersiveOfferFeed({
     openTab,
     palette,
     preferences,
-    setLanguage,
-    setNavigationMode,
-    setThemeMode,
     t,
   } = useApp();
   const [searchQuery, setSearchQuery] = useState(query);

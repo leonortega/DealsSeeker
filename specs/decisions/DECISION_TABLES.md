@@ -230,6 +230,18 @@
 | Edit Offer submit success | Redirect to `My Account` | Applies only when offer update response has no errors |
 | Any submit error | Stay in current view and show error/status | No redirect on failed response |
 
+## Immersive Offers Feed Navigation Rules (`OFFERS.FEED.IMMERSIVE.001`, `OFFERS.IMMERSIVE.001`, `APP.SHELL.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Default Offers presentation | Immersive full-screen feed | Applies at startup and after login |
+| Return from immersive feed | `Map mode` option opens the standard Offers view | Left panel has no back control |
+| Immersive entry point | Header button left of the menu button | Labeled `Immersive view` / `Modo inmersivo` |
+| Left panel option order | Map mode, Favorites, Account, Suggestions, Reports, Create | Create is always last |
+| Add Offer from immersive feed | Close immersive mode and open Add Offer | Add Offer renders with standard padding |
+| Destination opened from immersive feed | Shows a back control returning to the immersive feed | Only while immersive mode is enabled |
+| Left panel application-menu option | Not displayed | Menu is reachable from the standard header |
+
 ## Logging Rules (`APP.LOGGING.001`)
 
 | Decision Point | Default Rule | Notes |

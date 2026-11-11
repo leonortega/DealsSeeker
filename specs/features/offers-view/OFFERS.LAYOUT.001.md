@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offers View Layout Composition
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -12,6 +12,7 @@ Define required UI blocks for the Offers view.
 
 ## Preconditions
 - User is authenticated and in the Offers section.
+- The standard (non-immersive) presentation of the Offers view is displayed; the immersive full-screen feed is the default presentation per `OFFERS.FEED.IMMERSIVE.001`.
 
 ## Trigger
 - Offers view is rendered.
