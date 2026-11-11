@@ -77,10 +77,12 @@ Feature: Immersive vertical full-screen main page feed
     When the first view is displayed
     Then the immersive offers feed is displayed
 
-  Scenario: User can try the immersive feed
-    Given the user is on the Offers main page
-    When the user selects the try immersive feed button
+  Scenario: User can try the immersive feed from the header
+    Given the user is on the standard Offers view
+    When the user selects the immersive-view button in the header
     Then the immersive feed view opens
+    And the button is placed immediately to the left of the menu button
+    And the button is labeled `Immersive view` in English and `Modo inmersivo` in Spanish
 
   Scenario: User can open map from immersive feed
     Given the user is on the immersive feed

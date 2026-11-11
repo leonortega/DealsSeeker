@@ -34,7 +34,7 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R13`: When no offers are available, the system shall render an empty-state message instead of feed pages.
 - `OFFERS.FEED.IMMERSIVE.001-R14`: The view shall not expose raw `lat` or `lng` values to users.
 - `OFFERS.FEED.IMMERSIVE.001-R15`: The feed shall remain scrollable and responsive on small mobile screens.
-- `OFFERS.FEED.IMMERSIVE.001-R16`: The Offers main page shall provide a button that lets the user try the immersive feed; selecting it shall open the immersive feed view.
+- `OFFERS.FEED.IMMERSIVE.001-R16`: The standard application header shall provide an immersive-view button, placed immediately to the left of the menu button, labeled `Immersive view` in English and `Modo inmersivo` in Spanish, and selecting it shall open the immersive feed view.
 - `OFFERS.FEED.IMMERSIVE.001-R17`: The immersive feed shall provide a button to open the map view; selecting it shall display the map for the current offers/location context.
 - `OFFERS.FEED.IMMERSIVE.001-R18`: In the immersive feed, the standard application header and bottom navigation bars shall not be rendered as separate bars.
 - `OFFERS.FEED.IMMERSIVE.001-R19`: The left section shall consolidate the entry points previously exposed by the header and bottom navigation, including application menu, search, profile, preferences, and main navigation destinations.
@@ -140,10 +140,12 @@ Scenario: Immersive feed is the default offers presentation
   When the first view is displayed
   Then the immersive offers feed shall be displayed
 
-Scenario: User can try the immersive feed
-  Given the user is on the Offers main page
-  When the user selects the try immersive feed button
+Scenario: User can try the immersive feed from the header
+  Given the user is on the standard Offers view
+  When the user selects the immersive-view button in the header
   Then the immersive feed view shall open
+  And the button shall be placed immediately to the left of the menu button
+  And the button shall be labeled `Immersive view` in English and `Modo inmersivo` in Spanish
 
 Scenario: User can open map from immersive feed
   Given the user is on the immersive feed

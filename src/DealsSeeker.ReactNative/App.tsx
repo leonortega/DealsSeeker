@@ -28,7 +28,7 @@ function AuthRoot() {
 }
 
 function AuthenticatedRoot() {
-  const { activeTab, bootstrapped, closeMenu, immersiveOffers, isAuthenticated, menuVisible, openMenu, overlayRoute, palette, t } = useApp();
+  const { activeTab, bootstrapped, closeMenu, immersiveOffers, isAuthenticated, menuVisible, openImmersiveOffers, openMenu, overlayRoute, palette, t } = useApp();
 
   if (!bootstrapped) {
     return <SplashScreen />;
@@ -62,9 +62,19 @@ function AuthenticatedRoot() {
                         : t('nav.offers')}
             </Text>
           </View>
-          <Pressable style={[styles.menuButton, { backgroundColor: palette.panel }]} onPress={openMenu}>
-            <Text style={{ color: palette.ink, fontWeight: '800' }}>{t('nav.menu')}</Text>
-          </Pressable>
+          <View style={styles.headerActions}>
+            {activeTab === 'offers' && !overlayRoute ? (
+              <Pressable
+                style={[styles.immersiveButton, { backgroundColor: palette.panel, borderColor: palette.border }]}
+                onPress={openImmersiveOffers}
+              >
+                <Text style={{ color: palette.ink, fontWeight: '700' }}>{t('offers.immersiveView')}</Text>
+              </Pressable>
+            ) : null}
+            <Pressable style={[styles.menuButton, { backgroundColor: palette.panel }]} onPress={openMenu}>
+              <Text style={{ color: palette.ink, fontWeight: '800' }}>{t('nav.menu')}</Text>
+            </Pressable>
+          </View>
         </View>
       ) : null}
 
@@ -128,6 +138,17 @@ const styles = StyleSheet.create({
   menuButton: {
     borderRadius: 16,
     paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  headerActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  immersiveButton: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 12,
     paddingVertical: 12,
   },
   screenContent: {

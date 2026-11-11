@@ -32,7 +32,15 @@ Feature: Application shell and session-aware landing
     And the response is successful with no errors
     Then the app redirects to Offers view
 
-  Scenario: Main menu includes instant language and theme controls
+  Scenario: Header places the immersive-view button left of the menu button
+    Given the user is authenticated
+    And the user is on the Offers view without an open overlay
+    When the standard application header is rendered
+    Then an immersive-view button is displayed immediately to the left of the menu button
+    And the button is labeled `Immersive view` in English and `Modo inmersivo` in Spanish
+    And selecting it opens the immersive offers feed
+
+Scenario: Main menu includes instant language and theme controls
     Given the user is authenticated
     When the user opens the main navigation menu
     Then language-change control is visible

@@ -32,6 +32,7 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R12`: When any active view is waiting for required data (for example, location resolution or search execution), the system shall display a blocking animated loading state.
 - `APP.SHELL.001-R13`: While the blocking loading state is visible, user interaction with the underlying view shall be prevented.
 - `APP.SHELL.001-R14`: The blocking loading state shall be dismissed automatically when all pending required operations complete.
+- `APP.SHELL.001-R15`: The standard application header shall place the menu button on the trailing side and, when the Offers view is displayed without an open overlay, shall place an immersive-view button immediately to its left, labeled `Immersive view` in English and `Modo inmersivo` in Spanish.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -63,6 +64,13 @@ Scenario: Suggestions and Reports success submissions redirect to Offers
   When the user submits the form
   And the submit response is successful with no errors
   Then the system shall redirect the user to Offers view
+
+Scenario: Header places the immersive-view button left of the menu button
+  Given the authenticated user is on the Offers view without an open overlay
+  When the standard application header is rendered
+  Then an immersive-view button shall be displayed immediately to the left of the menu button
+  And the button shall be labeled `Immersive view` in English and `Modo inmersivo` in Spanish
+  And selecting it shall open the immersive offers feed
 
 Scenario: Menu includes quick language and theme controls
   Given the authenticated user opens the main navigation menu

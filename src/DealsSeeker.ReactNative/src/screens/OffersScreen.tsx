@@ -14,7 +14,7 @@ const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
 
 export function OffersScreen() {
-  const { activeTab, api, immersiveOffers, openAddOffer, openImmersiveOffers, palette, preferences, setReportDraft, t } = useApp();
+  const { activeTab, api, immersiveOffers, openAddOffer, palette, preferences, setReportDraft, t } = useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const [query, setQuery] = useState('');
   const [radiusMeters, setRadiusMeters] = useState(1500);
@@ -183,9 +183,6 @@ export function OffersScreen() {
           <Pressable style={[styles.addButton, { backgroundColor: palette.accent }]} onPress={() => openAddOffer()}>
             <Text style={styles.addButtonLabel}>＋</Text>
           </Pressable>
-          <Pressable style={[styles.immersiveButton, { backgroundColor: palette.panel, borderColor: palette.border }]} onPress={() => openImmersiveOffers()}>
-            <Text style={{ color: palette.ink, fontWeight: '700' }}>{t('offers.immersiveTry')}</Text>
-          </Pressable>
         </View>
 
         <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
@@ -326,12 +323,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 28,
     fontWeight: '700',
-  },
-  immersiveButton: {
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
   },
   panel: {
     borderRadius: 28,
