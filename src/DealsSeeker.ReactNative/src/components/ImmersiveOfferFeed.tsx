@@ -1,4 +1,4 @@
-import { FlatList, Image, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { FlatList, Image, LayoutChangeEvent, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
@@ -60,7 +60,7 @@ function ImmersiveOfferPage({
   onDirections: (offer: OfferItemDto) => void;
 }) {
   const { palette, preferences, t } = useApp();
-  const { width: viewportWidth } = useWindowDimensions();
+  const { width: viewportWidth, height: viewportHeight } = useWindowDimensions();
   const sourceImages = Array.isArray(offer.imageUrls) && offer.imageUrls.length > 0 ? offer.imageUrls : [offer.imageUrl];
   const detailImages = sourceImages.filter((imageUrl) => resolveOfferImageUri(imageUrl) !== null);
   const images = detailImages.length > 0 ? detailImages : [offer.imageUrl];
@@ -68,9 +68,17 @@ function ImmersiveOfferPage({
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [pageWidth, setPageWidth] = useState(0);
+  const [pageHeight, setPageHeight] = useState(0);
   const scrollRef = useRef<FlatList<string> | null>(null);
 
   const carouselWidth = Math.max(320, pageWidth || viewportWidth - 220);
+  const carouselHeight = pageHeight || Math.max(320, viewportHeight);
+
+  function handlePageLayout(event: LayoutChangeEvent) {
+    const { width, height } = event.nativeEvent.layout;
+    setPageWidth(width);
+    setPageHeight(height);
+  }
 
   function scrollToImage(index: number, animated: boolean) {
     scrollRef.current?.scrollToOffset({ offset: index * carouselWidth, animated });
@@ -133,7 +141,7 @@ function ImmersiveOfferPage({
   }, [hasMultipleImages, selectedImageIndex, carouselWidth, images.length]);
 
   return (
-    <View style={styles.page} onLayout={(event) => setPageWidth(event.nativeEvent.layout.width)}>
+    <View style={styles.page} onLayout={handlePageLayout}>
       {hasMultipleImages ? (
         <FlatList
           ref={scrollRef}
@@ -142,11 +150,11 @@ function ImmersiveOfferPage({
           keyExtractor={(imageUrl, index) => `${imageUrl ?? 'placeholder'}-${index}`}
           pagingEnabled
           renderItem={({ item: imageUrl }) => (
-            <View style={{ height: '100%', width: carouselWidth }}>
+            <View style={{ height: carouselHeight, width: carouselWidth }}>
               <ImmersiveOfferImage imageUrl={imageUrl} placeholderSymbol="▣" />
             </View>
           )}
-          showsHorizontalScrollIndicator={hasMultipleImages}
+          showsHorizontalScrollIndicator={false}
           snapToInterval={carouselWidth}
           decelerationRate="fast"
           onMomentumScrollEnd={handleCarouselEnd}
@@ -155,17 +163,6 @@ function ImmersiveOfferPage({
       ) : (
         <ImmersiveOfferImage imageUrl={images[0] ?? offer.imageUrl} placeholderSymbol="▤" />
       )}
-
-      {hasMultipleImages ? (
-        <>
-          <Pressable accessibilityLabel={t('offers.previousImage')} onPress={showPreviousImage} style={styles.immersiveNavButtonLeft}>
-            <Text style={styles.immersiveNavButtonLabel}>‹</Text>
-          </Pressable>
-          <Pressable accessibilityLabel={t('offers.nextImage')} onPress={showNextImage} style={styles.immersiveNavButtonRight}>
-            <Text style={styles.immersiveNavButtonLabel}>›</Text>
-          </Pressable>
-        </>
-      ) : null}
 
       <View pointerEvents="none" style={styles.overlay} />
 
@@ -224,6 +221,29 @@ function ImmersiveOfferPage({
           </Pressable>
         ) : null}
       </View>
+
+      {hasMultipleImages ? (
+        <View pointerEvents="box-none" style={styles.immersivePhotoNav}>
+          <Pressable accessibilityLabel={t('offers.previousImage')} onPress={showPreviousImage} style={styles.immersivePhotoNavButton}>
+            <Text style={styles.immersivePhotoNavLabel}>‹</Text>
+          </Pressable>
+          <View style={styles.immersivePhotoDots}>
+            {images.map((_, index) => (
+              <Pressable
+                key={`photo-dot-${index}`}
+                onPress={() => updateSelectedImage(index, true)}
+                style={[
+                  styles.immersivePhotoDot,
+                  index === selectedImageIndex ? styles.immersivePhotoDotActive : null,
+                ]}
+              />
+            ))}
+          </View>
+          <Pressable accessibilityLabel={t('offers.nextImage')} onPress={showNextImage} style={styles.immersivePhotoNavButton}>
+            <Text style={styles.immersivePhotoNavLabel}>›</Text>
+          </Pressable>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -569,34 +589,45 @@ const styles = StyleSheet.create({
   disabled: {
     opacity: 0.45,
   },
-  immersiveNavButtonLeft: {
+  immersivePhotoNav: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    borderRadius: 999,
-    height: 44,
+    bottom: 16,
+    flexDirection: 'row',
+    gap: 12,
     justifyContent: 'center',
-    left: 12,
+    left: 0,
     position: 'absolute',
-    top: '50%',
-    width: 44,
-    zIndex: 3,
+    right: 0,
+    zIndex: 4,
   },
-  immersiveNavButtonRight: {
+  immersivePhotoNavButton: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     borderRadius: 999,
-    height: 44,
+    height: 36,
     justifyContent: 'center',
-    position: 'absolute',
-    right: 120,
-    top: '50%',
-    width: 44,
-    zIndex: 3,
+    width: 36,
   },
-  immersiveNavButtonLabel: {
+  immersivePhotoNavLabel: {
     color: '#fff',
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '700',
+  },
+  immersivePhotoDots: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  immersivePhotoDot: {
+    backgroundColor: 'rgba(255,255,255,0.45)',
+    borderRadius: 999,
+    height: 8,
+    width: 8,
+  },
+  immersivePhotoDotActive: {
+    backgroundColor: '#ffffff',
+    height: 10,
+    width: 10,
   },
   modal: {
     flex: 1,

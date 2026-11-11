@@ -52,3 +52,4 @@ Scenario: Fallback placeholder preserves layout
 - `ADD.OFFER.IMAGE.001`
 - `OFFERS.GRID.CARDS.001`
 - `OFFERS.PHOTOS.CAROUSEL.001`
+- `OFFERS.FEED.IMMERSIVE.001`

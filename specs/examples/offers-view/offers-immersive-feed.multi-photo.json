@@ -1,0 +1,14 @@
+{
+  "input": {
+    "offerPhotoCount": 2,
+    "viewportWidthPx": 390,
+    "viewportHeightPx": 844
+  },
+  "expected": {
+    "layout": "vertical-full-screen-feed",
+    "carouselPhotoFraming": "full-page-background",
+    "carouselPhotoOccupiesWholePageArea": true,
+    "renderedPhotoIsBlankOrCollapsed": false,
+    "photoNavigation": "bottom-centered-arrows-and-dots"
+  }
+}

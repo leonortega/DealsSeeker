@@ -54,3 +54,4 @@ Scenario: Offer detail shows swipeable carousel
 - `ADD.OFFER.IMAGE.001`
 - `OFFERS.IMAGE.RENDERING.001`
 - `OFFERS.DETAIL.ACTIONS.001`
+- `OFFERS.FEED.IMMERSIVE.001`

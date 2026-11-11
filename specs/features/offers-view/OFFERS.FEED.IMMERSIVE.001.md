@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive Vertical Full-Screen Main Page Feed
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers View (Main Page)
 - **Priority**: High
@@ -55,8 +55,10 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R34`: The left panel shall display coverage distance buttons below the search input, using the same radius options as the standard offers view.
 - `OFFERS.FEED.IMMERSIVE.001-R35`: Text in the left panel, including the application name, shall use white color.
 - `OFFERS.FEED.IMMERSIVE.001-R36`: Offer images shall be contained within the page; when an image does not fill the width, dark gray bars shall appear on the left and right so the page background remains fully covered.
-- `OFFERS.FEED.IMMERSIVE.001-R37`: When an offer has more than one photo, the immersive feed shall allow changing the displayed photo using left and right keyboard arrow keys and horizontal scrolling/swiping.
-- `OFFERS.FEED.IMMERSIVE.001-R38`: Photo navigation affordances shall only be displayed when the offer has more than one photo.
+- `OFFERS.FEED.IMMERSIVE.001-R37`: When an offer has more than one photo, the immersive feed shall allow changing the displayed photo using left and right keyboard arrow keys, horizontal scrolling/swiping, and a bottom-centered navigation control with left and right arrows and one point per photo.
+- `OFFERS.FEED.IMMERSIVE.001-R38`: Photo navigation affordances, including the bottom-centered control with one point per photo, shall only be displayed when the offer has more than one photo.
+- `OFFERS.FEED.IMMERSIVE.001-R40`: The immersive feed photo carousel shall not display scrollbars.
+- `OFFERS.FEED.IMMERSIVE.001-R41`: When an offer has more than one photo, each photo of the carousel shall be rendered as a full-page background occupying the whole page area, matching the framing of a single-photo offer, and shall not be rendered as an empty or collapsed visual.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -94,14 +96,21 @@ Scenario: Description and tags use more control
 
 Scenario: Offer with multiple photos supports photo navigation
   Given an offer page with more than one photo
-  When the user presses the left or right arrow keys or scrolls horizontally
+  When the user presses the left or right arrow keys or scrolls horizontally or uses the bottom-centered photo navigation control
   Then the displayed photo shall change
-  And photo navigation affordances shall be available
+  And a bottom-centered navigation control with left and right arrows and one point per photo shall be available
+  And no scrollbar shall be displayed
 
 Scenario: Offer with one photo hides photo navigation
   Given an offer page with one photo
   When the page is displayed
   Then photo navigation affordances shall not be available
+
+Scenario: Offer with multiple photos renders each photo as a full-page background
+  Given an offer page with more than one photo
+  When the page is displayed
+  Then each photo shall be rendered as a full-page background occupying the whole page area
+  And the displayed photo shall not be an empty or collapsed visual
 
 Scenario: User can try the immersive feed
   Given the user is on the Offers main page

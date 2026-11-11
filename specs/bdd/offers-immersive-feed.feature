@@ -37,14 +37,21 @@ Feature: Immersive vertical full-screen main page feed
 
   Scenario: Offer with multiple photos supports photo navigation
     Given an offer page with more than one photo
-    When the user presses the left or right arrow keys or scrolls horizontally
+    When the user presses the left or right arrow keys or scrolls horizontally or uses the bottom-centered photo navigation control
     Then the displayed photo changes
-    And photo navigation affordances are available
+    And a bottom-centered navigation control with left and right arrows and one point per photo is available
+    And no scrollbar is displayed
 
   Scenario: Offer with one photo hides photo navigation
     Given an offer page with one photo
     When the page is displayed
     Then photo navigation affordances are not available
+
+  Scenario: Offer with multiple photos renders each photo as a full-page background
+    Given an offer page with more than one photo
+    When the page is displayed
+    Then each photo is rendered as a full-page background occupying the whole page area
+    And the displayed photo is not an empty or collapsed visual
 
   Scenario: User can try the immersive feed
     Given the user is on the Offers main page
