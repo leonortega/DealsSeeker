@@ -10,12 +10,12 @@
     "leftControls": [
       "appName",
       "appLogo",
-      "menu",
       "search",
-      "map",
+      "mapMode",
       "userProfile",
       "preferences",
-      "navigationDestinations"
+      "navigationDestinations",
+      "createOffer"
     ],
     "rightControls": [
       "favorite",

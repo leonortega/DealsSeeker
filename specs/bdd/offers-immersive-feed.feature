@@ -53,6 +53,30 @@ Feature: Immersive vertical full-screen main page feed
     Then each photo is rendered as a full-page background occupying the whole page area
     And the displayed photo is not an empty or collapsed visual
 
+  Scenario: Left panel offers a create-offer option as the last option
+    Given the user is in the immersive feed
+    When the user views the left panel
+    Then a create-offer option is available as the last option of the left panel
+    And the option is labeled `Create` in English and `Crear` in Spanish
+    And selecting it opens the Add Offer view
+
+  Scenario: Left panel omits the application menu option and the back option
+    Given the user is in the immersive feed
+    When the user views the left panel
+    Then an application-menu option is not available
+    And a back option is not available
+
+  Scenario: Map entry point opens the standard offers view
+    Given the user is in the immersive feed
+    When the user selects the map entry point
+    Then the standard offers view is displayed
+    And the entry point is labeled `Map mode` in English and `Modo mapa` in Spanish
+
+  Scenario: Immersive feed is the default offers presentation
+    Given the application starts with an authenticated session
+    When the first view is displayed
+    Then the immersive offers feed is displayed
+
   Scenario: User can try the immersive feed
     Given the user is on the Offers main page
     When the user selects the try immersive feed button

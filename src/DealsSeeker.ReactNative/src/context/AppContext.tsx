@@ -49,9 +49,6 @@ interface AppContextValue {
   immersiveOffers: boolean;
   openImmersiveOffers: () => void;
   closeImmersiveOffers: () => void;
-  immersiveMapVisible: boolean;
-  openImmersiveMap: () => void;
-  closeImmersiveMap: () => void;
   menuVisible: boolean;
   openMenu: () => void;
   closeMenu: () => void;
@@ -85,8 +82,7 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [activeTab, setActiveTab] = useState<MainTab>('offers');
   const [overlayRoute, setOverlayRoute] = useState<OverlayRoute>(null);
   const [menuVisible, setMenuVisibleState] = useState(false);
-  const [immersiveOffers, setImmersiveOffers] = useState(false);
-  const [immersiveMapVisible, setImmersiveMapVisible] = useState(false);
+  const [immersiveOffers, setImmersiveOffers] = useState(true);
   const [loadingCount, setLoadingCount] = useState(0);
   const [reportDraft, setReportDraftState] = useState<OfferReportDraft | null>(null);
 
@@ -194,6 +190,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     setPreferences(nextPreferences);
     setAuthScreen('login');
     setActiveTab('offers');
+    setImmersiveOffers(true);
     setOverlayRoute(null);
   }
 
@@ -257,9 +254,6 @@ export function AppProvider({ children }: PropsWithChildren) {
     immersiveOffers,
     openImmersiveOffers: () => setImmersiveOffers(true),
     closeImmersiveOffers: () => setImmersiveOffers(false),
-    immersiveMapVisible,
-    openImmersiveMap: () => setImmersiveMapVisible(true),
-    closeImmersiveMap: () => setImmersiveMapVisible(false),
     openAddOffer: (offerId) => setOverlayRoute({ name: 'add-offer', offerId }),
     openFavorites: () => setOverlayRoute({ name: 'favorites' }),
     closeOverlay: () => setOverlayRoute(null),

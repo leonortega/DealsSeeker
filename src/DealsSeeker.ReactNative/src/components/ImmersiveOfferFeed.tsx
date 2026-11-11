@@ -1,4 +1,4 @@
-import { FlatList, Image, LayoutChangeEvent, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { FlatList, Image, LayoutChangeEvent, Platform, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
@@ -6,12 +6,9 @@ import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
 import { openDirections } from '../utils/maps';
-import { MapPreview } from './MapPreview';
 
 interface ImmersiveOfferFeedProps {
   offers: OfferItemDto[];
-  businesses: any[];
-  userLocation: { lat: number; lng: number };
   onRadiusChange: (radiusMeters: number) => void;
   radiusMeters: number;
   query: string;
@@ -20,7 +17,6 @@ interface ImmersiveOfferFeedProps {
   onReport: (offer: OfferItemDto) => void;
   onDirections: (offer: OfferItemDto) => void;
   onSearch: (query: string) => void;
-  onBack: () => void;
 }
 
 function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string; placeholderSymbol: string }) {
@@ -250,9 +246,7 @@ function ImmersiveOfferPage({
 
 export function ImmersiveOfferFeed({
   offers,
-  businesses,
   onRadiusChange,
-  userLocation,
   radiusMeters,
   query,
   onFavorite,
@@ -260,15 +254,12 @@ export function ImmersiveOfferFeed({
   onReport,
   onDirections,
   onSearch,
-  onBack,
 }: ImmersiveOfferFeedProps) {
   const { height } = useWindowDimensions();
   const {
-    closeImmersiveMap,
     closeImmersiveOffers,
-    immersiveMapVisible,
+    openAddOffer,
     openFavorites,
-    openImmersiveMap,
     openTab,
     palette,
     preferences,
@@ -279,6 +270,16 @@ export function ImmersiveOfferFeed({
   } = useApp();
   const [searchQuery, setSearchQuery] = useState(query);
   const pageHeight = Math.max(320, height);
+
+  function handleCreateOffer() {
+    closeImmersiveOffers();
+    openAddOffer();
+  }
+
+  function handleOpenMapMode() {
+    closeImmersiveOffers();
+    openTab('offers');
+  }
 
   return (
     <View style={styles.container}>
@@ -312,8 +313,8 @@ export function ImmersiveOfferFeed({
             </Pressable>
           ))}
         </View>
-        <Pressable style={styles.leftButton} onPress={openImmersiveMap}>
-          <Text style={styles.leftButtonText}>🗺️ {t('offers.map')}</Text>
+        <Pressable style={styles.leftButton} onPress={handleOpenMapMode}>
+          <Text style={styles.leftButtonText}>🗺️ {t('offers.mapMode')}</Text>
         </Pressable>
         <Pressable style={styles.leftButton} onPress={openFavorites}>
           <Text style={styles.leftButtonText}>⭐ {t('nav.favorites')}</Text>
@@ -327,8 +328,8 @@ export function ImmersiveOfferFeed({
         <Pressable style={styles.leftButton} onPress={() => openTab('reports')}>
           <Text style={styles.leftButtonText}>🚩 {t('nav.reports')}</Text>
         </Pressable>
-        <Pressable style={styles.leftButton} onPress={closeImmersiveOffers}>
-          <Text style={styles.leftButtonText}>↩️ {t('common.back')}</Text>
+        <Pressable style={styles.leftButton} onPress={handleCreateOffer}>
+          <Text style={styles.leftButtonText}>➕ {t('nav.createOffer')}</Text>
         </Pressable>
       </View>
 
@@ -362,24 +363,6 @@ export function ImmersiveOfferFeed({
           </View>
         }
       />
-
-      <Modal visible={immersiveMapVisible} animationType="slide" onRequestClose={closeImmersiveMap}>
-        <View style={styles.modal}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{t('offers.map')}</Text>
-            <Pressable onPress={closeImmersiveMap}>
-              <Text style={styles.topButtonText}>{t('common.cancel')}</Text>
-            </Pressable>
-          </View>
-          <MapPreview
-            businesses={businesses}
-            center={userLocation}
-            onSelectMarker={(marker) => void onDirections(marker as any)}
-            radiusMeters={radiusMeters}
-          />
-        </View>
-      </Modal>
-
     </View>
   );
 }
@@ -388,21 +371,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-  },
-  topBar: {
-    flexDirection: 'row',
-    gap: 10,
-    padding: 12,
-  },
-  topButton: {
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  topButtonText: {
-    color: '#fff',
-    fontWeight: '700',
   },
   searchRow: {
     flexDirection: 'row',
@@ -628,18 +596,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     height: 10,
     width: 10,
-  },
-  modal: {
-    flex: 1,
-    padding: 16,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '800',
   },
 });

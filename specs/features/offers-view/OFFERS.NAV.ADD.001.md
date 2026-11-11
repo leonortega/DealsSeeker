@@ -39,4 +39,5 @@ Scenario: Plus button opens Add Offer view
 
 ## Related Specs
 - `ADD.OFFER.LAYOUT.001`
+- `OFFERS.FEED.IMMERSIVE.001`
 

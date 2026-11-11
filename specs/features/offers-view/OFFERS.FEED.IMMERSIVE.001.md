@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive Vertical Full-Screen Main Page Feed
-- **Version**: `v1.1`
+- **Version**: `v1.4`
 - **Status**: Approved
 - **Context/View**: Offers View (Main Page)
 - **Priority**: High
@@ -59,6 +59,10 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R38`: Photo navigation affordances, including the bottom-centered control with one point per photo, shall only be displayed when the offer has more than one photo.
 - `OFFERS.FEED.IMMERSIVE.001-R40`: The immersive feed photo carousel shall not display scrollbars.
 - `OFFERS.FEED.IMMERSIVE.001-R41`: When an offer has more than one photo, each photo of the carousel shall be rendered as a full-page background occupying the whole page area, matching the framing of a single-photo offer, and shall not be rendered as an empty or collapsed visual.
+- `OFFERS.FEED.IMMERSIVE.001-R42`: The left panel shall provide an option to create a new offer, placed as the last option of the left panel, labeled `Create` in English and `Crear` in Spanish, and selecting it shall open the Add Offer view.
+- `OFFERS.FEED.IMMERSIVE.001-R43`: The immersive offers view shall be the default offers presentation of the application when it starts with an authenticated session.
+- `OFFERS.FEED.IMMERSIVE.001-R44`: The map entry point of the immersive feed shall be labeled `Map mode` in English and `Modo mapa` in Spanish, and selecting it shall open the standard offers view.
+- `OFFERS.FEED.IMMERSIVE.001-R45`: The left panel shall not display an application-menu option nor a back control.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -111,6 +115,30 @@ Scenario: Offer with multiple photos renders each photo as a full-page backgroun
   When the page is displayed
   Then each photo shall be rendered as a full-page background occupying the whole page area
   And the displayed photo shall not be an empty or collapsed visual
+
+Scenario: Left panel offers a create-offer option as the last option
+  Given the user is in the immersive feed
+  When the user views the left panel
+  Then a create-offer option shall be available as the last option of the left panel
+  And the option shall be labeled `Create` in English and `Crear` in Spanish
+  And selecting it shall open the Add Offer view
+
+Scenario: Left panel omits the application menu option and the back option
+  Given the user is in the immersive feed
+  When the user views the left panel
+  Then an application-menu option shall not be available
+  And a back option shall not be available
+
+Scenario: Map entry point opens the standard offers view
+  Given the user is in the immersive feed
+  When the user selects the map entry point
+  Then the standard offers view shall be displayed
+  And the entry point shall be labeled `Map mode` in English and `Modo mapa` in Spanish
+
+Scenario: Immersive feed is the default offers presentation
+  Given the application starts with an authenticated session
+  When the first view is displayed
+  Then the immersive offers feed shall be displayed
 
 Scenario: User can try the immersive feed
   Given the user is on the Offers main page

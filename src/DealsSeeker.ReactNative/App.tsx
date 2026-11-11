@@ -28,7 +28,7 @@ function AuthRoot() {
 }
 
 function AuthenticatedRoot() {
-  const { activeTab, bootstrapped, closeImmersiveOffers, closeMenu, immersiveOffers, isAuthenticated, menuVisible, openMenu, overlayRoute, palette, t } = useApp();
+  const { activeTab, bootstrapped, closeMenu, immersiveOffers, isAuthenticated, menuVisible, openMenu, overlayRoute, palette, t } = useApp();
 
   if (!bootstrapped) {
     return <SplashScreen />;
@@ -37,6 +37,9 @@ function AuthenticatedRoot() {
   if (!isAuthenticated) {
     return <AuthRoot />;
   }
+
+  // The immersive feed is full-bleed; every other view keeps the standard content padding.
+  const immersiveFeedVisible = immersiveOffers && !overlayRoute && activeTab === 'offers';
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: palette.background }]}>
@@ -65,7 +68,7 @@ function AuthenticatedRoot() {
         </View>
       ) : null}
 
-      <View style={[styles.screenContent, immersiveOffers && styles.immersiveContent]}>
+      <View style={[styles.screenContent, immersiveFeedVisible && styles.immersiveContent]}>
         {overlayRoute?.name === 'add-offer' ? <AddOfferScreen /> : null}
         {overlayRoute?.name === 'favorites' ? <FavoritesScreen /> : null}
         {!overlayRoute ? (

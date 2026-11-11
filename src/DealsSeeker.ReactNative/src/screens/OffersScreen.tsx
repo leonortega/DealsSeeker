@@ -14,7 +14,7 @@ const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
 
 export function OffersScreen() {
-  const { activeTab, api, closeImmersiveOffers, immersiveOffers, openAddOffer, openImmersiveOffers, palette, preferences, setReportDraft, t } = useApp();
+  const { activeTab, api, immersiveOffers, openAddOffer, openImmersiveOffers, palette, preferences, setReportDraft, t } = useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const [query, setQuery] = useState('');
   const [radiusMeters, setRadiusMeters] = useState(1500);
@@ -143,9 +143,7 @@ export function OffersScreen() {
     return (
       <>
         <ImmersiveOfferFeed
-          businesses={results.businesses}
           offers={combinedOffers}
-          onBack={() => closeImmersiveOffers()}
           onDirections={openOfferDirections}
           onFavorite={toggleFavorite}
           onRadiusChange={(nextRadius) => {
@@ -160,7 +158,6 @@ export function OffersScreen() {
           onVote={vote}
           query={query}
           radiusMeters={radiusMeters}
-          userLocation={userLocation}
         />
         <OfferDetailModal
           offer={detailOffer}

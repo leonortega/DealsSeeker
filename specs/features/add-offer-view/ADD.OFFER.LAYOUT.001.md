@@ -89,3 +89,4 @@ Scenario: Add Offer submission is blocked when required content is missing
 - `ADD.OFFER.TAGS.SUGGESTIONS.001`
 - `OFFERS.PHOTOS.CAROUSEL.001`
 - `ACCOUNT.PROFILE.001`
+- `OFFERS.FEED.IMMERSIVE.001`

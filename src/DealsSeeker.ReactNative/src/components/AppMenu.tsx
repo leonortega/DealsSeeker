@@ -7,7 +7,7 @@ interface AppMenuProps {
 }
 
 export function AppMenu({ visible, onClose }: AppMenuProps) {
-  const { closeImmersiveOffers, immersiveOffers, openFavorites, openImmersiveMap, openTab, palette, preferences, setLanguage, setNavigationMode, setThemeMode, t } = useApp();
+  const { openFavorites, openTab, palette, preferences, setLanguage, setNavigationMode, setThemeMode, t } = useApp();
 
   const isDark = palette.mode === 'dark';
 
@@ -16,28 +16,6 @@ export function AppMenu({ visible, onClose }: AppMenuProps) {
       <Pressable style={[styles.backdrop, { backgroundColor: palette.overlay }]} onPress={onClose}>
         <Pressable style={[styles.sheet, { backgroundColor: palette.panel, borderColor: palette.border }]} onPress={() => {}}>
           <Text style={[styles.title, { color: palette.ink }]}>{t('nav.menu')}</Text>
-
-          {(immersiveOffers || true) ? (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: palette.inkMuted }]}>{t('nav.menu')}</Text>
-              {immersiveOffers ? (
-                <Pressable style={[styles.quickLink, { backgroundColor: palette.card }]} onPress={() => {
-                  openImmersiveMap();
-                  onClose();
-                }}>
-                  <Text style={[styles.quickLinkLabel, { color: palette.ink }]}>{t('offers.map')}</Text>
-                </Pressable>
-              ) : null}
-              {immersiveOffers ? (
-                <Pressable style={[styles.quickLink, { backgroundColor: palette.card }]} onPress={() => {
-                  closeImmersiveOffers();
-                  onClose();
-                }}>
-                  <Text style={[styles.quickLinkLabel, { color: palette.ink }]}>{t('common.back')}</Text>
-                </Pressable>
-              ) : null}
-            </View>
-          ) : null}
 
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: palette.inkMuted }]}>{t('nav.offers')}</Text>

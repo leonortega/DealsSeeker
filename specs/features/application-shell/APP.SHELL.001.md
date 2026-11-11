@@ -20,7 +20,7 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R0`: The system shall be a mobile application named `DealsSeeker`.
 - `APP.SHELL.001-R1`: The system shall provide the main navigation sections: `My Account`, `Offers`, `Suggestions`, `Reports`.
 - `APP.SHELL.001-R2`: When there is no active authenticated session, the first view at startup shall be `Login`.
-- `APP.SHELL.001-R3`: When there is an active authenticated session, the first view at startup shall be `Offers`.
+- `APP.SHELL.001-R3`: When there is an active authenticated session, the first view at startup shall be `Offers`, presented as the immersive full-screen offers feed.
 - `APP.SHELL.001-R4`: After successful login or successful user creation, the system shall navigate to `Offers`.
 - `APP.SHELL.001-R5`: The system shall persist authenticated session state on device so the user is not required to login again on every app launch.
 - `APP.SHELL.001-R6`: On app access with a persisted session, the system shall validate session activity; if the session is expired/invalid, the session shall be cleared and startup view shall be `Login`.
@@ -48,6 +48,7 @@ Scenario: App starts on Offers with active session
   And there is an active authenticated session
   When the user opens the application
   Then the Offers section shall be the first visible view
+  And the immersive full-screen offers feed shall be presented
 
 Scenario: App starts on Login when persisted session is expired
   Given the application is installed and launchable

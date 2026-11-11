@@ -209,7 +209,7 @@
 | Decision Point | Default Rule | Notes |
 |---|---|---|
 | Startup first view (no session) | `Login` | Unauthenticated user starts in Login view |
-| Startup first view (with session) | `Offers` | Active authenticated session skips Login |
+| Startup first view (with session) | `Offers` (immersive full-screen feed) | Active authenticated session skips Login |
 | Login success navigation | Redirect to `Offers` | Session established before redirect |
 | Create user success navigation | Redirect to `Offers` | User is automatically authenticated |
 | Login view secondary action | Link to `Create User` | Allows account creation from auth entry point |

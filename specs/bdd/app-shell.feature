@@ -15,6 +15,7 @@ Feature: Application shell and session-aware landing
     And there is an active authenticated session
     When the user starts the application
     Then Offers is the first visible view
+    And the immersive full-screen offers feed is presented
 
   Scenario: App starts at Login when persisted session is expired
     Given the DealsSeeker mobile application is launchable
