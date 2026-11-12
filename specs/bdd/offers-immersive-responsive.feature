@@ -63,7 +63,8 @@ Feature: Immersive feed responsive presentation
     And the viewport is narrow
     And the offer has more than one photo
     When the offer page is displayed
-    Then the photo navigation control is displayed above the offer title within the offer text overlay
+    Then the photo navigation control is displayed above the offer title
+    And the control is horizontally centered within the offer panel
     And the control displays only the photo position indicators
     And no arrow controls are displayed
 
@@ -72,8 +73,23 @@ Feature: Immersive feed responsive presentation
     And the viewport is wide
     And the offer has more than one photo
     When the offer page is displayed
-    Then the photo navigation control is displayed above the offer title within the offer text overlay
+    Then the photo navigation control is displayed above the offer title
+    And the control is horizontally centered within the offer panel
     And the control displays previous and next arrow controls
+
+  Scenario: Narrow viewport has no application header over the offer image
+    Given the user is on the immersive offers view
+    And the viewport is narrow
+    When the view is rendered
+    Then no application header is displayed
+    And the application identity icon and the search icon are displayed floating over the offer image
+    And the application name text is not displayed
+
+  Scenario: Wide viewport keeps the application identity in the side panel
+    Given the user is on the immersive offers view
+    And the viewport is wide
+    When the view is rendered
+    Then the left side panel displays the application identity icon and the application name
 
   Scenario: Offer text overlay reserves space for the promoted mark
     Given the user is on the immersive offers view

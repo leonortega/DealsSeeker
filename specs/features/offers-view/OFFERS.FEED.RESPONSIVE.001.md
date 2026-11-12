@@ -34,11 +34,13 @@ Define how the immersive offers feed adapts its presentation to the available vi
 - `OFFERS.FEED.RESPONSIVE.001-R14`: The responsive presentation shall not change the behavior of any navigation or offer action control.
 - `OFFERS.FEED.RESPONSIVE.001-R15`: On a wide viewport, each offer action control in the right side rail shall display a text caption below its icon, using the labels `favorite` / `Favorito`, `directions` / `¿Cómo llegar?`, `available` / `Sí existe`, `removed` / `No existe`, and `report` / `Reportar`.
 - `OFFERS.FEED.RESPONSIVE.001-R16`: On a narrow viewport, the offer action controls in the right side rail shall display icons only, without text captions.
-- `OFFERS.FEED.RESPONSIVE.001-R17`: On every viewport size, the photo navigation control shall be placed within the offer text overlay, above the offer title, so that it does not overlap the offer text.
+- `OFFERS.FEED.RESPONSIVE.001-R17`: On every viewport size, the photo navigation control shall be displayed above the offer title, and shall be horizontally centered within the offer panel.
 - `OFFERS.FEED.RESPONSIVE.001-R18`: On every viewport size, the offer text overlay shall reserve space for the promoted and reported marks, so that they remain readable.
 - `OFFERS.FEED.RESPONSIVE.001-R19`: On every viewport size, the offer title shall use a reduced font size.
 - `OFFERS.FEED.RESPONSIVE.001-R20`: On a wide viewport, the photo navigation control shall display previous and next arrow controls in addition to the photo position indicators.
 - `OFFERS.FEED.RESPONSIVE.001-R21`: On a narrow viewport, the photo navigation control shall display only the photo position indicators, without arrow controls.
+- `OFFERS.FEED.RESPONSIVE.001-R22`: On a narrow viewport, the immersive offers view shall not render an application header; the application identity icon and the search icon shall be displayed floating over the offer image, without the application name text.
+- `OFFERS.FEED.RESPONSIVE.001-R23`: On a wide viewport, the application identity and application name shall remain in the left side panel.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -101,7 +103,8 @@ Scenario: Narrow viewport photo navigation sits above the offer title
   And the viewport is narrow
   And the offer has more than one photo
   When the offer page is displayed
-  Then the photo navigation control shall be displayed above the offer title within the offer text overlay
+  Then the photo navigation control shall be displayed above the offer title
+  And the control shall be horizontally centered within the offer panel
   And the control shall display only the photo position indicators
   And no arrow controls shall be displayed
 
@@ -110,8 +113,23 @@ Scenario: Wide viewport photo navigation shows arrows above the offer title
   And the viewport is wide
   And the offer has more than one photo
   When the offer page is displayed
-  Then the photo navigation control shall be displayed above the offer title within the offer text overlay
+  Then the photo navigation control shall be displayed above the offer title
+  And the control shall be horizontally centered within the offer panel
   And the control shall display previous and next arrow controls
+
+Scenario: Narrow viewport has no application header over the offer image
+  Given the user is on the immersive offers view
+  And the viewport is narrow
+  When the view is rendered
+  Then no application header shall be displayed
+  And the application identity icon and the search icon shall be displayed floating over the offer image
+  And the application name text shall not be displayed
+
+Scenario: Wide viewport keeps the application identity in the side panel
+  Given the user is on the immersive offers view
+  And the viewport is wide
+  When the view is rendered
+  Then the left side panel shall display the application identity icon and the application name
 
 Scenario: Offer text overlay reserves space for the promoted mark
   Given the user is on the immersive offers view

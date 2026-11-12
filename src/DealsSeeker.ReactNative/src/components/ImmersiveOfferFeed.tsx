@@ -232,7 +232,7 @@ function ImmersiveOfferPage({
         </Pressable>
       </View>
 
-      <View style={[styles.bottomOverlay, showCaptions && styles.bottomOverlayWithCaptions]}>
+      <View style={styles.bottomOverlay}>
         {hasMultipleImages ? (
           <View pointerEvents="box-none" style={styles.immersivePhotoNav}>
             {showPhotoArrows ? (
@@ -259,31 +259,33 @@ function ImmersiveOfferPage({
             ) : null}
           </View>
         ) : null}
-        {offer.isPromoted ? (
-          <View style={[styles.badge, { backgroundColor: palette.accent }]}>
-            <Text style={styles.badgeLabel}>{t('offers.promoted')}</Text>
-          </View>
-        ) : null}
-        {offer.isReported ? (
-          <View style={[styles.badge, { backgroundColor: palette.danger }]}>
-            <Text style={styles.badgeLabel}>{t('offers.reported')}</Text>
-          </View>
-        ) : null}
-        <Text style={styles.businessName}>{offer.businessName}</Text>
-        <Text style={styles.distance}>{t('offers.distance')}: {formatDistanceMeters(offer.distanceMeters)}</Text>
-        <Text style={styles.description}>
-          {expanded ? offer.description : shorten(offer.description, 100)}
-        </Text>
-        {offer.tags.length > 0 && expanded ? (
-          <Text style={styles.tagsText}>
-            {offer.tags.map((tag) => `#${tag}`).join(' ')}
+        <View style={[styles.bottomOverlayText, showCaptions && styles.bottomOverlayTextWithCaptions]}>
+          {offer.isPromoted ? (
+            <View style={[styles.badge, { backgroundColor: palette.accent }]}>
+              <Text style={styles.badgeLabel}>{t('offers.promoted')}</Text>
+            </View>
+          ) : null}
+          {offer.isReported ? (
+            <View style={[styles.badge, { backgroundColor: palette.danger }]}>
+              <Text style={styles.badgeLabel}>{t('offers.reported')}</Text>
+            </View>
+          ) : null}
+          <Text style={styles.businessName}>{offer.businessName}</Text>
+          <Text style={styles.distance}>{t('offers.distance')}: {formatDistanceMeters(offer.distanceMeters)}</Text>
+          <Text style={styles.description}>
+            {expanded ? offer.description : shorten(offer.description, 100)}
           </Text>
-        ) : null}
-        {!expanded ? (
-          <Pressable onPress={() => setExpanded(true)}>
-            <Text style={styles.moreButton}>{t('offers.more')}</Text>
-          </Pressable>
-        ) : null}
+          {offer.tags.length > 0 && expanded ? (
+            <Text style={styles.tagsText}>
+              {offer.tags.map((tag) => `#${tag}`).join(' ')}
+            </Text>
+          ) : null}
+          {!expanded ? (
+            <Pressable onPress={() => setExpanded(true)}>
+              <Text style={styles.moreButton}>{t('offers.more')}</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -426,13 +428,8 @@ export function ImmersiveOfferFeed({
           />
 
           {isNarrow ? (
-            <View style={styles.topBar}>
-              <View style={styles.topBarIdentity}>
-                <Image source={require('../../assets/icon.png')} style={styles.topBarLogo} />
-                <Text numberOfLines={1} style={styles.topBarTitle}>
-                  {t('app.title')}
-                </Text>
-              </View>
+            <View pointerEvents="box-none" style={styles.topBar}>
+              <Image source={require('../../assets/icon.png')} style={styles.topBarLogo} />
               <Pressable
                 accessibilityLabel={t('offers.search')}
                 accessibilityRole="button"
@@ -493,24 +490,12 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
-  topBarIdentity: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    flexShrink: 1,
-    gap: 8,
-  },
   topBarLogo: {
-    height: 28,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    borderRadius: 999,
+    height: 40,
     resizeMode: 'contain',
-    width: 28,
-  },
-  topBarTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '800',
-    textShadowColor: 'rgba(0,0,0,0.6)',
-    textShadowOffset: { height: 1, width: 0 },
-    textShadowRadius: 3,
+    width: 40,
   },
   searchIconButton: {
     alignItems: 'center',
@@ -649,12 +634,16 @@ const styles = StyleSheet.create({
   },
   bottomOverlay: {
     bottom: 16,
-    left: 12,
+    left: 0,
     position: 'absolute',
-    right: 70,
+    right: 0,
   },
-  bottomOverlayWithCaptions: {
-    right: 110,
+  bottomOverlayText: {
+    paddingLeft: 12,
+    paddingRight: 70,
+  },
+  bottomOverlayTextWithCaptions: {
+    paddingRight: 110,
   },
   businessName: {
     color: '#fff',
@@ -724,6 +713,7 @@ const styles = StyleSheet.create({
   },
   immersivePhotoNav: {
     alignItems: 'center',
+    alignSelf: 'center',
     flexDirection: 'row',
     gap: 12,
     marginBottom: 8,

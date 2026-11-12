@@ -7,9 +7,11 @@
     "layout": "vertical-full-screen-feed",
     "sidePanelVisible": false,
     "topBarControls": [
-      "appIdentity",
+      "appIdentityIcon",
       "searchIcon"
     ],
+    "applicationHeaderVisible": false,
+    "applicationNameVisible": false,
     "footerControls": [
       "mapMode",
       "favorites",
@@ -37,6 +39,7 @@
     "descriptionOverlayAboveFooter": true,
     "photoNavigationAboveFooter": true,
     "photoNavigationAboveOfferTitle": true,
+    "photoNavigationHorizontallyCentered": true,
     "photoNavigationShowsArrows": false,
     "actionControlsAboveFooter": true
   },
@@ -66,6 +69,7 @@
         "voteNegativeIcon",
         "reportIcon"
       ],
+      "photoNavigationHorizontallyCentered": true,
       "rightControlCaptions": {
         "en": [
           "favorite",
