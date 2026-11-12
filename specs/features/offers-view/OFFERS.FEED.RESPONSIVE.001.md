@@ -34,6 +34,8 @@ Define how the immersive offers feed adapts its presentation to the available vi
 - `OFFERS.FEED.RESPONSIVE.001-R14`: The responsive presentation shall not change the behavior of any navigation or offer action control.
 - `OFFERS.FEED.RESPONSIVE.001-R15`: On a wide viewport, each offer action control in the right side rail shall display a text caption below its icon, using the labels `favorite` / `Favorito`, `directions` / `¿Cómo llegar?`, `available` / `Sí existe`, `removed` / `No existe`, and `report` / `Reportar`.
 - `OFFERS.FEED.RESPONSIVE.001-R16`: On a narrow viewport, the offer action controls in the right side rail shall display icons only, without text captions.
+- `OFFERS.FEED.RESPONSIVE.001-R17`: On a narrow viewport, the photo navigation control shall be displayed below the top bar with a visible gap, so that it is not crowded against the application identity and search controls.
+- `OFFERS.FEED.RESPONSIVE.001-R18`: On a wide viewport, the photo navigation control shall be displayed near the top edge of the offer page.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -90,6 +92,14 @@ Scenario: Narrow viewport shows offer action icons without captions
   And the viewport is narrow
   When an offer page is displayed
   Then the right side rail icons shall not display text captions
+
+Scenario: Narrow viewport photo navigation sits below the top bar
+  Given the user is on the immersive offers view
+  And the viewport is narrow
+  And the offer has more than one photo
+  When the offer page is displayed
+  Then the photo navigation control shall be displayed below the top bar
+  And a visible gap shall separate it from the top bar
 
 Scenario: Wide viewport keeps the side panel
   Given the user is on the immersive offers view

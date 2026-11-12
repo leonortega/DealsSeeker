@@ -36,9 +36,9 @@ Feature: Immersive vertical full-screen main page feed
 
   Scenario: Offer with multiple photos supports photo navigation
     Given an offer page with more than one photo
-    When the user presses the left or right arrow keys or scrolls horizontally or uses the bottom-centered photo navigation control
+    When the user presses the left or right arrow keys or scrolls horizontally or uses the top-centered photo navigation control
     Then the displayed photo changes
-    And a bottom-centered navigation control with left and right arrows and one point per photo is available
+    And a top-centered navigation control with left and right arrows and one point per photo is available
     And no scrollbar is displayed
 
   Scenario: Offer with one photo hides photo navigation

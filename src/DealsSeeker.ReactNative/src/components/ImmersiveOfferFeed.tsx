@@ -10,6 +10,8 @@ import { ImmersiveActionCaption, ImmersiveActionIconGlyph, ImmersiveFooterBar } 
 import { COVERAGE_DISTANCE_OPTIONS, ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
 
 const NARROW_BREAKPOINT = 768;
+const PHOTO_NAV_TOP_WIDE = 16;
+const PHOTO_NAV_TOP_NARROW = 96;
 
 interface ImmersiveOfferFeedProps {
   offers: OfferItemDto[];
@@ -407,7 +409,7 @@ export function ImmersiveOfferFeed({
                 <ImmersiveOfferPage
                   offer={item}
                   showCaptions={!isNarrow}
-                  topOffset={isNarrow ? 64 : 16}
+                  topOffset={isNarrow ? PHOTO_NAV_TOP_NARROW : PHOTO_NAV_TOP_WIDE}
                   onDirections={onDirections}
                   onFavorite={onFavorite}
                   onReport={onReport}

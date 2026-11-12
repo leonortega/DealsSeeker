@@ -58,6 +58,14 @@ Feature: Immersive feed responsive presentation
     When an offer page is displayed
     Then the right side rail icons do not display text captions
 
+  Scenario: Narrow viewport photo navigation sits below the top bar
+    Given the user is on the immersive offers view
+    And the viewport is narrow
+    And the offer has more than one photo
+    When the offer page is displayed
+    Then the photo navigation control is displayed below the top bar
+    And a visible gap separates it from the top bar
+
   Scenario: Wide viewport keeps the side panel
     Given the user is on the immersive offers view
     And the viewport is wide

@@ -36,6 +36,7 @@
     ],
     "descriptionOverlayAboveFooter": true,
     "photoNavigationAboveFooter": true,
+    "photoNavigationBelowTopBar": true,
     "actionControlsAboveFooter": true
   },
   "alternate": {

@@ -55,8 +55,8 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R34`: The left panel shall display coverage distance buttons below the search input, using the same radius options as the standard offers view.
 - `OFFERS.FEED.IMMERSIVE.001-R35`: Text in the left panel, including the application name, shall use white color.
 - `OFFERS.FEED.IMMERSIVE.001-R36`: Offer images shall be contained within the page; when an image does not fill the width, dark gray bars shall appear on the left and right so the page background remains fully covered.
-- `OFFERS.FEED.IMMERSIVE.001-R37`: When an offer has more than one photo, the immersive feed shall allow changing the displayed photo using left and right keyboard arrow keys, horizontal scrolling/swiping, and a bottom-centered navigation control with left and right arrows and one point per photo.
-- `OFFERS.FEED.IMMERSIVE.001-R38`: Photo navigation affordances, including the bottom-centered control with one point per photo, shall only be displayed when the offer has more than one photo.
+- `OFFERS.FEED.IMMERSIVE.001-R37`: When an offer has more than one photo, the immersive feed shall allow changing the displayed photo using left and right keyboard arrow keys, horizontal scrolling/swiping, and a top-centered navigation control with left and right arrows and one point per photo.
+- `OFFERS.FEED.IMMERSIVE.001-R38`: Photo navigation affordances, including the top-centered control with one point per photo, shall only be displayed when the offer has more than one photo.
 - `OFFERS.FEED.IMMERSIVE.001-R40`: The immersive feed photo carousel shall not display scrollbars.
 - `OFFERS.FEED.IMMERSIVE.001-R41`: When an offer has more than one photo, each photo of the carousel shall be rendered as a full-page background occupying the whole page area, matching the framing of a single-photo offer, and shall not be rendered as an empty or collapsed visual.
 - `OFFERS.FEED.IMMERSIVE.001-R42`: The left panel shall provide an option to create a new offer, placed as the last option of the left panel, labeled `Create` in English and `Crear` in Spanish, and selecting it shall open the Add Offer view.
@@ -99,9 +99,9 @@ Scenario: Description and tags use more control
 
 Scenario: Offer with multiple photos supports photo navigation
   Given an offer page with more than one photo
-  When the user presses the left or right arrow keys or scrolls horizontally or uses the bottom-centered photo navigation control
+  When the user presses the left or right arrow keys or scrolls horizontally or uses the top-centered photo navigation control
   Then the displayed photo shall change
-  And a bottom-centered navigation control with left and right arrows and one point per photo shall be available
+  And a top-centered navigation control with left and right arrows and one point per photo shall be available
   And no scrollbar shall be displayed
 
 Scenario: Offer with one photo hides photo navigation
