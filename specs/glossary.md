@@ -32,3 +32,4 @@
 - **Reported offer**: Offer flagged by user reports and demoted in ranking with red visual indicator.
 - **Localization resources**: Externalized language files that provide translated UI strings.
 - **Offer photo carousel**: Swipeable ordered image viewer for multi-photo offers.
+- **Vertical full-screen feed**: Main-page offer browsing layout where each offer occupies one full viewport and users move vertically between offers.

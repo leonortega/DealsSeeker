@@ -209,7 +209,7 @@
 | Decision Point | Default Rule | Notes |
 |---|---|---|
 | Startup first view (no session) | `Login` | Unauthenticated user starts in Login view |
-| Startup first view (with session) | `Offers` | Active authenticated session skips Login |
+| Startup first view (with session) | `Offers` (immersive full-screen feed) | Active authenticated session skips Login |
 | Login success navigation | Redirect to `Offers` | Session established before redirect |
 | Create user success navigation | Redirect to `Offers` | User is automatically authenticated |
 | Login view secondary action | Link to `Create User` | Allows account creation from auth entry point |
@@ -229,6 +229,33 @@
 | Add Offer submit success | Redirect to `Offers` | Applies only when offer create response has no errors |
 | Edit Offer submit success | Redirect to `My Account` | Applies only when offer update response has no errors |
 | Any submit error | Stay in current view and show error/status | No redirect on failed response |
+
+## Immersive Offers Feed Navigation Rules (`OFFERS.FEED.IMMERSIVE.001`, `OFFERS.IMMERSIVE.001`, `APP.SHELL.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Default Offers presentation | Immersive full-screen feed | Applies at startup and after login |
+| Return from immersive feed | `Map mode` option opens the standard Offers view | Left panel has no back control |
+| Immersive entry point | Header button left of the menu button | Labeled `Immersive view` / `Modo inmersivo` |
+| Left panel option order | Map mode, Favorites, Account, Suggestions, Reports, Create | Create is always last |
+| Add Offer from immersive feed | Close immersive mode and open Add Offer | Add Offer renders with standard padding |
+| Destination opened from immersive feed | Shows a back control returning to the immersive feed | Only while immersive mode is enabled |
+| Left panel application-menu option | Not displayed | Menu is reachable from the standard header |
+
+## Immersive Feed Responsive Rules (`OFFERS.FEED.RESPONSIVE.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Narrow viewport breakpoint | Viewport width below `768px` | Mobile presentation |
+| Narrow viewport navigation | Bottom footer bar | Side panel is not rendered |
+| Narrow viewport search | Icon in the top bar opening a search overlay | Inline search input is hidden |
+| Narrow viewport footer order | Map mode, Account, Suggestions, Reports, Create | Favorites moved to the top-bar tab |
+| Feed filter tabs | `Favorites` and `View all` | `View all` selected by default |
+| Offer action control presentation | Icons on every viewport size | Accessible labels always provided |
+| Offer action control captions | Wide viewport only | Narrow viewport stays icon-only |
+| Photo swipe direction | Swipe left shows next photo, swipe right shows previous | Wraps around at the ends |
+| Photo swipe threshold | `max(40px, 18% of the panel width)` | Shorter swipes are ignored |
+| Wide viewport navigation | Fixed side panel | Search input and distance buttons stay inline |
 
 ## Logging Rules (`APP.LOGGING.001`)
 

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v1.5`
+- **Version**: `v1.6`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -20,7 +20,7 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R0`: The system shall be a mobile application named `DealsSeeker`.
 - `APP.SHELL.001-R1`: The system shall provide the main navigation sections: `My Account`, `Offers`, `Suggestions`, `Reports`.
 - `APP.SHELL.001-R2`: When there is no active authenticated session, the first view at startup shall be `Login`.
-- `APP.SHELL.001-R3`: When there is an active authenticated session, the first view at startup shall be `Offers`.
+- `APP.SHELL.001-R3`: When there is an active authenticated session, the first view at startup shall be `Offers`, presented as the immersive full-screen offers feed.
 - `APP.SHELL.001-R4`: After successful login or successful user creation, the system shall navigate to `Offers`.
 - `APP.SHELL.001-R5`: The system shall persist authenticated session state on device so the user is not required to login again on every app launch.
 - `APP.SHELL.001-R6`: On app access with a persisted session, the system shall validate session activity; if the session is expired/invalid, the session shall be cleared and startup view shall be `Login`.
@@ -32,6 +32,7 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R12`: When any active view is waiting for required data (for example, location resolution or search execution), the system shall display a blocking animated loading state.
 - `APP.SHELL.001-R13`: While the blocking loading state is visible, user interaction with the underlying view shall be prevented.
 - `APP.SHELL.001-R14`: The blocking loading state shall be dismissed automatically when all pending required operations complete.
+- `APP.SHELL.001-R15`: The standard application header shall place the menu button on the trailing side and, when the Offers view is displayed without an open overlay, shall place an immersive-view button immediately to its left, labeled `Immersive view` in English and `Modo inmersivo` in Spanish. Selecting it shall open the immersive offers feed.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -48,6 +49,7 @@ Scenario: App starts on Offers with active session
   And there is an active authenticated session
   When the user opens the application
   Then the Offers section shall be the first visible view
+  And the immersive full-screen offers feed shall be presented
 
 Scenario: App starts on Login when persisted session is expired
   Given the application is installed and launchable
@@ -62,6 +64,13 @@ Scenario: Suggestions and Reports success submissions redirect to Offers
   When the user submits the form
   And the submit response is successful with no errors
   Then the system shall redirect the user to Offers view
+
+Scenario: Header places the immersive-view button left of the menu button
+  Given the authenticated user is on the Offers view without an open overlay
+  When the standard application header is rendered
+  Then an immersive-view button shall be displayed immediately to the left of the menu button
+  And the button shall be labeled `Immersive view` in English and `Modo inmersivo` in Spanish
+  And selecting it shall open the immersive offers feed
 
 Scenario: Menu includes quick language and theme controls
   Given the authenticated user opens the main navigation menu
@@ -104,6 +113,7 @@ Scenario: Blocking loading state appears during required data waits
 - `APP.CONFIG.MAPS.001`
 - `APP.LOCALIZATION.001`
 - `APP.THEME.001`
+- `OFFERS.FEED.RESPONSIVE.001`
 - `OFFERS.LAYOUT.001`
 - `ACCOUNT.AUTH.LOGIN.001`
 - `ACCOUNT.AUTH.REGISTER.001`

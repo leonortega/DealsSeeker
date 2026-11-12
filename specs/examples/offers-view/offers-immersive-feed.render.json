@@ -1,0 +1,30 @@
+{
+  "input": {
+    "route": "OffersMainPage",
+    "offerCount": 5,
+    "viewportWidthPx": 390
+  },
+  "expected": {
+    "layout": "vertical-full-screen-feed",
+    "pages": 5,
+    "leftControls": [
+      "appName",
+      "appLogo",
+      "feedTabs",
+      "search",
+      "coverageRadius",
+      "mapMode",
+      "navigationDestinations",
+      "createOffer"
+    ],
+    "rightControls": [
+      "favorite",
+      "directions",
+      "votePositive",
+      "voteNegative",
+      "report"
+    ],
+    "descriptionState": "truncated-with-more",
+    "emptyStateSupported": true
+  }
+}

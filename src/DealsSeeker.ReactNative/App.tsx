@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -29,8 +28,7 @@ function AuthRoot() {
 }
 
 function AuthenticatedRoot() {
-  const { activeTab, bootstrapped, isAuthenticated, overlayRoute, palette, t } = useApp();
-  const [menuVisible, setMenuVisible] = useState(false);
+  const { activeTab, bootstrapped, closeMenu, immersiveOffers, isAuthenticated, menuVisible, openImmersiveOffers, openMenu, overlayRoute, palette, t } = useApp();
 
   if (!bootstrapped) {
     return <SplashScreen />;
@@ -40,32 +38,47 @@ function AuthenticatedRoot() {
     return <AuthRoot />;
   }
 
+  // The immersive feed is full-bleed; every other view keeps the standard content padding.
+  const immersiveFeedVisible = immersiveOffers && !overlayRoute && activeTab === 'offers';
+
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: palette.background }]}>
       <StatusBar style={palette.mode === 'dark' ? 'light' : 'dark'} />
-      <View style={[styles.header, { backgroundColor: palette.backgroundRaised, borderBottomColor: palette.border }]}>
-        <View>
-          <Text style={[styles.brand, { color: palette.ink }]}>{t('app.title')}</Text>
-          <Text style={{ color: palette.inkMuted }}>
-            {overlayRoute?.name === 'add-offer'
-              ? t('nav.addOffer')
-              : overlayRoute?.name === 'favorites'
-                ? t('nav.favorites')
-                : activeTab === 'account'
-                  ? t('nav.account')
-                  : activeTab === 'suggestions'
-                    ? t('nav.suggestions')
-                    : activeTab === 'reports'
-                      ? t('nav.reports')
-                      : t('nav.offers')}
-          </Text>
+      {!immersiveOffers ? (
+        <View style={[styles.header, { backgroundColor: palette.backgroundRaised, borderBottomColor: palette.border }]}>
+          <View>
+            <Text style={[styles.brand, { color: palette.ink }]}>{t('app.title')}</Text>
+            <Text style={{ color: palette.inkMuted }}>
+              {overlayRoute?.name === 'add-offer'
+                ? t('nav.addOffer')
+                : overlayRoute?.name === 'favorites'
+                  ? t('nav.favorites')
+                  : activeTab === 'account'
+                    ? t('nav.account')
+                    : activeTab === 'suggestions'
+                      ? t('nav.suggestions')
+                      : activeTab === 'reports'
+                        ? t('nav.reports')
+                        : t('nav.offers')}
+            </Text>
+          </View>
+          <View style={styles.headerActions}>
+            {activeTab === 'offers' && !overlayRoute ? (
+              <Pressable
+                style={[styles.immersiveButton, { backgroundColor: palette.panel, borderColor: palette.border }]}
+                onPress={openImmersiveOffers}
+              >
+                <Text style={{ color: palette.ink, fontWeight: '700' }}>{t('offers.immersiveView')}</Text>
+              </Pressable>
+            ) : null}
+            <Pressable style={[styles.menuButton, { backgroundColor: palette.panel }]} onPress={openMenu}>
+              <Text style={{ color: palette.ink, fontWeight: '800' }}>{t('nav.menu')}</Text>
+            </Pressable>
+          </View>
         </View>
-        <Pressable style={[styles.menuButton, { backgroundColor: palette.panel }]} onPress={() => setMenuVisible(true)}>
-          <Text style={{ color: palette.ink, fontWeight: '800' }}>{t('nav.menu')}</Text>
-        </Pressable>
-      </View>
+      ) : null}
 
-      <View style={styles.screenContent}>
+      <View style={[styles.screenContent, immersiveFeedVisible && styles.immersiveContent]}>
         {overlayRoute?.name === 'add-offer' ? <AddOfferScreen /> : null}
         {overlayRoute?.name === 'favorites' ? <FavoritesScreen /> : null}
         {!overlayRoute ? (
@@ -78,8 +91,8 @@ function AuthenticatedRoot() {
         ) : null}
       </View>
 
-      {!overlayRoute ? <BottomTabs /> : null}
-      <AppMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
+      {!overlayRoute && !immersiveOffers ? <BottomTabs /> : null}
+      <AppMenu visible={menuVisible} onClose={closeMenu} />
       <LoadingOverlay />
     </SafeAreaView>
   );
@@ -127,9 +140,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
+  headerActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  immersiveButton: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
   screenContent: {
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 16,
+  },
+  immersiveContent: {
+    paddingHorizontal: 0,
+    paddingTop: 0,
   },
 });

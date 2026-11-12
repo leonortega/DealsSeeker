@@ -90,3 +90,4 @@ Scenario: Required location/search wait blocks interaction
 - `OFFERS.MAP.001`
 - `OFFERS.LIST.ITEM.001`
 - `OFFERS.REPORTED.DEMOTION.001`
+- `OFFERS.FEED.RESPONSIVE.001`

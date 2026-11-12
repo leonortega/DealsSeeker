@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   GestureResponderEvent,
@@ -7,8 +7,8 @@ import {
   Modal,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  FlatList,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -264,7 +264,7 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, vis
   const { width: viewportWidth } = useWindowDimensions();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
-  const detailScrollRef = useRef<ScrollView | null>(null);
+  const detailScrollRef = useRef<FlatList<string> | null>(null);
 
   useEffect(() => {
     setSelectedImageIndex(0);
@@ -279,7 +279,7 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, vis
   const carouselWidth = Math.max(220, viewportWidth - 132);
 
   function scrollToImage(index: number, animated: boolean) {
-    detailScrollRef.current?.scrollTo({ x: index * carouselWidth, y: 0, animated });
+    detailScrollRef.current?.scrollToOffset({ offset: index * carouselWidth, animated });
   }
 
   function updateSelectedImage(index: number, animated: boolean) {
@@ -354,24 +354,23 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, vis
             </Pressable>
 
             <View style={styles.galleryPanel}>
-              <ScrollView
+              <FlatList
                 ref={detailScrollRef}
+                data={detailImages}
                 horizontal
+                keyExtractor={(imageUrl, index) => `${imageUrl ?? 'placeholder'}-${index}`}
                 pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onMomentumScrollEnd={handleCarouselEnd}
-                scrollEventThrottle={16}
-              >
-                {detailImages.map((imageUrl, index) => (
+                renderItem={({ item: imageUrl }: { item: string }) => (
                   <Pressable
-                    key={`${imageUrl ?? 'placeholder'}-${index}`}
                     onPress={() => setFullscreenVisible(true)}
                     style={[styles.gallerySlide, { width: carouselWidth }]}
                   >
                     <OfferGalleryImage imageUrl={imageUrl} placeholderSymbol={hasMultipleImages ? '▣' : '▤'} />
                   </Pressable>
-                ))}
-              </ScrollView>
+                )}
+                showsHorizontalScrollIndicator={false}
+                onMomentumScrollEnd={handleCarouselEnd}
+              />
               <View style={[styles.galleryCounter, { backgroundColor: palette.overlay }]}>
                 <Text style={styles.galleryCounterLabel}>
                   {detailImages.length === 0 ? '0 / 0' : `${selectedImageIndex + 1} / ${detailImages.length}`}

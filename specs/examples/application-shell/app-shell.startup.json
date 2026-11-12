@@ -10,7 +10,8 @@
       "activeSession": true
     },
     "expected": {
-      "initialRoute": "Offers"
+      "initialRoute": "Offers",
+      "presentation": "immersive-full-screen-feed"
     }
   }
 }

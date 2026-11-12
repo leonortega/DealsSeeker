@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import * as Location from 'expo-location';
 import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '../api/types';
+import { ImmersiveOfferFeed } from '../components/ImmersiveOfferFeed';
+import { ImmersiveFeedTab } from '../components/ImmersiveFeedTabs';
 import { MapPreview } from '../components/MapPreview';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetailModal } from '../components/OfferDetailModal';
@@ -13,11 +15,12 @@ const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
 
 export function OffersScreen() {
-  const { activeTab, api, openAddOffer, palette, preferences, setReportDraft, t } = useApp();
+  const { activeTab, api, immersiveOffers, openAddOffer, palette, preferences, setReportDraft, t } = useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const [query, setQuery] = useState('');
   const [radiusMeters, setRadiusMeters] = useState(1500);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [feedTab, setFeedTab] = useState<ImmersiveFeedTab>('viewAll');
   const [results, setResults] = useState<SearchOffersResponse>({ offers: [], businesses: [] });
   const [detailOffer, setDetailOffer] = useState<OfferItemDto | null>(null);
   const [userLocation, setUserLocation] = useState(fallbackLocation);
@@ -136,6 +139,48 @@ export function OffersScreen() {
     await openDirections(offer.location, preferences.navigationMode);
   }
 
+  function handleFeedTabChange(tab: ImmersiveFeedTab) {
+    const nextFavoritesOnly = tab === 'favorites';
+    setFeedTab(tab);
+    setFavoritesOnly(nextFavoritesOnly);
+    void search(query, radiusMeters, nextFavoritesOnly);
+  }
+
+  if (immersiveOffers) {
+    const combinedOffers = [...sections.promoted, ...sections.feed];
+
+    return (
+      <>
+        <ImmersiveOfferFeed
+          feedTab={feedTab}
+          offers={combinedOffers}
+          onDirections={openOfferDirections}
+          onFavorite={toggleFavorite}
+          onFeedTabChange={handleFeedTabChange}
+          onRadiusChange={(nextRadius) => {
+            setRadiusMeters(nextRadius);
+            void search(query, nextRadius, favoritesOnly);
+          }}
+          onReport={setReportDraft}
+          onSearch={(nextQuery) => {
+            setQuery(nextQuery);
+            void search(nextQuery, radiusMeters, favoritesOnly);
+          }}
+          onVote={vote}
+          query={query}
+          radiusMeters={radiusMeters}
+        />
+        <OfferDetailModal
+          offer={detailOffer}
+          onClose={() => setDetailOffer(null)}
+          onDirections={openOfferDirections}
+          onFavorite={toggleFavorite}
+          visible={detailOffer !== null}
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <ScrollView contentContainerStyle={styles.content}>
@@ -188,6 +233,7 @@ export function OffersScreen() {
               onPress={() => {
                 const next = !favoritesOnly;
                 setFavoritesOnly(next);
+                setFeedTab(next ? 'favorites' : 'viewAll');
                 void search(query, radiusMeters, next);
               }}
             >

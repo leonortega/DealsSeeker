@@ -1,5 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import { createElement, useEffect } from 'react';
 import { apiConfig, normalizeProvider, resolveDisplayProvider } from '../api/config';
 import { BusinessMarkerDto, GeoPoint } from '../api/types';
 import { useApp } from '../hooks/useApp';
@@ -116,11 +117,15 @@ function buildMapHtml({
       })};
 
       function postMessage(payload) {
-        if (!window.ReactNativeWebView || typeof window.ReactNativeWebView.postMessage !== 'function') {
+        const serialized = JSON.stringify(payload);
+        if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
+          window.ReactNativeWebView.postMessage(serialized);
           return;
         }
 
-        window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(serialized, '*');
+        }
       }
 
       function showMessage(text) {
@@ -319,6 +324,16 @@ export function MapPreview({ businesses, center, onSelectMarker, radiusMeters, s
   const provider = resolveDisplayProvider();
   const fallbackProvider = normalizeProvider(apiConfig.mapDisplayProviderFallback);
   const zoom = calculateMapZoomForCoverage(radiusMeters, center.lat);
+  const html = buildMapHtml({
+    center,
+    fallbackProvider,
+    googleMapsApiKey: apiConfig.googleMapsApiKey,
+    markers: businesses,
+    provider,
+    showUserMarker,
+    themeMode: palette.mode,
+    zoom,
+  });
 
   function handleMessage(event: WebViewMessageEvent) {
     try {
@@ -336,6 +351,31 @@ export function MapPreview({ businesses, center, onSelectMarker, radiusMeters, s
     }
   }
 
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      return;
+    }
+
+    function handleWindowMessage(event: MessageEvent) {
+      try {
+        const payload = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (!payload || payload.type !== 'marker-selected') {
+          return;
+        }
+
+        const selectedMarker = businesses.find((marker) => marker.businessId === payload.businessId);
+        if (selectedMarker) {
+          onSelectMarker?.(selectedMarker);
+        }
+      } catch {
+        // Ignore malformed map messages.
+      }
+    }
+
+    window.addEventListener('message', handleWindowMessage);
+    return () => window.removeEventListener('message', handleWindowMessage);
+  }, [businesses, onSelectMarker]);
+
   return (
     <View style={[styles.frame, { borderColor: palette.border }]}>
       <View style={[styles.badge, { backgroundColor: palette.card, borderColor: palette.border }]}>
@@ -344,27 +384,24 @@ export function MapPreview({ businesses, center, onSelectMarker, radiusMeters, s
         </Text>
       </View>
 
-      <WebView
-        cacheEnabled={false}
-        domStorageEnabled
-        javaScriptEnabled
-        mixedContentMode="never"
-        onMessage={handleMessage}
-        scrollEnabled={false}
-        source={{
-          html: buildMapHtml({
-            center,
-            fallbackProvider,
-            googleMapsApiKey: apiConfig.googleMapsApiKey,
-            markers: businesses,
-            provider,
-            showUserMarker,
-            themeMode: palette.mode,
-            zoom,
-          }),
-        }}
-        style={styles.map}
-      />
+      {Platform.OS === 'web' ? (
+        createElement('iframe', {
+          srcDoc: html,
+          style: { border: 0, height: '100%', width: '100%' },
+          title: 'DealsSeeker Map',
+        })
+      ) : (
+        <WebView
+          cacheEnabled={false}
+          domStorageEnabled
+          javaScriptEnabled
+          mixedContentMode="never"
+          onMessage={handleMessage}
+          scrollEnabled={false}
+          source={{ html }}
+          style={styles.map}
+        />
+      )}
 
       <View style={[styles.footer, { backgroundColor: palette.panel, borderColor: palette.border }]}>
         <Text style={[styles.footerText, { color: palette.ink }]}>

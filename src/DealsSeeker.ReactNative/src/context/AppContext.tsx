@@ -46,6 +46,12 @@ interface AppContextValue {
   showLogin: () => void;
   openTab: (tab: MainTab) => void;
   openAddOffer: (offerId?: string) => void;
+  immersiveOffers: boolean;
+  openImmersiveOffers: () => void;
+  closeImmersiveOffers: () => void;
+  menuVisible: boolean;
+  openMenu: () => void;
+  closeMenu: () => void;
   openFavorites: () => void;
   closeOverlay: () => void;
   setReportDraft: (offer: OfferItemDto | null) => void;
@@ -75,6 +81,8 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [authScreen, setAuthScreen] = useState<AuthScreen>('login');
   const [activeTab, setActiveTab] = useState<MainTab>('offers');
   const [overlayRoute, setOverlayRoute] = useState<OverlayRoute>(null);
+  const [menuVisible, setMenuVisibleState] = useState(false);
+  const [immersiveOffers, setImmersiveOffers] = useState(true);
   const [loadingCount, setLoadingCount] = useState(0);
   const [reportDraft, setReportDraftState] = useState<OfferReportDraft | null>(null);
 
@@ -182,6 +190,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     setPreferences(nextPreferences);
     setAuthScreen('login');
     setActiveTab('offers');
+    setImmersiveOffers(true);
     setOverlayRoute(null);
   }
 
@@ -228,7 +237,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     session,
     isAuthenticated: Boolean(session?.accessToken),
     preferences,
-    palette: resolveTheme(preferences.themeMode, systemScheme === 'unspecified' ? null : systemScheme),
+    palette: resolveTheme(preferences.themeMode, systemScheme === 'light' ? 'light' : systemScheme === 'dark' ? 'dark' : null),
     reportDraft,
     loadingCount,
     api,
@@ -239,6 +248,12 @@ export function AppProvider({ children }: PropsWithChildren) {
       setOverlayRoute(null);
       setActiveTab(tab);
     },
+    menuVisible,
+    openMenu: () => setMenuVisibleState(true),
+    closeMenu: () => setMenuVisibleState(false),
+    immersiveOffers,
+    openImmersiveOffers: () => setImmersiveOffers(true),
+    closeImmersiveOffers: () => setImmersiveOffers(false),
     openAddOffer: (offerId) => setOverlayRoute({ name: 'add-offer', offerId }),
     openFavorites: () => setOverlayRoute({ name: 'favorites' }),
     closeOverlay: () => setOverlayRoute(null),

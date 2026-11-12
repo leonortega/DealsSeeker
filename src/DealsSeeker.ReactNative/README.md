@@ -17,6 +17,20 @@ $env:EXPO_PUBLIC_MAP_REDIRECT_PROVIDER_FALLBACK="OpenLayers"
 
 Android emulator builds should use `http://10.0.2.2:5005`. On a physical device, replace it with a host reachable from that device.
 
+## Run the API (backend)
+
+The React Native client requires `DealsSeeker.Api` to be running. From the repository root, with the .NET 10 SDK installed:
+
+```powershell
+# Default profile (https://localhost:7132; http://localhost:5005)
+dotnet run --project src/DealsSeeker.Api
+
+# HTTP-only profile (recommended for Android emulator / device testing)
+dotnet run --project src/DealsSeeker.Api --launch-profile http
+```
+
+Make sure `EXPO_PUBLIC_API_BASE_URL` (set in the Environment section) points to the API URL reachable from your device or emulator.
+
 ## Run
 
 ```powershell
