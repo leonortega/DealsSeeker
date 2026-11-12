@@ -30,14 +30,12 @@ export function ImmersiveActionCaption({ label }: { label: string }) {
 
 export function ImmersiveFooterBar({
   onOpenMapMode,
-  onOpenFavorites,
   onOpenAccount,
   onOpenSuggestions,
   onOpenReports,
   onCreateOffer,
 }: {
   onOpenMapMode: () => void;
-  onOpenFavorites: () => void;
   onOpenAccount: () => void;
   onOpenSuggestions: () => void;
   onOpenReports: () => void;
@@ -48,13 +46,12 @@ export function ImmersiveFooterBar({
   const items = useMemo(
     () => [
       { key: 'map', icon: '🗺️', label: t('offers.mapMode'), onPress: onOpenMapMode },
-      { key: 'favorites', icon: '⭐', label: t('nav.favorites'), onPress: onOpenFavorites },
       { key: 'account', icon: '👤', label: t('nav.account'), onPress: onOpenAccount },
       { key: 'suggestions', icon: '✏️', label: t('nav.suggestions'), onPress: onOpenSuggestions },
       { key: 'reports', icon: '🚩', label: t('nav.reports'), onPress: onOpenReports },
       { key: 'create', icon: '➕', label: t('nav.createOffer'), onPress: onCreateOffer },
     ],
-    [onCreateOffer, onOpenAccount, onOpenFavorites, onOpenMapMode, onOpenReports, onOpenSuggestions, t],
+    [onCreateOffer, onOpenAccount, onOpenMapMode, onOpenReports, onOpenSuggestions, t],
   );
 
   return (

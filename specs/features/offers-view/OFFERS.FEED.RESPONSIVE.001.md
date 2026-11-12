@@ -40,6 +40,12 @@ Define how the immersive offers feed adapts its presentation to the available vi
 - `OFFERS.FEED.RESPONSIVE.001-R20`: On a wide viewport, the photo navigation control shall display previous and next arrow controls in addition to the photo position indicators.
 - `OFFERS.FEED.RESPONSIVE.001-R21`: On a narrow viewport, the photo navigation control shall display only the photo position indicators, without arrow controls.
 - `OFFERS.FEED.RESPONSIVE.001-R22`: On every viewport size, a horizontal swipe over the offer page shall change the displayed photo, and the swipe direction shall determine the adjacent photo.
+- `OFFERS.FEED.RESPONSIVE.001-R23`: On a narrow viewport, the top bar shall display feed filter tabs in the same row as the search icon control.
+- `OFFERS.FEED.RESPONSIVE.001-R24`: The feed filter tabs shall be `Favorites` and `View all`.
+- `OFFERS.FEED.RESPONSIVE.001-R25`: The `View all` tab shall be selected by default.
+- `OFFERS.FEED.RESPONSIVE.001-R26`: Selecting the `Favorites` tab shall show only favorited offers in the feed, and selecting the `View all` tab shall show all offers.
+- `OFFERS.FEED.RESPONSIVE.001-R27`: The bottom footer bar shall not display the favorites option.
+- `OFFERS.FEED.RESPONSIVE.001-R28`: On a wide viewport, the left side panel shall not display the favorites option either; the feed filter tabs replace it.
 - `OFFERS.FEED.RESPONSIVE.001-R22`: On a narrow viewport, the immersive offers view shall not render an application header; the application identity icon and the search icon shall be displayed floating over the offer image, without the application name text.
 - `OFFERS.FEED.RESPONSIVE.001-R23`: On a wide viewport, the application identity and application name shall remain in the left side panel.
 
@@ -138,6 +144,34 @@ Scenario: Horizontal swipe changes the photo on every viewport size
   When the user swipes horizontally over the offer page
   Then the displayed photo shall change to the adjacent photo
   And the direction of the swipe shall determine which photo is shown
+
+Scenario: Narrow viewport top bar shows feed filter tabs next to the search icon
+  Given the user is on the immersive offers view
+  And the viewport is narrow
+  When the top bar is rendered
+  Then the feed filter tabs shall be displayed in the same row as the search icon control
+  And the tabs shall be `Favorites` and `View all`
+  And the `View all` tab shall be selected by default
+
+Scenario: Selecting the favorites tab shows only favorites
+  Given the user is on the immersive offers view
+  When the user selects the `Favorites` tab
+  Then the feed shall display only favorited offers
+  When the user selects the `View all` tab
+  Then the feed shall display all offers
+
+Scenario: Bottom footer bar does not display the favorites option
+  Given the user is on the immersive offers view
+  And the viewport is narrow
+  When the bottom footer bar is rendered
+  Then the favorites option shall not be displayed
+
+Scenario: Wide viewport side panel does not display the favorites option
+  Given the user is on the immersive offers view
+  And the viewport is wide
+  When the left side panel is rendered
+  Then the favorites option shall not be displayed
+  And the feed filter tabs shall be displayed instead
 
 Scenario: Offer text overlay reserves space for the promoted mark
   Given the user is on the immersive offers view

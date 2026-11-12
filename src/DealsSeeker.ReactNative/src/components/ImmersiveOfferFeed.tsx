@@ -7,6 +7,7 @@ import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
 import { openDirections } from '../utils/maps';
 import { ImmersiveActionCaption, ImmersiveActionIconGlyph, ImmersiveFooterBar } from './ImmersiveFooterBar';
+import { ImmersiveFeedTab, ImmersiveFeedTabs } from './ImmersiveFeedTabs';
 import { COVERAGE_DISTANCE_OPTIONS, ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
 
 const NARROW_BREAKPOINT = 768;
@@ -21,6 +22,8 @@ interface ImmersiveOfferFeedProps {
   onReport: (offer: OfferItemDto) => void;
   onDirections: (offer: OfferItemDto) => void;
   onSearch: (query: string) => void;
+  feedTab: ImmersiveFeedTab;
+  onFeedTabChange: (tab: ImmersiveFeedTab) => void;
 }
 
 function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string; placeholderSymbol: string }) {
@@ -320,12 +323,13 @@ export function ImmersiveOfferFeed({
   onReport,
   onDirections,
   onSearch,
+  feedTab,
+  onFeedTabChange,
 }: ImmersiveOfferFeedProps) {
   const { height, width } = useWindowDimensions();
   const {
     closeImmersiveOffers,
     openAddOffer,
-    openFavorites,
     openTab,
     palette,
     t,
@@ -359,6 +363,7 @@ export function ImmersiveOfferFeed({
     <View style={styles.leftPanel}>
       <Image source={require('../../assets/icon.png')} style={styles.logo} />
       <Text style={styles.appName}>{t('app.title')}</Text>
+      <ImmersiveFeedTabs activeTab={feedTab} onChangeTab={onFeedTabChange} variant="panel" />
       <TextInput
         onSubmitEditing={() => onSearch(searchQuery)}
         placeholder={t('offers.searchPlaceholder')}
@@ -388,9 +393,6 @@ export function ImmersiveOfferFeed({
       </View>
       <Pressable style={styles.leftButton} onPress={handleOpenMapMode}>
         <Text style={styles.leftButtonText}>🗺️ {t('offers.mapMode')}</Text>
-      </Pressable>
-      <Pressable style={styles.leftButton} onPress={openFavorites}>
-        <Text style={styles.leftButtonText}>⭐ {t('nav.favorites')}</Text>
       </Pressable>
       <Pressable style={styles.leftButton} onPress={() => openTab('account')}>
         <Text style={styles.leftButtonText}>👤 {t('nav.account')}</Text>
@@ -449,6 +451,7 @@ export function ImmersiveOfferFeed({
           {isNarrow ? (
             <View pointerEvents="box-none" style={styles.topBar}>
               <Image source={require('../../assets/icon.png')} style={styles.topBarLogo} />
+              <ImmersiveFeedTabs activeTab={feedTab} onChangeTab={onFeedTabChange} />
               <Pressable
                 accessibilityLabel={t('offers.search')}
                 accessibilityRole="button"
@@ -466,7 +469,6 @@ export function ImmersiveOfferFeed({
         <ImmersiveFooterBar
           onCreateOffer={handleCreateOffer}
           onOpenAccount={() => openTab('account')}
-          onOpenFavorites={openFavorites}
           onOpenMapMode={handleOpenMapMode}
           onOpenReports={() => openTab('reports')}
           onOpenSuggestions={() => openTab('suggestions')}

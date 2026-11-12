@@ -98,6 +98,34 @@ Feature: Immersive feed responsive presentation
     Then the displayed photo changes to the adjacent photo
     And the direction of the swipe determines which photo is shown
 
+  Scenario: Narrow viewport top bar shows feed filter tabs next to the search icon
+    Given the user is on the immersive offers view
+    And the viewport is narrow
+    When the top bar is rendered
+    Then the feed filter tabs are displayed in the same row as the search icon control
+    And the tabs are `Favorites` and `View all`
+    And the `View all` tab is selected by default
+
+  Scenario: Selecting the favorites tab shows only favorites
+    Given the user is on the immersive offers view
+    When the user selects the `Favorites` tab
+    Then the feed displays only favorited offers
+    When the user selects the `View all` tab
+    Then the feed displays all offers
+
+  Scenario: Bottom footer bar does not display the favorites option
+    Given the user is on the immersive offers view
+    And the viewport is narrow
+    When the bottom footer bar is rendered
+    Then the favorites option is not displayed
+
+  Scenario: Wide viewport side panel does not display the favorites option
+    Given the user is on the immersive offers view
+    And the viewport is wide
+    When the left side panel is rendered
+    Then the favorites option is not displayed
+    And the feed filter tabs are displayed instead
+
   Scenario: Offer text overlay reserves space for the promoted mark
     Given the user is on the immersive offers view
     And the offer is promoted

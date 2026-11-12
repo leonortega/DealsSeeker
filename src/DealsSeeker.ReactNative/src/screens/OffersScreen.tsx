@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions
 import * as Location from 'expo-location';
 import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '../api/types';
 import { ImmersiveOfferFeed } from '../components/ImmersiveOfferFeed';
+import { ImmersiveFeedTab } from '../components/ImmersiveFeedTabs';
 import { MapPreview } from '../components/MapPreview';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetailModal } from '../components/OfferDetailModal';
@@ -19,6 +20,7 @@ export function OffersScreen() {
   const [query, setQuery] = useState('');
   const [radiusMeters, setRadiusMeters] = useState(1500);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [feedTab, setFeedTab] = useState<ImmersiveFeedTab>('viewAll');
   const [results, setResults] = useState<SearchOffersResponse>({ offers: [], businesses: [] });
   const [detailOffer, setDetailOffer] = useState<OfferItemDto | null>(null);
   const [userLocation, setUserLocation] = useState(fallbackLocation);
@@ -137,15 +139,24 @@ export function OffersScreen() {
     await openDirections(offer.location, preferences.navigationMode);
   }
 
+  function handleFeedTabChange(tab: ImmersiveFeedTab) {
+    const nextFavoritesOnly = tab === 'favorites';
+    setFeedTab(tab);
+    setFavoritesOnly(nextFavoritesOnly);
+    void search(query, radiusMeters, nextFavoritesOnly);
+  }
+
   if (immersiveOffers) {
     const combinedOffers = [...sections.promoted, ...sections.feed];
 
     return (
       <>
         <ImmersiveOfferFeed
+          feedTab={feedTab}
           offers={combinedOffers}
           onDirections={openOfferDirections}
           onFavorite={toggleFavorite}
+          onFeedTabChange={handleFeedTabChange}
           onRadiusChange={(nextRadius) => {
             setRadiusMeters(nextRadius);
             void search(query, nextRadius, favoritesOnly);
@@ -222,6 +233,7 @@ export function OffersScreen() {
               onPress={() => {
                 const next = !favoritesOnly;
                 setFavoritesOnly(next);
+                setFeedTab(next ? 'favorites' : 'viewAll');
                 void search(query, radiusMeters, next);
               }}
             >

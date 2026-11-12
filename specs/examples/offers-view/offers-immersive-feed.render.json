@@ -10,10 +10,10 @@
     "leftControls": [
       "appName",
       "appLogo",
+      "feedTabs",
       "search",
       "coverageRadius",
       "mapMode",
-      "favorites",
       "navigationDestinations",
       "createOffer"
     ],

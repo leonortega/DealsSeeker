@@ -22,7 +22,7 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R2`: The system shall allow the user to move between offers by vertical scrolling/swiping, one offer at a time, without rendering the previous grid layout.
 - `OFFERS.FEED.IMMERSIVE.001-R3`: Each feed page shall use the offer image as the full-bleed primary visual background.
 - `OFFERS.FEED.IMMERSIVE.001-R4`: The left side of the screen shall display application identity (name and logo) and discovery controls.
-- `OFFERS.FEED.IMMERSIVE.001-R5`: The left side of the screen shall provide search options and entry points for the main navigation destinations (favorites, account, suggestions, reports).
+- `OFFERS.FEED.IMMERSIVE.001-R5`: The left side of the screen shall provide search options and entry points for the main navigation destinations (account, suggestions, reports).
 - `OFFERS.FEED.IMMERSIVE.001-R6`: The system shall keep application menu options available with their existing behavior and entry points in the standard application header.
 - `OFFERS.FEED.IMMERSIVE.001-R7`: The system shall keep the main navigation destinations reachable with their existing behavior, either through the standard bottom navigation or through the left panel options of the immersive feed.
 - `OFFERS.FEED.IMMERSIVE.001-R8`: Each feed page shall expose offer action controls in a vertical side rail on the right, including favorite, directions, availability voting (positive and negative), and report, preserving their existing behavior and state semantics. The open detail control shall not be exposed.

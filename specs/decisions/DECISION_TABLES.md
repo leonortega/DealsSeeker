@@ -249,7 +249,8 @@
 | Narrow viewport breakpoint | Viewport width below `768px` | Mobile presentation |
 | Narrow viewport navigation | Bottom footer bar | Side panel is not rendered |
 | Narrow viewport search | Icon in the top bar opening a search overlay | Inline search input is hidden |
-| Narrow viewport footer order | Map mode, Favorites, Account, Suggestions, Reports, Create | Matches the side panel order |
+| Narrow viewport footer order | Map mode, Account, Suggestions, Reports, Create | Favorites moved to the top-bar tab |
+| Feed filter tabs | `Favorites` and `View all` | `View all` selected by default |
 | Offer action control presentation | Icons on every viewport size | Accessible labels always provided |
 | Offer action control captions | Wide viewport only | Narrow viewport stays icon-only |
 | Photo swipe direction | Swipe left shows next photo, swipe right shows previous | Wraps around at the ends |

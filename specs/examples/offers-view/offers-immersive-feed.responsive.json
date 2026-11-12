@@ -8,13 +8,18 @@
     "sidePanelVisible": false,
     "topBarControls": [
       "appIdentityIcon",
+      "feedTabs",
       "searchIcon"
     ],
+    "feedTabs": [
+      "Favorites",
+      "View all"
+    ],
+    "defaultFeedTab": "View all",
     "applicationHeaderVisible": false,
     "applicationNameVisible": false,
     "footerControls": [
       "mapMode",
-      "favorites",
       "account",
       "suggestions",
       "reports",
@@ -53,10 +58,10 @@
       "sidePanelVisible": true,
       "sidePanelControls": [
         "appIdentity",
+        "feedTabs",
         "searchInput",
         "coverageDistanceButtons",
         "mapMode",
-        "favorites",
         "account",
         "suggestions",
         "reports",
