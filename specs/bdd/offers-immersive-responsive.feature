@@ -58,13 +58,29 @@ Feature: Immersive feed responsive presentation
     When an offer page is displayed
     Then the right side rail icons do not display text captions
 
-  Scenario: Narrow viewport photo navigation sits below the top bar
+  Scenario: Narrow viewport photo navigation sits above the offer title
     Given the user is on the immersive offers view
     And the viewport is narrow
     And the offer has more than one photo
     When the offer page is displayed
-    Then the photo navigation control is displayed below the top bar
-    And a visible gap separates it from the top bar
+    Then the photo navigation control is displayed above the offer title within the offer text overlay
+    And the control displays only the photo position indicators
+    And no arrow controls are displayed
+
+  Scenario: Wide viewport photo navigation shows arrows above the offer title
+    Given the user is on the immersive offers view
+    And the viewport is wide
+    And the offer has more than one photo
+    When the offer page is displayed
+    Then the photo navigation control is displayed above the offer title within the offer text overlay
+    And the control displays previous and next arrow controls
+
+  Scenario: Offer text overlay reserves space for the promoted mark
+    Given the user is on the immersive offers view
+    And the offer is promoted
+    When the offer page is displayed
+    Then the promoted mark is visible and readable
+    And the photo navigation control does not overlap it
 
   Scenario: Wide viewport keeps the side panel
     Given the user is on the immersive offers view

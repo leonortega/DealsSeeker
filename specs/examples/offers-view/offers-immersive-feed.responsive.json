@@ -36,7 +36,8 @@
     ],
     "descriptionOverlayAboveFooter": true,
     "photoNavigationAboveFooter": true,
-    "photoNavigationBelowTopBar": true,
+    "photoNavigationAboveOfferTitle": true,
+    "photoNavigationShowsArrows": false,
     "actionControlsAboveFooter": true
   },
   "alternate": {
@@ -80,7 +81,8 @@
           "No existe",
           "Reportar"
         ]
-      }
+      },
+      "photoNavigationShowsArrows": true
     }
   }
 }

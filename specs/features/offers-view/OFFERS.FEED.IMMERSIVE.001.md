@@ -27,6 +27,8 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R7`: The system shall keep the main navigation destinations reachable with their existing behavior, either through the standard bottom navigation or through the left panel options of the immersive feed.
 - `OFFERS.FEED.IMMERSIVE.001-R8`: Each feed page shall expose offer action controls in a vertical side rail on the right, including favorite, directions, availability voting (positive and negative), and report, preserving their existing behavior and state semantics. The open detail control shall not be exposed.
 - `OFFERS.FEED.IMMERSIVE.001-R9`: Each feed page shall display business name, distance, description, and tags as an overlay in the lower-left area, analogous to a video description area.
+- `OFFERS.FEED.IMMERSIVE.001-R46`: The offer title shall be displayed with a reduced font size, so that the offer text overlay stays compact.
+- `OFFERS.FEED.IMMERSIVE.001-R47`: The offer text overlay shall reserve space for the promoted and reported marks, so that they remain readable and are not overlapped by the photo navigation control.
 - `OFFERS.FEED.IMMERSIVE.001-R10`: The description in the overlay shall be truncated by default and provide a `more` control that reveals the full description and all associated tags. After expansion, the `more` control shall disappear and no back control shall be provided.
 - `OFFERS.FEED.IMMERSIVE.001-R39`: When expanded, associated tags shall be displayed as inline text prefixed with the `#` symbol.
 - `OFFERS.FEED.IMMERSIVE.001-R11`: Promoted offers shall remain visually labeled on their feed page.
@@ -55,8 +57,8 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R34`: The left panel shall display coverage distance buttons below the search input, using the same radius options as the standard offers view.
 - `OFFERS.FEED.IMMERSIVE.001-R35`: Text in the left panel, including the application name, shall use white color.
 - `OFFERS.FEED.IMMERSIVE.001-R36`: Offer images shall be contained within the page; when an image does not fill the width, dark gray bars shall appear on the left and right so the page background remains fully covered.
-- `OFFERS.FEED.IMMERSIVE.001-R37`: When an offer has more than one photo, the immersive feed shall allow changing the displayed photo using left and right keyboard arrow keys, horizontal scrolling/swiping, and a top-centered navigation control with left and right arrows and one point per photo.
-- `OFFERS.FEED.IMMERSIVE.001-R38`: Photo navigation affordances, including the top-centered control with one point per photo, shall only be displayed when the offer has more than one photo.
+- `OFFERS.FEED.IMMERSIVE.001-R37`: When an offer has more than one photo, the immersive feed shall allow changing the displayed photo using left and right keyboard arrow keys, horizontal scrolling/swiping, and a navigation control with one point per photo, displayed above the offer title within the offer text overlay.
+- `OFFERS.FEED.IMMERSIVE.001-R38`: Photo navigation affordances, including the control with one point per photo, shall only be displayed when the offer has more than one photo.
 - `OFFERS.FEED.IMMERSIVE.001-R40`: The immersive feed photo carousel shall not display scrollbars.
 - `OFFERS.FEED.IMMERSIVE.001-R41`: When an offer has more than one photo, each photo of the carousel shall be rendered as a full-page background occupying the whole page area, matching the framing of a single-photo offer, and shall not be rendered as an empty or collapsed visual.
 - `OFFERS.FEED.IMMERSIVE.001-R42`: The left panel shall provide an option to create a new offer, placed as the last option of the left panel, labeled `Create` in English and `Crear` in Spanish, and selecting it shall open the Add Offer view.
@@ -99,9 +101,9 @@ Scenario: Description and tags use more control
 
 Scenario: Offer with multiple photos supports photo navigation
   Given an offer page with more than one photo
-  When the user presses the left or right arrow keys or scrolls horizontally or uses the top-centered photo navigation control
+  When the user presses the left or right arrow keys or scrolls horizontally or uses the photo navigation control
   Then the displayed photo shall change
-  And a top-centered navigation control with left and right arrows and one point per photo shall be available
+  And a navigation control with one point per photo shall be available above the offer title
   And no scrollbar shall be displayed
 
 Scenario: Offer with one photo hides photo navigation

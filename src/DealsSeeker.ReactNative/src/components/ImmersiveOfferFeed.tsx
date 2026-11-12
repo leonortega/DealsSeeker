@@ -10,8 +10,6 @@ import { ImmersiveActionCaption, ImmersiveActionIconGlyph, ImmersiveFooterBar } 
 import { COVERAGE_DISTANCE_OPTIONS, ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
 
 const NARROW_BREAKPOINT = 768;
-const PHOTO_NAV_TOP_WIDE = 16;
-const PHOTO_NAV_TOP_NARROW = 96;
 
 interface ImmersiveOfferFeedProps {
   offers: OfferItemDto[];
@@ -51,7 +49,7 @@ function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string
 function ImmersiveOfferPage({
   offer,
   showCaptions,
-  topOffset,
+  showPhotoArrows,
   onFavorite,
   onVote,
   onReport,
@@ -59,7 +57,7 @@ function ImmersiveOfferPage({
 }: {
   offer: OfferItemDto;
   showCaptions: boolean;
-  topOffset: number;
+  showPhotoArrows: boolean;
   onFavorite: (offer: OfferItemDto) => void;
   onVote: (offer: OfferItemDto, vote: OfferAvailabilityVoteType) => void;
   onReport: (offer: OfferItemDto) => void;
@@ -235,6 +233,32 @@ function ImmersiveOfferPage({
       </View>
 
       <View style={[styles.bottomOverlay, showCaptions && styles.bottomOverlayWithCaptions]}>
+        {hasMultipleImages ? (
+          <View pointerEvents="box-none" style={styles.immersivePhotoNav}>
+            {showPhotoArrows ? (
+              <Pressable accessibilityLabel={t('offers.previousImage')} onPress={showPreviousImage} style={styles.immersivePhotoNavButton}>
+                <Text style={styles.immersivePhotoNavLabel}>‹</Text>
+              </Pressable>
+            ) : null}
+            <View style={styles.immersivePhotoDots}>
+              {images.map((_, index) => (
+                <Pressable
+                  key={`photo-dot-${index}`}
+                  onPress={() => updateSelectedImage(index, true)}
+                  style={[
+                    styles.immersivePhotoDot,
+                    index === selectedImageIndex ? styles.immersivePhotoDotActive : null,
+                  ]}
+                />
+              ))}
+            </View>
+            {showPhotoArrows ? (
+              <Pressable accessibilityLabel={t('offers.nextImage')} onPress={showNextImage} style={styles.immersivePhotoNavButton}>
+                <Text style={styles.immersivePhotoNavLabel}>›</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
         {offer.isPromoted ? (
           <View style={[styles.badge, { backgroundColor: palette.accent }]}>
             <Text style={styles.badgeLabel}>{t('offers.promoted')}</Text>
@@ -261,29 +285,6 @@ function ImmersiveOfferPage({
           </Pressable>
         ) : null}
       </View>
-
-      {hasMultipleImages ? (
-        <View pointerEvents="box-none" style={[styles.immersivePhotoNav, { top: topOffset }]}>
-          <Pressable accessibilityLabel={t('offers.previousImage')} onPress={showPreviousImage} style={styles.immersivePhotoNavButton}>
-            <Text style={styles.immersivePhotoNavLabel}>‹</Text>
-          </Pressable>
-          <View style={styles.immersivePhotoDots}>
-            {images.map((_, index) => (
-              <Pressable
-                key={`photo-dot-${index}`}
-                onPress={() => updateSelectedImage(index, true)}
-                style={[
-                  styles.immersivePhotoDot,
-                  index === selectedImageIndex ? styles.immersivePhotoDotActive : null,
-                ]}
-              />
-            ))}
-          </View>
-          <Pressable accessibilityLabel={t('offers.nextImage')} onPress={showNextImage} style={styles.immersivePhotoNavButton}>
-            <Text style={styles.immersivePhotoNavLabel}>›</Text>
-          </Pressable>
-        </View>
-      ) : null}
     </View>
   );
 }
@@ -409,7 +410,7 @@ export function ImmersiveOfferFeed({
                 <ImmersiveOfferPage
                   offer={item}
                   showCaptions={!isNarrow}
-                  topOffset={isNarrow ? PHOTO_NAV_TOP_NARROW : PHOTO_NAV_TOP_WIDE}
+                  showPhotoArrows={!isNarrow}
                   onDirections={onDirections}
                   onFavorite={onFavorite}
                   onReport={onReport}
@@ -657,7 +658,7 @@ const styles = StyleSheet.create({
   },
   businessName: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '800',
   },
   distance: {
@@ -701,11 +702,12 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   badge: {
+    alignSelf: 'flex-start',
     borderRadius: 999,
     marginBottom: 6,
+    marginTop: 2,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    alignSelf: 'flex-start',
   },
   badgeLabel: {
     color: '#fff',
@@ -724,23 +726,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: 12,
-    justifyContent: 'center',
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    zIndex: 4,
+    marginBottom: 8,
   },
   immersivePhotoNavButton: {
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',
     borderRadius: 999,
-    height: 36,
+    height: 32,
     justifyContent: 'center',
-    width: 36,
+    width: 32,
   },
   immersivePhotoNavLabel: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
   },
   immersivePhotoDots: {

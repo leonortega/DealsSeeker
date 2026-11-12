@@ -9,6 +9,10 @@
     "carouselPhotoFraming": "full-page-background",
     "carouselPhotoOccupiesWholePageArea": true,
     "renderedPhotoIsBlankOrCollapsed": false,
-    "photoNavigation": "top-centered-arrows-and-dots"
+    "photoNavigation": "above-offer-title-arrows-and-dots",
+    "photoNavigationShowsArrows": {
+      "narrowViewport": false,
+      "wideViewport": true
+    }
   }
 }
