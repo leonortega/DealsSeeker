@@ -1,0 +1,69 @@
+{
+  "input": {
+    "viewportWidthPx": 390,
+    "viewportHeightPx": 844
+  },
+  "expected": {
+    "layout": "vertical-full-screen-feed",
+    "sidePanelVisible": false,
+    "topBarControls": [
+      "appIdentity",
+      "searchIcon"
+    ],
+    "footerControls": [
+      "mapMode",
+      "favorites",
+      "account",
+      "suggestions",
+      "reports",
+      "createOffer"
+    ],
+    "searchOverlay": {
+      "openedBy": "searchIcon",
+      "contents": [
+        "searchInput",
+        "coverageDistanceButtons",
+        "searchAction",
+        "cancelAction"
+      ]
+    },
+    "rightControls": [
+      "favoriteIcon",
+      "directionsIcon",
+      "votePositiveIcon",
+      "voteNegativeIcon",
+      "reportIcon"
+    ],
+    "descriptionOverlayAboveFooter": true,
+    "photoNavigationAboveFooter": true,
+    "actionControlsAboveFooter": true
+  },
+  "alternate": {
+    "input": {
+      "viewportWidthPx": 1280,
+      "viewportHeightPx": 800
+    },
+    "expected": {
+      "layout": "vertical-full-screen-feed",
+      "sidePanelVisible": true,
+      "sidePanelControls": [
+        "appIdentity",
+        "searchInput",
+        "coverageDistanceButtons",
+        "mapMode",
+        "favorites",
+        "account",
+        "suggestions",
+        "reports",
+        "createOffer"
+      ],
+      "rightControls": [
+        "favoriteIcon",
+        "directionsIcon",
+        "votePositiveIcon",
+        "voteNegativeIcon",
+        "reportIcon"
+      ]
+    }
+  }
+}

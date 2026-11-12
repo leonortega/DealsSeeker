@@ -80,4 +80,5 @@ Scenario: Report action opens Reports view with offer context
 
 ## Related Specs
 - `OFFERS.LIST.ITEM.001`
+- `OFFERS.FEED.RESPONSIVE.001`
 - `REPORTS.OFFER.PREFILL.001`

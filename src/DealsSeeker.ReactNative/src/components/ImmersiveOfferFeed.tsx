@@ -6,6 +6,10 @@ import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
 import { openDirections } from '../utils/maps';
+import { ImmersiveActionIconGlyph, ImmersiveFooterBar } from './ImmersiveFooterBar';
+import { COVERAGE_DISTANCE_OPTIONS, ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
+
+const NARROW_BREAKPOINT = 768;
 
 interface ImmersiveOfferFeedProps {
   offers: OfferItemDto[];
@@ -44,12 +48,14 @@ function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string
 
 function ImmersiveOfferPage({
   offer,
+  topOffset,
   onFavorite,
   onVote,
   onReport,
   onDirections,
 }: {
   offer: OfferItemDto;
+  topOffset: number;
   onFavorite: (offer: OfferItemDto) => void;
   onVote: (offer: OfferItemDto, vote: OfferAvailabilityVoteType) => void;
   onReport: (offer: OfferItemDto) => void;
@@ -163,34 +169,53 @@ function ImmersiveOfferPage({
       <View pointerEvents="none" style={styles.overlay} />
 
       <View style={styles.rightRail}>
-        <Pressable style={styles.railButton} onPress={() => onFavorite(offer)}>
-          <Text style={styles.railButtonText}>{t('offers.favorite')}</Text>
-        </Pressable>
-        <Pressable style={styles.railButton} onPress={() => void onDirections(offer)}>
-          <Text style={styles.railButtonText}>
-            {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
-          </Text>
+        <Pressable
+          accessibilityLabel={t('offers.favorite')}
+          accessibilityRole="button"
+          style={styles.railButton}
+          onPress={() => onFavorite(offer)}
+        >
+          <ImmersiveActionIconGlyph active={offer.isFavorite} kind="favorite" />
         </Pressable>
         <Pressable
+          accessibilityLabel={preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+          accessibilityRole="button"
+          style={styles.railButton}
+          onPress={() => void onDirections(offer)}
+        >
+          <ImmersiveActionIconGlyph kind="directions" />
+        </Pressable>
+        <Pressable
+          accessibilityLabel={t('offers.available')}
+          accessibilityRole="button"
           disabled={offer.hasCurrentUserVoted}
           style={[styles.railButton, offer.hasCurrentUserVoted && styles.disabled]}
           onPress={() => onVote(offer, 1)}
         >
-          <Text style={styles.railButtonText}>👍 {offer.positiveAvailabilityCount}</Text>
+          <ImmersiveActionIconGlyph kind="votePositive" />
+          <Text style={styles.railCount}>{offer.positiveAvailabilityCount}</Text>
         </Pressable>
         <Pressable
+          accessibilityLabel={t('offers.available')}
+          accessibilityRole="button"
           disabled={offer.hasCurrentUserVoted}
           style={[styles.railButton, offer.hasCurrentUserVoted && styles.disabled]}
           onPress={() => onVote(offer, 2)}
         >
-          <Text style={styles.railButtonText}>👎 {offer.negativeAvailabilityCount}</Text>
+          <ImmersiveActionIconGlyph kind="voteNegative" />
+          <Text style={styles.railCount}>{offer.negativeAvailabilityCount}</Text>
         </Pressable>
-        <Pressable style={styles.railButton} onPress={() => onReport(offer)}>
-          <Text style={styles.railButtonText}>{t('offers.report')}</Text>
+        <Pressable
+          accessibilityLabel={t('offers.report')}
+          accessibilityRole="button"
+          style={styles.railButton}
+          onPress={() => onReport(offer)}
+        >
+          <ImmersiveActionIconGlyph kind="report" />
         </Pressable>
       </View>
 
-      <View style={styles.bottomOverlay}>
+      <View style={[styles.bottomOverlay, { bottom: 16 }]}>
         {offer.isPromoted ? (
           <View style={[styles.badge, { backgroundColor: palette.accent }]}>
             <Text style={styles.badgeLabel}>{t('offers.promoted')}</Text>
@@ -219,7 +244,7 @@ function ImmersiveOfferPage({
       </View>
 
       {hasMultipleImages ? (
-        <View pointerEvents="box-none" style={styles.immersivePhotoNav}>
+        <View pointerEvents="box-none" style={[styles.immersivePhotoNav, { top: topOffset }]}>
           <Pressable accessibilityLabel={t('offers.previousImage')} onPress={showPreviousImage} style={styles.immersivePhotoNavButton}>
             <Text style={styles.immersivePhotoNavLabel}>‹</Text>
           </Pressable>
@@ -255,7 +280,7 @@ export function ImmersiveOfferFeed({
   onDirections,
   onSearch,
 }: ImmersiveOfferFeedProps) {
-  const { height } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
   const {
     closeImmersiveOffers,
     openAddOffer,
@@ -266,7 +291,14 @@ export function ImmersiveOfferFeed({
     t,
   } = useApp();
   const [searchQuery, setSearchQuery] = useState(query);
-  const pageHeight = Math.max(320, height);
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [feedHeight, setFeedHeight] = useState(0);
+  const isNarrow = width < NARROW_BREAKPOINT;
+  const pageHeight = Math.max(320, feedHeight || height);
+
+  function handleFeedAreaLayout(event: LayoutChangeEvent) {
+    setFeedHeight(event.nativeEvent.layout.height);
+  }
 
   function handleCreateOffer() {
     closeImmersiveOffers();
@@ -278,87 +310,141 @@ export function ImmersiveOfferFeed({
     openTab('offers');
   }
 
+  function handleApplySearch() {
+    onSearch(searchQuery);
+    setSearchVisible(false);
+  }
+
+  const leftPanel = (
+    <View style={styles.leftPanel}>
+      <Image source={require('../../assets/icon.png')} style={styles.logo} />
+      <Text style={styles.appName}>{t('app.title')}</Text>
+      <TextInput
+        onSubmitEditing={() => onSearch(searchQuery)}
+        placeholder={t('offers.searchPlaceholder')}
+        placeholderTextColor="#aaa"
+        returnKeyType="search"
+        style={styles.leftInput}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+      <View style={styles.radiusRow}>
+        {COVERAGE_DISTANCE_OPTIONS.map((option) => (
+          <Pressable
+            key={option}
+            style={[
+              styles.radiusChip,
+              {
+                backgroundColor: option === radiusMeters ? '#ffffff' : 'rgba(255,255,255,0.18)',
+              },
+            ]}
+            onPress={() => onRadiusChange(option)}
+          >
+            <Text style={{ color: option === radiusMeters ? '#000000' : '#ffffff', fontSize: 11, fontWeight: '700' }}>
+              {option} m
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      <Pressable style={styles.leftButton} onPress={handleOpenMapMode}>
+        <Text style={styles.leftButtonText}>🗺️ {t('offers.mapMode')}</Text>
+      </Pressable>
+      <Pressable style={styles.leftButton} onPress={openFavorites}>
+        <Text style={styles.leftButtonText}>⭐ {t('nav.favorites')}</Text>
+      </Pressable>
+      <Pressable style={styles.leftButton} onPress={() => openTab('account')}>
+        <Text style={styles.leftButtonText}>👤 {t('nav.account')}</Text>
+      </Pressable>
+      <Pressable style={styles.leftButton} onPress={() => openTab('suggestions')}>
+        <Text style={styles.leftButtonText}>✏️ {t('nav.suggestions')}</Text>
+      </Pressable>
+      <Pressable style={styles.leftButton} onPress={() => openTab('reports')}>
+        <Text style={styles.leftButtonText}>🚩 {t('nav.reports')}</Text>
+      </Pressable>
+      <Pressable style={styles.leftButton} onPress={handleCreateOffer}>
+        <Text style={styles.leftButtonText}>➕ {t('nav.createOffer')}</Text>
+      </Pressable>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <View style={styles.leftPanel}>
-        <Image source={require('../../assets/icon.png')} style={styles.logo} />
-        <Text style={styles.appName}>{t('app.title')}</Text>
-        <TextInput
-          onSubmitEditing={() => onSearch(searchQuery)}
-          placeholder={t('offers.searchPlaceholder')}
-          placeholderTextColor="#aaa"
-          returnKeyType="search"
-          style={styles.leftInput}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        <View style={styles.radiusRow}>
-          {[500, 1000, 1500, 2500, 5000].map((option) => (
-            <Pressable
-              key={option}
-              style={[
-                styles.radiusChip,
-                {
-                  backgroundColor: option === radiusMeters ? '#ffffff' : 'rgba(255,255,255,0.18)',
-                },
-              ]}
-              onPress={() => onRadiusChange(option)}
-            >
-              <Text style={{ color: option === radiusMeters ? '#000000' : '#ffffff', fontSize: 11, fontWeight: '700' }}>
-                {option} m
-              </Text>
-            </Pressable>
-          ))}
+      <View style={styles.contentRow}>
+        {isNarrow ? null : leftPanel}
+
+        <View onLayout={handleFeedAreaLayout} style={styles.feedArea}>
+          <FlatList
+            style={{ flex: 1 }}
+            data={offers}
+            keyExtractor={(item) => item.offerId}
+            pagingEnabled
+            showsVerticalScrollIndicator={false}
+            snapToInterval={pageHeight}
+            decelerationRate="fast"
+            getItemLayout={(_, index) => ({
+              length: pageHeight,
+              offset: pageHeight * index,
+              index,
+            })}
+            renderItem={({ item }) => (
+              <View style={{ height: pageHeight }}>
+                <ImmersiveOfferPage
+                  offer={item}
+                  topOffset={isNarrow ? 64 : 16}
+                  onDirections={onDirections}
+                  onFavorite={onFavorite}
+                  onReport={onReport}
+                  onVote={onVote}
+                />
+              </View>
+            )}
+            ListEmptyComponent={
+              <View style={[styles.empty, { height: pageHeight }]}>
+                <Text style={{ color: palette.inkMuted }}>{t('offers.noResults')}</Text>
+              </View>
+            }
+          />
+
+          {isNarrow ? (
+            <View style={styles.topBar}>
+              <View style={styles.topBarIdentity}>
+                <Image source={require('../../assets/icon.png')} style={styles.topBarLogo} />
+                <Text numberOfLines={1} style={styles.topBarTitle}>
+                  {t('app.title')}
+                </Text>
+              </View>
+              <Pressable
+                accessibilityLabel={t('offers.search')}
+                accessibilityRole="button"
+                onPress={() => setSearchVisible(true)}
+                style={styles.searchIconButton}
+              >
+                <Text style={styles.searchIcon}>🔍</Text>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
-        <Pressable style={styles.leftButton} onPress={handleOpenMapMode}>
-          <Text style={styles.leftButtonText}>🗺️ {t('offers.mapMode')}</Text>
-        </Pressable>
-        <Pressable style={styles.leftButton} onPress={openFavorites}>
-          <Text style={styles.leftButtonText}>⭐ {t('nav.favorites')}</Text>
-        </Pressable>
-        <Pressable style={styles.leftButton} onPress={() => openTab('account')}>
-          <Text style={styles.leftButtonText}>👤 {t('nav.account')}</Text>
-        </Pressable>
-        <Pressable style={styles.leftButton} onPress={() => openTab('suggestions')}>
-          <Text style={styles.leftButtonText}>✏️ {t('nav.suggestions')}</Text>
-        </Pressable>
-        <Pressable style={styles.leftButton} onPress={() => openTab('reports')}>
-          <Text style={styles.leftButtonText}>🚩 {t('nav.reports')}</Text>
-        </Pressable>
-        <Pressable style={styles.leftButton} onPress={handleCreateOffer}>
-          <Text style={styles.leftButtonText}>➕ {t('nav.createOffer')}</Text>
-        </Pressable>
       </View>
 
-      <FlatList
-        style={{ flex: 1 }}
-        data={offers}
-        keyExtractor={(item) => item.offerId}
-        pagingEnabled
-        showsVerticalScrollIndicator={false}
-        snapToInterval={pageHeight}
-        decelerationRate="fast"
-        getItemLayout={(_, index) => ({
-          length: pageHeight,
-          offset: pageHeight * index,
-          index,
-        })}
-        renderItem={({ item }) => (
-          <View style={{ height: pageHeight }}>
-            <ImmersiveOfferPage
-              offer={item}
-              onDirections={onDirections}
-              onFavorite={onFavorite}
-              onReport={onReport}
-              onVote={onVote}
-            />
-          </View>
-        )}
-        ListEmptyComponent={
-          <View style={[styles.empty, { height: pageHeight }]}>
-            <Text style={{ color: palette.inkMuted }}>{t('offers.noResults')}</Text>
-          </View>
-        }
+      {isNarrow ? (
+        <ImmersiveFooterBar
+          onCreateOffer={handleCreateOffer}
+          onOpenAccount={() => openTab('account')}
+          onOpenFavorites={openFavorites}
+          onOpenMapMode={handleOpenMapMode}
+          onOpenReports={() => openTab('reports')}
+          onOpenSuggestions={() => openTab('suggestions')}
+        />
+      ) : null}
+
+      <ImmersiveSearchOverlay
+        onChangeQuery={setSearchQuery}
+        onChangeRadius={onRadiusChange}
+        onClose={() => setSearchVisible(false)}
+        onSearch={handleApplySearch}
+        query={searchQuery}
+        radiusMeters={radiusMeters}
+        visible={searchVisible}
       />
     </View>
   );
@@ -367,7 +453,55 @@ export function ImmersiveOfferFeed({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  contentRow: {
+    flex: 1,
     flexDirection: 'row',
+  },
+  feedArea: {
+    flex: 1,
+    position: 'relative',
+  },
+  topBar: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    left: 0,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  topBarIdentity: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexShrink: 1,
+    gap: 8,
+  },
+  topBarLogo: {
+    height: 28,
+    resizeMode: 'contain',
+    width: 28,
+  },
+  topBarTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '800',
+    textShadowColor: 'rgba(0,0,0,0.6)',
+    textShadowOffset: { height: 1, width: 0 },
+    textShadowRadius: 3,
+  },
+  searchIconButton: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    borderRadius: 999,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  searchIcon: {
+    fontSize: 18,
   },
   searchRow: {
     flexDirection: 'row',
@@ -466,28 +600,31 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   railButton: {
+    alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    borderRadius: 999,
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
   },
-  railButtonText: {
+  railCount: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
+    marginTop: 2,
   },
   rightRail: {
-    gap: 10,
+    alignItems: 'center',
+    bottom: 20,
+    gap: 12,
     position: 'absolute',
-    right: 12,
-    top: '25%',
-    width: 100,
+    right: 10,
   },
   bottomOverlay: {
     bottom: 16,
     left: 12,
     position: 'absolute',
-    right: 120,
+    right: 70,
   },
   businessName: {
     color: '#fff',
@@ -556,7 +693,6 @@ const styles = StyleSheet.create({
   },
   immersivePhotoNav: {
     alignItems: 'center',
-    bottom: 16,
     flexDirection: 'row',
     gap: 12,
     justifyContent: 'center',

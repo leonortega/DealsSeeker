@@ -242,6 +242,17 @@
 | Destination opened from immersive feed | Shows a back control returning to the immersive feed | Only while immersive mode is enabled |
 | Left panel application-menu option | Not displayed | Menu is reachable from the standard header |
 
+## Immersive Feed Responsive Rules (`OFFERS.FEED.RESPONSIVE.001`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Narrow viewport breakpoint | Viewport width below `768px` | Mobile presentation |
+| Narrow viewport navigation | Bottom footer bar | Side panel is not rendered |
+| Narrow viewport search | Icon in the top bar opening a search overlay | Inline search input is hidden |
+| Narrow viewport footer order | Map mode, Favorites, Account, Suggestions, Reports, Create | Matches the side panel order |
+| Offer action control presentation | Icons on every viewport size | Accessible labels always provided |
+| Wide viewport navigation | Fixed side panel | Search input and distance buttons stay inline |
+
 ## Logging Rules (`APP.LOGGING.001`)
 
 | Decision Point | Default Rule | Notes |

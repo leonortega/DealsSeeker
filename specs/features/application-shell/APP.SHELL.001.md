@@ -113,6 +113,7 @@ Scenario: Blocking loading state appears during required data waits
 - `APP.CONFIG.MAPS.001`
 - `APP.LOCALIZATION.001`
 - `APP.THEME.001`
+- `OFFERS.FEED.RESPONSIVE.001`
 - `OFFERS.LAYOUT.001`
 - `ACCOUNT.AUTH.LOGIN.001`
 - `ACCOUNT.AUTH.REGISTER.001`
