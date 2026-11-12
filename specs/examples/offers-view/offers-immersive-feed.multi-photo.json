@@ -13,6 +13,10 @@
     "photoNavigationShowsArrows": {
       "narrowViewport": false,
       "wideViewport": true
+    },
+    "swipeChangesPhoto": {
+      "narrowViewport": true,
+      "wideViewport": true
     }
   }
 }

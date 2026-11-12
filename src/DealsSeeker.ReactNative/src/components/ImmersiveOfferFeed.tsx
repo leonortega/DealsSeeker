@@ -1,5 +1,5 @@
-import { FlatList, Image, LayoutChangeEvent, Platform, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
-import { useEffect, useRef, useState } from 'react';
+import { FlatList, Image, LayoutChangeEvent, PanResponder, Platform, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
@@ -73,7 +73,8 @@ function ImmersiveOfferPage({
   const [expanded, setExpanded] = useState(false);
   const [pageWidth, setPageWidth] = useState(0);
   const [pageHeight, setPageHeight] = useState(0);
-  const scrollRef = useRef<FlatList<string> | null>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const selectedImageIndexRef = useRef(0);
 
   const carouselWidth = Math.max(320, pageWidth || viewportWidth - 220);
   const carouselHeight = pageHeight || Math.max(320, viewportHeight);
@@ -84,13 +85,10 @@ function ImmersiveOfferPage({
     setPageHeight(height);
   }
 
-  function scrollToImage(index: number, animated: boolean) {
-    scrollRef.current?.scrollToOffset({ offset: index * carouselWidth, animated });
-  }
-
-  function updateSelectedImage(index: number, animated: boolean) {
-    setSelectedImageIndex(index);
-    scrollToImage(index, animated);
+  function updateSelectedImage(index: number) {
+    const nextIndex = Math.max(0, Math.min(index, images.length - 1));
+    selectedImageIndexRef.current = nextIndex;
+    setSelectedImageIndex(nextIndex);
   }
 
   function showPreviousImage() {
@@ -98,7 +96,7 @@ function ImmersiveOfferPage({
       return;
     }
 
-    updateSelectedImage((selectedImageIndex - 1 + images.length) % images.length, true);
+    updateSelectedImage((selectedImageIndexRef.current - 1 + images.length) % images.length);
   }
 
   function showNextImage() {
@@ -106,26 +104,47 @@ function ImmersiveOfferPage({
       return;
     }
 
-    updateSelectedImage((selectedImageIndex + 1) % images.length, true);
+    updateSelectedImage((selectedImageIndexRef.current + 1) % images.length);
   }
 
-  function handleCarouselEnd(event: { nativeEvent: { contentOffset: { x: number } } }) {
-    if (carouselWidth <= 0) {
-      return;
-    }
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponderCapture: (_event, gesture) =>
+          hasMultipleImages && Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
+        onMoveShouldSetPanResponder: (_event, gesture) =>
+          hasMultipleImages && Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
+        onPanResponderGrant: () => {
+          setDragOffset(0);
+        },
+        onPanResponderMove: (_event, gesture) => {
+          setDragOffset(gesture.dx);
+        },
+        onPanResponderRelease: (_event, gesture) => {
+          const threshold = Math.max(40, carouselWidth * 0.18);
+          const swipe = Math.abs(gesture.dx) > threshold ? Math.sign(gesture.dx) : 0;
+          setDragOffset(0);
 
-    const nextIndex = Math.round(event.nativeEvent.contentOffset.x / carouselWidth);
-    setSelectedImageIndex(Math.max(0, Math.min(nextIndex, Math.max(images.length - 1, 0))));
-  }
+          if (swipe === 0) {
+            return;
+          }
+
+          updateSelectedImage(
+            (selectedImageIndexRef.current + (swipe < 0 ? 1 : -1) + images.length) % images.length,
+          );
+        },
+        onPanResponderTerminate: () => {
+          setDragOffset(0);
+        },
+      }),
+    [carouselWidth, hasMultipleImages, images.length],
+  );
 
   useEffect(() => {
+    selectedImageIndexRef.current = 0;
     setSelectedImageIndex(0);
-    const handle = setTimeout(() => {
-      scrollRef.current?.scrollToOffset({ offset: 0, animated: false });
-    }, 0);
-
-    return () => clearTimeout(handle);
-  }, [offer.offerId, carouselWidth]);
+    setDragOffset(0);
+  }, [offer.offerId]);
 
   useEffect(() => {
     if (!hasMultipleImages || Platform.OS !== 'web') {
@@ -147,23 +166,23 @@ function ImmersiveOfferPage({
   return (
     <View style={styles.page} onLayout={handlePageLayout}>
       {hasMultipleImages ? (
-        <FlatList
-          ref={scrollRef}
-          data={images}
-          horizontal
-          keyExtractor={(imageUrl, index) => `${imageUrl ?? 'placeholder'}-${index}`}
-          pagingEnabled
-          renderItem={({ item: imageUrl }) => (
-            <View style={{ height: carouselHeight, width: carouselWidth }}>
+        <View
+          {...panResponder.panHandlers}
+          style={[
+            styles.photoTrack,
+            {
+              height: carouselHeight,
+              transform: [{ translateX: -selectedImageIndex * carouselWidth + dragOffset }],
+              width: carouselWidth * images.length,
+            },
+          ]}
+        >
+          {images.map((imageUrl, index) => (
+            <View key={`photo-${index}`} style={{ height: carouselHeight, width: carouselWidth }}>
               <ImmersiveOfferImage imageUrl={imageUrl} placeholderSymbol="▣" />
             </View>
-          )}
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={carouselWidth}
-          decelerationRate="fast"
-          onMomentumScrollEnd={handleCarouselEnd}
-          style={StyleSheet.absoluteFill}
-        />
+          ))}
+        </View>
       ) : (
         <ImmersiveOfferImage imageUrl={images[0] ?? offer.imageUrl} placeholderSymbol="▤" />
       )}
@@ -244,7 +263,7 @@ function ImmersiveOfferPage({
               {images.map((_, index) => (
                 <Pressable
                   key={`photo-dot-${index}`}
-                  onPress={() => updateSelectedImage(index, true)}
+                  onPress={() => updateSelectedImage(index)}
                   style={[
                     styles.immersivePhotoDot,
                     index === selectedImageIndex ? styles.immersivePhotoDotActive : null,
@@ -542,6 +561,12 @@ const styles = StyleSheet.create({
     left: 0,
     position: 'absolute',
     right: 0,
+    top: 0,
+  },
+  photoTrack: {
+    flexDirection: 'row',
+    left: 0,
+    position: 'absolute',
     top: 0,
   },
   overlay: {

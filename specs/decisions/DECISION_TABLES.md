@@ -252,6 +252,8 @@
 | Narrow viewport footer order | Map mode, Favorites, Account, Suggestions, Reports, Create | Matches the side panel order |
 | Offer action control presentation | Icons on every viewport size | Accessible labels always provided |
 | Offer action control captions | Wide viewport only | Narrow viewport stays icon-only |
+| Photo swipe direction | Swipe left shows next photo, swipe right shows previous | Wraps around at the ends |
+| Photo swipe threshold | `max(40px, 18% of the panel width)` | Shorter swipes are ignored |
 | Wide viewport navigation | Fixed side panel | Search input and distance buttons stay inline |
 
 ## Logging Rules (`APP.LOGGING.001`)

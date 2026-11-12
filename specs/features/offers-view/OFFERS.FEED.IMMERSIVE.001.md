@@ -57,7 +57,10 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R34`: The left panel shall display coverage distance buttons below the search input, using the same radius options as the standard offers view.
 - `OFFERS.FEED.IMMERSIVE.001-R35`: Text in the left panel, including the application name, shall use white color.
 - `OFFERS.FEED.IMMERSIVE.001-R36`: Offer images shall be contained within the page; when an image does not fill the width, dark gray bars shall appear on the left and right so the page background remains fully covered.
-- `OFFERS.FEED.IMMERSIVE.001-R37`: When an offer has more than one photo, the immersive feed shall allow changing the displayed photo using left and right keyboard arrow keys, horizontal scrolling/swiping, and a navigation control with one point per photo, displayed above the offer title and horizontally centered within the offer panel.
+- `OFFERS.FEED.IMMERSIVE.001-R37`: When an offer has more than one photo, the immersive feed shall allow changing the displayed photo using left and right keyboard arrow keys, a horizontal swipe gesture over the offer page, and a navigation control with one point per photo, displayed above the offer title and horizontally centered within the offer panel.
+- `OFFERS.FEED.IMMERSIVE.001-R48`: A horizontal swipe gesture over the offer page shall change the displayed photo, in both pointer and touch environments.
+- `OFFERS.FED.IMMERSIVE.001-R49`: A horizontal swipe gesture over the offer page shall not prevent the user from scrolling vertically between offers.
+- `OFFERS.FEED.IMMERSIVE.001-R50`: A swipe that does not exceed the swipe distance threshold shall leave the displayed photo unchanged.
 - `OFFERS.FEED.IMMERSIVE.001-R38`: Photo navigation affordances, including the control with one point per photo, shall only be displayed when the offer has more than one photo.
 - `OFFERS.FEED.IMMERSIVE.001-R40`: The immersive feed photo carousel shall not display scrollbars.
 - `OFFERS.FEED.IMMERSIVE.001-R41`: When an offer has more than one photo, each photo of the carousel shall be rendered as a full-page background occupying the whole page area, matching the framing of a single-photo offer, and shall not be rendered as an empty or collapsed visual.
@@ -101,10 +104,26 @@ Scenario: Description and tags use more control
 
 Scenario: Offer with multiple photos supports photo navigation
   Given an offer page with more than one photo
-  When the user presses the left or right arrow keys or scrolls horizontally or uses the photo navigation control
+  When the user presses the left or right arrow keys or swipes horizontally over the page or uses the photo navigation control
   Then the displayed photo shall change
   And a navigation control with one point per photo shall be available above the offer title, horizontally centered within the offer panel
   And no scrollbar shall be displayed
+
+Scenario: Horizontal swipe changes the photo
+  Given an offer page with more than one photo
+  When the user swipes horizontally over the page
+  Then the displayed photo shall change to the adjacent photo
+  And the active position indicator shall move accordingly
+
+Scenario: Vertical swipe still scrolls between offers
+  Given the user is on the immersive offers view
+  When the user swipes vertically over an offer page
+  Then the feed shall move to the adjacent offer page
+
+Scenario: A short swipe does not change the photo
+  Given an offer page with more than one photo
+  When the user swipes horizontally over the page by less than the swipe distance threshold
+  Then the displayed photo shall remain unchanged
 
 Scenario: Offer with one photo hides photo navigation
   Given an offer page with one photo

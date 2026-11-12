@@ -91,6 +91,13 @@ Feature: Immersive feed responsive presentation
     When the view is rendered
     Then the left side panel displays the application identity icon and the application name
 
+  Scenario: Horizontal swipe changes the photo on every viewport size
+    Given the user is on the immersive offers view
+    And the offer has more than one photo
+    When the user swipes horizontally over the offer page
+    Then the displayed photo changes to the adjacent photo
+    And the direction of the swipe determines which photo is shown
+
   Scenario: Offer text overlay reserves space for the promoted mark
     Given the user is on the immersive offers view
     And the offer is promoted

@@ -36,10 +36,26 @@ Feature: Immersive vertical full-screen main page feed
 
   Scenario: Offer with multiple photos supports photo navigation
     Given an offer page with more than one photo
-    When the user presses the left or right arrow keys or scrolls horizontally or uses the photo navigation control
+    When the user presses the left or right arrow keys or swipes horizontally over the page or uses the photo navigation control
     Then the displayed photo changes
     And a navigation control with one point per photo is available above the offer title, horizontally centered within the offer panel
     And no scrollbar is displayed
+
+  Scenario: Horizontal swipe changes the photo
+    Given an offer page with more than one photo
+    When the user swipes horizontally over the page
+    Then the displayed photo changes to the adjacent photo
+    And the active position indicator moves accordingly
+
+  Scenario: Vertical swipe still scrolls between offers
+    Given the user is on the immersive offers view
+    When the user swipes vertically over an offer page
+    Then the feed moves to the adjacent offer page
+
+  Scenario: A short swipe does not change the photo
+    Given an offer page with more than one photo
+    When the user swipes horizontally over the page by less than the swipe distance threshold
+    Then the displayed photo remains unchanged
 
   Scenario: Offer with one photo hides photo navigation
     Given an offer page with one photo
