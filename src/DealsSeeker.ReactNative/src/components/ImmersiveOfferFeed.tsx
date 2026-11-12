@@ -6,7 +6,7 @@ import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
 import { openDirections } from '../utils/maps';
-import { ImmersiveActionIconGlyph, ImmersiveFooterBar } from './ImmersiveFooterBar';
+import { ImmersiveActionCaption, ImmersiveActionIconGlyph, ImmersiveFooterBar } from './ImmersiveFooterBar';
 import { COVERAGE_DISTANCE_OPTIONS, ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
 
 const NARROW_BREAKPOINT = 768;
@@ -48,6 +48,7 @@ function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string
 
 function ImmersiveOfferPage({
   offer,
+  showCaptions,
   topOffset,
   onFavorite,
   onVote,
@@ -55,13 +56,14 @@ function ImmersiveOfferPage({
   onDirections,
 }: {
   offer: OfferItemDto;
+  showCaptions: boolean;
   topOffset: number;
   onFavorite: (offer: OfferItemDto) => void;
   onVote: (offer: OfferItemDto, vote: OfferAvailabilityVoteType) => void;
   onReport: (offer: OfferItemDto) => void;
   onDirections: (offer: OfferItemDto) => void;
 }) {
-  const { palette, preferences, t } = useApp();
+  const { palette, t } = useApp();
   const { width: viewportWidth, height: viewportHeight } = useWindowDimensions();
   const sourceImages = Array.isArray(offer.imageUrls) && offer.imageUrls.length > 0 ? offer.imageUrls : [offer.imageUrl];
   const detailImages = sourceImages.filter((imageUrl) => resolveOfferImageUri(imageUrl) !== null);
@@ -168,54 +170,69 @@ function ImmersiveOfferPage({
 
       <View pointerEvents="none" style={styles.overlay} />
 
-      <View style={styles.rightRail}>
+      <View style={[styles.rightRail, showCaptions && styles.rightRailWithCaptions]}>
         <Pressable
-          accessibilityLabel={t('offers.favorite')}
+          accessibilityLabel={t('offers.action.favorite')}
           accessibilityRole="button"
-          style={styles.railButton}
+          style={styles.railAction}
           onPress={() => onFavorite(offer)}
         >
-          <ImmersiveActionIconGlyph active={offer.isFavorite} kind="favorite" />
+          <View style={styles.railButton}>
+            <ImmersiveActionIconGlyph active={offer.isFavorite} kind="favorite" />
+          </View>
+          {showCaptions ? <ImmersiveActionCaption label={t('offers.action.favorite')} /> : null}
         </Pressable>
         <Pressable
-          accessibilityLabel={preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+          accessibilityLabel={t('offers.action.directions')}
           accessibilityRole="button"
-          style={styles.railButton}
+          style={styles.railAction}
           onPress={() => void onDirections(offer)}
         >
-          <ImmersiveActionIconGlyph kind="directions" />
+          <View style={styles.railButton}>
+            <ImmersiveActionIconGlyph kind="directions" />
+          </View>
+          {showCaptions ? <ImmersiveActionCaption label={t('offers.action.directions')} /> : null}
         </Pressable>
         <Pressable
-          accessibilityLabel={t('offers.available')}
+          accessibilityLabel={t('offers.action.available')}
           accessibilityRole="button"
           disabled={offer.hasCurrentUserVoted}
-          style={[styles.railButton, offer.hasCurrentUserVoted && styles.disabled]}
+          style={[styles.railAction, offer.hasCurrentUserVoted && styles.disabled]}
           onPress={() => onVote(offer, 1)}
         >
-          <ImmersiveActionIconGlyph kind="votePositive" />
+          <View style={styles.railButton}>
+            <ImmersiveActionIconGlyph kind="votePositive" />
+          </View>
           <Text style={styles.railCount}>{offer.positiveAvailabilityCount}</Text>
+          {showCaptions ? <ImmersiveActionCaption label={t('offers.action.available')} /> : null}
         </Pressable>
         <Pressable
-          accessibilityLabel={t('offers.available')}
+          accessibilityLabel={t('offers.action.unavailable')}
           accessibilityRole="button"
           disabled={offer.hasCurrentUserVoted}
-          style={[styles.railButton, offer.hasCurrentUserVoted && styles.disabled]}
+          style={[styles.railAction, offer.hasCurrentUserVoted && styles.disabled]}
           onPress={() => onVote(offer, 2)}
         >
-          <ImmersiveActionIconGlyph kind="voteNegative" />
+          <View style={styles.railButton}>
+            <ImmersiveActionIconGlyph kind="voteNegative" />
+          </View>
           <Text style={styles.railCount}>{offer.negativeAvailabilityCount}</Text>
+          {showCaptions ? <ImmersiveActionCaption label={t('offers.action.unavailable')} /> : null}
         </Pressable>
         <Pressable
-          accessibilityLabel={t('offers.report')}
+          accessibilityLabel={t('offers.action.report')}
           accessibilityRole="button"
-          style={styles.railButton}
+          style={styles.railAction}
           onPress={() => onReport(offer)}
         >
-          <ImmersiveActionIconGlyph kind="report" />
+          <View style={styles.railButton}>
+            <ImmersiveActionIconGlyph kind="report" />
+          </View>
+          {showCaptions ? <ImmersiveActionCaption label={t('offers.action.report')} /> : null}
         </Pressable>
       </View>
 
-      <View style={[styles.bottomOverlay, { bottom: 16 }]}>
+      <View style={[styles.bottomOverlay, showCaptions && styles.bottomOverlayWithCaptions]}>
         {offer.isPromoted ? (
           <View style={[styles.badge, { backgroundColor: palette.accent }]}>
             <Text style={styles.badgeLabel}>{t('offers.promoted')}</Text>
@@ -287,7 +304,6 @@ export function ImmersiveOfferFeed({
     openFavorites,
     openTab,
     palette,
-    preferences,
     t,
   } = useApp();
   const [searchQuery, setSearchQuery] = useState(query);
@@ -390,6 +406,7 @@ export function ImmersiveOfferFeed({
               <View style={{ height: pageHeight }}>
                 <ImmersiveOfferPage
                   offer={item}
+                  showCaptions={!isNarrow}
                   topOffset={isNarrow ? 64 : 16}
                   onDirections={onDirections}
                   onFavorite={onFavorite}
@@ -599,6 +616,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginBottom: 8,
   },
+  railAction: {
+    alignItems: 'center',
+    gap: 2,
+  },
   railButton: {
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',
@@ -620,11 +641,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 10,
   },
+  rightRailWithCaptions: {
+    right: 16,
+  },
   bottomOverlay: {
     bottom: 16,
     left: 12,
     position: 'absolute',
     right: 70,
+  },
+  bottomOverlayWithCaptions: {
+    right: 110,
   },
   businessName: {
     color: '#fff',

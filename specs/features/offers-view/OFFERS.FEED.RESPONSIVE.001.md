@@ -32,6 +32,8 @@ Define how the immersive offers feed adapts its presentation to the available vi
 - `OFFERS.FEED.RESPONSIVE.001-R12`: The availability vote icon controls shall display the corresponding vote count below the icon.
 - `OFFERS.FEED.RESPONSIVE.001-R13`: On a wide viewport, the left side panel shall continue to display the search input, the coverage distance buttons, and the navigation options.
 - `OFFERS.FEED.RESPONSIVE.001-R14`: The responsive presentation shall not change the behavior of any navigation or offer action control.
+- `OFFERS.FEED.RESPONSIVE.001-R15`: On a wide viewport, each offer action control in the right side rail shall display a text caption below its icon, using the labels `Favorite` / `Favorito`, `How to get there?` / `¿Cómo llegar?`, `It exists` / `Sí existe`, `It doesn't exist` / `No existe`, and `Report` / `Reportar`.
+- `OFFERS.FEED.RESPONSIVE.001-R16`: On a narrow viewport, the offer action controls in the right side rail shall display icons only, without text captions.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -75,6 +77,19 @@ Scenario: Offer action controls are icons on every viewport size
   Then the right side rail shall present favorite, directions, availability voting, and report as icons
   And each icon control shall expose an accessible text label
   And each availability vote icon shall display its vote count
+
+Scenario: Wide viewport shows a text caption under each offer action icon
+  Given the user is on the immersive offers view
+  And the viewport is wide
+  When an offer page is displayed
+  Then each right side rail icon shall display a text caption below it
+  And the captions shall be `Favorite` / `Favorito`, `How to get there?` / `¿Cómo llegar?`, `It exists` / `Sí existe`, `It doesn't exist` / `No existe`, and `Report` / `Reportar`
+
+Scenario: Narrow viewport shows offer action icons without captions
+  Given the user is on the immersive offers view
+  And the viewport is narrow
+  When an offer page is displayed
+  Then the right side rail icons shall not display text captions
 
 Scenario: Wide viewport keeps the side panel
   Given the user is on the immersive offers view

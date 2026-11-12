@@ -45,6 +45,19 @@ Feature: Immersive feed responsive presentation
     And each icon control exposes an accessible text label
     And each availability vote icon displays its vote count
 
+  Scenario: Wide viewport shows a text caption under each offer action icon
+    Given the user is on the immersive offers view
+    And the viewport is wide
+    When an offer page is displayed
+    Then each right side rail icon displays a text caption below it
+    And the captions are `Favorite` / `Favorito`, `How to get there?` / `¿Cómo llegar?`, `It exists` / `Sí existe`, `It doesn't exist` / `No existe`, and `Report` / `Reportar`
+
+  Scenario: Narrow viewport shows offer action icons without captions
+    Given the user is on the immersive offers view
+    And the viewport is narrow
+    When an offer page is displayed
+    Then the right side rail icons do not display text captions
+
   Scenario: Wide viewport keeps the side panel
     Given the user is on the immersive offers view
     And the viewport is wide

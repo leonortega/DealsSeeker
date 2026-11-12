@@ -63,6 +63,13 @@
         "votePositiveIcon",
         "voteNegativeIcon",
         "reportIcon"
+      ],
+      "rightControlCaptions": [
+        "Favorito",
+        "¿Cómo llegar?",
+        "Sí existe",
+        "No existe",
+        "Reportar"
       ]
     }
   }

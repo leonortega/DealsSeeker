@@ -20,6 +20,14 @@ export function ImmersiveActionIconGlyph({ kind, active }: { kind: ImmersiveActi
   );
 }
 
+export function ImmersiveActionCaption({ label }: { label: string }) {
+  return (
+    <Text numberOfLines={1} style={styles.actionCaption} accessibilityElementsHidden>
+      {label}
+    </Text>
+  );
+}
+
 export function ImmersiveFooterBar({
   onOpenMapMode,
   onOpenFavorites,
@@ -99,5 +107,12 @@ const styles = StyleSheet.create({
   },
   actionIconActive: {
     color: '#ff4d6d',
+  },
+  actionCaption: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '700',
+    marginTop: 2,
+    textAlign: 'center',
   },
 });

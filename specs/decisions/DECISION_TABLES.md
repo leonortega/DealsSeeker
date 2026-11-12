@@ -251,6 +251,7 @@
 | Narrow viewport search | Icon in the top bar opening a search overlay | Inline search input is hidden |
 | Narrow viewport footer order | Map mode, Favorites, Account, Suggestions, Reports, Create | Matches the side panel order |
 | Offer action control presentation | Icons on every viewport size | Accessible labels always provided |
+| Offer action control captions | Wide viewport only | Narrow viewport stays icon-only |
 | Wide viewport navigation | Fixed side panel | Search input and distance buttons stay inline |
 
 ## Logging Rules (`APP.LOGGING.001`)
