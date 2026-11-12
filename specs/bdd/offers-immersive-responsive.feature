@@ -50,7 +50,7 @@ Feature: Immersive feed responsive presentation
     And the viewport is wide
     When an offer page is displayed
     Then each right side rail icon displays a text caption below it
-    And the captions are `Favorite` / `Favorito`, `How to get there?` / `¿Cómo llegar?`, `It exists` / `Sí existe`, `It doesn't exist` / `No existe`, and `Report` / `Reportar`
+    And the captions are `favorite` / `Favorito`, `directions` / `¿Cómo llegar?`, `available` / `Sí existe`, `removed` / `No existe`, and `report` / `Reportar`
 
   Scenario: Narrow viewport shows offer action icons without captions
     Given the user is on the immersive offers view

@@ -64,13 +64,22 @@
         "voteNegativeIcon",
         "reportIcon"
       ],
-      "rightControlCaptions": [
-        "Favorito",
-        "¿Cómo llegar?",
-        "Sí existe",
-        "No existe",
-        "Reportar"
-      ]
+      "rightControlCaptions": {
+        "en": [
+          "favorite",
+          "directions",
+          "available",
+          "removed",
+          "report"
+        ],
+        "es": [
+          "Favorito",
+          "¿Cómo llegar?",
+          "Sí existe",
+          "No existe",
+          "Reportar"
+        ]
+      }
     }
   }
 }
