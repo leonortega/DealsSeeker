@@ -57,3 +57,4 @@ Scenario: User opens directions from offer detail
 - `OFFERS.MAP.001`
 - `OFFERS.PHOTOS.CAROUSEL.001`
 - `APP.NAVIGATION.MODE.001`
+- `OFFERS.COMMENTS.001`

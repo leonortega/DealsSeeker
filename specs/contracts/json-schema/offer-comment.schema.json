@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/offer-comment.schema.json",
+  "title": "OfferComment",
+  "description": "A single comment published on an offer. Mirrors DealsSeeker.Shared.Contracts.Comments.OfferCommentDto.",
+  "type": "object",
+  "required": [
+    "commentId",
+    "offerId",
+    "userId",
+    "displayName",
+    "avatarId",
+    "body",
+    "createdAtUtc"
+  ],
+  "properties": {
+    "commentId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "offerId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "userId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "avatarId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "body": {
+      "type": "string",
+      "minLength": 1
+    },
+    "createdAtUtc": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

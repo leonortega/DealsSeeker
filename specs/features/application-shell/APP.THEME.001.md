@@ -24,6 +24,7 @@ Provide light and dark theme support aligned with device preference and user ove
 - `APP.THEME.001-R5`: The user shall be able to reset theme behavior back to system default.
 - `APP.THEME.001-R6`: The main navigation menu shall include a theme-change control.
 - `APP.THEME.001-R7`: When the user changes theme from the menu control, the selected theme shall apply instantly in the current view without requiring app restart.
+- `APP.THEME.001-R8`: All app surfaces, including the immersive offer chrome, the mobile footer bar, the navigation menu, and the offers views, shall use the active theme colors and the shared button styles.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -48,6 +49,11 @@ Scenario: User changes theme from menu control
   Given the app is using light theme
   When the user selects dark theme from the menu theme control
   Then the current view shall switch to dark theme immediately
+
+Scenario: Surfaces share the active theme colors
+  Given the app is using dark theme
+  When the user views the immersive offer chrome, the mobile footer bar, the navigation menu, and the offers views
+  Then every surface shall use the active theme colors and the shared button styles
 ```
 
 ## Example Inputs/Outputs
@@ -63,3 +69,4 @@ Scenario: User changes theme from menu control
 
 ## Related Specs
 - `APP.SHELL.001`
+- `OFFERS.COMMENTS.001`

@@ -26,6 +26,7 @@ interface OfferDetailModalProps {
   onClose: () => void;
   onFavorite: (offer: OfferItemDto) => void;
   onDirections: (offer: OfferItemDto) => void;
+  onComments: (offer: OfferItemDto) => void;
 }
 
 function clampScale(value: number) {
@@ -259,7 +260,7 @@ function OfferGalleryImage({
   );
 }
 
-export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, visible }: OfferDetailModalProps) {
+export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onComments, visible }: OfferDetailModalProps) {
   const { palette, preferences, t } = useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -409,6 +410,9 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, vis
               <Text style={{ color: palette.accent }}>
                 {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
               </Text>
+            </Pressable>
+            <Pressable style={[styles.actionButton, { backgroundColor: palette.panel }]} onPress={() => onComments(offer)}>
+              <Text style={{ color: palette.ink }}>{t('offers.action.comments')}</Text>
             </Pressable>
           </View>
         </View>

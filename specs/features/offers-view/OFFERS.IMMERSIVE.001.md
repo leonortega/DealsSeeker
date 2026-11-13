@@ -70,4 +70,5 @@ Scenario: Back control is available in destinations opened from immersive view
 - `OFFERS.FEED.RESPONSIVE.001`
 - `OFFERS.FAVORITES.001`
 - `APP.SHELL.001`
+- `OFFERS.COMMENTS.001`
 ```

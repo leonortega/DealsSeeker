@@ -7,6 +7,7 @@ import { ImmersiveFeedTab } from '../components/ImmersiveFeedTabs';
 import { MapPreview } from '../components/MapPreview';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetailModal } from '../components/OfferDetailModal';
+import { OfferCommentsModal } from '../components/OfferCommentsModal';
 import { useApp } from '../hooks/useApp';
 import { partitionOffers } from '../utils/format';
 import { openDirections } from '../utils/maps';
@@ -23,6 +24,7 @@ export function OffersScreen() {
   const [feedTab, setFeedTab] = useState<ImmersiveFeedTab>('viewAll');
   const [results, setResults] = useState<SearchOffersResponse>({ offers: [], businesses: [] });
   const [detailOffer, setDetailOffer] = useState<OfferItemDto | null>(null);
+  const [commentsOffer, setCommentsOffer] = useState<OfferItemDto | null>(null);
   const [userLocation, setUserLocation] = useState(fallbackLocation);
   const [userLocationLabel, setUserLocationLabel] = useState(t('offers.currentLocation'));
   const [status, setStatus] = useState<string | null>(null);
@@ -139,6 +141,11 @@ export function OffersScreen() {
     await openDirections(offer.location, preferences.navigationMode);
   }
 
+  function openOfferComments(offer: OfferItemDto) {
+    setDetailOffer(null);
+    setCommentsOffer(offer);
+  }
+
   function handleFeedTabChange(tab: ImmersiveFeedTab) {
     const nextFavoritesOnly = tab === 'favorites';
     setFeedTab(tab);
@@ -154,6 +161,7 @@ export function OffersScreen() {
         <ImmersiveOfferFeed
           feedTab={feedTab}
           offers={combinedOffers}
+          onComments={openOfferComments}
           onDirections={openOfferDirections}
           onFavorite={toggleFavorite}
           onFeedTabChange={handleFeedTabChange}
@@ -173,9 +181,15 @@ export function OffersScreen() {
         <OfferDetailModal
           offer={detailOffer}
           onClose={() => setDetailOffer(null)}
+          onComments={openOfferComments}
           onDirections={openOfferDirections}
           onFavorite={toggleFavorite}
           visible={detailOffer !== null}
+        />
+        <OfferCommentsModal
+          offer={commentsOffer}
+          onClose={() => setCommentsOffer(null)}
+          visible={commentsOffer !== null}
         />
       </>
     );
@@ -260,6 +274,7 @@ export function OffersScreen() {
                 >
                   <OfferCard
                     offer={offer}
+                    onComments={openOfferComments}
                     onDirections={openOfferDirections}
                     onFavorite={toggleFavorite}
                     onOpenDetail={setDetailOffer}
@@ -284,6 +299,7 @@ export function OffersScreen() {
               >
                 <OfferCard
                   offer={offer}
+                  onComments={openOfferComments}
                   onDirections={openOfferDirections}
                   onFavorite={toggleFavorite}
                   onOpenDetail={setDetailOffer}
@@ -301,9 +317,15 @@ export function OffersScreen() {
       <OfferDetailModal
         offer={detailOffer}
         onClose={() => setDetailOffer(null)}
+        onComments={openOfferComments}
         onDirections={openOfferDirections}
         onFavorite={toggleFavorite}
         visible={detailOffer !== null}
+      />
+      <OfferCommentsModal
+        offer={commentsOffer}
+        onClose={() => setCommentsOffer(null)}
+        visible={commentsOffer !== null}
       />
     </>
   );
@@ -326,7 +348,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: 16,
     height: 54,
     justifyContent: 'center',
     width: 54,

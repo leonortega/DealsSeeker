@@ -2,15 +2,19 @@ import {
   AddOfferRequest,
   AuthSessionDto,
   CommandResult,
+  CreateCommentRequest,
   LocationSearchResultDto,
   LoginRequest,
   OfferAvailabilityVoteRequest,
+  OfferCommentDto,
+  OfferCommentsResponseDto,
   OfferItemDto,
   RegisterUserRequest,
   ReportOfferRequest,
   ReportRequest,
   SearchOffersRequest,
   SearchOffersResponse,
+  SetAvatarRequest,
   SetFavoriteRequest,
   SuggestionRequest,
   UserProfileDto,
@@ -246,6 +250,18 @@ export function createDealsSeekerApi(options: ApiFactoryOptions) {
       return readJson<AddOfferRequest>(response);
     },
 
+    async setMyAvatar(requestBody: SetAvatarRequest) {
+      return requestCommandResult(
+        options,
+        '/api/account/me/avatar',
+        {
+          method: 'PUT',
+          body: JSON.stringify(requestBody),
+        },
+        true
+      );
+    },
+
     async searchOffers(requestBody: SearchOffersRequest) {
       return request<SearchOffersResponse>(
         options,
@@ -281,6 +297,27 @@ export function createDealsSeekerApi(options: ApiFactoryOptions) {
       return requestCommandResult(
         options,
         `/api/offers/${encodeURIComponent(offerId)}/favorite`,
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        },
+        true
+      );
+    },
+
+    async getOfferComments(offerId: string) {
+      return request<OfferCommentsResponseDto>(
+        options,
+        `/api/offers/${encodeURIComponent(offerId)}/comments`,
+        undefined,
+        true
+      );
+    },
+
+    async createOfferComment(offerId: string, requestBody: CreateCommentRequest) {
+      return request<OfferCommentDto>(
+        options,
+        `/api/offers/${encodeURIComponent(offerId)}/comments`,
         {
           method: 'POST',
           body: JSON.stringify(requestBody),

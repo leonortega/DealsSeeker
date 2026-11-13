@@ -12,4 +12,6 @@ public interface IAuthService
     Task<UserProfileDto?> GetProfileByTokenAsync(string accessToken, CancellationToken cancellationToken);
 
     Task<CommandResult> LogoutAsync(string accessToken, CancellationToken cancellationToken);
+
+    Task<CommandResult> UpdateAvatarAsync(string userId, SetAvatarRequest request, CancellationToken cancellationToken);
 }

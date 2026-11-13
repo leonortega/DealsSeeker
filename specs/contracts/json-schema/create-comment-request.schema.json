@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/create-comment-request.schema.json",
+  "title": "CreateCommentRequest",
+  "description": "POST /api/offers/{offerId}/comments request. Mirrors DealsSeeker.Shared.Contracts.Comments.CreateCommentRequest.",
+  "type": "object",
+  "required": [
+    "body"
+  ],
+  "properties": {
+    "body": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

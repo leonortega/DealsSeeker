@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/set-avatar-request.schema.json",
+  "title": "SetAvatarRequest",
+  "description": "PUT /api/account/me/avatar request. Mirrors DealsSeeker.Shared.Contracts.Account.SetAvatarRequest.",
+  "type": "object",
+  "required": [
+    "avatarId"
+  ],
+  "properties": {
+    "avatarId": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

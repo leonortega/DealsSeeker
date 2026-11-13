@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/offer-comments-response.schema.json",
+  "title": "OfferCommentsResponse",
+  "description": "GET /api/offers/{offerId}/comments success response. Mirrors DealsSeeker.Shared.Contracts.Comments.OfferCommentsResponseDto.",
+  "type": "object",
+  "required": [
+    "comments"
+  ],
+  "properties": {
+    "comments": {
+      "type": "array",
+      "items": {
+        "$ref": "https://dealseeker.local/schemas/offer-comment.schema.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

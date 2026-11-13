@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { OfferItemDto, UserProfileDto } from '../api/types';
+import { AvatarPicker } from '../components/AvatarPicker';
 import { useApp } from '../hooks/useApp';
+import { avatarEmoji } from '../utils/avatars';
 import { shorten } from '../utils/format';
 
 export function AccountScreen() {
-  const { activeTab, api, immersiveOffers, logout, openAddOffer, openTab, palette, preferences, setLanguage, setNavigationMode, setThemeMode, t } =
+  const { activeTab, api, avatarId, immersiveOffers, logout, openAddOffer, openTab, palette, preferences, saveAvatar, setLanguage, setNavigationMode, setThemeMode, t } =
     useApp();
   const [profile, setProfile] = useState<UserProfileDto | null>(null);
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
@@ -55,7 +57,7 @@ export function AccountScreen() {
     <ScrollView contentContainerStyle={styles.content}>
       <View style={[styles.hero, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
         <View style={[styles.avatar, { backgroundColor: palette.accentMuted }]}>
-          <Text style={[styles.avatarText, { color: palette.accent }]}>{(profile?.displayName ?? 'D').slice(0, 1)}</Text>
+          <Text style={[styles.avatarText, { color: palette.accent }]}>{avatarEmoji(profile?.avatarId ?? avatarId)}</Text>
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[styles.heroTitle, { color: palette.ink }]}>{profile?.displayName ?? t('account.title')}</Text>
@@ -99,6 +101,11 @@ export function AccountScreen() {
             </Text>
           </Pressable>
         </View>
+      </View>
+
+      <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <Text style={[styles.panelTitle, { color: palette.ink }]}>{t('settings.avatar')}</Text>
+        <AvatarPicker selectedAvatarId={avatarId} onSelect={(nextAvatarId) => void saveAvatar(nextAvatarId)} />
       </View>
 
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
@@ -150,9 +157,7 @@ const styles = StyleSheet.create({
     width: 56,
   },
   avatarText: {
-    fontFamily: 'Georgia',
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 26,
   },
   heroTitle: {
     fontFamily: 'Georgia',

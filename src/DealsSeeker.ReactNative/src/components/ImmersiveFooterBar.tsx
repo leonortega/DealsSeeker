@@ -2,9 +2,10 @@ import { useMemo } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
 
-export type ImmersiveActionIcon = 'favorite' | 'directions' | 'votePositive' | 'voteNegative' | 'report';
+export type ImmersiveActionIcon = 'comments' | 'favorite' | 'directions' | 'votePositive' | 'voteNegative' | 'report';
 
 const ACTION_ICONS: Record<ImmersiveActionIcon, string> = {
+  comments: '💬',
   favorite: '♥',
   directions: '➤',
   votePositive: '👍',
@@ -13,16 +14,23 @@ const ACTION_ICONS: Record<ImmersiveActionIcon, string> = {
 };
 
 export function ImmersiveActionIconGlyph({ kind, active }: { kind: ImmersiveActionIcon; active?: boolean }) {
+  const { palette } = useApp();
+
   return (
-    <Text style={[styles.actionIcon, active && styles.actionIconActive]} accessibilityElementsHidden>
+    <Text
+      style={[styles.actionIcon, { color: active ? palette.accent : palette.ink }]}
+      accessibilityElementsHidden
+    >
       {ACTION_ICONS[kind]}
     </Text>
   );
 }
 
 export function ImmersiveActionCaption({ label }: { label: string }) {
+  const { palette } = useApp();
+
   return (
-    <Text numberOfLines={1} style={styles.actionCaption} accessibilityElementsHidden>
+    <Text numberOfLines={1} style={[styles.actionCaption, { color: palette.inkMuted }]} accessibilityElementsHidden>
       {label}
     </Text>
   );
@@ -62,7 +70,7 @@ export function ImmersiveFooterBar({
           accessibilityLabel={item.label}
           accessibilityRole="button"
           onPress={item.onPress}
-          style={styles.footerItem}
+          style={[styles.footerItem, { backgroundColor: palette.panel, borderColor: palette.border }]}
         >
           <Text style={styles.footerIcon}>{item.icon}</Text>
           <Text numberOfLines={1} style={[styles.footerLabel, { color: palette.inkMuted }]}>
@@ -84,13 +92,18 @@ const styles = StyleSheet.create({
   },
   footerItem: {
     alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
     flex: 1,
     gap: 2,
     justifyContent: 'center',
-    minHeight: 44,
+    marginHorizontal: 2,
+    minHeight: 48,
+    paddingHorizontal: 6,
+    paddingVertical: 8,
   },
   footerIcon: {
-    fontSize: 20,
+    fontSize: 18,
   },
   footerLabel: {
     fontSize: 10,
@@ -98,16 +111,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   actionIcon: {
-    color: '#ffffff',
-    fontSize: 26,
-    lineHeight: 30,
-  },
-  actionIconActive: {
-    color: '#ff4d6d',
+    fontSize: 18,
+    lineHeight: 22,
   },
   actionCaption: {
-    color: '#ffffff',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     marginTop: 2,
     textAlign: 'center',

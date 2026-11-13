@@ -14,6 +14,7 @@ interface OfferCardProps {
   onReport: (offer: OfferItemDto) => void;
   onDirections: (offer: OfferItemDto) => void;
   onOpenDetail: (offer: OfferItemDto) => void;
+  onComments: (offer: OfferItemDto) => void;
 }
 
 function HighlightedDescription({ description, query }: { description: string; query: string }) {
@@ -48,6 +49,7 @@ function HighlightedDescription({ description, query }: { description: string; q
 
 export function OfferCard({
   offer,
+  onComments,
   onDirections,
   onFavorite,
   onOpenDetail,
@@ -135,6 +137,9 @@ export function OfferCard({
             <Text style={{ color: palette.ink }}>
               {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
             </Text>
+          </Pressable>
+          <Pressable style={[styles.actionButton, { backgroundColor: palette.panel }]} onPress={() => onComments(offer)}>
+            <Text style={{ color: palette.ink }}>{t('offers.action.comments')}</Text>
           </Pressable>
         </View>
 

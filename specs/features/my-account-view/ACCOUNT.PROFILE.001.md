@@ -89,3 +89,4 @@ Scenario: User edits an owned offer
 - `ACCOUNT.AUTH.REGISTER.001`
 - `APP.SHELL.001`
 - `ADD.OFFER.LAYOUT.001`
+- `ACCOUNT.PROFILE.AVATAR.001`

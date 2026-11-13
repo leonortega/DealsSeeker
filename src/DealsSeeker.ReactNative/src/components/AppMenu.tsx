@@ -1,5 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { AvatarPicker } from './AvatarPicker';
 
 interface AppMenuProps {
   visible: boolean;
@@ -7,7 +8,7 @@ interface AppMenuProps {
 }
 
 export function AppMenu({ visible, onClose }: AppMenuProps) {
-  const { openFavorites, openTab, palette, preferences, setLanguage, setNavigationMode, setThemeMode, t } = useApp();
+  const { avatarId, openFavorites, openTab, palette, preferences, saveAvatar, setLanguage, setNavigationMode, setThemeMode, t } = useApp();
 
   const isDark = palette.mode === 'dark';
 
@@ -40,12 +41,17 @@ export function AppMenu({ visible, onClose }: AppMenuProps) {
             </View>
           </View>
 
-          <Pressable style={[styles.quickLink, { backgroundColor: palette.card }]} onPress={() => {
+          <Pressable style={[styles.quickLink, { backgroundColor: palette.card, borderColor: palette.border }]} onPress={() => {
             openFavorites();
             onClose();
           }}>
             <Text style={[styles.quickLinkLabel, { color: palette.ink }]}>{t('nav.favorites')}</Text>
           </Pressable>
+
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: palette.inkMuted }]}>{t('settings.avatar')}</Text>
+            <AvatarPicker selectedAvatarId={avatarId} onSelect={(nextAvatarId) => void saveAvatar(nextAvatarId)} />
+          </View>
 
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: palette.inkMuted }]}>{t('nav.language')}</Text>
@@ -149,7 +155,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   quickLink: {
-    borderRadius: 18,
+    borderRadius: 16,
+    borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 14,
   },

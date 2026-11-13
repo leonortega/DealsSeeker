@@ -250,3 +250,4 @@ Scenario: Empty feed state
 - `APP.SHELL.001`
 - `APP.THEME.001`
 - `APP.LOCALIZATION.001`
+- `OFFERS.COMMENTS.001`

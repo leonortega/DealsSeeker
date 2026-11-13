@@ -1,4 +1,4 @@
-import { PropsWithChildren, createContext, useEffect, useState } from 'react';
+import { PropsWithChildren, createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import * as Localization from 'expo-localization';
 import { createDealsSeekerApi } from '../api/client';
@@ -22,6 +22,7 @@ import {
 } from '../utils/storage';
 import { translate } from '../utils/translations';
 import { resolveTheme } from '../utils/theme';
+import { DEFAULT_AVATAR_ID } from '../utils/avatars';
 
 type AuthScreen = 'login' | 'register';
 type OverlayRoute =
@@ -59,6 +60,8 @@ interface AppContextValue {
   setThemeMode: (themeMode: ThemeMode) => Promise<void>;
   setLanguage: (language: Language) => Promise<void>;
   setNavigationMode: (mode: UserPreferences['navigationMode']) => Promise<void>;
+  avatarId: string;
+  saveAvatar: (avatarId: string) => Promise<boolean>;
   setSession: (session: AuthSessionDto) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -85,56 +88,70 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [immersiveOffers, setImmersiveOffers] = useState(true);
   const [loadingCount, setLoadingCount] = useState(0);
   const [reportDraft, setReportDraftState] = useState<OfferReportDraft | null>(null);
+  const [avatarId, setAvatarId] = useState<string>(DEFAULT_AVATAR_ID);
 
   async function persistPreferences(nextPreferences: UserPreferences, nextUserId?: string | null) {
     setPreferences(nextPreferences);
     await savePreferences(nextPreferences, nextUserId ?? session?.userId);
   }
 
-  async function handleUnauthorized() {
+  const handleUnauthorized = useCallback(async () => {
     await clearSession();
     setSessionState(null);
     setOverlayRoute(null);
     setActiveTab('offers');
     setAuthScreen('login');
-  }
+  }, []);
 
-  async function runBlocking<T>(task: () => Promise<T>) {
+  const runBlocking = useCallback(async <T,>(task: () => Promise<T>) => {
     setLoadingCount((current) => current + 1);
     try {
       return await task();
     } finally {
       setLoadingCount((current) => Math.max(0, current - 1));
     }
-  }
+  }, []);
 
-  const apiBase = createDealsSeekerApi({
-    baseUrl: apiConfig.baseUrl,
-    getAccessToken: () => session?.accessToken ?? null,
-    onUnauthorized: handleUnauthorized,
-  });
+  const apiBase = useMemo(
+    () =>
+      createDealsSeekerApi({
+        baseUrl: apiConfig.baseUrl,
+        getAccessToken: () => session?.accessToken ?? null,
+        onUnauthorized: handleUnauthorized,
+      }),
+    [session?.accessToken, handleUnauthorized]
+  );
 
-  const api: ReturnType<typeof createDealsSeekerApi> = {
-    registerUser: (requestBody) => runBlocking(() => apiBase.registerUser(requestBody)),
-    login: (requestBody) => runBlocking(() => apiBase.login(requestBody)),
-    logout: () => runBlocking(() => apiBase.logout()),
-    getMyProfile: () => runBlocking(() => apiBase.getMyProfile()),
-    getMyOffers: () => runBlocking(() => apiBase.getMyOffers()),
-    getMyOfferDraft: (offerId) => runBlocking(() => apiBase.getMyOfferDraft(offerId)),
-    searchOffers: (requestBody) => runBlocking(() => apiBase.searchOffers(requestBody)),
-    voteOfferAvailability: (offerId, requestBody) =>
-      runBlocking(() => apiBase.voteOfferAvailability(offerId, requestBody)),
-    reportOffer: (offerId, requestBody) => runBlocking(() => apiBase.reportOffer(offerId, requestBody)),
-    setOfferFavorite: (offerId, requestBody) =>
-      runBlocking(() => apiBase.setOfferFavorite(offerId, requestBody)),
-    createOffer: (requestBody) => runBlocking(() => apiBase.createOffer(requestBody)),
-    updateOffer: (offerId, requestBody) => runBlocking(() => apiBase.updateOffer(offerId, requestBody)),
-    deleteOffer: (offerId) => runBlocking(() => apiBase.deleteOffer(offerId)),
-    searchLocations: (query) => runBlocking(() => apiBase.searchLocations(query)),
-    reverseLocation: (lat, lng) => runBlocking(() => apiBase.reverseLocation(lat, lng)),
-    submitSuggestion: (requestBody) => runBlocking(() => apiBase.submitSuggestion(requestBody)),
-    submitReport: (requestBody) => runBlocking(() => apiBase.submitReport(requestBody)),
-  };
+  const api: ReturnType<typeof createDealsSeekerApi> = useMemo(
+    () => ({
+      registerUser: (requestBody) => runBlocking(() => apiBase.registerUser(requestBody)),
+      login: (requestBody) => runBlocking(() => apiBase.login(requestBody)),
+      logout: () => runBlocking(() => apiBase.logout()),
+      getMyProfile: () => runBlocking(() => apiBase.getMyProfile()),
+      getMyOffers: () => runBlocking(() => apiBase.getMyOffers()),
+      getMyOfferDraft: (offerId) => runBlocking(() => apiBase.getMyOfferDraft(offerId)),
+      setMyAvatar: (requestBody) => runBlocking(() => apiBase.setMyAvatar(requestBody)),
+      getOfferComments: (offerId) => runBlocking(() => apiBase.getOfferComments(offerId)),
+      createOfferComment: (offerId, requestBody) =>
+        runBlocking(() => apiBase.createOfferComment(offerId, requestBody)),
+      searchOffers: (requestBody) => runBlocking(() => apiBase.searchOffers(requestBody)),
+      voteOfferAvailability: (offerId, requestBody) =>
+        runBlocking(() => apiBase.voteOfferAvailability(offerId, requestBody)),
+      reportOffer: (offerId, requestBody) => runBlocking(() => apiBase.reportOffer(offerId, requestBody)),
+      setOfferFavorite: (offerId, requestBody) =>
+        runBlocking(() => apiBase.setOfferFavorite(offerId, requestBody)),
+      createOffer: (requestBody) => runBlocking(() => apiBase.createOffer(requestBody)),
+      updateOffer: (offerId, requestBody) => runBlocking(() => apiBase.updateOffer(offerId, requestBody)),
+      deleteOffer: (offerId) => runBlocking(() => apiBase.deleteOffer(offerId)),
+      searchLocations: (query) => runBlocking(() => apiBase.searchLocations(query)),
+      reverseLocation: (lat, lng) => runBlocking(() => apiBase.reverseLocation(lat, lng)),
+      submitSuggestion: (requestBody) => runBlocking(() => apiBase.submitSuggestion(requestBody)),
+      submitReport: (requestBody) => runBlocking(() => apiBase.submitReport(requestBody)),
+    }),
+    [apiBase, runBlocking]
+  );
+
+  const translateKey = useCallback((key: string) => translate(preferences.language, key), [preferences.language]);
 
   useEffect(() => {
     let isMounted = true;
@@ -144,6 +161,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       const deviceLanguage = resolveDeviceLanguage();
       const storedSession = await loadSession<AuthSessionDto>();
       let activeSession = storedSession;
+      let profileAvatarId: string | null = null;
 
       if (storedSession?.accessToken) {
         try {
@@ -155,6 +173,8 @@ export function AppProvider({ children }: PropsWithChildren) {
           if (!profile) {
             activeSession = null;
             await clearSession();
+          } else {
+            profileAvatarId = profile.avatarId;
           }
         } catch {
           activeSession = null;
@@ -171,6 +191,7 @@ export function AppProvider({ children }: PropsWithChildren) {
 
       setSessionState(activeSession);
       setPreferences(loadedPreferences);
+      setAvatarId(profileAvatarId ?? DEFAULT_AVATAR_ID);
       setAuthScreen('login');
       setActiveTab('offers');
       setBootstrapped(true);
@@ -188,6 +209,16 @@ export function AppProvider({ children }: PropsWithChildren) {
     const nextPreferences = await loadPreferences(resolveDeviceLanguage(), nextSession.userId);
     setSessionState(nextSession);
     setPreferences(nextPreferences);
+    try {
+      const profileApi = createDealsSeekerApi({
+        baseUrl: apiConfig.baseUrl,
+        getAccessToken: () => nextSession.accessToken,
+      });
+      const profile = await profileApi.getMyProfile();
+      setAvatarId(profile?.avatarId ?? DEFAULT_AVATAR_ID);
+    } catch {
+      setAvatarId(DEFAULT_AVATAR_ID);
+    }
     setAuthScreen('login');
     setActiveTab('offers');
     setImmersiveOffers(true);
@@ -204,6 +235,16 @@ export function AppProvider({ children }: PropsWithChildren) {
       setActiveTab('offers');
       setAuthScreen('login');
     }
+  }
+
+  async function saveAvatar(nextAvatarId: string) {
+    const result = await api.setMyAvatar({ avatarId: nextAvatarId });
+    if (result.success) {
+      setAvatarId(nextAvatarId);
+      return true;
+    }
+
+    return false;
   }
 
   function setReportDraft(offer: OfferItemDto | null) {
@@ -241,7 +282,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     reportDraft,
     loadingCount,
     api,
-    t: (key) => translate(preferences.language, key),
+    t: translateKey,
     showRegister: () => setAuthScreen('register'),
     showLogin: () => setAuthScreen('login'),
     openTab: (tab) => {
@@ -271,6 +312,8 @@ export function AppProvider({ children }: PropsWithChildren) {
       const nextPreferences = { ...preferences, navigationMode };
       await persistPreferences(nextPreferences);
     },
+    avatarId,
+    saveAvatar,
     setSession,
     logout,
   };

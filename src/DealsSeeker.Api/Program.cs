@@ -2,11 +2,13 @@ using DealsSeeker.Api.Options;
 using DealsSeeker.Api.Logging;
 using DealsSeeker.Api.Persistence;
 using DealsSeeker.Api.Services.Auth;
+using DealsSeeker.Api.Services.Comments;
 using DealsSeeker.Api.Services.Feedback;
 using DealsSeeker.Api.Services.Locations;
 using DealsSeeker.Api.Services.Offers;
 using DealsSeeker.Shared.Contracts.Account;
 using DealsSeeker.Shared.Contracts.AddOffer;
+using DealsSeeker.Shared.Contracts.Comments;
 using DealsSeeker.Shared.Contracts.Feedback;
 using DealsSeeker.Shared.Contracts.Offers;
 using DealsSeeker.Shared.Models;
@@ -67,6 +69,7 @@ builder.Services.AddSingleton<IDatabaseMigrationRunner, SqliteMigrationRunner>()
 builder.Services.AddScoped<IAuthService, DapperAuthService>();
 builder.Services.AddScoped<IOfferService, DapperOfferService>();
 builder.Services.AddScoped<IFeedbackService, DapperFeedbackService>();
+builder.Services.AddScoped<ICommentService, DapperCommentService>();
 builder.Services.AddHttpClient<GoogleMapsLocationLookupService>();
 builder.Services.AddHttpClient<OpenLayersLocationLookupService>();
 builder.Services.AddTransient<ILocationLookupProvider>(serviceProvider => serviceProvider.GetRequiredService<GoogleMapsLocationLookupService>());
@@ -147,6 +150,25 @@ api.MapGet("/account/me", async (HttpContext httpContext, IAuthService auth, Can
     })
     .WithName("GetMyAccountProfile")
     .WithSummary("ACCOUNT.PROFILE.001: Get profile for authenticated user.");
+
+api.MapPut("/account/me/avatar", async (SetAvatarRequest request, HttpContext httpContext, IAuthService auth, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await auth.UpdateAvatarAsync(profile.UserId, request, cancellationToken);
+        return result.Success ? Results.Ok(result) : Results.BadRequest(result);
+    })
+    .WithName("SetMyAvatar")
+    .WithSummary("ACCOUNT.PROFILE.AVATAR.001: Save the preset avatar of the authenticated user.");
 
 api.MapGet("/account/offers", async (HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
     {
@@ -264,6 +286,51 @@ api.MapPost("/offers/{offerId}/favorite", async (string offerId, SetFavoriteRequ
     })
     .WithName("SetFavorite")
     .WithSummary("OFFERS.FAVORITES.001: Save or remove offer from user favorites.");
+
+api.MapGet("/offers/{offerId}/comments", async (string offerId, HttpContext httpContext, IAuthService auth, ICommentService comments, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var offerComments = await comments.GetForOfferAsync(offerId, cancellationToken);
+        return Results.Ok(new OfferCommentsResponseDto(offerComments));
+    })
+    .WithName("GetOfferComments")
+    .WithSummary("OFFERS.COMMENTS.001: List the comments published for an offer.");
+
+api.MapPost("/offers/{offerId}/comments", async (string offerId, CreateCommentRequest request, HttpContext httpContext, IAuthService auth, ICommentService comments, CancellationToken cancellationToken) =>
+    {
+        if (!TryGetAccessToken(httpContext, out var accessToken))
+        {
+            return Results.Unauthorized();
+        }
+
+        var profile = await auth.GetProfileByTokenAsync(accessToken, cancellationToken);
+        if (profile is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var outcome = await comments.AddAsync(offerId, profile.UserId, request, cancellationToken);
+        if (!outcome.Result.Success)
+        {
+            return outcome.Result.Message.StartsWith("Offer not found.", StringComparison.OrdinalIgnoreCase)
+                ? Results.NotFound(outcome.Result)
+                : Results.BadRequest(outcome.Result);
+        }
+
+        return Results.Ok(outcome.Comment);
+    })
+    .WithName("CreateOfferComment")
+    .WithSummary("OFFERS.COMMENTS.001: Publish a plain-text comment for an offer.");
 
 api.MapPost("/offers", async (AddOfferRequest request, HttpContext httpContext, IAuthService auth, IOfferService offers, CancellationToken cancellationToken) =>
     {

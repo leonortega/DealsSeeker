@@ -54,8 +54,12 @@ const darkPalette: Palette = {
   overlay: 'rgba(4, 7, 6, 0.66)',
 };
 
-export function resolveTheme(themeMode: ThemeMode, systemScheme: 'light' | 'dark' | null | undefined) {
-  if (themeMode === 'dark') {
+/**
+ * Backdrop color used behind the immersive offer feed, independent of the active theme.
+ */
+export const immersiveBackdrop = '#1b2f28';
+
+export function resolveTheme(themeMode: ThemeMode, systemScheme: 'light' | 'dark' | null | undefined) {  if (themeMode === 'dark') {
     return darkPalette;
   }
 

@@ -76,6 +76,29 @@ export interface UserProfileDto {
   userId: string;
   displayName: string;
   email: string;
+  avatarId: string;
+}
+
+export interface SetAvatarRequest {
+  avatarId: string;
+}
+
+export interface OfferCommentDto {
+  commentId: string;
+  offerId: string;
+  userId: string;
+  displayName: string;
+  avatarId: string;
+  body: string;
+  createdAtUtc: string;
+}
+
+export interface OfferCommentsResponseDto {
+  comments: OfferCommentDto[];
+}
+
+export interface CreateCommentRequest {
+  body: string;
 }
 
 export interface OfferImageDto {

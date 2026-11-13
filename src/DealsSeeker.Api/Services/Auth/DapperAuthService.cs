@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Dapper;
 using DealsSeeker.Api.Options;
 using DealsSeeker.Api.Persistence;
+using DealsSeeker.Shared.Avatars;
 using DealsSeeker.Shared.Contracts.Account;
 using DealsSeeker.Shared.Contracts.Common;
 using Microsoft.Data.Sqlite;
@@ -131,6 +132,7 @@ public sealed class DapperAuthService(
                 u.user_id AS UserId,
                 u.display_name AS DisplayName,
                 u.email AS Email,
+                u.avatar_id AS AvatarId,
                 s.expires_at_utc AS ExpiresAtUtc,
                 s.revoked_at_utc AS RevokedAtUtc,
                 u.is_disabled AS IsDisabled
@@ -160,7 +162,33 @@ public sealed class DapperAuthService(
             return null;
         }
 
-        return new UserProfileDto(row.UserId, row.DisplayName, row.Email);
+        return new UserProfileDto(row.UserId, row.DisplayName, row.Email, AvatarCatalog.Normalize(row.AvatarId));
+    }
+
+    public async Task<CommandResult> UpdateAvatarAsync(string userId, SetAvatarRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return new CommandResult(false, "Authenticated user is required.");
+        }
+
+        if (!AvatarCatalog.IsValid(request.AvatarId))
+        {
+            return new CommandResult(false, "Unknown avatar.");
+        }
+
+        await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        var affectedRows = await connection.ExecuteAsync(
+            """
+            UPDATE users
+            SET avatar_id = @AvatarId
+            WHERE user_id = @UserId;
+            """,
+            new { AvatarId = request.AvatarId.Trim(), UserId = userId });
+
+        return affectedRows > 0
+            ? new CommandResult(true, "Avatar updated.")
+            : new CommandResult(false, "User not found.");
     }
 
     public async Task<CommandResult> LogoutAsync(string accessToken, CancellationToken cancellationToken)
@@ -225,6 +253,7 @@ public sealed class DapperAuthService(
         string UserId,
         string DisplayName,
         string Email,
+        string? AvatarId,
         string ExpiresAtUtc,
         string? RevokedAtUtc,
         long IsDisabled);

@@ -24,3 +24,8 @@ Feature: Theme behavior with system default and override
     Given the app is currently using light theme
     When the user selects dark theme from the menu theme control
     Then the app switches to dark theme immediately
+
+  Scenario: Surfaces share the active theme colors
+    Given the app is using dark theme
+    When the user views the immersive offer chrome, the mobile footer bar, the navigation menu, and the offers views
+    Then every surface uses the active theme colors and the shared button styles

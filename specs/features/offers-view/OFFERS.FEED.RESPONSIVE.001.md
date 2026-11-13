@@ -46,8 +46,9 @@ Define how the immersive offers feed adapts its presentation to the available vi
 - `OFFERS.FEED.RESPONSIVE.001-R26`: Selecting the `Favorites` tab shall show only favorited offers in the feed, and selecting the `View all` tab shall show all offers.
 - `OFFERS.FEED.RESPONSIVE.001-R27`: The bottom footer bar shall not display the favorites option.
 - `OFFERS.FEED.RESPONSIVE.001-R28`: On a wide viewport, the left side panel shall not display the favorites option either; the feed filter tabs replace it.
-- `OFFERS.FEED.RESPONSIVE.001-R22`: On a narrow viewport, the immersive offers view shall not render an application header; the application identity icon and the search icon shall be displayed floating over the offer image, without the application name text.
-- `OFFERS.FEED.RESPONSIVE.001-R23`: On a wide viewport, the application identity and application name shall remain in the left side panel.
+- `OFFERS.FEED.RESPONSIVE.001-R29`: On a narrow viewport, the immersive offers view shall render an application header that floats above the offer images, without reducing the size of the offer page.
+- `OFFERS.FEED.RESPONSIVE.001-R30`: On a narrow viewport, the application header shall display the application identity icon, the feed filter tabs, and the search icon control.
+- `OFFERS.FEED.RESPONSIVE.001-R31`: On a wide viewport, the application identity and application name shall remain in the left side panel.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -124,12 +125,13 @@ Scenario: Wide viewport photo navigation shows arrows above the offer title
   And the control shall be horizontally centered within the offer panel
   And the control shall display previous and next arrow controls
 
-Scenario: Narrow viewport has no application header over the offer image
+Scenario: Narrow viewport renders a floating application header
   Given the user is on the immersive offers view
   And the viewport is narrow
   When the view is rendered
-  Then no application header shall be displayed
-  And the application identity icon and the search icon shall be displayed floating over the offer image
+  Then an application header shall float above the offer images
+  And the header shall not reduce the size of the offer page
+  And the application identity icon, the feed filter tabs, and the search icon shall be displayed in that header
   And the application name text shall not be displayed
 
 Scenario: Wide viewport keeps the application identity in the side panel
@@ -190,7 +192,7 @@ Scenario: Wide viewport keeps the side panel
 
 ## Example Inputs/Outputs
 - Example input: Immersive feed rendered at a `390px` viewport width.
-- Expected output: Full-screen feed without a side panel, a top bar with a search icon, a bottom footer with the six navigation options, and icon-based offer action controls.
+- Expected output: A floating header over the feed with the identity icon, feed filter tabs and a search icon, the full-screen feed without a side panel, a bottom footer with the navigation options, and icon-based offer action controls.
 - Example input: Immersive feed rendered at a `1280px` viewport width.
 - Expected output: Full-screen feed with the fixed black side panel and icon-based offer action controls.
 

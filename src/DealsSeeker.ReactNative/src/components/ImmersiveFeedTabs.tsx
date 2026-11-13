@@ -6,11 +6,9 @@ export type ImmersiveFeedTab = 'favorites' | 'viewAll';
 export function ImmersiveFeedTabs({
   activeTab,
   onChangeTab,
-  variant = 'overlay',
 }: {
   activeTab: ImmersiveFeedTab;
   onChangeTab: (tab: ImmersiveFeedTab) => void;
-  variant?: 'overlay' | 'panel';
 }) {
   const { palette, t } = useApp();
 
@@ -19,7 +17,7 @@ export function ImmersiveFeedTabs({
     { key: 'viewAll', label: t('offers.tabViewAll') },
   ];
 
-  const inactiveColor = variant === 'panel' ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.65)';
+  const inactiveColor = palette.inkMuted;
 
   return (
     <View style={styles.tabs}>
@@ -34,7 +32,7 @@ export function ImmersiveFeedTabs({
             onPress={() => onChangeTab(tab.key)}
             style={styles.tab}
           >
-            <Text numberOfLines={1} style={[styles.tabLabel, { color: selected ? '#ffffff' : inactiveColor }]}>
+            <Text numberOfLines={1} style={[styles.tabLabel, { color: selected ? palette.ink : inactiveColor }]}>
               {tab.label}
             </Text>
             <View style={[styles.tabIndicator, { backgroundColor: selected ? palette.accent : 'transparent' }]} />
@@ -59,6 +57,9 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontSize: 13,
     fontWeight: '700',
+    textShadowColor: 'rgba(0,0,0,0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   tabIndicator: {
     borderRadius: 2,

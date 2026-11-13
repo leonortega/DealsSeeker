@@ -14,7 +14,7 @@ Feature: Immersive feed responsive presentation
   Scenario: Narrow viewport search is an icon that opens a search overlay
     Given the user is on the immersive offers view
     And the viewport is narrow
-    When the user views the top bar
+    When the user views the application header
     Then a search icon control is displayed
     And no inline search input is displayed
     When the user selects the search icon control
@@ -77,12 +77,13 @@ Feature: Immersive feed responsive presentation
     And the control is horizontally centered within the offer panel
     And the control displays previous and next arrow controls
 
-  Scenario: Narrow viewport has no application header over the offer image
+  Scenario: Narrow viewport renders a floating application header
     Given the user is on the immersive offers view
     And the viewport is narrow
     When the view is rendered
-    Then no application header is displayed
-    And the application identity icon and the search icon are displayed floating over the offer image
+    Then an application header floats above the offer images
+    And the header does not reduce the size of the offer page
+    And the application identity icon, the feed filter tabs, and the search icon are displayed in that header
     And the application name text is not displayed
 
   Scenario: Wide viewport keeps the application identity in the side panel
@@ -98,10 +99,10 @@ Feature: Immersive feed responsive presentation
     Then the displayed photo changes to the adjacent photo
     And the direction of the swipe determines which photo is shown
 
-  Scenario: Narrow viewport top bar shows feed filter tabs next to the search icon
+  Scenario: Narrow viewport application header shows feed filter tabs next to the search icon
     Given the user is on the immersive offers view
     And the viewport is narrow
-    When the top bar is rendered
+    When the application header is rendered
     Then the feed filter tabs are displayed in the same row as the search icon control
     And the tabs are `Favorites` and `View all`
     And the `View all` tab is selected by default

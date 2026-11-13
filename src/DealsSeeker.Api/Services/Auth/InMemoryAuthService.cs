@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using DealsSeeker.Shared.Avatars;
 using DealsSeeker.Shared.Contracts.Account;
 using DealsSeeker.Shared.Contracts.Common;
 
@@ -102,7 +103,37 @@ public sealed class InMemoryAuthService : IAuthService
             return Task.FromResult<UserProfileDto?>(null);
         }
 
-        return Task.FromResult<UserProfileDto?>(new UserProfileDto(user.UserId, user.DisplayName, user.Email));
+        return Task.FromResult<UserProfileDto?>(new UserProfileDto(
+            user.UserId,
+            user.DisplayName,
+            user.Email,
+            AvatarCatalog.Normalize(user.AvatarId)));
+    }
+
+    public Task<CommandResult> UpdateAvatarAsync(string userId, SetAvatarRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Task.FromResult(new CommandResult(false, "Authenticated user is required."));
+        }
+
+        if (!AvatarCatalog.IsValid(request.AvatarId))
+        {
+            return Task.FromResult(new CommandResult(false, "Unknown avatar."));
+        }
+
+        lock (_sync)
+        {
+            var user = _usersByEmail.Values.FirstOrDefault(u => string.Equals(u.UserId, userId, StringComparison.OrdinalIgnoreCase));
+            if (user is null)
+            {
+                return Task.FromResult(new CommandResult(false, "User not found."));
+            }
+
+            _usersByEmail[user.Email] = user with { AvatarId = request.AvatarId.Trim() };
+        }
+
+        return Task.FromResult(new CommandResult(true, "Avatar updated."));
     }
 
     public Task<CommandResult> LogoutAsync(string accessToken, CancellationToken cancellationToken)
@@ -144,5 +175,6 @@ public sealed class InMemoryAuthService : IAuthService
         string DisplayName,
         string Email,
         string PasswordHash,
-        bool IsDisabled);
+        bool IsDisabled,
+        string AvatarId = AvatarCatalog.DefaultAvatarId);
 }

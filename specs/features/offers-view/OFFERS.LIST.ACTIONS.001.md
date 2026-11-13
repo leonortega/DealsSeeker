@@ -82,3 +82,4 @@ Scenario: Report action opens Reports view with offer context
 - `OFFERS.LIST.ITEM.001`
 - `OFFERS.FEED.RESPONSIVE.001`
 - `REPORTS.OFFER.PREFILL.001`
+- `OFFERS.COMMENTS.001`
