@@ -2,17 +2,30 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dealseeker.local/schemas/offer-comments-response.schema.json",
   "title": "OfferCommentsResponse",
-  "description": "GET /api/offers/{offerId}/comments success response. Mirrors DealsSeeker.Shared.Contracts.Comments.OfferCommentsResponseDto.",
+  "description": "GET /api/offers/{offerId}/comments success response. Mirrors DealsSeeker.Shared.Contracts.Comments.OfferCommentsResponseDto. Spec IDs: OFFERS.COMMENTS.001, OFFERS.COMMENTS.PAGINATION.001",
   "type": "object",
   "required": [
-    "comments"
+    "comments",
+    "hasMore"
   ],
   "properties": {
     "comments": {
       "type": "array",
+      "description": "Comments belonging to the requested page, ordered from oldest to newest.",
       "items": {
         "$ref": "https://dealseeker.local/schemas/offer-comment.schema.json"
       }
+    },
+    "hasMore": {
+      "type": "boolean",
+      "description": "Indicates whether further comments exist for the offer."
+    },
+    "nextCursor": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Opaque cursor identifying the position of the following page. Absent or null when there are no further comments."
     }
   },
   "additionalProperties": false

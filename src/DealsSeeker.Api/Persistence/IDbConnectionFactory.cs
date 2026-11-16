@@ -1,8 +1,9 @@
-using Microsoft.Data.Sqlite;
-
 namespace DealsSeeker.Api.Persistence;
 
 public interface IDbConnectionFactory
 {
-    Task<SqliteConnection> CreateOpenConnectionAsync(CancellationToken cancellationToken);
+    /// <summary>
+    /// Rents a pooled, open connection. Disposing the returned lease returns the connection to the pool.
+    /// </summary>
+    Task<SqliteConnectionLease> RentAsync(CancellationToken cancellationToken);
 }

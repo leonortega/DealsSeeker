@@ -42,11 +42,16 @@ export interface SearchOffersRequest {
   radiusMeters?: number;
   locale?: string | null;
   favoritesOnly?: boolean;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface SearchOffersResponse {
   offers: OfferItemDto[];
   businesses: BusinessMarkerDto[];
+  page?: number;
+  pageSize?: number;
+  hasMore?: boolean;
 }
 
 export interface CommandResult {
@@ -95,6 +100,8 @@ export interface OfferCommentDto {
 
 export interface OfferCommentsResponseDto {
   comments: OfferCommentDto[];
+  hasMore?: boolean;
+  nextCursor?: string | null;
 }
 
 export interface CreateCommentRequest {

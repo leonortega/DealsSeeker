@@ -1,0 +1,17 @@
+{
+  "offers": [],
+  "businesses": [
+    {
+      "businessId": "biz-100",
+      "name": "Main Street Cafe",
+      "location": {
+        "lat": 40.7131,
+        "lng": -74.0055
+      },
+      "distanceMeters": 53.7
+    }
+  ],
+  "page": 9,
+  "pageSize": 20,
+  "hasMore": false
+}

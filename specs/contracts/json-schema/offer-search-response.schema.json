@@ -2,24 +2,44 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dealseeker.local/schemas/offer-search-response.schema.json",
   "title": "OfferSearchResponse",
-  "description": "Contract for ranked offers and map businesses. Mirrors DealsSeeker.Shared.Contracts.Offers.SearchOffersResponse. Spec IDs: OFFERS.SEARCH.001, OFFERS.SEARCH.SMART.001, OFFERS.FEED.PROMOTED.001, OFFERS.FAVORITES.001, OFFERS.REPORTED.DEMOTION.001, OFFERS.PHOTOS.CAROUSEL.001, OFFERS.LIST.ACTIONS.001",
+  "description": "Contract for ranked offers and map businesses. Mirrors DealsSeeker.Shared.Contracts.Offers.SearchOffersResponse. Spec IDs: OFFERS.SEARCH.001, OFFERS.SEARCH.SMART.001, OFFERS.SEARCH.PAGINATION.001, OFFERS.FEED.PROMOTED.001, OFFERS.FAVORITES.001, OFFERS.REPORTED.DEMOTION.001, OFFERS.PHOTOS.CAROUSEL.001, OFFERS.LIST.ACTIONS.001",
   "type": "object",
   "required": [
     "offers",
-    "businesses"
+    "businesses",
+    "page",
+    "pageSize",
+    "hasMore"
   ],
   "properties": {
     "offers": {
       "type": "array",
+      "description": "Offers belonging to the requested page only.",
       "items": {
         "$ref": "offer-item.schema.json"
       }
     },
     "businesses": {
       "type": "array",
+      "description": "Map markers for the full filtered result set, not limited to the requested page.",
       "items": {
         "$ref": "business-marker.schema.json"
       }
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Effective 1-based page index of the returned offers."
+    },
+    "pageSize": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Effective maximum number of offers returned in one page."
+    },
+    "hasMore": {
+      "type": "boolean",
+      "description": "Indicates whether further pages exist for the same query and radius."
     }
   },
   "additionalProperties": false

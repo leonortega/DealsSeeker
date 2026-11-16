@@ -7,4 +7,6 @@ public sealed record SearchOffersRequest(
     GeoPoint UserLocation,
     int RadiusMeters = 1000,
     string? Locale = null,
-    bool FavoritesOnly = false);
+    bool FavoritesOnly = false,
+    int Page = 1,
+    int PageSize = 20);

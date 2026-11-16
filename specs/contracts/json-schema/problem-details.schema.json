@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dealseeker.local/schemas/problem-details.schema.json",
+  "title": "ProblemDetails",
+  "description": "Standard error object returned by the API for rejected requests. Spec IDs: APP.VALIDATION.001, APP.RATE.LIMIT.001, APP.LOCATION.PROVIDER.RESILIENCE.001. For rate-limit rejections (HTTP 429) the response additionally includes a `Retry-After` header stating how long the caller should wait before issuing the next request.",
+  "type": "object",
+  "required": [
+    "type",
+    "title",
+    "status",
+    "detail"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI reference identifying the error type."
+    },
+    "title": {
+      "type": "string",
+      "description": "Short, human-readable summary of the error type."
+    },
+    "status": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 599,
+      "description": "HTTP status code associated with the error."
+    },
+    "detail": {
+      "type": "string",
+      "description": "Human-readable explanation of this specific occurrence of the error."
+    },
+    "errors": {
+      "type": "object",
+      "description": "Field-specific validation messages. Absent or empty when the failure is not field-specific.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

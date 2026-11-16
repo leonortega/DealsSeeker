@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offer Comments
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers View (immersive feed and offer detail view)
 - **Priority**: Medium
@@ -31,6 +31,7 @@ Allow authenticated users to read and publish plain-text comments attached to an
 - `OFFERS.COMMENTS.001-R11`: Comments shall be visible to every authenticated user who can see the offer.
 - `OFFERS.COMMENTS.001-R12`: The comments section shall not expose offer coordinates.
 - `OFFERS.COMMENTS.001-R13`: The comments action shall use the same colors and button styling as the offer actions of the classic offers view.
+- `OFFERS.COMMENTS.001-R14`: The comments section shall load comments progressively and expose the paging affordance defined in `OFFERS.COMMENTS.PAGINATION.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -80,6 +81,14 @@ Scenario: Immersive comments action matches the classic view styling
   Given an authenticated user views an offer in the immersive feed
   When the user inspects the offer action panel
   Then the comments action shall use the same colors and button styling as the offer actions of the classic offers view
+
+Scenario: User loads the next page of comments
+  Given an authenticated user has the comments section open for an offer
+  And the offer has more comments than fit in a single page
+  When the user requests the next page of comments
+  Then the additional comments shall be appended to the comments list
+  And the comments shall remain ordered from oldest to newest
+  And no comment shall be shown twice
 ```
 
 ## Example Inputs/Outputs
@@ -100,6 +109,7 @@ Scenario: Immersive comments action matches the classic view styling
 
 ## Related Specs
 - `ACCOUNT.PROFILE.AVATAR.001`
+- `OFFERS.COMMENTS.PAGINATION.001`
 - `OFFERS.DETAIL.ACTIONS.001`
 - `OFFERS.IMMERSIVE.001`
 - `OFFERS.LIST.ACTIONS.001`

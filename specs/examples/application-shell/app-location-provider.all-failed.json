@@ -1,0 +1,29 @@
+{
+  "input": {
+    "lookup": {
+      "kind": "place-text",
+      "query": "central market"
+    },
+    "providers": [
+      {
+        "name": "primary",
+        "outcome": "unavailable"
+      },
+      {
+        "name": "fallback",
+        "outcome": "timeout"
+      }
+    ]
+  },
+  "expected": {
+    "status": 503,
+    "body": {
+      "type": "https://dealseeker.local/errors/location-provider-unavailable",
+      "title": "Location Provider Unavailable",
+      "status": 503,
+      "detail": "All configured location providers failed. The lookup could not be completed.",
+      "errors": {}
+    },
+    "workPerformed": false
+  }
+}

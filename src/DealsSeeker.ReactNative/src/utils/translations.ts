@@ -192,6 +192,7 @@ const english: TranslationDictionary = {
   'comments.bodyRequired': 'Comment body is required.',
   'comments.loadFailed': 'Comments could not be loaded.',
   'comments.publishFailed': 'Comment could not be published.',
+  'comments.loadMore': 'Load more comments.',
   'splash.cta': 'DealsSeeker mobile',
 };
 
@@ -385,6 +386,7 @@ const spanish: TranslationDictionary = {
   'comments.bodyRequired': 'El mensaje del comentario es obligatorio.',
   'comments.loadFailed': 'No se pudieron cargar los comentarios.',
   'comments.publishFailed': 'No se pudo publicar el comentario.',
+  'comments.loadMore': 'Cargar más comentarios.',
   'splash.cta': 'DealsSeeker mobile',
 };
 

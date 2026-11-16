@@ -1,0 +1,12 @@
+{
+  "query": "coffee",
+  "userLocation": {
+    "lat": 40.7128,
+    "lng": -74.006
+  },
+  "radiusMeters": 2000,
+  "locale": "en",
+  "favoritesOnly": false,
+  "page": 1,
+  "pageSize": 2
+}

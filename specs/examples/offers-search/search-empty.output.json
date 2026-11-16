@@ -1,5 +1,7 @@
 {
   "offers": [],
-  "businesses": []
+  "businesses": [],
+  "page": 1,
+  "pageSize": 20,
+  "hasMore": false
 }
-

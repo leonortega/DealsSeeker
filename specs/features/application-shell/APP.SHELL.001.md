@@ -120,3 +120,4 @@ Scenario: Blocking loading state appears during required data waits
 - `ACCOUNT.PROFILE.001`
 - `SUGGESTIONS.SUBMIT.001`
 - `REPORTS.SUBMIT.001`
+- `APP.SEARCH.INTERACTION.001`

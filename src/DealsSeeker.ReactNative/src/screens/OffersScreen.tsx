@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import * as Location from 'expo-location';
+import { isRequestAborted } from '../api/client';
 import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '../api/types';
 import { ImmersiveOfferFeed } from '../components/ImmersiveOfferFeed';
 import { ImmersiveFeedTab } from '../components/ImmersiveFeedTabs';
@@ -8,15 +9,19 @@ import { MapPreview } from '../components/MapPreview';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetailModal } from '../components/OfferDetailModal';
 import { OfferCommentsModal } from '../components/OfferCommentsModal';
+import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
+import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { partitionOffers } from '../utils/format';
 import { openDirections } from '../utils/maps';
 
 const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
+const searchDebounceMs = 300;
 
 export function OffersScreen() {
-  const { activeTab, api, immersiveOffers, openAddOffer, palette, preferences, setReportDraft, t } = useApp();
+  const { activeTab, api, immersiveOffers, isPending, openAddOffer, palette, preferences, setReportDraft, t } =
+    useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const [query, setQuery] = useState('');
   const [radiusMeters, setRadiusMeters] = useState(1500);
@@ -28,6 +33,8 @@ export function OffersScreen() {
   const [userLocation, setUserLocation] = useState(fallbackLocation);
   const [userLocationLabel, setUserLocationLabel] = useState(t('offers.currentLocation'));
   const [status, setStatus] = useState<string | null>(null);
+  const searchRequest = useAbortableRequest();
+  const searchSequence = useRef(0);
 
   async function resolveCurrentLocation() {
     let nextLocation = fallbackLocation;
@@ -59,22 +66,51 @@ export function OffersScreen() {
     return nextLocation;
   }
 
-  async function search(nextQuery = query, nextRadius = radiusMeters, nextFavoritesOnly = favoritesOnly) {
+  async function search(
+    nextQuery = query,
+    nextRadius = radiusMeters,
+    nextFavoritesOnly = favoritesOnly
+  ) {
+    const sequence = searchSequence.current + 1;
+    searchSequence.current = sequence;
+
+    // A new search supersedes the one still in flight.
+    const signal = searchRequest.begin();
+
     try {
       const location = userLocation ?? (await resolveCurrentLocation());
-      const response = await api.searchOffers({
-        query: nextQuery,
-        userLocation: location,
-        radiusMeters: nextRadius,
-        locale: preferences.language,
-        favoritesOnly: nextFavoritesOnly,
-      });
+      const response = await api.searchOffers(
+        {
+          query: nextQuery,
+          userLocation: location,
+          radiusMeters: nextRadius,
+          locale: preferences.language,
+          favoritesOnly: nextFavoritesOnly,
+        },
+        { signal }
+      );
+
+      if (sequence !== searchSequence.current) {
+        return;
+      }
+
       setResults(response);
       setStatus(null);
-    } catch {
+    } catch (error) {
+      if (isRequestAborted(error) || sequence !== searchSequence.current) {
+        return;
+      }
+
       setStatus(t('offers.searchFailed'));
     }
   }
+
+  const searchDebounced = useDebouncedCallback(
+    (nextQuery: string, nextRadius: number, nextFavoritesOnly: boolean) => {
+      void search(nextQuery, nextRadius, nextFavoritesOnly);
+    },
+    searchDebounceMs
+  );
 
   useEffect(() => {
     if (activeTab !== 'offers') {
@@ -93,7 +129,10 @@ export function OffersScreen() {
         });
         setResults(response);
         setStatus(null);
-      } catch {
+      } catch (error) {
+        if (isRequestAborted(error)) {
+          return;
+        }
         setStatus(t('offers.searchFailed'));
       }
     })();
@@ -158,6 +197,11 @@ export function OffersScreen() {
 
     return (
       <>
+        {isPending('offers-search') ? (
+          <View style={[styles.progressBanner, { backgroundColor: palette.card, borderColor: palette.border }]}>
+            <Text style={[styles.progressLabel, { color: palette.inkMuted }]}>{t('offers.loading')}</Text>
+          </View>
+        ) : null}
         <ImmersiveOfferFeed
           feedTab={feedTab}
           offers={combinedOffers}
@@ -172,7 +216,7 @@ export function OffersScreen() {
           onReport={setReportDraft}
           onSearch={(nextQuery) => {
             setQuery(nextQuery);
-            void search(nextQuery, radiusMeters, favoritesOnly);
+            searchDebounced(nextQuery, radiusMeters, favoritesOnly);
           }}
           onVote={vote}
           query={query}
@@ -212,7 +256,10 @@ export function OffersScreen() {
 
         <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <TextInput
-            onChangeText={setQuery}
+            onChangeText={(value) => {
+              setQuery(value);
+              searchDebounced(value, radiusMeters, favoritesOnly);
+            }}
             placeholder={t('offers.searchPlaceholder')}
             placeholderTextColor={palette.inkMuted}
             style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
@@ -398,6 +445,17 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: 10,
+  },
+  progressBanner: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  progressLabel: {
+    fontSize: 13,
   },
   grid: {
     flexDirection: 'row',

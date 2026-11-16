@@ -3,6 +3,14 @@ using System.Text.RegularExpressions;
 
 namespace DealsSeeker.Api.Persistence;
 
+/// <summary>
+/// Applies pending SQL migrations in filename order, exactly once.
+/// </summary>
+/// <remarks>
+/// Each migration is applied inside an <c>IMMEDIATE</c> transaction so that the database write lock is
+/// taken before the "already applied?" check. Without this, two instances starting concurrently could
+/// both observe a migration as pending and apply it twice.
+/// </remarks>
 public sealed class SqliteMigrationRunner(
     IDbConnectionFactory connectionFactory,
     IHostEnvironment environment,
@@ -14,16 +22,16 @@ public sealed class SqliteMigrationRunner(
 
     public async Task ApplyMigrationsAsync(CancellationToken cancellationToken)
     {
-        await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
-        await connection.ExecuteAsync("""
-                                     CREATE TABLE IF NOT EXISTS schema_migrations (
-                                         id TEXT PRIMARY KEY,
-                                         applied_at_utc TEXT NOT NULL
-                                     );
-                                     """);
+        await using var lease = await connectionFactory.RentAsync(cancellationToken);
+        var connection = lease.Connection;
 
-        var appliedMigrations = (await connection.QueryAsync<string>("SELECT id FROM schema_migrations;"))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        await connection.ExecuteAsync(
+            """
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                id TEXT PRIMARY KEY,
+                applied_at_utc TEXT NOT NULL
+            );
+            """);
 
         var migrationDirectory = ResolveMigrationDirectory();
         if (migrationDirectory is null)
@@ -43,7 +51,8 @@ public sealed class SqliteMigrationRunner(
         foreach (var migrationFile in migrationFiles)
         {
             var migrationId = Path.GetFileName(migrationFile);
-            if (appliedMigrations.Contains(migrationId))
+
+            if (await IsAppliedAsync(connection, migrationId).ConfigureAwait(false))
             {
                 continue;
             }
@@ -51,22 +60,25 @@ public sealed class SqliteMigrationRunner(
             var sql = await File.ReadAllTextAsync(migrationFile, cancellationToken);
             if (UsesExplicitTransactionControl(sql))
             {
+                // The migration manages its own transaction, so it cannot be wrapped in one.
                 await connection.ExecuteAsync(sql);
-                await connection.ExecuteAsync(
-                    "INSERT INTO schema_migrations (id, applied_at_utc) VALUES (@Id, @AppliedAtUtc);",
-                    new { Id = migrationId, AppliedAtUtc = DateTimeOffset.UtcNow.ToString("O") });
+                await RecordAppliedAsync(connection, migrationId, null);
                 logger.LogInformation("Applied database migration {MigrationId}", migrationId);
                 continue;
             }
 
-            await using var transaction = connection.BeginTransaction();
+            await using var transaction = connection.BeginTransaction(deferred: false);
             try
             {
+                // Re-check under the write lock: another instance may have applied it in the meantime.
+                if (await IsAppliedAsync(connection, migrationId, transaction).ConfigureAwait(false))
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    continue;
+                }
+
                 await connection.ExecuteAsync(sql, transaction: transaction);
-                await connection.ExecuteAsync(
-                    "INSERT INTO schema_migrations (id, applied_at_utc) VALUES (@Id, @AppliedAtUtc);",
-                    new { Id = migrationId, AppliedAtUtc = DateTimeOffset.UtcNow.ToString("O") },
-                    transaction);
+                await RecordAppliedAsync(connection, migrationId, transaction);
                 await transaction.CommitAsync(cancellationToken);
                 logger.LogInformation("Applied database migration {MigrationId}", migrationId);
             }
@@ -76,6 +88,30 @@ public sealed class SqliteMigrationRunner(
                 throw;
             }
         }
+    }
+
+    private static async Task<bool> IsAppliedAsync(
+        Microsoft.Data.Sqlite.SqliteConnection connection,
+        string migrationId,
+        Microsoft.Data.Sqlite.SqliteTransaction? transaction = null)
+    {
+        var applied = await connection.ExecuteScalarAsync<long>(
+            "SELECT COUNT(1) FROM schema_migrations WHERE id = @Id;",
+            new { Id = migrationId },
+            transaction).ConfigureAwait(false);
+
+        return applied > 0;
+    }
+
+    private static Task RecordAppliedAsync(
+        Microsoft.Data.Sqlite.SqliteConnection connection,
+        string migrationId,
+        Microsoft.Data.Sqlite.SqliteTransaction? transaction)
+    {
+        return connection.ExecuteAsync(
+            "INSERT INTO schema_migrations (id, applied_at_utc) VALUES (@Id, @AppliedAtUtc);",
+            new { Id = migrationId, AppliedAtUtc = Timestamp.NowUtc() },
+            transaction);
     }
 
     private static bool UsesExplicitTransactionControl(string sql)

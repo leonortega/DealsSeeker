@@ -43,5 +43,8 @@
       },
       "distanceMeters": 145.2
     }
-  ]
+  ],
+  "page": 1,
+  "pageSize": 20,
+  "hasMore": false
 }

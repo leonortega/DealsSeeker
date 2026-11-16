@@ -49,6 +49,36 @@ dotnet run --project .\src\DealsSeeker.Api --launch-profile http
 - `10.0.2.2` is the Android emulator alias for the host machine. Do not use `localhost` from the emulator.
 - For a physical Android device, set `DEALSEEKER_API_BASEURL` to your PC's LAN IP instead of `10.0.2.2`.
 
+## Run (React Native UI + API, two terminals)
+The React Native client expects the API on port **5005**. The `run-dev.ps1` script starts both
+processes as independent consoles: the API in one terminal, the Expo UI in the other.
+
+```powershell
+# Open two terminals: one for the API, one for the UI
+.\scripts\run-dev.ps1
+```
+
+The script waits for the API to report healthy before starting the UI, so the UI never races the
+API. Close each terminal with `Ctrl+C`.
+
+| Command | Effect |
+|---|---|
+| `.\scripts\run-dev.ps1` | Open the API and the UI in two separate terminal windows |
+| `.\scripts\run-dev.ps1 -Target api` | Run only the API, in the current terminal |
+| `.\scripts\run-dev.ps1 -Target ui` | Run only the UI, in the current terminal |
+| `.\scripts\run-dev.ps1 -Platform ios` | Point the UI at `http://localhost:5005` |
+| `.\scripts\run-dev.ps1 -Platform device -ApiHost 0.0.0.0` | Run against a physical device on the same network |
+| `.\scripts\run-dev.ps1 -Clear` | Clear the Expo bundler cache before starting the UI |
+| `.\scripts\run-dev.ps1 -Wait` | Keep the launching terminal open until `Ctrl+C` |
+
+The API base URL handed to the UI follows the chosen platform:
+
+| Platform | API base URL |
+|---|---|
+| `android` (default) | `http://10.0.2.2:5005` — the emulator alias for the host |
+| `ios` / `web` | `http://localhost:5005` |
+| `device` | `http://<machine-lan-ip>:5005` |
+
 ## Map Provider Configuration
 The app supports configurable map provider modules (`GoogleMaps`, `OpenLayers`).
 

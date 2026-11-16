@@ -1,0 +1,32 @@
+{
+  "input": {
+    "operation": "create-offer",
+    "requestContract": "contracts/json-schema/add-offer-draft.schema.json",
+    "payload": {
+      "description": "A description that exceeds the declared maximum length",
+      "radiusMeters": 75000,
+      "latitude": 95.4
+    }
+  },
+  "expected": {
+    "status": 400,
+    "body": {
+      "type": "https://dealseeker.local/errors/validation-failed",
+      "title": "Validation Failed",
+      "status": 400,
+      "detail": "One or more validation errors occurred.",
+      "errors": {
+        "description": [
+          "The description field must not exceed 2000 characters."
+        ],
+        "radiusMeters": [
+          "The radiusMeters field must be less than or equal to 50000."
+        ],
+        "latitude": [
+          "The latitude field must be between -90 and 90."
+        ]
+      }
+    },
+    "workPerformed": false
+  }
+}

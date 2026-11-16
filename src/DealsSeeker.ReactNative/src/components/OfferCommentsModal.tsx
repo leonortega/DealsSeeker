@@ -25,6 +25,9 @@ export function OfferCommentsModal({ offer, visible, onClose }: OfferCommentsMod
   const [body, setBody] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
 
   const apiRef = useRef(api);
   const tRef = useRef(t);
@@ -42,12 +45,16 @@ export function OfferCommentsModal({ offer, visible, onClose }: OfferCommentsMod
     setBody('');
     setStatus(null);
     setLoading(true);
+    setNextCursor(null);
+    setHasMore(false);
 
     void (async () => {
       try {
         const response = await apiRef.current.getOfferComments(offerId);
         if (!cancelled) {
           setComments(response?.comments ?? []);
+          setHasMore(Boolean(response?.hasMore));
+          setNextCursor(response?.nextCursor ?? null);
         }
       } catch {
         if (!cancelled) {
@@ -64,6 +71,25 @@ export function OfferCommentsModal({ offer, visible, onClose }: OfferCommentsMod
       cancelled = true;
     };
   }, [visible, offerId]);
+
+  async function loadMore() {
+    if (!offerId || !nextCursor || loadingMore) {
+      return;
+    }
+
+    setLoadingMore(true);
+
+    try {
+      const response = await apiRef.current.getOfferComments(offerId, undefined, nextCursor);
+      setComments((current) => [...current, ...(response?.comments ?? [])]);
+      setHasMore(Boolean(response?.hasMore));
+      setNextCursor(response?.nextCursor ?? null);
+    } catch {
+      setStatus(tRef.current('comments.loadFailed'));
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   async function publish() {
     if (!offerId) {
@@ -121,6 +147,17 @@ export function OfferCommentsModal({ offer, visible, onClose }: OfferCommentsMod
             keyExtractor={(comment) => comment.commentId}
             style={styles.list}
             contentContainerStyle={styles.listContent}
+            ListFooterComponent={
+              hasMore ? (
+                <Pressable style={[styles.loadMoreButton, { borderColor: palette.border }]} onPress={() => void loadMore()}>
+                  {loadingMore ? (
+                    <ActivityIndicator color={palette.accent} />
+                  ) : (
+                    <Text style={[styles.loadMoreLabel, { color: palette.accent }]}>{t('comments.loadMore')}</Text>
+                  )}
+                </Pressable>
+              ) : undefined
+            }
             renderItem={({ item }: { item: OfferCommentDto }) => (
               <View style={[styles.comment, { backgroundColor: palette.panel, borderColor: palette.border }]}>
                 <Text style={styles.avatar}>{avatarEmoji(item.avatarId)}</Text>
@@ -207,6 +244,16 @@ const styles = StyleSheet.create({
   listContent: {
     gap: 10,
     paddingVertical: 4,
+  },
+  loadMoreButton: {
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 10,
+  },
+  loadMoreLabel: {
+    fontSize: 14,
+    fontWeight: '700',
   },
   comment: {
     borderRadius: 16,

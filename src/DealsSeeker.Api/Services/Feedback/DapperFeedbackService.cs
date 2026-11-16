@@ -14,7 +14,8 @@ public sealed class DapperFeedbackService(IDbConnectionFactory connectionFactory
             return new CommandResult(false, "Suggestion message is required.");
         }
 
-        await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        await using var lease = await connectionFactory.RentAsync(cancellationToken);
+        var connection = lease.Connection;
         await connection.ExecuteAsync(
             """
             INSERT INTO suggestions (message, contact, created_at_utc)
@@ -24,7 +25,7 @@ public sealed class DapperFeedbackService(IDbConnectionFactory connectionFactory
             {
                 Message = request.Message.Trim(),
                 Contact = string.IsNullOrWhiteSpace(request.Contact) ? null : request.Contact.Trim(),
-                CreatedAtUtc = DateTimeOffset.UtcNow.ToString("O")
+                CreatedAtUtc = Timestamp.NowUtc()
             });
 
         return new CommandResult(true, "Suggestion submitted.");
@@ -41,9 +42,10 @@ public sealed class DapperFeedbackService(IDbConnectionFactory connectionFactory
         var offerId = string.IsNullOrWhiteSpace(request.OfferId) ? null : request.OfferId.Trim();
         var userId = string.IsNullOrWhiteSpace(request.UserId) ? null : request.UserId.Trim();
         var reportedAtUtc = request.ReportedAtUtc?.ToUniversalTime() ?? DateTimeOffset.UtcNow;
-        var createdAtUtc = DateTimeOffset.UtcNow.ToString("O");
+        var createdAtUtc = Timestamp.NowUtc();
 
-        await using var connection = await connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        await using var lease = await connectionFactory.RentAsync(cancellationToken);
+        var connection = lease.Connection;
         await using var transaction = connection.BeginTransaction();
 
         try

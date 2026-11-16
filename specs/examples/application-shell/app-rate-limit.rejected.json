@@ -1,0 +1,28 @@
+{
+  "input": {
+    "caller": {
+      "networkOrigin": "198.51.100.24",
+      "authenticatedUser": "user-42"
+    },
+    "request": {
+      "method": "GET",
+      "path": "/api/offers/search",
+      "endpointCategory": "expensive"
+    },
+    "allowanceState": "exceeded"
+  },
+  "expected": {
+    "status": 429,
+    "headers": {
+      "Retry-After": "30"
+    },
+    "body": {
+      "type": "https://dealseeker.local/errors/rate-limit-exceeded",
+      "title": "Too Many Requests",
+      "status": 429,
+      "detail": "The request allowance for this caller has been exceeded. Retry after the indicated number of seconds.",
+      "errors": {}
+    },
+    "workPerformed": false
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "input": {
+    "lookup": {
+      "kind": "place-text",
+      "query": "zzz-nonexistent-place"
+    },
+    "providers": [
+      {
+        "name": "primary",
+        "outcome": "success-no-matches"
+      }
+    ]
+  },
+  "expected": {
+    "status": 200,
+    "body": [],
+    "resultCount": 0,
+    "providerFailure": false
+  }
+}

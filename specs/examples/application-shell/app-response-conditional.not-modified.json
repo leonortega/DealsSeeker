@@ -1,0 +1,18 @@
+{
+  "input": {
+    "request": {
+      "method": "GET",
+      "path": "/api/offers/feed",
+      "presentedValidator": "W/\"offerseeder-9f2c41\""
+    }
+  },
+  "expected": {
+    "status": 304,
+    "body": "",
+    "bodyPresent": false,
+    "headers": {
+      "ETag": "W/\"offerseeder-9f2c41\""
+    },
+    "workPerformed": false
+  }
+}

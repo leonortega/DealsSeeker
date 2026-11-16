@@ -1,7 +1,7 @@
 import { PropsWithChildren, createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import * as Localization from 'expo-localization';
-import { createDealsSeekerApi } from '../api/client';
+import { RequestOptions, createDealsSeekerApi } from '../api/client';
 import { apiConfig } from '../api/config';
 import {
   AuthSessionDto,
@@ -11,6 +11,7 @@ import {
   OfferReportDraft,
   ThemeMode,
   UserPreferences,
+  UserProfileDto,
 } from '../api/types';
 import {
   DEFAULT_PREFERENCES,
@@ -41,6 +42,8 @@ interface AppContextValue {
   palette: ReturnType<typeof resolveTheme>;
   reportDraft: OfferReportDraft | null;
   loadingCount: number;
+  pendingOperations: string[];
+  isPending: (operationKey: string) => boolean;
   api: ReturnType<typeof createDealsSeekerApi>;
   t: (key: string) => string;
   showRegister: () => void;
@@ -87,6 +90,8 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [menuVisible, setMenuVisibleState] = useState(false);
   const [immersiveOffers, setImmersiveOffers] = useState(true);
   const [loadingCount, setLoadingCount] = useState(0);
+  const [pendingOperations, setPendingOperations] = useState<string[]>([]);
+  const [cachedProfile, setCachedProfile] = useState<UserProfileDto | null>(null);
   const [reportDraft, setReportDraftState] = useState<OfferReportDraft | null>(null);
   const [avatarId, setAvatarId] = useState<string>(DEFAULT_AVATAR_ID);
 
@@ -98,19 +103,41 @@ export function AppProvider({ children }: PropsWithChildren) {
   const handleUnauthorized = useCallback(async () => {
     await clearSession();
     setSessionState(null);
+    setCachedProfile(null);
     setOverlayRoute(null);
     setActiveTab('offers');
     setAuthScreen('login');
   }, []);
 
-  const runBlocking = useCallback(async <T,>(task: () => Promise<T>) => {
-    setLoadingCount((current) => current + 1);
+  /**
+   * Runs an operation.
+   *
+   * When an operation key is supplied the operation is tracked as a scoped, non-blocking
+   * indicator, so the user can keep interacting while a lookup is in flight. Without a key the
+   * operation shows the global blocking indicator.
+   */
+  const runOperation = useCallback(async <T,>(operationKey: string | null, task: () => Promise<T>) => {
+    if (operationKey) {
+      setPendingOperations((current) => [...current, operationKey]);
+    } else {
+      setLoadingCount((current) => current + 1);
+    }
+
     try {
       return await task();
     } finally {
-      setLoadingCount((current) => Math.max(0, current - 1));
+      if (operationKey) {
+        setPendingOperations((current) => current.filter((key) => key !== operationKey));
+      } else {
+        setLoadingCount((current) => Math.max(0, current - 1));
+      }
     }
   }, []);
+
+  const isPending = useCallback(
+    (operationKey: string) => pendingOperations.includes(operationKey),
+    [pendingOperations]
+  );
 
   const apiBase = useMemo(
     () =>
@@ -124,31 +151,58 @@ export function AppProvider({ children }: PropsWithChildren) {
 
   const api: ReturnType<typeof createDealsSeekerApi> = useMemo(
     () => ({
-      registerUser: (requestBody) => runBlocking(() => apiBase.registerUser(requestBody)),
-      login: (requestBody) => runBlocking(() => apiBase.login(requestBody)),
-      logout: () => runBlocking(() => apiBase.logout()),
-      getMyProfile: () => runBlocking(() => apiBase.getMyProfile()),
-      getMyOffers: () => runBlocking(() => apiBase.getMyOffers()),
-      getMyOfferDraft: (offerId) => runBlocking(() => apiBase.getMyOfferDraft(offerId)),
-      setMyAvatar: (requestBody) => runBlocking(() => apiBase.setMyAvatar(requestBody)),
-      getOfferComments: (offerId) => runBlocking(() => apiBase.getOfferComments(offerId)),
-      createOfferComment: (offerId, requestBody) =>
-        runBlocking(() => apiBase.createOfferComment(offerId, requestBody)),
-      searchOffers: (requestBody) => runBlocking(() => apiBase.searchOffers(requestBody)),
-      voteOfferAvailability: (offerId, requestBody) =>
-        runBlocking(() => apiBase.voteOfferAvailability(offerId, requestBody)),
-      reportOffer: (offerId, requestBody) => runBlocking(() => apiBase.reportOffer(offerId, requestBody)),
-      setOfferFavorite: (offerId, requestBody) =>
-        runBlocking(() => apiBase.setOfferFavorite(offerId, requestBody)),
-      createOffer: (requestBody) => runBlocking(() => apiBase.createOffer(requestBody)),
-      updateOffer: (offerId, requestBody) => runBlocking(() => apiBase.updateOffer(offerId, requestBody)),
-      deleteOffer: (offerId) => runBlocking(() => apiBase.deleteOffer(offerId)),
-      searchLocations: (query) => runBlocking(() => apiBase.searchLocations(query)),
-      reverseLocation: (lat, lng) => runBlocking(() => apiBase.reverseLocation(lat, lng)),
-      submitSuggestion: (requestBody) => runBlocking(() => apiBase.submitSuggestion(requestBody)),
-      submitReport: (requestBody) => runBlocking(() => apiBase.submitReport(requestBody)),
+      registerUser: (requestBody, requestOptions) =>
+        runOperation(null, () => apiBase.registerUser(requestBody, requestOptions)),
+      login: (requestBody, requestOptions) =>
+        runOperation(null, () => apiBase.login(requestBody, requestOptions)),
+      logout: (requestOptions) => runOperation(null, () => apiBase.logout(requestOptions)),
+      getMyProfile: (requestOptions) =>
+        runOperation(null, async () => {
+          const cached = cachedProfile;
+          if (cached && cached.userId === session?.userId) {
+            return cached;
+          }
+
+          const profile = await apiBase.getMyProfile(requestOptions);
+          if (profile) {
+            setCachedProfile(profile);
+          }
+          return profile;
+        }),
+      getMyOffers: (requestOptions) =>
+        runOperation(null, () => apiBase.getMyOffers(requestOptions)),
+      getMyOfferDraft: (offerId, requestOptions) =>
+        runOperation(null, () => apiBase.getMyOfferDraft(offerId, requestOptions)),
+      setMyAvatar: (requestBody, requestOptions) =>
+        runOperation(null, () => apiBase.setMyAvatar(requestBody, requestOptions)),
+      getOfferComments: (offerId, limit, after, requestOptions) =>
+        runOperation(null, () => apiBase.getOfferComments(offerId, limit, after, requestOptions)),
+      createOfferComment: (offerId, requestBody, requestOptions) =>
+        runOperation(null, () => apiBase.createOfferComment(offerId, requestBody, requestOptions)),
+      searchOffers: (requestBody, requestOptions) =>
+        runOperation('offers-search', () => apiBase.searchOffers(requestBody, requestOptions)),
+      voteOfferAvailability: (offerId, requestBody, requestOptions) =>
+        runOperation(null, () => apiBase.voteOfferAvailability(offerId, requestBody, requestOptions)),
+      reportOffer: (offerId, requestBody, requestOptions) =>
+        runOperation(null, () => apiBase.reportOffer(offerId, requestBody, requestOptions)),
+      setOfferFavorite: (offerId, requestBody, requestOptions) =>
+        runOperation(null, () => apiBase.setOfferFavorite(offerId, requestBody, requestOptions)),
+      createOffer: (requestBody, requestOptions) =>
+        runOperation(null, () => apiBase.createOffer(requestBody, requestOptions)),
+      updateOffer: (offerId, requestBody, requestOptions) =>
+        runOperation(null, () => apiBase.updateOffer(offerId, requestBody, requestOptions)),
+      deleteOffer: (offerId, requestOptions) =>
+        runOperation(null, () => apiBase.deleteOffer(offerId, requestOptions)),
+      searchLocations: (query, requestOptions) =>
+        runOperation('locations-search', () => apiBase.searchLocations(query, requestOptions)),
+      reverseLocation: (lat, lng, requestOptions) =>
+        runOperation(null, () => apiBase.reverseLocation(lat, lng, requestOptions)),
+      submitSuggestion: (requestBody, requestOptions) =>
+        runOperation(null, () => apiBase.submitSuggestion(requestBody, requestOptions)),
+      submitReport: (requestBody, requestOptions) =>
+        runOperation(null, () => apiBase.submitReport(requestBody, requestOptions)),
     }),
-    [apiBase, runBlocking]
+    [apiBase, runOperation, cachedProfile, session?.userId]
   );
 
   const translateKey = useCallback((key: string) => translate(preferences.language, key), [preferences.language]);
@@ -231,6 +285,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     } finally {
       await clearSession();
       setSessionState(null);
+      setCachedProfile(null);
       setOverlayRoute(null);
       setActiveTab('offers');
       setAuthScreen('login');
@@ -281,6 +336,8 @@ export function AppProvider({ children }: PropsWithChildren) {
     palette: resolveTheme(preferences.themeMode, systemScheme === 'light' ? 'light' : systemScheme === 'dark' ? 'dark' : null),
     reportDraft,
     loadingCount,
+    pendingOperations,
+    isPending,
     api,
     t: translateKey,
     showRegister: () => setAuthScreen('register'),

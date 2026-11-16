@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Image,
   Pressable,
@@ -10,9 +10,11 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { isRequestAborted } from '../api/client';
 import { apiConfig } from '../api/config';
 import { OfferImageDto, OfferLocationDto } from '../api/types';
 import { MapPreview } from '../components/MapPreview';
+import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
 import { extractWords } from '../utils/format';
 import { getSuggestedTags, normalizeTag } from '../utils/tagLexicon';
@@ -110,6 +112,8 @@ export function AddOfferScreen() {
   const [locationConfirmed, setLocationConfirmed] = useState(false);
   const [locationResults, setLocationResults] = useState<LocationSearchResult[]>([]);
   const [status, setStatus] = useState<string | null>(null);
+  const locationSearchRequest = useAbortableRequest();
+  const locationSearchSequence = useRef(0);
 
   const isVisible = overlayRoute?.name === 'add-offer';
   const editingOfferId = overlayRoute?.name === 'add-offer' ? overlayRoute.offerId : undefined;
@@ -195,18 +199,33 @@ export function AddOfferScreen() {
       return;
     }
 
+    const sequence = locationSearchSequence.current + 1;
+    locationSearchSequence.current = sequence;
+
     const timeoutId = setTimeout(() => {
+      // A new lookup supersedes the one still in flight.
+      const signal = locationSearchRequest.begin();
+
       void (async () => {
         try {
-          const results = await api.searchLocations(trimmedQuery);
+          const results = await api.searchLocations(trimmedQuery, { signal });
+          if (sequence !== locationSearchSequence.current) {
+            return;
+          }
           setLocationResults(dedupeLocationSearchResults(results));
-        } catch {
+        } catch (error) {
+          if (isRequestAborted(error) || sequence !== locationSearchSequence.current) {
+            return;
+          }
           setStatus(t('add.locationSearchFailed'));
         }
       })();
     }, 300);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      locationSearchRequest.abort();
+    };
   }, [isVisible, locationConfirmed, locationQuery]);
 
   if (!isVisible) {

@@ -60,3 +60,4 @@ Scenario: Missing language dictionary falls back safely
 ## Related Specs
 - `OFFERS.SEARCH.001`
 - `APP.LOCALIZATION.001`
+- `APP.SEARCH.INTERACTION.001`

@@ -1,0 +1,96 @@
+{
+  "offers": [
+    {
+      "offerId": "off-100",
+      "businessId": "biz-100",
+      "businessName": "Main Street Cafe",
+      "description": "Buy one coffee and get one free",
+      "tags": [
+        "coffee",
+        "breakfast"
+      ],
+      "imageUrl": "/images/offer-placeholder.svg",
+      "imageUrls": [
+        "/images/offer-placeholder.svg"
+      ],
+      "isActive": true,
+      "isPromoted": false,
+      "isFavorite": false,
+      "isReported": false,
+      "relevanceScore": 1,
+      "matchStrategies": [
+        "exact"
+      ],
+      "location": {
+        "lat": 40.7131,
+        "lng": -74.0055
+      },
+      "distanceMeters": 53.7,
+      "positiveAvailabilityCount": 0,
+      "negativeAvailabilityCount": 0,
+      "hasCurrentUserVoted": false
+    },
+    {
+      "offerId": "off-101",
+      "businessId": "biz-101",
+      "businessName": "Broadway Market",
+      "description": "Bakery discount before closing time",
+      "tags": [
+        "bakery",
+        "discount"
+      ],
+      "imageUrl": "/images/offer-placeholder.svg",
+      "imageUrls": [
+        "/images/offer-placeholder.svg"
+      ],
+      "isActive": true,
+      "isPromoted": false,
+      "isFavorite": false,
+      "isReported": false,
+      "relevanceScore": 0.88,
+      "matchStrategies": [
+        "synonym"
+      ],
+      "location": {
+        "lat": 40.7165,
+        "lng": -74.0035
+      },
+      "distanceMeters": 470.1,
+      "positiveAvailabilityCount": 3,
+      "negativeAvailabilityCount": 0,
+      "hasCurrentUserVoted": true
+    }
+  ],
+  "businesses": [
+    {
+      "businessId": "biz-100",
+      "name": "Main Street Cafe",
+      "location": {
+        "lat": 40.7131,
+        "lng": -74.0055
+      },
+      "distanceMeters": 53.7
+    },
+    {
+      "businessId": "biz-101",
+      "name": "Broadway Market",
+      "location": {
+        "lat": 40.7165,
+        "lng": -74.0035
+      },
+      "distanceMeters": 470.1
+    },
+    {
+      "businessId": "biz-102",
+      "name": "Green Leaf Shop",
+      "location": {
+        "lat": 40.7105,
+        "lng": -74.008
+      },
+      "distanceMeters": 312.4
+    }
+  ],
+  "page": 1,
+  "pageSize": 2,
+  "hasMore": true
+}
