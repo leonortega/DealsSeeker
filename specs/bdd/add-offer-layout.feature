@@ -9,7 +9,7 @@ Feature: Add Offer layout required controls
     Then an image upload area with photo icon is visible
     And a description input field is visible
     And a current tag list section is visible
-    And a suggested tags section is visible
+    And no suggested tags section is displayed
     And location information is visible
     And a location search input is visible
     And location suggestions appear while typing from the 3rd character
@@ -41,3 +41,10 @@ Feature: Add Offer layout required controls
     When the user presses Create Offer
     Then the create-offer request is not sent
     And a validation error state is shown
+
+  Scenario: Tag section shows only the removal hint
+    Given the user navigates to Add Offer view
+    When the tag section loads
+    Then a hint states that tapping a selected tag removes it
+    And no word-detection guidance text is displayed
+    And no Suggested Tags section is displayed

@@ -11,7 +11,7 @@
   "properties": {
     "source": {
       "type": "string",
-      "description": "Current clients typically use values such as auto, search, or manual-confirmed."
+      "description": "Location source. Clients use values such as auto, search, map, or manual-confirmed."
     },
     "label": {
       "type": [

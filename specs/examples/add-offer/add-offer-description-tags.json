@@ -1,13 +1,20 @@
 {
   "input": {
-    "description": "cheap COFFEE 50% discount",
-    "selectedWord": "COFFEE",
-    "secondSelectedWord": "50%"
+    "description": "denims at 50%",
+    "typingEvents": [
+      "denims ",
+      "at ",
+      "50%"
+    ],
+    "manualTapWord": null
   },
   "expected": {
     "tags": [
-      "coffee",
+      "denims",
       "50%"
+    ],
+    "detectedWords": [
+      "at"
     ]
   }
 }

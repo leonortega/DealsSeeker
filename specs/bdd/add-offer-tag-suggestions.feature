@@ -1,29 +1,33 @@
-Feature: Tag suggestions in Add Offer view
+Feature: Silent auto-addition of suggested tags in Add Offer view
   As a user
-  I want optional tag suggestions while creating offers
-  So that I can improve discoverability without losing control
+  I want related tags added automatically without extra UI
+  So that my offer is discoverable while the tag section stays simple
 
-  Scenario: Suggest related tags from the selected tag list
-    Given the user selected the tag "coffee"
+  Scenario: Related tags are added silently from a typed tag
+    Given the user typed "denims " so the tag "denims" is selected
     And multilingual suggestion dictionaries are available
     When the suggestion engine runs
-    Then the user sees optional chips with related tags such as "cafe" and "espresso"
-    And the selected tag list does not change until a suggested chip is tapped
+    Then the tag "denim" is added automatically
+    And no Suggested Tags section is displayed
 
-  Scenario: Suggest singular form from plural selected tag
-    Given the user selected the tag "offers"
+  Scenario: One-level expansion only
+    Given the description-derived tag "coffee" has immediate suggestions "cafe" and "espresso"
     When the suggestion engine runs
-    Then the user sees the related tag "offer"
+    Then only the immediate suggestions of "coffee" are auto-added
+    And no tag derived from "cafe" or "espresso" is auto-added
 
-  Scenario: Suggestions are optional and non-blocking
-    Given the user has not selected any tags yet
-    When the Add Offer tag section loads
-    Then the Suggested Tags section remains visible
-    And the user sees guidance to select a tag first
+  Scenario: Short suggestions are ignored
+    Given a description-derived tag has a related tag whose normalized form has fewer than 3 characters
+    When the suggestion engine runs
+    Then that short tag is not added to the tag list
 
-  Scenario: Clearing description removes suggestions
-    Given the user selected the tag "coffee"
-    And the Suggested Tags section shows related tags
+  Scenario: Removed suggested tag stays removed
+    Given the tag "denim" was auto-added from the description-derived tag "denims"
+    When the user removes the tag "denim"
+    Then the tag "denim" is not re-added automatically
+
+  Scenario: Clearing description clears suggestion state
+    Given the description-derived tag "denims" produced an auto-added "denim" tag
     When the user clears the description text
     Then the selected tag list is empty
-    And the Suggested Tags section shows no related tags
+    And no suggestion state remains

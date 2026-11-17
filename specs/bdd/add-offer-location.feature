@@ -53,3 +53,34 @@ Feature: Add Offer location suggestions and mini map
     When the edit draft finishes loading
     Then the location textbox shows the stored location label
     And the mini map preview shows the stored offer location
+
+  Scenario: Pin a point on the mini map to set the address
+    Given the Add Offer mini map is visible
+    When the user taps a point on the map
+    Then a pin marker is shown at the tapped point
+    And the draft location position becomes the tapped point
+    And the location textbox shows the resolved address label for the tapped point
+    And raw latitude and longitude values are not shown in the location UI
+
+  Scenario: Pinned location requires confirmation before saving
+    Given the user pinned a point on the map
+    And Confirm Location is enabled
+    When the user presses save
+    Then the offer request is not sent
+    And a location-confirmation validation error is shown
+
+  Scenario: Pinned point without a resolvable address label
+    Given the address lookup for the tapped point returns no label
+    When the user taps a point on the map
+    Then the draft location keeps the tapped point
+    And the location textbox shows a generic label without numeric coordinates
+
+  Scenario: Pin selection is available before a location is resolved
+    Given no location has been resolved for the draft
+    Then the Add Offer mini map is still shown and accepts pin selection
+
+  Scenario: Pin selection in edit mode
+    Given the user opens Add Offer view in edit mode for a user-owned offer
+    When the user taps a point on the mini map
+    Then the draft location is replaced by the tapped point
+    And the location textbox shows the resolved address label for the tapped point

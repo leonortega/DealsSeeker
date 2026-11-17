@@ -23,7 +23,7 @@ Provide multi-language UI and dictionary behavior with system-locale defaults.
 - `APP.LOCALIZATION.001-R3`: All user-facing UI strings shall be externalized into localization resource files.
 - `APP.LOCALIZATION.001-R4`: Fuzzy/synonym dictionaries used by `OFFERS.SEARCH.SMART.001` and `ADD.OFFER.TAGS.SUGGESTIONS.001` shall load by selected language.
 - `APP.LOCALIZATION.001-R5`: Missing translation keys shall fall back to a configured default language.
-- `APP.LOCALIZATION.001-R6`: Missing language dictionaries for smart matching/suggestions shall fall back without blocking feature usage.
+- `APP.LOCALIZATION.001-R6`: Missing language dictionaries for smart matching or suggestion expansion shall fall back without blocking feature usage.
 - `APP.LOCALIZATION.001-R7`: The main navigation menu shall include a language-change control.
 - `APP.LOCALIZATION.001-R8`: When the user changes language from the menu control, UI strings and language-dependent dictionaries shall update instantly in the current view without requiring app restart.
 

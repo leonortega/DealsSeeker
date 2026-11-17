@@ -18,6 +18,13 @@ export function extractWords(text: string) {
   return Array.from(new Set(matches.map((word) => word.trim()).filter(Boolean))).slice(0, 30);
 }
 
+const completedWordPattern = /([\p{L}\p{Nd}][\p{L}\p{Nd}\-']*%?)[\s.,;:!?]+$/u;
+
+export function extractCompletedWord(text: string) {
+  const match = (text ?? '').match(completedWordPattern);
+  return match ? match[1] : null;
+}
+
 export function validateEmail(email: string) {
   return /^[^@\s]+@[^@\s]+\.[^@\s]+$/u.test(email.trim());
 }

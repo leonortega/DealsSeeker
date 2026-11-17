@@ -1,6 +1,6 @@
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { createElement, useEffect } from 'react';
+import { createElement, useEffect, useRef } from 'react';
 import { apiConfig, normalizeProvider, resolveDisplayProvider } from '../api/config';
 import { BusinessMarkerDto, GeoPoint } from '../api/types';
 import { useApp } from '../hooks/useApp';
@@ -11,14 +11,20 @@ interface MapPreviewProps {
   radiusMeters: number;
   showUserMarker?: boolean;
   onSelectMarker?: (marker: BusinessMarkerDto) => void;
+  interactive?: boolean;
+  onMapTap?: (point: GeoPoint) => void;
+  pin?: GeoPoint | null;
+  hint?: string;
+  showCoverage?: boolean;
+  height?: number;
 }
 
 interface MapMessage {
-  businessId: string;
+  businessId?: string;
   lat: number;
   lng: number;
-  name: string;
-  type: 'marker-selected';
+  name?: string;
+  type: 'marker-selected' | 'map-tapped';
 }
 
 function calculateMapZoomForCoverage(radiusMeters: number, latitude: number) {
@@ -49,6 +55,7 @@ function buildMapHtml({
   showUserMarker,
   zoom,
   themeMode,
+  interactive,
 }: {
   center: GeoPoint;
   markers: BusinessMarkerDto[];
@@ -58,11 +65,13 @@ function buildMapHtml({
   showUserMarker: boolean;
   zoom: number;
   themeMode: 'light' | 'dark';
+  interactive: boolean;
 }) {
   const background = themeMode === 'dark' ? '#22332f' : '#edf3e7';
   const textColor = themeMode === 'dark' ? '#f7f1e8' : '#1f3128';
   const userColor = themeMode === 'dark' ? '#7ec48c' : '#2f6e46';
   const businessColor = themeMode === 'dark' ? '#f08f62' : '#b85c38';
+  const pinColor = themeMode === 'dark' ? '#e94f37' : '#d92b1c';
   const markerPayload = markers.map((marker) => ({
     businessId: marker.businessId,
     lat: marker.location.lat,
@@ -110,6 +119,7 @@ function buildMapHtml({
         center,
         fallbackProvider,
         googleMapsApiKey,
+        interactive,
         markers: markerPayload,
         provider,
         showUserMarker,
@@ -132,6 +142,53 @@ function buildMapHtml({
         const node = document.getElementById('map');
         node.innerHTML = '<div class="message">' + text + '</div>';
       }
+
+      let pinSetter = null;
+      let pendingPin = null;
+
+      function setPin(lat, lng) {
+        pendingPin = { lat: lat, lng: lng };
+        if (pinSetter) {
+          pinSetter(lat, lng);
+        }
+      }
+
+      function clearPin() {
+        pendingPin = null;
+        if (pinSetter) {
+          pinSetter(null, null);
+        }
+      }
+
+      function applyPendingPin() {
+        if (pendingPin && pinSetter) {
+          pinSetter(pendingPin.lat, pendingPin.lng);
+        }
+      }
+
+      window.addEventListener('message', function (event) {
+        var data = event.data;
+        if (typeof data === 'string') {
+          try {
+            data = JSON.parse(data);
+          } catch (error) {
+            return;
+          }
+        }
+
+        if (!data || !data.type) {
+          return;
+        }
+
+        if (data.type === 'set-pin') {
+          setPin(data.lat, data.lng);
+          return;
+        }
+
+        if (data.type === 'clear-pin') {
+          clearPin();
+        }
+      });
 
       function renderOpenLayers() {
         if (!window.ol || !ol.Map || !ol.layer || !ol.proj) {
@@ -192,7 +249,46 @@ function buildMapHtml({
           })
         });
 
+        const pinSource = new ol.source.Vector();
+        map.addLayer(new ol.layer.Vector({ source: pinSource }));
+
+        let pinFeature = null;
+        pinSetter = function (lat, lng) {
+          if (lat === null || lng === null) {
+            pinSource.clear();
+            pinFeature = null;
+            return;
+          }
+
+          const geometry = new ol.geom.Point(ol.proj.fromLonLat([lng, lat]));
+          if (!pinFeature) {
+            pinFeature = new ol.Feature({ geometry: geometry });
+            pinFeature.setStyle(new ol.style.Style({
+              image: new ol.style.Circle({
+                radius: 8,
+                fill: new ol.style.Fill({ color: '${pinColor}' }),
+                stroke: new ol.style.Stroke({ color: '#ffffff', width: 2 })
+              })
+            }));
+            pinSource.addFeature(pinFeature);
+            return;
+          }
+
+          pinFeature.setGeometry(geometry);
+        };
+
+        applyPendingPin();
+
         map.on('singleclick', function (event) {
+          if (config.interactive) {
+            const lonLat = ol.proj.transform(event.coordinate, 'EPSG:3857', 'EPSG:4326');
+            postMessage({
+              type: 'map-tapped',
+              lat: lonLat[1],
+              lng: lonLat[0]
+            });
+          }
+
           const feature = map.forEachFeatureAtPixel(event.pixel, function (hitFeature) {
             return hitFeature;
           }, { hitTolerance: 10 });
@@ -242,6 +338,48 @@ function buildMapHtml({
             streetViewControl: false,
             zoom: config.zoom
           });
+
+          if (config.interactive) {
+            map.addListener('click', function (event) {
+              postMessage({
+                type: 'map-tapped',
+                lat: event.latLng.lat(),
+                lng: event.latLng.lng()
+              });
+            });
+          }
+
+          let pinMarker = null;
+          pinSetter = function (lat, lng) {
+            if (lat === null || lng === null) {
+              if (pinMarker) {
+                pinMarker.setMap(null);
+                pinMarker = null;
+              }
+              return;
+            }
+
+            const position = { lat: lat, lng: lng };
+            if (!pinMarker) {
+              pinMarker = new google.maps.Marker({
+                position: position,
+                map: map,
+                icon: {
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 8,
+                  fillColor: '${pinColor}',
+                  fillOpacity: 1,
+                  strokeColor: '#ffffff',
+                  strokeWeight: 2
+                }
+              });
+              return;
+            }
+
+            pinMarker.setPosition(position);
+          };
+
+          applyPendingPin();
 
           if (config.showUserMarker) {
             new google.maps.Marker({
@@ -319,7 +457,19 @@ function buildMapHtml({
 </html>`;
 }
 
-export function MapPreview({ businesses, center, onSelectMarker, radiusMeters, showUserMarker = true }: MapPreviewProps) {
+export function MapPreview({
+  businesses,
+  center,
+  onSelectMarker,
+  onMapTap,
+  pin,
+  radiusMeters,
+  showUserMarker = true,
+  interactive = false,
+  hint,
+  showCoverage = true,
+  height = 240,
+}: MapPreviewProps) {
   const { palette, t } = useApp();
   const provider = resolveDisplayProvider();
   const fallbackProvider = normalizeProvider(apiConfig.mapDisplayProviderFallback);
@@ -333,23 +483,25 @@ export function MapPreview({ businesses, center, onSelectMarker, radiusMeters, s
     showUserMarker,
     themeMode: palette.mode,
     zoom,
+    interactive,
   });
 
-  function handleMessage(event: WebViewMessageEvent) {
-    try {
-      const payload = JSON.parse(event.nativeEvent.data) as MapMessage;
-      if (payload.type !== 'marker-selected') {
-        return;
-      }
+  const webViewRef = useRef<any>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
-      const selectedMarker = businesses.find((marker) => marker.businessId === payload.businessId);
-      if (selectedMarker) {
-        onSelectMarker?.(selectedMarker);
-      }
-    } catch {
-      // Ignore malformed map messages.
+  function sendPin(point: GeoPoint | null) {
+    const message = point ? { type: 'set-pin', lat: point.lat, lng: point.lng } : { type: 'clear-pin' };
+    if (Platform.OS === 'web') {
+      iframeRef.current?.contentWindow?.postMessage(message, '*');
+      return;
     }
+
+    webViewRef.current?.postMessage(JSON.stringify(message));
   }
+
+  useEffect(() => {
+    sendPin(pin ?? null);
+  }, [pin?.lat, pin?.lng]);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -359,7 +511,16 @@ export function MapPreview({ businesses, center, onSelectMarker, radiusMeters, s
     function handleWindowMessage(event: MessageEvent) {
       try {
         const payload = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        if (!payload || payload.type !== 'marker-selected') {
+        if (!payload) {
+          return;
+        }
+
+        if (payload.type === 'map-tapped') {
+          onMapTap?.({ lat: payload.lat, lng: payload.lng });
+          return;
+        }
+
+        if (payload.type !== 'marker-selected') {
           return;
         }
 
@@ -374,10 +535,30 @@ export function MapPreview({ businesses, center, onSelectMarker, radiusMeters, s
 
     window.addEventListener('message', handleWindowMessage);
     return () => window.removeEventListener('message', handleWindowMessage);
-  }, [businesses, onSelectMarker]);
+  }, [businesses, onSelectMarker, onMapTap]);
+  function handleMessage(event: WebViewMessageEvent) {
+    try {
+      const payload = JSON.parse(event.nativeEvent.data) as MapMessage;
+      if (payload.type === 'map-tapped') {
+        onMapTap?.({ lat: payload.lat, lng: payload.lng });
+        return;
+      }
+
+      if (payload.type !== 'marker-selected') {
+        return;
+      }
+
+      const selectedMarker = businesses.find((marker) => marker.businessId === payload.businessId);
+      if (selectedMarker) {
+        onSelectMarker?.(selectedMarker);
+      }
+    } catch {
+      // Ignore malformed map messages.
+    }
+  }
 
   return (
-    <View style={[styles.frame, { borderColor: palette.border }]}>
+    <View style={[styles.frame, { borderColor: palette.border, height }]}>
       <View style={[styles.badge, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <Text style={[styles.badgeText, { color: palette.inkMuted }]}>
           {provider === 'GoogleMaps' ? t('offers.provider.google') : t('offers.provider.openlayers')}
@@ -386,9 +567,11 @@ export function MapPreview({ businesses, center, onSelectMarker, radiusMeters, s
 
       {Platform.OS === 'web' ? (
         createElement('iframe', {
+          ref: iframeRef,
           srcDoc: html,
           style: { border: 0, height: '100%', width: '100%' },
           title: 'DealsSeeker Map',
+          onLoad: () => sendPin(pin ?? null),
         })
       ) : (
         <WebView
@@ -397,6 +580,8 @@ export function MapPreview({ businesses, center, onSelectMarker, radiusMeters, s
           javaScriptEnabled
           mixedContentMode="never"
           onMessage={handleMessage}
+          onLoad={() => sendPin(pin ?? null)}
+          ref={webViewRef}
           scrollEnabled={false}
           source={{ html }}
           style={styles.map}
@@ -404,11 +589,13 @@ export function MapPreview({ businesses, center, onSelectMarker, radiusMeters, s
       )}
 
       <View style={[styles.footer, { backgroundColor: palette.panel, borderColor: palette.border }]}>
-        <Text style={[styles.footerText, { color: palette.ink }]}>
-          {t('offers.coverage')}: {radiusMeters} m
-        </Text>
+        {showCoverage ? (
+          <Text style={[styles.footerText, { color: palette.ink }]}>
+            {t('offers.coverage')}: {radiusMeters} m
+          </Text>
+        ) : null}
         <Text style={[styles.footerHint, { color: palette.inkMuted }]}>
-          {businesses.length > 0 ? t('offers.markerHint') : t('offers.markersEmpty')}
+          {hint ?? (businesses.length > 0 ? t('offers.markerHint') : t('offers.markersEmpty'))}
         </Text>
       </View>
     </View>
@@ -419,7 +606,6 @@ const styles = StyleSheet.create({
   frame: {
     borderRadius: 28,
     borderWidth: 1,
-    height: 240,
     overflow: 'hidden',
     position: 'relative',
   },

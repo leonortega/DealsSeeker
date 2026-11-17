@@ -12,11 +12,11 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { isRequestAborted } from '../api/client';
 import { apiConfig } from '../api/config';
-import { OfferImageDto, OfferLocationDto } from '../api/types';
+import { GeoPoint, OfferImageDto, OfferLocationDto } from '../api/types';
 import { MapPreview } from '../components/MapPreview';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
-import { extractWords } from '../utils/format';
+import { extractCompletedWord, extractWords } from '../utils/format';
 import { getSuggestedTags, normalizeTag } from '../utils/tagLexicon';
 
 interface DraftImage {
@@ -30,6 +30,11 @@ interface LocationSearchResult {
 }
 
 const maxPhotos = 8;
+const minAutoTagLength = 3;
+
+const fallbackMapCenter: GeoPoint = { lat: 0, lng: 0 };
+const pinnedAreaRadiusMeters = 500;
+const unpinnedAreaRadiusMeters = 20000;
 
 function resolveImagePreviewUri(image: OfferImageDto) {
   const candidate = image.dataUrl?.trim();
@@ -107,13 +112,18 @@ export function AddOfferScreen() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [seedTags, setSeedTags] = useState<string[]>([]);
+  const [dismissedTags, setDismissedTags] = useState<string[]>([]);
   const [location, setLocation] = useState<OfferLocationDto | null>(null);
   const [locationQuery, setLocationQuery] = useState('');
   const [locationConfirmed, setLocationConfirmed] = useState(false);
   const [locationResults, setLocationResults] = useState<LocationSearchResult[]>([]);
+  const [mapCenter, setMapCenter] = useState<GeoPoint | null>(null);
+  const [suggestionsSuppressed, setSuggestionsSuppressed] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
   const locationSearchRequest = useAbortableRequest();
   const locationSearchSequence = useRef(0);
+  const pinSequence = useRef(0);
 
   const isVisible = overlayRoute?.name === 'add-offer';
   const editingOfferId = overlayRoute?.name === 'add-offer' ? overlayRoute.offerId : undefined;
@@ -133,8 +143,11 @@ export function AddOfferScreen() {
           return;
         }
 
+        const draftTags = (draft.tags ?? []).map(normalizeTag).filter(Boolean);
         setDescription(draft.description ?? '');
-        setTags((draft.tags ?? []).map(normalizeTag).filter(Boolean));
+        setTags(draftTags);
+        setSeedTags(draftTags);
+        setDismissedTags([]);
         setImages(
           (draft.images ?? []).map((image, index) => ({
             previewUri: resolveImagePreviewUri(image),
@@ -147,20 +160,27 @@ export function AddOfferScreen() {
         setLocation(draft.location ?? null);
         setLocationQuery(draft.location?.label ?? '');
         setLocationConfirmed(Boolean(draft.location));
+        setSuggestionsSuppressed(true);
+        setMapCenter(draft.location?.position ?? fallbackMapCenter);
         return;
       }
 
       setImages([]);
       setDescription('');
       setTags([]);
+      setSeedTags([]);
+      setDismissedTags([]);
       setLocation(null);
       setLocationQuery('');
       setLocationConfirmed(false);
       setLocationResults([]);
+      setSuggestionsSuppressed(true);
+      setMapCenter(null);
 
       try {
         const permission = await Location.requestForegroundPermissionsAsync();
         if (!permission.granted) {
+          setMapCenter(fallbackMapCenter);
           setStatus(t('add.currentLocationUnavailable'));
           return;
         }
@@ -170,17 +190,20 @@ export function AddOfferScreen() {
         });
         const reverse = await api.reverseLocation(position.coords.latitude, position.coords.longitude);
         const label = reverse?.label || t('offers.currentLocation');
+        const currentPosition = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
         setLocation({
           source: 'auto',
           label,
-          position: {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          },
+          position: currentPosition,
         });
         setLocationQuery(label);
+        setMapCenter(currentPosition);
         setStatus(t('add.currentLocationAuto'));
       } catch {
+        setMapCenter(fallbackMapCenter);
         setStatus(t('add.currentLocationUnavailable'));
       }
     }
@@ -189,7 +212,7 @@ export function AddOfferScreen() {
   }, [isVisible, editingOfferId]);
 
   useEffect(() => {
-    if (!isVisible || locationConfirmed) {
+    if (!isVisible || locationConfirmed || suggestionsSuppressed) {
       return;
     }
 
@@ -226,23 +249,99 @@ export function AddOfferScreen() {
       clearTimeout(timeoutId);
       locationSearchRequest.abort();
     };
-  }, [isVisible, locationConfirmed, locationQuery]);
+  }, [isVisible, locationConfirmed, locationQuery, suggestionsSuppressed]);
+
+  useEffect(() => {
+    if (!isVisible) {
+      return;
+    }
+
+    const candidates = getSuggestedTags(seedTags, preferences.language).filter(
+      (tag) => normalizeTag(tag).length >= minAutoTagLength
+    );
+    candidates.forEach((tag) => {
+      if (!tags.includes(tag) && !dismissedTags.includes(tag)) {
+        addTag(tag, 'suggestion');
+      }
+    });
+  }, [isVisible, seedTags, tags, dismissedTags, preferences.language]);
+
+  async function handleMapTap(point: GeoPoint) {
+    const sequence = pinSequence.current + 1;
+    pinSequence.current = sequence;
+
+    const fallbackLabel = t('add.pinnedLocation');
+    const position = { lat: point.lat, lng: point.lng };
+
+    setLocationConfirmed(false);
+    setLocation({ source: 'map', label: fallbackLabel, position });
+    setLocationQuery(fallbackLabel);
+    setLocationResults([]);
+    setSuggestionsSuppressed(true);
+    setStatus(t('add.mapPinSelected'));
+
+    try {
+      const reverse = await api.reverseLocation(position.lat, position.lng);
+      if (sequence !== pinSequence.current) {
+        return;
+      }
+
+      const label = reverse?.label?.trim() || '';
+      setLocation({ source: 'map', label: label || fallbackLabel, position });
+      setLocationQuery(label || fallbackLabel);
+    } catch {
+      if (sequence !== pinSequence.current) {
+        return;
+      }
+
+      setStatus(t('add.mapPinAddressUnavailable'));
+    }
+  }
 
   if (!isVisible) {
     return null;
   }
 
-  function addTag(value: string) {
+  function addTag(value: string, source: 'description' | 'manual' | 'suggestion' = 'description') {
     const normalized = normalizeTag(value);
-    if (!normalized || tags.includes(normalized)) {
+    if (!normalized || (source !== 'manual' && dismissedTags.includes(normalized))) {
       return;
     }
 
-    setTags((current) => [...current, normalized]);
+    setTags((current) => (current.includes(normalized) ? current : [...current, normalized]));
+    if (source !== 'suggestion') {
+      setSeedTags((current) => (current.includes(normalized) ? current : [...current, normalized]));
+    }
+    if (source === 'manual') {
+      setDismissedTags((current) => current.filter((item) => item !== normalized));
+    }
   }
 
   function removeTag(tag: string) {
     setTags((current) => current.filter((item) => item !== tag));
+    setSeedTags((current) => current.filter((item) => item !== tag));
+    setDismissedTags((current) => (current.includes(tag) ? current : [...current, tag]));
+  }
+
+  function getFinalWordTag() {
+    const lastWord = extractWords(description).at(-1);
+    if (!lastWord) {
+      return null;
+    }
+
+    const normalized = normalizeTag(lastWord);
+    if (normalized.length < minAutoTagLength || dismissedTags.includes(normalized)) {
+      return null;
+    }
+
+    return normalized;
+  }
+
+  function commitFinalWordTag() {
+    const finalTag = getFinalWordTag();
+    if (finalTag) {
+      addTag(finalTag);
+    }
   }
 
   async function pickFromCamera() {
@@ -339,7 +438,7 @@ export function AddOfferScreen() {
     });
   }
 
-  function validate() {
+  function validate(currentTags: string[] = tags) {
     const errors: string[] = [];
     if (images.length === 0) {
       errors.push(t('add.photoRequired'));
@@ -347,7 +446,7 @@ export function AddOfferScreen() {
     if (!description.trim()) {
       errors.push(t('add.validationDescription'));
     }
-    if (tags.length === 0) {
+    if (currentTags.length === 0) {
       errors.push(t('add.validationTags'));
     }
     if (!location || !locationConfirmed) {
@@ -359,13 +458,15 @@ export function AddOfferScreen() {
   }
 
   async function submit() {
-    if (!validate()) {
+    const finalTag = getFinalWordTag();
+    const submittedTags = finalTag && !tags.includes(finalTag) ? [...tags, finalTag] : tags;
+    if (!validate(submittedTags)) {
       return;
     }
 
     const payload = {
       description: description.trim(),
-      tags,
+      tags: submittedTags,
       images: images.map((image, order) => ({
         ...image.metadata,
         order,
@@ -399,8 +500,7 @@ export function AddOfferScreen() {
     openTab('offers');
   }
 
-  const detectedWords = extractWords(description);
-  const suggestedTags = getSuggestedTags(tags, preferences.language);
+  const detectedWords = extractWords(description).filter((word) => !tags.includes(normalizeTag(word)));
   const previewImage = images[selectedImageIndex];
 
   return (
@@ -475,7 +575,10 @@ export function AddOfferScreen() {
         </Text>
         <TextInput
           editable={!locationConfirmed}
-          onChangeText={setLocationQuery}
+          onChangeText={(value) => {
+            setLocationQuery(value);
+            setSuggestionsSuppressed(false);
+          }}
           placeholder={t('add.locationSearch')}
           placeholderTextColor={palette.inkMuted}
           style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
@@ -497,25 +600,36 @@ export function AddOfferScreen() {
               setLocationQuery(result.label);
               setLocationConfirmed(false);
               setLocationResults([]);
+              setSuggestionsSuppressed(true);
+              setMapCenter(result.position);
               setStatus(t('add.locationSelected'));
             }}
           >
             <Text style={{ color: palette.ink }}>{result.label}</Text>
           </Pressable>
         ))}
-        {location ? (
+        <Text style={{ color: palette.inkMuted }}>{t('add.mapPinHint')}</Text>
+        {location || mapCenter ? (
           <MapPreview
-            businesses={[
-              {
-                businessId: 'selected',
-                distanceMeters: 0,
-                location: location.position,
-                name: location.label ?? 'Selected location',
-              },
-            ]}
-            center={location.position}
+            businesses={
+              location
+                ? [
+                    {
+                      businessId: 'selected',
+                      distanceMeters: 0,
+                      location: location.position,
+                      name: location.label ?? t('add.pinnedLocation'),
+                    },
+                  ]
+                : []
+            }
+            center={location?.position ?? mapCenter ?? fallbackMapCenter}
+            height={300}
             radiusMeters={500}
             showUserMarker={false}
+            showCoverage={false}
+            interactive
+            onMapTap={(point) => void handleMapTap(point)}
           />
         ) : null}
         <View style={styles.actionRow}>
@@ -551,8 +665,28 @@ export function AddOfferScreen() {
             setDescription(value);
             if (!value.trim()) {
               setTags([]);
+              setSeedTags([]);
+              setDismissedTags([]);
+              return;
+            }
+
+            const completedWord = extractCompletedWord(value);
+            if (completedWord) {
+              const normalized = normalizeTag(completedWord);
+              if (normalized.length >= minAutoTagLength) {
+                addTag(normalized);
+              }
+            } else {
+              const lastWord = extractWords(value).at(-1);
+              if (lastWord && /[^\p{L}\p{Nd}]$/u.test(lastWord)) {
+                const normalized = normalizeTag(lastWord);
+                if (normalized.length >= minAutoTagLength) {
+                  addTag(normalized);
+                }
+              }
             }
           }}
+          onBlur={() => commitFinalWordTag()}
           placeholder={t('add.descriptionPlaceholder')}
           placeholderTextColor={palette.inkMuted}
           style={[
@@ -562,14 +696,12 @@ export function AddOfferScreen() {
           value={description}
         />
         <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.detectedWords')}</Text>
-        <Text style={{ color: palette.inkMuted }}>{t('add.tapWord')}</Text>
         <View style={styles.wordGrid}>
-          {detectedWords.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('add.noWords')}</Text> : null}
           {detectedWords.map((word) => (
             <Pressable
               key={word}
               style={[styles.wordChip, { backgroundColor: palette.panel, borderColor: palette.border }]}
-              onPress={() => addTag(word)}
+              onPress={() => addTag(word, 'manual')}
             >
               <Text style={{ color: palette.ink }}>{word}</Text>
             </Pressable>
@@ -577,6 +709,7 @@ export function AddOfferScreen() {
         </View>
 
         <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.tags')}</Text>
+        <Text style={{ color: palette.inkMuted }}>{t('add.tagsHint')}</Text>
         <View style={styles.wordGrid}>
           {tags.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('add.noTags')}</Text> : null}
           {tags.map((tag) => (
@@ -586,21 +719,6 @@ export function AddOfferScreen() {
               onPress={() => removeTag(tag)}
             >
               <Text style={{ color: palette.accent }}>{tag} ×</Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.suggestedTags')}</Text>
-        <Text style={{ color: palette.inkMuted }}>{t('add.suggestionsHint')}</Text>
-        <View style={styles.wordGrid}>
-          {tags.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('add.selectTagFirst')}</Text> : null}
-          {suggestedTags.map((tag) => (
-            <Pressable
-              key={tag}
-              style={[styles.wordChip, { backgroundColor: palette.panel, borderColor: palette.border }]}
-              onPress={() => addTag(tag)}
-            >
-              <Text style={{ color: palette.ink }}>{tag}</Text>
             </Pressable>
           ))}
         </View>

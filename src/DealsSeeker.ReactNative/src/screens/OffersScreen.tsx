@@ -306,6 +306,7 @@ export function OffersScreen() {
         <MapPreview
           businesses={results.businesses}
           center={userLocation}
+          height={300}
           onSelectMarker={(marker) => void openDirections(marker.location, preferences.navigationMode)}
           radiusMeters={radiusMeters}
         />

@@ -1,76 +1,82 @@
 # Spec: `ADD.OFFER.TAGS.SUGGESTIONS.001`
 
 ## Metadata
-- **Title**: Suggested Tags from Selected Tags
-- **Version**: `v1.1`
+- **Title**: Silent Auto-Addition of Suggested Tags
+- **Version**: `v2.1`
 - **Status**: Approved
 - **Context/View**: Add Offer View
-- **Priority**: High
+- **Priority**: Medium
 
 ## Purpose
-Assist users with optional suggested tags derived from the currently selected tags.
+Automatically add related tags derived from the tags the user created from the description, without showing a dedicated Suggested Tags section.
 
 ## Preconditions
-- User is in Add Offer view.
-- Zero or more selected tags may exist.
+- User is on Add Offer view.
+- Zero or more description-derived tags may exist.
 
 ## Trigger
-- User adds or removes a selected tag.
+- A description-derived tag is added, removed, or cleared.
 
 ## Requirements
-- `ADD.OFFER.TAGS.SUGGESTIONS.001-R1`: The system shall display a dedicated `Suggested Tags` section in Add Offer view.
-- `ADD.OFFER.TAGS.SUGGESTIONS.001-R2`: Suggested tags shall be derived from the current selected tag list, not directly from raw description text.
-- `ADD.OFFER.TAGS.SUGGESTIONS.001-R3`: The system shall suggest synonyms and semantically related tags from a multilingual dictionary.
-- `ADD.OFFER.TAGS.SUGGESTIONS.001-R4`: The system shall also suggest singular/plural variations of selected tags when valid normalized tags can be derived.
-- `ADD.OFFER.TAGS.SUGGESTIONS.001-R5`: Suggestions shall be non-blocking and rendered as optional tappable chips.
-- `ADD.OFFER.TAGS.SUGGESTIONS.001-R6`: Tapping a suggested tag shall add it to the selected tag list using the same normalization and duplicate-prevention rules as description-derived tags.
-- `ADD.OFFER.TAGS.SUGGESTIONS.001-R7`: Suggested tags shall not be persisted unless explicitly selected by the user.
-- `ADD.OFFER.TAGS.SUGGESTIONS.001-R8`: Suggestion dictionaries and related-term generation shall follow the selected app language, with fallback to default language resources.
-- `ADD.OFFER.TAGS.SUGGESTIONS.001-R9`: When the description text is erased and selected tags are cleared, the Suggested Tags section shall also clear its suggestion chips.
+- `ADD.OFFER.TAGS.SUGGESTIONS.001-R1`: The system shall not display a `Suggested Tags` section in Add Offer view.
+- `ADD.OFFER.TAGS.SUGGESTIONS.001-R2`: The system shall automatically add related tags of at least 3 normalized characters derived from the description-derived tags (typed words, manual detected-word taps, and final words committed at edit end) to the selected tag list.
+- `ADD.OFFER.TAGS.SUGGESTIONS.001-R3`: The system shall suggest synonyms, semantically related tags, and singular/plural variants from a multilingual dictionary following the selected app language, with fallback to default language resources.
+- `ADD.OFFER.TAGS.SUGGESTIONS.001-R4`: Suggestion expansion shall be one level only. Tags that were auto-added from suggestions shall not be used as a source for further suggestions.
+- `ADD.OFFER.TAGS.SUGGESTIONS.001-R5`: Suggested tags whose normalized form has fewer than 3 characters shall be ignored.
+- `ADD.OFFER.TAGS.SUGGESTIONS.001-R6`: A tag removed by the user shall not be automatically re-added unless the user adds it again explicitly or the description is cleared.
+- `ADD.OFFER.TAGS.SUGGESTIONS.001-R7`: When the description is cleared, the description-derived tag set and all related auto-add state shall be cleared.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
-Scenario: User receives related suggestions from a selected tag
-  Given the user selected the tag "coffee"
+Scenario: Related tags are added silently from a typed tag
+  Given the user typed "denims " so the tag "denims" is selected
   And multilingual suggestion dictionaries are available
   When the suggestion engine runs
-  Then the user shall see optional chips for related tags such as "cafe" and "espresso"
-  And the current selected tag list shall not change until the user taps a suggested tag
+  Then the tag "denim" shall be added automatically
+  And no Suggested Tags section shall be displayed
 
-Scenario: Singular and plural variations are suggested from selected tags
-  Given the user selected the tag "offers"
+Scenario: One-level expansion only
+  Given the description-derived tag "coffee" has immediate suggestions "cafe" and "espresso"
   When the suggestion engine runs
-  Then the user shall see the related suggestion "offer"
+  Then only the immediate suggestions of "coffee" shall be auto-added
+  And no tag derived from "cafe" or "espresso" shall be auto-added
 
-Scenario: Suggestions remain non-blocking when no selected tags exist
-  Given the user has not selected any tags yet
-  When the Add Offer tag section is displayed
-  Then the Suggested Tags section shall remain visible
-  And the system shall prompt the user to select a tag first
+Scenario: Short suggestions are ignored
+  Given a description-derived tag has a related tag whose normalized form has fewer than 3 characters
+  When the suggestion engine runs
+  Then that short tag shall not be added to the tag list
 
-Scenario: Clearing description removes suggestion chips
-  Given the selected tag list includes "coffee"
-  And the Suggested Tags section currently shows related chips
-  When the user erases the description text completely
+Scenario: Removed suggested tag stays removed
+  Given the tag "denim" was auto-added from the description-derived tag "denims"
+  When the user removes the tag "denim"
+  Then the tag "denim" shall not be re-added automatically
+
+Scenario: Clearing description clears suggestion state
+  Given the description-derived tag "denims" produced an auto-added "denim" tag
+  When the user clears the description text
   Then the selected tag list shall be empty
-  And the Suggested Tags section shall not show related chips
+  And no suggestion state shall remain
 ```
 
 ## Example Inputs/Outputs
-- Example input: Selected tag `coffee`.
-- Expected output: Optional suggestions such as `cafe`, `espresso`, and language-appropriate equivalents.
-- Example input: Selected tag `offers`.
-- Expected output: Optional suggestion `offer`.
+- Example input: Description-derived tag `denims` with locale `en-US`.
+- Expected output: Tags `denims` and `denim`; no Suggested Tags section is displayed.
+- Example input: Description-derived tag `coffee` with locale `en-US`.
+- Expected output: Tags `coffee`, `cafe`, `espresso`, and `latte` only — no chaining from those suggestions.
 
 ## Edge Cases
-- Duplicate suggestions are shown once.
-- Suggestions violating tag normalization rules are not displayed.
-- Switching app language refreshes suggested tags for the same base tags.
-- Clearing the description removes selected tags and therefore clears suggestion chips immediately.
+- Suggestions are added only from description-derived tags, never from auto-added suggestion tags.
+- Duplicate suggestions are handled through the existing duplicate-prevention rules.
+- Suggestions violating tag normalization rules are not added.
+- Switching app language refreshes suggestions for the same description-derived tags.
+- A removed suggested tag is not re-added while the description stays unchanged.
+- Clearing the description removes all tags and suggestion state immediately.
 
 ## Non-Functional Constraints
-- Suggestions should appear with minimal delay after tag selection.
+- The Add Offer tag section stays limited to detected words and the current tag list, keeping the UI simple.
+- Suggestions should appear in the tag list with minimal delay after a description-derived tag is added.
 
 ## Related Specs
 - `ADD.OFFER.DESCRIPTION.TAGS.001`
+- `ADD.OFFER.LAYOUT.001`
 - `APP.LOCALIZATION.001`

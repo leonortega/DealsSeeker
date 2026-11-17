@@ -1,16 +1,19 @@
 {
   "input": {
-    "selectedTags": [
-      "coffee",
-      "offers"
+    "descriptionDerivedTags": [
+      "denims"
     ],
     "locale": "en-US"
   },
   "expected": {
-    "suggestedTags": [
-      "cafe",
-      "espresso",
-      "offer"
+    "suggestedTagsSectionDisplayed": false,
+    "tags": [
+      "denims",
+      "denim"
+    ],
+    "autoAddedFrom": [
+      "denim"
     ]
-  }
+  },
+  "notes": "Only the immediate suggestions of the description-derived tag are auto-added; no Suggested Tags section is displayed and no suggestion is chained from 'denim'."
 }

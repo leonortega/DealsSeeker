@@ -110,6 +110,7 @@ Scenario: Edit mode shows stored offer location on the mini map
 
 ## Related Specs
 - `ADD.OFFER.IMAGE.001`
+- `ADD.OFFER.LOCATION.002`
 - `ADD.OFFER.LAYOUT.001`
 - `APP.CONFIG.MAPS.001`
 - `APP.LOCATION.PROVIDER.RESILIENCE.001`

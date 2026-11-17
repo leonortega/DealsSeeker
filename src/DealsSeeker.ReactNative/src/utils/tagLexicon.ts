@@ -1,4 +1,4 @@
-function removeDiacritics(value: string) {
+﻿function removeDiacritics(value: string) {
   return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').normalize('NFC');
 }
 

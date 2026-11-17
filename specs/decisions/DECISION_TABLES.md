@@ -27,22 +27,29 @@
 | Distance visibility | Show per offer in meters | User-facing value in offer list item |
 | Distance format | Rounded integer meters | Example `235 m` |
 
-## Tag Creation and Suggestion Rules (`ADD.OFFER.DESCRIPTION.TAGS.001`, `ADD.OFFER.TAGS.SUGGESTIONS.001`)
+## Tag Creation Rules (`ADD.OFFER.DESCRIPTION.TAGS.001`, `ADD.OFFER.TAGS.SUGGESTIONS.001`)
 
 | Decision Point | Default Rule | Notes |
 |---|---|---|
 | Detection timing | Real-time while typing | Word candidates update continuously |
-| Selection interaction | Single tap on detected word | No long-press delay |
+| Word completion | A word is complete when a delimiter follows it, or when it is the final word and editing finishes | Delimiters: whitespace, `.`, `,`, `;`, `:`, `!`, `?` |
+| Automatic tag creation | On word completion, with no tap required | Applies when the normalized word meets the minimum length |
+| Final word handling | Auto-tagged when editing finishes (focus leaves the field or save is submitted) when no delimiter follows it | A pause between keystrokes is not completion; prevents intermediate partial words from becoming tags |
+| Minimum automatic tag length | 3 characters, measured on the normalized tag | Example `coffee` qualifies, `an` does not, `50%` qualifies |
+| Incomplete words | Not auto-tagged while typing continues | A partial word such as `cof` is ignored until editing finishes or a delimiter follows it |
+| Manual tag creation | Tap a detected word to add it | Kept as a fallback for every detected word, including short words |
 | Selection granularity | Whole word only | Partial substring is invalid |
 | Normalization | Lowercase and trim punctuation except `%` | Prevent duplicates like `Coffee` vs `coffee` while preserving `50%` |
 | Percent handling | Preserve trailing percent symbol | `50%` remains `50%` |
 | Duplicate tags | Prevent duplicates | Existing tag remains highlighted or unchanged |
-| Manual tags | Not available | Tags are created from detected description words or accepted suggested tags |
-| Description cleared | Clear selected tags | Prevent stale selected/suggested tag state when text is erased |
-| Suggestion scope | Related terms for selected tags | Includes dictionary synonyms plus singular/plural variants |
-| Suggestion threshold | No fuzzy threshold applied | Current implementation uses direct dictionary synonyms plus singular/plural variants without similarity scoring |
-| Suggestion presentation | Optional chips/pills | Non-blocking UX |
-| Suggestion persistence | Explicit accept only | Suggested chips are not saved until tapped |
+| Tag removal | Tap a selected tag to remove it | A removed tag is not auto-recreated unless re-added explicitly or the description is cleared |
+| Self-terminating final word | A final word ending in a non-alphanumeric symbol such as `%` is tagged immediately | Covers `50%` without a delimiter or an editing-finish event; no partial-word junk |
+| Detected words list | Exclude words already in the tag list | Removing a tag restores its word to the detected words list |
+| Description cleared | Clear selected tags and auto-tag tracking state | Prevent stale tag state when text is erased |
+| Suggested tags section | Not displayed | Auto-add happens silently per `ADD.OFFER.TAGS.SUGGESTIONS.001` |
+| Suggestion source | Only description-derived tags | Auto-added suggestion tags do not seed further suggestions |
+| Suggestion auto-add | Related tags of 3+ normalized characters are added automatically | Shorter suggestions are ignored |
+| Suggestion chain | One level only | No chaining from auto-added suggestion tags |
 | Suggestion language | Use selected app language | Fallback to default language resources |
 
 ## Offer Photos and Rendering Rules (`ADD.OFFER.IMAGE.001`, `OFFERS.IMAGE.RENDERING.001`, `OFFERS.PHOTOS.CAROUSEL.001`)

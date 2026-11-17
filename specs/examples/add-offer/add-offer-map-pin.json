@@ -1,0 +1,26 @@
+{
+  "description": "Bakery discount before closing",
+  "tags": [
+    "bakery",
+    "discount"
+  ],
+  "images": [
+    {
+      "source": "camera",
+      "mimeType": "image/jpeg",
+      "sizeBytes": 502211,
+      "width": 1080,
+      "height": 1920,
+      "order": 0,
+      "fileName": "bakery.jpg"
+    }
+  ],
+  "location": {
+    "source": "map",
+    "label": "Broadway Market",
+    "position": {
+      "lat": 40.7165,
+      "lng": -74.0035
+    }
+  }
+}
