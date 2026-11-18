@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v1.6`
+- **Version**: `v1.8`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -33,6 +33,10 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R13`: While the blocking loading state is visible, user interaction with the underlying view shall be prevented.
 - `APP.SHELL.001-R14`: The blocking loading state shall be dismissed automatically when all pending required operations complete.
 - `APP.SHELL.001-R15`: The standard application header shall place the menu button on the trailing side and, when the Offers view is displayed without an open overlay, shall place an immersive-view button immediately to its left, labeled `Immersive view` in English and `Modo inmersivo` in Spanish. Selecting it shall open the immersive offers feed.
+- `APP.SHELL.001-R16`: The standard application header shall be positioned below the device system status area, so that system indicators (battery, signal, and similar) do not overlap the header content.
+- `APP.SHELL.001-R17`: On Android, the system back gesture or back button shall navigate to the previously visited view within the application when one exists, instead of closing the application.
+- `APP.SHELL.001-R18`: When no previously visited view exists within the application, the Android system back gesture or back button shall leave the application using the platform default behavior.
+- `APP.SHELL.001-R19`: Back navigation shall preserve view context that the destination view restores on entry, including the offers search query and radius when returning to the offers feed.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -72,6 +76,33 @@ Scenario: Header places the immersive-view button left of the menu button
   And the button shall be labeled `Immersive view` in English and `Modo inmersivo` in Spanish
   And selecting it shall open the immersive offers feed
 
+Scenario: Standard header clears the device status area
+  Given the authenticated user is on any view that renders the standard application header
+  And the app is running on a mobile device
+  When the header is rendered
+  Then the header shall be positioned below the device system status area
+  And the app title, user badge, and menu button shall not overlap the system indicators
+
+Scenario: Android back returns to the previously visited view
+  Given the authenticated user has moved from one view to another within the application
+  And the app is running on an Android device
+  When the user invokes the system back gesture or back button
+  Then the previously visited view shall become visible
+  And the application shall remain open
+
+Scenario: Android back from the first view leaves the application
+  Given the user is on the first view shown after application launch
+  And no other view has been visited within the application
+  When the user invokes the system back gesture or back button
+  Then the application shall leave the foreground using the platform default behavior
+
+Scenario: Android back returns from a destination opened in the immersive feed
+  Given the authenticated user is on the immersive offers feed
+  When the user opens `My Account`, `Suggestions`, `Reports`, or `Add Offer` from the immersive feed navigation
+  And the user invokes the system back gesture or back button
+  Then the immersive offers feed shall become visible again
+  And the application shall remain open
+
 Scenario: Menu includes quick language and theme controls
   Given the authenticated user opens the main navigation menu
   When the menu is rendered
@@ -103,6 +134,9 @@ Scenario: Blocking loading state appears during required data waits
 - Persisted session token is invalid or expired at startup; first view shall be `Login`.
 - Multiple concurrent required requests shall keep the blocking loading state visible until all complete.
 - If a request fails, the blocking loading state shall still be dismissed and the error state shall remain interactive.
+- On devices without a reported safe-area inset, the header shall still clear the status area using a minimum offset.
+- Repeated back invocations shall walk back through visited views and shall not close the application while a previous in-app view remains.
+- Back invoked while a view is briefly replacing its content shall still resolve to the previous visited view rather than closing the application.
 
 ## Non-Functional Constraints
 - First visible shell and startup view should render without blocking on network responses.

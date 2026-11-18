@@ -15,7 +15,7 @@ public sealed class MapRenderingService(ApiSettings settings, IStringLocalizer<A
         return BuildEmbedUrlForProvider(center, markers, zoom, showUserMarker: true, provider, settings.MapDisplayProviderFallback);
     }
 
-    public string BuildLocationPreviewMapUrl(GeoPoint location, string? label, int zoom)
+    public string BuildLocationPreviewMapUrl(GeoPoint location, string? label, int zoom, bool pinSelection = false)
     {
         var provider = ResolveRenderableProvider(settings.MapDisplayProvider, settings.MapDisplayProviderFallback);
         var markers = (IReadOnlyList<BusinessMarkerDto>)[new BusinessMarkerDto(
@@ -24,7 +24,14 @@ public sealed class MapRenderingService(ApiSettings settings, IStringLocalizer<A
             location,
             0)];
 
-        return BuildEmbedUrlForProvider(location, markers, zoom, showUserMarker: false, provider, settings.MapDisplayProviderFallback);
+        return BuildEmbedUrlForProvider(
+            location,
+            markers,
+            zoom,
+            showUserMarker: false,
+            provider,
+            settings.MapDisplayProviderFallback,
+            pinSelection);
     }
 
     private string BuildEmbedUrlForProvider(
@@ -33,12 +40,13 @@ public sealed class MapRenderingService(ApiSettings settings, IStringLocalizer<A
         int zoom,
         bool showUserMarker,
         string provider,
-        string? configuredFallbackProvider)
+        string? configuredFallbackProvider,
+        bool pinSelection = false)
     {
         return provider switch
         {
-            MapProviders.GoogleMaps => BuildGoogleMapsEmbedUrl(center, markers, zoom, showUserMarker, configuredFallbackProvider),
-            _ => BuildOpenLayersEmbedUrl(center, markers, zoom, showUserMarker)
+            MapProviders.GoogleMaps => BuildGoogleMapsEmbedUrl(center, markers, zoom, showUserMarker, configuredFallbackProvider, pinSelection),
+            _ => BuildOpenLayersEmbedUrl(center, markers, zoom, showUserMarker, pinSelection)
         };
     }
 
@@ -47,9 +55,10 @@ public sealed class MapRenderingService(ApiSettings settings, IStringLocalizer<A
         IReadOnlyList<BusinessMarkerDto> markers,
         int zoom,
         bool showUserMarker,
-        string? configuredFallbackProvider)
+        string? configuredFallbackProvider,
+        bool pinSelection)
     {
-        var query = BuildMapQuery(center, markers, zoom, showUserMarker);
+        var query = BuildMapQuery(center, markers, zoom, showUserMarker, pinSelection);
         query["key"] = settings.GoogleMapsApiKey;
 
         var fallbackProvider = MapProviders.Normalize(configuredFallbackProvider);
@@ -65,9 +74,10 @@ public sealed class MapRenderingService(ApiSettings settings, IStringLocalizer<A
         GeoPoint center,
         IReadOnlyList<BusinessMarkerDto> markers,
         int zoom,
-        bool showUserMarker)
+        bool showUserMarker,
+        bool pinSelection)
     {
-        return $"/maps/openlayers.html?{BuildQueryString(BuildMapQuery(center, markers, zoom, showUserMarker))}";
+        return $"/maps/openlayers.html?{BuildQueryString(BuildMapQuery(center, markers, zoom, showUserMarker, pinSelection))}";
     }
 
     private string ResolveRenderableProvider(string? selectedProvider, string? fallbackProvider)
@@ -106,7 +116,8 @@ public sealed class MapRenderingService(ApiSettings settings, IStringLocalizer<A
         GeoPoint center,
         IReadOnlyList<BusinessMarkerDto> markers,
         int zoom,
-        bool showUserMarker)
+        bool showUserMarker,
+        bool pinSelection = false)
     {
         var markerData = string.Join(
             ';',
@@ -126,7 +137,8 @@ public sealed class MapRenderingService(ApiSettings settings, IStringLocalizer<A
             ["lng"] = center.Lng.ToString(CultureInfo.InvariantCulture),
             ["zoom"] = Math.Clamp(zoom, 2, 18).ToString(CultureInfo.InvariantCulture),
             ["markers"] = markerData,
-            ["showUser"] = showUserMarker ? "1" : "0"
+            ["showUser"] = showUserMarker ? "1" : "0",
+            ["pin"] = pinSelection ? "1" : null
         };
     }
 

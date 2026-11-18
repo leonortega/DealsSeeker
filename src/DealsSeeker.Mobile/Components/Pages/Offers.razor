@@ -39,9 +39,10 @@
                name="offersSearchQuery"
                @ref="_searchQueryInput"
                class="field-input"
-               @bind="_query"
+               value="@_query"
+               @oninput="OnQueryInput"
                placeholder="@T("offers.searchPlaceholder")" />
-        <button class="btn-main" @onclick="SearchAsync" disabled="@_loading">@T("offers.searchButton")</button>
+        <button class="btn-main" @onclick="SearchFromButtonAsync" disabled="@_loading">@T("offers.searchButton")</button>
     </div>
 
     <div class="distance-row">
@@ -59,7 +60,7 @@
     </div>
 
     <label class="offers-favorites-toggle">
-        <input type="checkbox" @bind="_favoritesOnly" @bind:after="SearchAsync" />
+        <input type="checkbox" @bind="_favoritesOnly" @bind:after="() => SearchAsync()" />
         <span>@T("offers.favoritesOnly")</span>
     </label>
 
@@ -159,6 +160,10 @@
                             @DirectionsButtonText()
                         </button>
 
+                        <button class="btn-secondary" @onclick="() => OpenComments(offer)">
+                            @T("offers.action.comments")
+                        </button>
+
                         <OfferActions Offer="offer"
                                       VotesDisabled="@IsVoteDisabled(offer)"
                                       OnVote="@(vote => VoteAsync(offer.OfferId, vote))"
@@ -177,7 +182,12 @@
         </div>
     </div>
 
-    @if (_loading)
+    @if (_searching)
+    {
+        <p class="muted search-progress">@T("offers.loading")</p>
+    }
+
+    @if (_loading && _feedOffers.Count == 0)
     {
         <p class="muted">@T("offers.loading")</p>
     }
@@ -251,6 +261,10 @@
                             @DirectionsButtonText()
                         </button>
 
+                        <button class="btn-secondary" @onclick="() => OpenComments(offer)">
+                            @T("offers.action.comments")
+                        </button>
+
                         <OfferActions Offer="offer"
                                       VotesDisabled="@IsVoteDisabled(offer)"
                                       OnVote="@(vote => VoteAsync(offer.OfferId, vote))"
@@ -261,6 +275,20 @@
         </div>
     }
 </section>
+
+@if (_hasMore)
+{
+    <section class="card-block">
+        <button class="btn-main" @onclick="LoadMoreAsync" disabled="@_loadingMore">
+            @(_loadingMore ? T("offers.loading") : T("offers.loadMore"))
+        </button>
+    </section>
+}
+
+@if (_commentsOffer is not null)
+{
+    <OfferCommentsModal Offer="_commentsOffer" OnClose="CloseComments" />
+}
 
 @if (_detailOffer is not null)
 {
@@ -312,6 +340,7 @@
 
         <div class="action-row detail-action-row">
             <button class="btn-main" @onclick="() => OpenDirectionsAsync(_detailOffer.Location)">@DirectionsButtonText()</button>
+            <button class="btn-secondary" @onclick="() => OpenComments(_detailOffer)">@T("offers.action.comments")</button>
             <button class="btn-secondary btn-favorite @(_detailOffer.IsFavorite ? "active" : string.Empty)"
                     @onclick="() => ToggleFavoriteAsync(_detailOffer)">
                 <span class="favorite-heart" aria-hidden="true">&#10084;</span>
@@ -341,12 +370,26 @@
 }
 
 @code {
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? QueryParameter { get; set; }
+
+    [SupplyParameterFromQuery(Name = "radius")]
+    public int? RadiusParameter { get; set; }
+
     private string _query = string.Empty;
     private string? _status;
     private string? _error;
+    private const int PageSize = 20;
     private bool _loading;
+    private bool _searching;
+    private bool _loadingMore;
     private bool _favoritesOnly;
+    private bool _hasMore;
+    private int _page = 1;
     private int _radiusMeters = 1500;
+    private OfferItemDto? _commentsOffer;
+    private CancellationTokenSource? _queryDebounceCts;
+    private CancellationTokenSource? _searchRequestCts;
     private GeoPoint _userLocation = new(40.7128, -74.0060);
     private string _userLocationLabel = string.Empty;
     private SearchOffersResponse _results = new([], []);
@@ -375,6 +418,16 @@
         await Preferences.InitializeAsync(Session.CurrentSession?.UserId, CancellationToken.None);
         Preferences.Changed += OnPreferencesChanged;
         _renderedLanguage = Preferences.Language;
+
+        if (!string.IsNullOrWhiteSpace(QueryParameter))
+        {
+            _query = QueryParameter;
+        }
+
+        if (RadiusParameter is >= 100 and <= 5000)
+        {
+            _radiusMeters = RadiusParameter.Value;
+        }
 
         try
         {
@@ -428,9 +481,17 @@
         }
     }
 
-    private async Task SearchAsync()
+    private async Task SearchAsync(CancellationToken cancellationToken = default)
     {
-        _loading = true;
+        var previousRequest = Interlocked.Exchange(
+            ref _searchRequestCts,
+            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken));
+        previousRequest?.Cancel();
+
+        var requestToken = _searchRequestCts!.Token;
+        var isInitialLoad = _results.Offers.Count == 0;
+        _loading = isInitialLoad;
+        _searching = !isInitialLoad;
         _error = null;
 
         try
@@ -440,19 +501,125 @@
                 _userLocation,
                 _radiusMeters,
                 Locale: Preferences.Language,
-                FavoritesOnly: _favoritesOnly);
+                FavoritesOnly: _favoritesOnly,
+                Page: 1,
+                PageSize: PageSize);
 
-            _results = await ApiClient.SearchOffersAsync(request, CancellationToken.None);
+            var results = await ApiClient.SearchOffersAsync(request, requestToken);
+            if (requestToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            _results = results;
+            _page = results.Page;
+            _hasMore = results.HasMore;
             PartitionOfferSets();
         }
-        catch (Exception)
+        catch (OperationCanceledException)
         {
-            _error = T("offers.searchFailed");
+        }
+        catch (Exception ex)
+        {
+            if (!requestToken.IsCancellationRequested)
+            {
+                _error = ApiErrorMessages.Describe(ex, T, "offers.searchFailed");
+            }
         }
         finally
         {
-            _loading = false;
+            if (!requestToken.IsCancellationRequested)
+            {
+                _loading = false;
+                _searching = false;
+            }
         }
+    }
+
+    private void OnQueryInput(ChangeEventArgs args)
+    {
+        _query = args.Value?.ToString() ?? string.Empty;
+        _queryDebounceCts?.Cancel();
+        _queryDebounceCts = new CancellationTokenSource();
+        var token = _queryDebounceCts.Token;
+
+        _ = InvokeAsync(async () =>
+        {
+            try
+            {
+                await Task.Delay(400, token);
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                await SearchAsync(token);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        });
+    }
+
+    private async Task SearchFromButtonAsync()
+    {
+        _queryDebounceCts?.Cancel();
+        await SearchAsync();
+    }
+
+    private async Task LoadMoreAsync()
+    {
+        if (_loadingMore || !_hasMore)
+        {
+            return;
+        }
+
+        _loadingMore = true;
+        _error = null;
+        try
+        {
+            var request = new SearchOffersRequest(
+                _query,
+                _userLocation,
+                _radiusMeters,
+                Locale: Preferences.Language,
+                FavoritesOnly: _favoritesOnly,
+                Page: _page + 1,
+                PageSize: PageSize);
+
+            var results = await ApiClient.SearchOffersAsync(request, CancellationToken.None);
+            _page = results.Page;
+            _hasMore = results.HasMore;
+
+            var knownIds = _feedOffers
+                .Select(offer => offer.OfferId)
+                .Concat(_promotedOffers.Select(offer => offer.OfferId))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var additions = results.Offers
+                .Where(offer => knownIds.Add(offer.OfferId))
+                .ToList();
+
+            _feedOffers.AddRange(OrderReportedLast(additions));
+        }
+        catch (Exception ex)
+        {
+            _error = ApiErrorMessages.Describe(ex, T, "offers.searchFailed");
+        }
+        finally
+        {
+            _loadingMore = false;
+        }
+    }
+
+    private void OpenComments(OfferItemDto offer)
+    {
+        _commentsOffer = offer;
+    }
+
+    private void CloseComments()
+    {
+        _commentsOffer = null;
     }
 
     private void PartitionOfferSets()
@@ -510,24 +677,31 @@
 
     private async Task ToggleFavoriteAsync(OfferItemDto offer)
     {
-        var result = await ApiClient.SetOfferFavoriteAsync(
-            offer.OfferId,
-            new SetFavoriteRequest(!offer.IsFavorite),
-            CancellationToken.None);
-
-        if (!result.Success)
+        try
         {
-            _error = T("offers.favoriteUpdateFailed");
-            return;
+            var result = await ApiClient.SetOfferFavoriteAsync(
+                offer.OfferId,
+                new SetFavoriteRequest(!offer.IsFavorite),
+                CancellationToken.None);
+
+            if (!result.Success)
+            {
+                _error = T("offers.favoriteUpdateFailed");
+                return;
+            }
+
+            _status = T("offers.favoriteUpdated");
+            await SearchAsync();
+
+            if (_detailOffer is not null && _detailOffer.OfferId.Equals(offer.OfferId, StringComparison.OrdinalIgnoreCase))
+            {
+                _detailOffer = _results.Offers.FirstOrDefault(x => x.OfferId.Equals(offer.OfferId, StringComparison.OrdinalIgnoreCase));
+                _detailImageIndex = 0;
+            }
         }
-
-        _status = T("offers.favoriteUpdated");
-        await SearchAsync();
-
-        if (_detailOffer is not null && _detailOffer.OfferId.Equals(offer.OfferId, StringComparison.OrdinalIgnoreCase))
+        catch (Exception ex)
         {
-            _detailOffer = _results.Offers.FirstOrDefault(x => x.OfferId.Equals(offer.OfferId, StringComparison.OrdinalIgnoreCase));
-            _detailImageIndex = 0;
+            _error = ApiErrorMessages.Describe(ex, T, "offers.favoriteUpdateFailed");
         }
     }
 
@@ -539,21 +713,28 @@
             return;
         }
 
-        var result = await ApiClient.VoteOfferAvailabilityAsync(offerId, new OfferAvailabilityVoteRequest(vote), CancellationToken.None);
-        if (!result.Success)
+        try
         {
-            _error = T("offers.voteFailed");
-            if (result.Message.Contains("already submitted", StringComparison.OrdinalIgnoreCase))
+            var result = await ApiClient.VoteOfferAvailabilityAsync(offerId, new OfferAvailabilityVoteRequest(vote), CancellationToken.None);
+            if (!result.Success)
             {
-                _error = T("offers.voteAlreadySubmitted");
-                await SearchAsync();
+                _error = T("offers.voteFailed");
+                if (result.Message.Contains("already submitted", StringComparison.OrdinalIgnoreCase))
+                {
+                    _error = T("offers.voteAlreadySubmitted");
+                    await SearchAsync();
+                }
+
+                return;
             }
 
-            return;
+            _status = T("offers.feedbackRegistered");
+            await SearchAsync();
         }
-
-        _status = T("offers.feedbackRegistered");
-        await SearchAsync();
+        catch (Exception ex)
+        {
+            _error = ApiErrorMessages.Describe(ex, T, "offers.voteFailed");
+        }
     }
 
     private Task OpenReportViewAsync(OfferItemDto offer)
@@ -781,6 +962,10 @@
         Preferences.Changed -= OnPreferencesChanged;
         _markerSelectionReference?.Dispose();
         ResetDetailSwipeTracking();
+        _queryDebounceCts?.Cancel();
+        _queryDebounceCts?.Dispose();
+        _searchRequestCts?.Cancel();
+        _searchRequestCts?.Dispose();
     }
 
     public async ValueTask DisposeAsync()

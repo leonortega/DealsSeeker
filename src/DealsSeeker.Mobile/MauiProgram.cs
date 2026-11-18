@@ -56,6 +56,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IMediaCaptureService, MediaCaptureService>();
         builder.Services.AddSingleton<IReportDraftContext, ReportDraftContext>();
         builder.Services.AddSingleton<IViewBusyService, ViewBusyService>();
+        builder.Services.AddSingleton<IBackNavigationService, BackNavigationService>();
         builder.Services.AddSingleton<ICultureService, CultureService>();
         builder.Services.AddScoped<HttpClient>(serviceProvider =>
         {

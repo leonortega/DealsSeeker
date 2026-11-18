@@ -40,7 +40,38 @@ Feature: Application shell and session-aware landing
     And the button is labeled `Immersive view` in English and `Modo inmersivo` in Spanish
     And selecting it opens the immersive offers feed
 
-Scenario: Main menu includes instant language and theme controls
+  Scenario: Standard header clears the device status area
+    Given the user is authenticated
+    And the app is running on a mobile device
+    When the standard application header is rendered
+    Then the header is positioned below the device system status area
+    And the app title, user badge, and menu button do not overlap the system indicators
+
+  Scenario: Android back returns to the previously visited view
+    Given the user is authenticated
+    And the app is running on an Android device
+    And the user has moved from one view to another within the application
+    When the user invokes the system back gesture or back button
+    Then the previously visited view is visible
+    And the application remains open
+
+  Scenario: Android back from the first view leaves the application
+    Given the app is running on an Android device
+    And the user is on the first view shown after application launch
+    And no other view has been visited within the application
+    When the user invokes the system back gesture or back button
+    Then the application leaves the foreground using the platform default behavior
+
+  Scenario: Android back returns from a destination opened in the immersive feed
+    Given the user is authenticated
+    And the app is running on an Android device
+    And the user is on the immersive offers feed
+    When the user opens My Account, Suggestions, Reports, or Add Offer from the immersive feed navigation
+    And the user invokes the system back gesture or back button
+    Then the immersive offers feed is visible again
+    And the application remains open
+
+  Scenario: Main menu includes instant language and theme controls
     Given the user is authenticated
     When the user opens the main navigation menu
     Then language-change control is visible

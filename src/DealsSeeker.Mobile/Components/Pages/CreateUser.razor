@@ -72,7 +72,7 @@
     {
         if (Session.IsAuthenticated)
         {
-            Navigation.NavigateTo("/offers", forceLoad: false);
+            Navigation.NavigateTo("/offers/immersive", forceLoad: false);
         }
     }
 
@@ -130,7 +130,7 @@
             await Session.SetSessionAsync(session, CancellationToken.None);
             await EnsureCameraPermissionAsync();
             _status = T("auth.userCreated");
-            Navigation.NavigateTo("/offers", forceLoad: false);
+            Navigation.NavigateTo("/offers/immersive", forceLoad: false);
         }
         catch (Exception)
         {

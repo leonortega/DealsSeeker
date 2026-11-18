@@ -7,6 +7,7 @@
     <base href="/" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/immersive.css" />
     <link rel="stylesheet" href="DealsSeeker.Mobile.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
 </head>
@@ -118,22 +119,46 @@
                 var nextListenerId = 0;
                 var listeners = new Map();
 
+                // Signals from the embedded map arrive as serialized strings so they stay safe for the
+                // host platform message bridge; anything that is not a recognized map signal is ignored.
+                function readMapSignal(event) {
+                    if (!event || !event.data) {
+                        return null;
+                    }
+
+                    var data = event.data;
+                    if (typeof data === "string") {
+                        try {
+                            data = JSON.parse(data);
+                        } catch (error) {
+                            return null;
+                        }
+                    }
+
+                    if (!data || typeof data !== "object" || typeof data.type !== "string") {
+                        return null;
+                    }
+
+                    return data;
+                }
+
                 function registerMarkerSelection(dotNetRef) {
                     var listenerId = "dealseeker-map-listener-" + (++nextListenerId);
                     var handler = function (event) {
-                        if (!event || !event.data || event.data.type !== "dealseeker-map-marker-selected") {
+                        var data = readMapSignal(event);
+                        if (!data || data.type !== "dealseeker-map-marker-selected") {
                             return;
                         }
 
-                        if (typeof event.data.lat !== "number" || typeof event.data.lng !== "number") {
+                        if (typeof data.lat !== "number" || typeof data.lng !== "number") {
                             return;
                         }
 
                         dotNetRef.invokeMethodAsync(
                             "HandleMapMarkerSelection",
-                            event.data.lat,
-                            event.data.lng,
-                            event.data.name || "");
+                            data.lat,
+                            data.lng,
+                            data.name || "");
                     };
 
                     window.addEventListener("message", handler);
@@ -151,9 +176,38 @@
                     listeners.delete(listenerId);
                 }
 
+                function registerMapPin(dotNetRef) {
+                    var listenerId = "dealseeker-map-pin-listener-" + (++nextListenerId);
+                    var handler = function (event) {
+                        var data = readMapSignal(event);
+                        if (!data || data.type !== "dealseeker-map-pin-selected") {
+                            return;
+                        }
+
+                        if (typeof data.lat !== "number" || typeof data.lng !== "number") {
+                            return;
+                        }
+
+                        dotNetRef.invokeMethodAsync(
+                            "HandleMapPinSelection",
+                            data.lat,
+                            data.lng);
+                    };
+
+                    window.addEventListener("message", handler);
+                    listeners.set(listenerId, handler);
+                    return listenerId;
+                }
+
+                function unregisterMapPin(listenerId) {
+                    unregisterMarkerSelection(listenerId);
+                }
+
                 return {
                     registerMarkerSelection: registerMarkerSelection,
-                    unregisterMarkerSelection: unregisterMarkerSelection
+                    unregisterMarkerSelection: unregisterMarkerSelection,
+                    registerMapPin: registerMapPin,
+                    unregisterMapPin: unregisterMapPin
                 };
             })();
 

@@ -105,6 +105,8 @@
     var showUser = params.get("showUser") !== "0";
     var apiKey = params.get("key") || "";
     var fallbackProvider = (params.get("fallback") || "").toLowerCase();
+    var pinEnabled = params.get("pin") === "1";
+    var pinMarker = null;
 
     function buildFallbackUrl() {
         var nextQuery = new URLSearchParams(window.location.search);
@@ -130,12 +132,22 @@
 
     function postMarkerSelection(marker) {
         if (window.parent && typeof window.parent.postMessage === "function") {
-            window.parent.postMessage({
+            window.parent.postMessage(JSON.stringify({
                 type: "dealseeker-map-marker-selected",
                 lat: marker.lat,
                 lng: marker.lng,
                 name: marker.name || ""
-            }, "*");
+            }), "*");
+        }
+    }
+
+    function postPinSelection(position) {
+        if (window.parent && typeof window.parent.postMessage === "function") {
+            window.parent.postMessage(JSON.stringify({
+                type: "dealseeker-map-pin-selected",
+                lat: position.lat(),
+                lng: position.lng()
+            }), "*");
         }
     }
 
@@ -154,6 +166,26 @@
             rotateControl: false,
             clickableIcons: false
         });
+
+        if (pinEnabled) {
+            map.addListener("click", function (event) {
+                if (!event || !event.latLng) {
+                    return;
+                }
+
+                if (pinMarker) {
+                    pinMarker.setMap(null);
+                }
+
+                pinMarker = new google.maps.Marker({
+                    position: event.latLng,
+                    map: map,
+                    title: startupTranslations.mapTitle
+                });
+
+                postPinSelection(event.latLng);
+            });
+        }
 
         var bounds = new google.maps.LatLngBounds();
         var hasBounds = false;

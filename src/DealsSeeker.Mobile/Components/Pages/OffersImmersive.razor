@@ -1,0 +1,756 @@
+@page "/offers/immersive"
+@using System.Globalization
+@inject IDealsSeekerApiClient ApiClient
+@inject IDeviceLocationService DeviceLocation
+@inject IMapLauncherService MapLauncher
+@inject IUserSessionService Session
+@inject IReportDraftContext ReportDraftContext
+@inject IAppPreferencesService Preferences
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<div class="immersive-root">
+    <aside class="immersive-panel" aria-label="@T("nav.mainNavigationMenu")">
+        <div class="immersive-brand">
+            <img src="/images/dealseeker-icon.svg" alt="" class="immersive-brand-icon" />
+            <span class="immersive-brand-name">@T("app.title")</span>
+        </div>
+
+        <div class="immersive-filter-tabs" role="tablist" aria-label="@T("offers.title")">
+            <button class="immersive-filter-tab @(_favoritesOnly ? "active" : string.Empty)"
+                    role="tab"
+                    aria-selected="@(_favoritesOnly ? "true" : "false")"
+                    @onclick="() => SetFavoritesOnlyAsync(true)">@T("offers.tabFavorites")</button>
+            <button class="immersive-filter-tab @(!_favoritesOnly ? "active" : string.Empty)"
+                    role="tab"
+                    aria-selected="@(!_favoritesOnly ? "true" : "false")"
+                    @onclick="() => SetFavoritesOnlyAsync(false)">@T("offers.tabViewAll")</button>
+        </div>
+
+        <label class="field-label immersive-search-label" for="immersiveQuery">@T("offers.search")</label>
+        <div class="immersive-search-row">
+            <input id="immersiveQuery"
+                   class="field-input"
+                   value="@_query"
+                   placeholder="@T("offers.searchPlaceholder")"
+                   @oninput="OnQueryInput" />
+            <button class="btn-main" @onclick="ApplySearchAsync">@T("offers.search")</button>
+        </div>
+
+        <div class="immersive-radius">
+            <label class="field-label" for="immersiveRadius">@T("offers.radius"): @_radiusMeters m</label>
+            <input id="immersiveRadius"
+                   class="range-input"
+                   type="range"
+                   min="100"
+                   max="5000"
+                   step="100"
+                   value="@_radiusMeters"
+                   @oninput="OnRadiusInput"
+                   @onchange="OnRadiusChangedAsync" />
+        </div>
+
+        <nav class="immersive-panel-options">
+            <button class="immersive-panel-option" @onclick="OpenMapMode">
+                <span class="immersive-option-icon" aria-hidden="true">&#128506;</span>
+                <span>@T("offers.mapMode")</span>
+            </button>
+            <a class="immersive-panel-option" href="/my-account?from=immersive">
+                <span class="immersive-option-icon" aria-hidden="true">&#128100;</span>
+                <span>@T("nav.myAccount")</span>
+            </a>
+            <a class="immersive-panel-option" href="/suggestions?from=immersive">
+                <span class="immersive-option-icon" aria-hidden="true">&#128161;</span>
+                <span>@T("nav.suggestions")</span>
+            </a>
+            <a class="immersive-panel-option" href="/reports?from=immersive">
+                <span class="immersive-option-icon" aria-hidden="true">&#9873;</span>
+                <span>@T("nav.reports")</span>
+            </a>
+            <a class="immersive-panel-option" href="/add-offer">
+                <span class="immersive-option-icon" aria-hidden="true">&#10133;</span>
+                <span>@T("nav.createOffer")</span>
+            </a>
+        </nav>
+    </aside>
+
+    <header class="immersive-topbar">
+        <img src="/images/dealseeker-icon.svg" alt="" class="immersive-topbar-icon" />
+        <div class="immersive-filter-tabs immersive-filter-tabs-top" role="tablist" aria-label="@T("offers.title")">
+            <button class="immersive-filter-tab @(_favoritesOnly ? "active" : string.Empty)"
+                    role="tab"
+                    @onclick="() => SetFavoritesOnlyAsync(true)">@T("offers.tabFavorites")</button>
+            <button class="immersive-filter-tab @(!_favoritesOnly ? "active" : string.Empty)"
+                    role="tab"
+                    @onclick="() => SetFavoritesOnlyAsync(false)">@T("offers.tabViewAll")</button>
+        </div>
+        <button class="immersive-search-toggle"
+                aria-label="@T("offers.search")"
+                @onclick="OpenSearchOverlay">&#128269;</button>
+    </header>
+
+    @if (_searchOverlayOpen)
+    {
+        <div class="immersive-search-overlay" @onclick="CancelOverlaySearch">
+            <div class="immersive-search-sheet" @onclick:stopPropagation="true">
+                <h2>@T("offers.searchOffers")</h2>
+                <input class="field-input"
+                       value="@_overlayQuery"
+                       placeholder="@T("offers.searchPlaceholder")"
+                       @oninput="OnOverlayQueryInput" />
+                <label class="field-label" for="immersiveOverlayRadius">@T("offers.radius"): @_overlayRadius m</label>
+                <input id="immersiveOverlayRadius"
+                       class="range-input"
+                       type="range"
+                       min="100"
+                       max="5000"
+                       step="100"
+                       value="@_overlayRadius"
+                       @oninput="OnOverlayRadiusInput" />
+                <div class="action-row">
+                    <button class="btn-main btn-main-accent" @onclick="ApplyOverlaySearchAsync">@T("offers.search")</button>
+                    <button class="btn-secondary" @onclick="CancelOverlaySearch">@T("common.cancel")</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <main class="immersive-feed">
+        @if (!string.IsNullOrWhiteSpace(_error))
+        {
+            <p class="status-line error immersive-status">@_error</p>
+        }
+        @if (_searching && _offers.Count > 0)
+        {
+            <p class="status-line immersive-status">@T("offers.loading")</p>
+        }
+
+        @if (_loading && _offers.Count == 0)
+        {
+            <div class="immersive-empty">
+                <p class="muted">@T("offers.loading")</p>
+            </div>
+        }
+        else if (_offers.Count == 0)
+        {
+            <div class="immersive-empty">
+                <p class="muted">@T("offers.noResults")</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var offer in _offers)
+            {
+                var images = OfferImages(offer);
+                var photoIndex = PhotoIndex(offer.OfferId, images.Count);
+                var expanded = _expandedOfferIds.Contains(offer.OfferId);
+                <section class="immersive-page" @key="offer.OfferId"
+                         @onpointerdown="args => OnPagePointerDown(offer.OfferId, args)"
+                         @onpointerup="args => OnPagePointerUp(offer, args)"
+                         @onpointercancel="args => OnPagePointerCancel(offer.OfferId, args)">
+                    <img class="immersive-photo"
+                         src="@images[photoIndex]"
+                         alt="@T("offers.imageAlt")"
+                         onerror="this.onerror=null;this.src='/images/offer-placeholder.svg';" />
+                    <span class="immersive-photo-bars" aria-hidden="true"></span>
+
+                    @if (images.Count > 1)
+                    {
+                        <div class="immersive-photo-nav">
+                            <button class="immersive-photo-arrow"
+                                    aria-label="@T("offers.previousImage")"
+                                    @onclick="() => ChangePhoto(offer.OfferId, images.Count, -1)">&#8592;</button>
+                            <div class="immersive-photo-dots">
+                                @for (var index = 0; index < images.Count; index++)
+                                {
+                                    var dot = index;
+                                    <button class="immersive-photo-dot @(dot == photoIndex ? "active" : string.Empty)"
+                                            aria-label="@($"{dot + 1} / {images.Count}")"
+                                            @onclick="() => SetPhoto(offer.OfferId, dot)"></button>
+                                }
+                            </div>
+                            <button class="immersive-photo-arrow"
+                                    aria-label="@T("offers.nextImage")"
+                                    @onclick="() => ChangePhoto(offer.OfferId, images.Count, 1)">&#8594;</button>
+                        </div>
+                    }
+
+                    <div class="immersive-overlay">
+                        <div class="immersive-marks">
+                            @if (offer.IsPromoted)
+                            {
+                                <span class="offer-badge offer-badge-promoted">@T("offers.promoted")</span>
+                            }
+                            @if (offer.IsReported)
+                            {
+                                <span class="offer-badge offer-badge-reported">@T("offers.reported")</span>
+                            }
+                        </div>
+
+                        <h2 class="immersive-title">@offer.BusinessName</h2>
+                        <span class="immersive-distance">@T("offers.distance"): @FormatDistance(offer.DistanceMeters)</span>
+                        <p class="immersive-description">@DisplayDescription(offer, expanded)</p>
+
+                        @if (expanded && offer.Tags.Count > 0)
+                        {
+                            <p class="immersive-tags">@TagsAsHashtags(offer)</p>
+                        }
+
+                        @if (!expanded && HasMoreContent(offer))
+                        {
+                            <button class="immersive-more" @onclick="() => ExpandOffer(offer.OfferId)">@T("offers.more")</button>
+                        }
+
+                        @if (offer.IsReported)
+                        {
+                            <p class="offer-reported-warning">@T("offers.reportedWarning")</p>
+                        }
+                    </div>
+
+                    <aside class="immersive-rail">
+                        <button class="immersive-action"
+                                aria-label="@T("offers.action.comments")"
+                                @onclick="() => OpenComments(offer)">
+                            <span class="immersive-action-icon" aria-hidden="true">&#128172;</span>
+                            <span class="immersive-action-caption">@T("offers.action.comments")</span>
+                        </button>
+                        <button class="immersive-action @(offer.IsFavorite ? "active" : string.Empty)"
+                                aria-label="@T("offers.action.favorite")"
+                                @onclick="() => ToggleFavoriteAsync(offer)">
+                            <span class="immersive-action-icon" aria-hidden="true">&#10084;</span>
+                            <span class="immersive-action-caption">@T("offers.action.favorite")</span>
+                        </button>
+                        <button class="immersive-action"
+                                aria-label="@T("offers.action.directions")"
+                                @onclick="() => OpenDirectionsAsync(offer.Location)">
+                            <span class="immersive-action-icon" aria-hidden="true">&#10148;</span>
+                            <span class="immersive-action-caption">@T("offers.action.directions")</span>
+                        </button>
+                        <button class="immersive-action"
+                                aria-label="@T("offers.action.available")"
+                                disabled="@IsVoteDisabled(offer)"
+                                @onclick="() => VoteAsync(offer, OfferAvailabilityVoteType.ThumbsUp)">
+                            <span class="immersive-action-icon" aria-hidden="true">&#128077;</span>
+                            <span class="immersive-action-count">@offer.PositiveAvailabilityCount</span>
+                            <span class="immersive-action-caption">@T("offers.action.available")</span>
+                        </button>
+                        <button class="immersive-action"
+                                aria-label="@T("offers.action.unavailable")"
+                                disabled="@IsVoteDisabled(offer)"
+                                @onclick="() => VoteAsync(offer, OfferAvailabilityVoteType.ThumbsDown)">
+                            <span class="immersive-action-icon" aria-hidden="true">&#128078;</span>
+                            <span class="immersive-action-count">@offer.NegativeAvailabilityCount</span>
+                            <span class="immersive-action-caption">@T("offers.action.unavailable")</span>
+                        </button>
+                        <button class="immersive-action"
+                                aria-label="@T("offers.action.report")"
+                                @onclick="() => OpenReportView(offer)">
+                            <span class="immersive-action-icon" aria-hidden="true">&#9873;</span>
+                            <span class="immersive-action-caption">@T("offers.action.report")</span>
+                        </button>
+                    </aside>
+                </section>
+            }
+
+            @if (_hasMore)
+            {
+                <div class="immersive-load-more">
+                    <button class="btn-main" @onclick="LoadMoreAsync" disabled="@_loadingMore">
+                        @(_loadingMore ? T("offers.loading") : T("offers.loadMore"))
+                    </button>
+                </div>
+            }
+        }
+    </main>
+
+    <nav class="immersive-footer" aria-label="@T("nav.mainNavigationMenu")">
+        <button class="immersive-footer-option" aria-label="@T("offers.mapMode")" @onclick="OpenMapMode">
+            <span class="immersive-footer-icon" aria-hidden="true">&#128506;</span>
+            <span class="immersive-footer-label">@T("offers.mapMode")</span>
+        </button>
+        <a class="immersive-footer-option" href="/my-account?from=immersive" aria-label="@T("nav.myAccount")">
+            <span class="immersive-footer-icon" aria-hidden="true">&#128100;</span>
+            <span class="immersive-footer-label">@T("nav.myAccount")</span>
+        </a>
+        <a class="immersive-footer-option" href="/suggestions?from=immersive" aria-label="@T("nav.suggestions")">
+            <span class="immersive-footer-icon" aria-hidden="true">&#128161;</span>
+            <span class="immersive-footer-label">@T("nav.suggestions")</span>
+        </a>
+        <a class="immersive-footer-option" href="/reports?from=immersive" aria-label="@T("nav.reports")">
+            <span class="immersive-footer-icon" aria-hidden="true">&#9873;</span>
+            <span class="immersive-footer-label">@T("nav.reports")</span>
+        </a>
+        <a class="immersive-footer-option" href="/add-offer" aria-label="@T("nav.createOffer")">
+            <span class="immersive-footer-icon" aria-hidden="true">&#10133;</span>
+            <span class="immersive-footer-label">@T("nav.createOffer")</span>
+        </a>
+    </nav>
+</div>
+
+@if (_commentsOffer is not null)
+{
+    <OfferCommentsModal Offer="_commentsOffer" OnClose="CloseComments" />
+}
+
+@code {
+    private const int PageSize = 20;
+    private const int SwipeThreshold = 45;
+
+    private readonly List<OfferItemDto> _offers = [];
+    private readonly Dictionary<string, int> _photoIndexes = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _expandedOfferIds = new(StringComparer.OrdinalIgnoreCase);
+
+    private string _query = string.Empty;
+    private string _overlayQuery = string.Empty;
+    private int _radiusMeters = 1500;
+    private int _overlayRadius = 1500;
+    private bool _favoritesOnly;
+    private bool _loading;
+    private bool _loadingMore;
+    private bool _searching;
+    private bool _hasMore;
+    private bool _searchOverlayOpen;
+    private int _page = 1;
+    private string? _error;
+    private GeoPoint _userLocation = new(40.7128, -74.0060);
+    private OfferItemDto? _commentsOffer;
+
+    private bool _swipeTracking;
+    private long _swipePointerId = -1;
+    private double _swipeStartX;
+    private double _swipeStartY;
+    private string _swipeOfferId = string.Empty;
+    private CancellationTokenSource? _queryDebounceCts;
+    private CancellationTokenSource? _searchRequestCts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login", forceLoad: false);
+            return;
+        }
+
+        await Preferences.InitializeAsync(Session.CurrentSession?.UserId, CancellationToken.None);
+
+        try
+        {
+            var location = await DeviceLocation.TryGetCurrentLocationAsync(CancellationToken.None);
+            if (location is not null)
+            {
+                _userLocation = location;
+            }
+        }
+        catch
+        {
+        }
+
+        await SearchAsync();
+    }
+
+    private async Task SearchAsync(CancellationToken cancellationToken = default)
+    {
+        var previousRequest = Interlocked.Exchange(
+            ref _searchRequestCts,
+            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken));
+        previousRequest?.Cancel();
+
+        var requestToken = _searchRequestCts!.Token;
+        _loading = _offers.Count == 0;
+        _searching = !_loading;
+        _error = null;
+
+        try
+        {
+            var results = await ApiClient.SearchOffersAsync(
+                new SearchOffersRequest(
+                    _query,
+                    _userLocation,
+                    _radiusMeters,
+                    Locale: Preferences.Language,
+                    FavoritesOnly: _favoritesOnly,
+                    Page: 1,
+                    PageSize: PageSize),
+                requestToken);
+
+            if (requestToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            _offers.Clear();
+            _offers.AddRange(OrderReportedLast(results.Offers));
+            _page = results.Page;
+            _hasMore = results.HasMore;
+            _photoIndexes.Clear();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            if (!requestToken.IsCancellationRequested)
+            {
+                _error = ApiErrorMessages.Describe(ex, T, "offers.searchFailed");
+            }
+        }
+        finally
+        {
+            if (!requestToken.IsCancellationRequested)
+            {
+                _loading = false;
+                _searching = false;
+            }
+        }
+    }
+
+    private async Task LoadMoreAsync()
+    {
+        if (_loadingMore || !_hasMore)
+        {
+            return;
+        }
+
+        _loadingMore = true;
+        _error = null;
+        try
+        {
+            var results = await ApiClient.SearchOffersAsync(
+                new SearchOffersRequest(
+                    _query,
+                    _userLocation,
+                    _radiusMeters,
+                    Locale: Preferences.Language,
+                    FavoritesOnly: _favoritesOnly,
+                    Page: _page + 1,
+                    PageSize: PageSize),
+                CancellationToken.None);
+
+            _page = results.Page;
+            _hasMore = results.HasMore;
+
+            var knownIds = _offers.Select(offer => offer.OfferId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            _offers.AddRange(OrderReportedLast(results.Offers.Where(offer => knownIds.Add(offer.OfferId)).ToList()));
+        }
+        catch (Exception ex)
+        {
+            _error = ApiErrorMessages.Describe(ex, T, "offers.searchFailed");
+        }
+        finally
+        {
+            _loadingMore = false;
+        }
+    }
+
+    private static List<OfferItemDto> OrderReportedLast(IEnumerable<OfferItemDto> offers) =>
+        offers.OrderBy(offer => offer.IsReported ? 1 : 0).ToList();
+
+    private void OnQueryInput(ChangeEventArgs args)
+    {
+        _query = args.Value?.ToString() ?? string.Empty;
+        _queryDebounceCts?.Cancel();
+        _queryDebounceCts = new CancellationTokenSource();
+        var token = _queryDebounceCts.Token;
+
+        _ = InvokeAsync(async () =>
+        {
+            try
+            {
+                await Task.Delay(400, token);
+                if (!token.IsCancellationRequested)
+                {
+                    await SearchAsync(token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        });
+    }
+
+    private async Task ApplySearchAsync()
+    {
+        _queryDebounceCts?.Cancel();
+        await SearchAsync();
+    }
+
+    private void OnOverlayQueryInput(ChangeEventArgs args) =>
+        _overlayQuery = args.Value?.ToString() ?? string.Empty;
+
+    private void OnOverlayRadiusInput(ChangeEventArgs args)
+    {
+        if (args.Value is not null && int.TryParse(args.Value.ToString(), out var parsed))
+        {
+            _overlayRadius = Math.Clamp(parsed, 100, 5000);
+        }
+    }
+
+    private void OpenSearchOverlay()
+    {
+        _overlayQuery = _query;
+        _overlayRadius = _radiusMeters;
+        _searchOverlayOpen = true;
+    }
+
+    private void CancelOverlaySearch() => _searchOverlayOpen = false;
+
+    private async Task ApplyOverlaySearchAsync()
+    {
+        _query = _overlayQuery;
+        _radiusMeters = _overlayRadius;
+        _searchOverlayOpen = false;
+        _queryDebounceCts?.Cancel();
+        await SearchAsync();
+    }
+
+    private async Task SetFavoritesOnlyAsync(bool favoritesOnly)
+    {
+        if (_favoritesOnly == favoritesOnly)
+        {
+            return;
+        }
+
+        _favoritesOnly = favoritesOnly;
+        await SearchAsync();
+    }
+
+    private void OnRadiusInput(ChangeEventArgs args)
+    {
+        if (args.Value is not null && int.TryParse(args.Value.ToString(), out var parsed))
+        {
+            _radiusMeters = Math.Clamp(parsed, 100, 5000);
+        }
+    }
+
+    private async Task OnRadiusChangedAsync(ChangeEventArgs args)
+    {
+        OnRadiusInput(args);
+        await SearchAsync();
+    }
+
+    private void OpenMapMode() =>
+        Navigation.NavigateTo($"/offers?q={Uri.EscapeDataString(_query)}&radius={_radiusMeters}");
+
+    private void OpenComments(OfferItemDto offer) => _commentsOffer = offer;
+
+    private void CloseComments() => _commentsOffer = null;
+
+    private async Task ToggleFavoriteAsync(OfferItemDto offer)
+    {
+        try
+        {
+            var result = await ApiClient.SetOfferFavoriteAsync(
+                offer.OfferId,
+                new SetFavoriteRequest(!offer.IsFavorite),
+                CancellationToken.None);
+
+            if (!result.Success)
+            {
+                _error = T("offers.favoriteUpdateFailed");
+                return;
+            }
+
+            if (_favoritesOnly && offer.IsFavorite)
+            {
+                _offers.RemoveAll(candidate =>
+                    string.Equals(candidate.OfferId, offer.OfferId, StringComparison.OrdinalIgnoreCase));
+                return;
+            }
+
+            ReplaceOffer(offer with { IsFavorite = !offer.IsFavorite });
+        }
+        catch (Exception ex)
+        {
+            _error = ApiErrorMessages.Describe(ex, T, "offers.favoriteUpdateFailed");
+        }
+    }
+
+    private async Task VoteAsync(OfferItemDto offer, OfferAvailabilityVoteType vote)
+    {
+        if (IsVoteDisabled(offer))
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await ApiClient.VoteOfferAvailabilityAsync(
+                offer.OfferId,
+                new OfferAvailabilityVoteRequest(vote),
+                CancellationToken.None);
+
+            if (!result.Success)
+            {
+                _error = result.Message.Contains("already submitted", StringComparison.OrdinalIgnoreCase)
+                    ? T("offers.voteAlreadySubmitted")
+                    : T("offers.voteFailed");
+                return;
+            }
+
+            ReplaceOffer(vote == OfferAvailabilityVoteType.ThumbsUp
+                ? offer with
+                {
+                    HasCurrentUserVoted = true,
+                    PositiveAvailabilityCount = offer.PositiveAvailabilityCount + 1
+                }
+                : offer with
+                {
+                    HasCurrentUserVoted = true,
+                    NegativeAvailabilityCount = offer.NegativeAvailabilityCount + 1
+                });
+        }
+        catch (Exception ex)
+        {
+            _error = ApiErrorMessages.Describe(ex, T, "offers.voteFailed");
+        }
+    }
+
+    private void ReplaceOffer(OfferItemDto updated)
+    {
+        var index = _offers.FindIndex(offer =>
+            string.Equals(offer.OfferId, updated.OfferId, StringComparison.OrdinalIgnoreCase));
+        if (index >= 0)
+        {
+            _offers[index] = updated;
+        }
+    }
+
+    private Task OpenDirectionsAsync(GeoPoint destination) =>
+        MapLauncher.OpenDirectionsAsync(destination, Preferences.NavigationMode, CancellationToken.None);
+
+    private void OpenReportView(OfferItemDto offer)
+    {
+        var userId = Session.CurrentSession?.UserId ?? "unknown";
+        var now = DateTimeOffset.UtcNow;
+        var initialMessage = string.Format(
+            T("offers.reportDraftOpened"),
+            offer.OfferId,
+            now.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture));
+
+        ReportDraftContext.Set(new OfferReportDraft(offer, userId, now, initialMessage));
+        Navigation.NavigateTo("/reports");
+    }
+
+    private bool IsVoteDisabled(OfferItemDto offer) => offer.HasCurrentUserVoted;
+
+    private static IReadOnlyList<string> OfferImages(OfferItemDto offer)
+    {
+        if (offer.ImageUrls.Count > 0)
+        {
+            return offer.ImageUrls;
+        }
+
+        return string.IsNullOrWhiteSpace(offer.ImageUrl)
+            ? ["/images/offer-placeholder.svg"]
+            : [offer.ImageUrl];
+    }
+
+    private int PhotoIndex(string offerId, int imageCount)
+    {
+        if (!_photoIndexes.TryGetValue(offerId, out var index))
+        {
+            return 0;
+        }
+
+        return Math.Clamp(index, 0, Math.Max(0, imageCount - 1));
+    }
+
+    private void SetPhoto(string offerId, int index)
+    {
+        _photoIndexes[offerId] = Math.Max(0, index);
+    }
+
+    private void ChangePhoto(string offerId, int imageCount, int delta)
+    {
+        if (imageCount <= 1)
+        {
+            return;
+        }
+
+        var current = PhotoIndex(offerId, imageCount);
+        var next = (current + delta + imageCount) % imageCount;
+        _photoIndexes[offerId] = next;
+    }
+
+    private void OnPagePointerDown(string offerId, PointerEventArgs args)
+    {
+        _swipeTracking = true;
+        _swipePointerId = args.PointerId;
+        _swipeStartX = args.ClientX;
+        _swipeStartY = args.ClientY;
+        _swipeOfferId = offerId;
+    }
+
+    private void OnPagePointerUp(OfferItemDto offer, PointerEventArgs args)
+    {
+        if (!_swipeTracking ||
+            args.PointerId != _swipePointerId ||
+            !string.Equals(offer.OfferId, _swipeOfferId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var deltaX = args.ClientX - _swipeStartX;
+        var deltaY = args.ClientY - _swipeStartY;
+        ResetSwipeTracking();
+
+        if (Math.Abs(deltaX) < SwipeThreshold || Math.Abs(deltaX) <= Math.Abs(deltaY))
+        {
+            return;
+        }
+
+        ChangePhoto(offer.OfferId, OfferImages(offer).Count, deltaX < 0 ? 1 : -1);
+    }
+
+    private void OnPagePointerCancel(string offerId, PointerEventArgs args)
+    {
+        if (_swipeTracking && args.PointerId == _swipePointerId)
+        {
+            ResetSwipeTracking();
+        }
+    }
+
+    private void ResetSwipeTracking()
+    {
+        _swipeTracking = false;
+        _swipePointerId = -1;
+        _swipeStartX = 0;
+        _swipeStartY = 0;
+        _swipeOfferId = string.Empty;
+    }
+
+    private void ExpandOffer(string offerId) => _expandedOfferIds.Add(offerId);
+
+    private static bool HasMoreContent(OfferItemDto offer) =>
+        (offer.Description?.Length ?? 0) > 140 || offer.Tags.Count > 0;
+
+    private static string DisplayDescription(OfferItemDto offer, bool expanded)
+    {
+        var description = (offer.Description ?? string.Empty).Trim();
+        if (expanded || description.Length <= 140)
+        {
+            return description;
+        }
+
+        return string.Concat(description[..137].TrimEnd(), "...");
+    }
+
+    private static string TagsAsHashtags(OfferItemDto offer) =>
+        string.Join(" ", offer.Tags
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Select(tag => $"#{tag.Trim()}"));
+
+    private static string FormatDistance(double distanceMeters) =>
+        $"{Math.Round(Math.Max(0, distanceMeters))} m";
+
+    private string T(string key) => Preferences.Translate(key);
+
+    public void Dispose()
+    {
+        _queryDebounceCts?.Cancel();
+        _queryDebounceCts?.Dispose();
+        _searchRequestCts?.Cancel();
+        _searchRequestCts?.Dispose();
+        ResetSwipeTracking();
+    }
+}

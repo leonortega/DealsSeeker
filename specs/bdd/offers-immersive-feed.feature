@@ -38,7 +38,7 @@ Feature: Immersive vertical full-screen main page feed
     Given an offer page with more than one photo
     When the user presses the left or right arrow keys or swipes horizontally over the page or uses the photo navigation control
     Then the displayed photo changes
-    And a navigation control with one point per photo is available above the offer title, horizontally centered within the offer panel
+    And a navigation control with one point per photo is available above the offer title, horizontally centered within the visible offer page area
     And no scrollbar is displayed
 
   Scenario: Horizontal swipe changes the photo
@@ -51,6 +51,19 @@ Feature: Immersive vertical full-screen main page feed
     Given the user is on the immersive offers view
     When the user swipes vertically over an offer page
     Then the feed moves to the adjacent offer page
+
+  Scenario: Multi-photo offer still allows vertical feed scrolling
+    Given an offer page with more than one photo
+    And the photo navigation control is displayed
+    When the user swipes vertically over that offer page
+    Then the feed moves to the adjacent offer page
+    And the displayed photo remains unchanged
+
+  Scenario: Immersive top bar clears the device status area
+    Given the user is on the immersive offers view on a mobile device
+    When the top bar is rendered
+    Then it is positioned below the device system status area
+    And its filter tabs and search control do not overlap the system indicators
 
   Scenario: A short swipe does not change the photo
     Given an offer page with more than one photo
@@ -115,6 +128,12 @@ Feature: Immersive vertical full-screen main page feed
     And the map option is available inside the menu
     And no header buttons are rendered
     And footer navigation destinations appear as options inside the menu
+
+  Scenario: Immersive navigation icons are emoji glyphs
+    Given the user is on the immersive offers view
+    When the navigation options are rendered in the footer or the left panel
+    Then each option icon is displayed as an emoji glyph
+    And no option icon is rendered as a monochrome text symbol
 
   Scenario: Empty feed state
     Given no offers are available

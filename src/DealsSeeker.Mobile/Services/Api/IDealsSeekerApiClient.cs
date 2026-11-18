@@ -1,5 +1,6 @@
 using DealsSeeker.Shared.Contracts.Account;
 using DealsSeeker.Shared.Contracts.AddOffer;
+using DealsSeeker.Shared.Contracts.Comments;
 using DealsSeeker.Shared.Contracts.Common;
 using DealsSeeker.Shared.Contracts.Feedback;
 using DealsSeeker.Shared.Contracts.Offers;
@@ -20,6 +21,12 @@ public interface IDealsSeekerApiClient
     Task<IReadOnlyList<OfferItemDto>?> GetMyOffersAsync(CancellationToken cancellationToken);
 
     Task<AddOfferRequest?> GetMyOfferDraftAsync(string offerId, CancellationToken cancellationToken);
+
+    Task<CommandResult> SetMyAvatarAsync(string avatarId, CancellationToken cancellationToken);
+
+    Task<OfferCommentsResponseDto> GetOfferCommentsAsync(string offerId, int limit, string? after, CancellationToken cancellationToken);
+
+    Task<OfferCommentDto?> CreateOfferCommentAsync(string offerId, string body, CancellationToken cancellationToken);
 
     Task<SearchOffersResponse> SearchOffersAsync(SearchOffersRequest request, CancellationToken cancellationToken);
 

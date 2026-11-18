@@ -93,6 +93,7 @@
     var zoom = toNumber(params.get("zoom"), 14);
     var markerData = parseMarkerData(params.get("markers"));
     var showUser = params.get("showUser") !== "0";
+    var pinEnabled = params.get("pin") === "1";
 
     function initializeMap() {
         if (!window.ol || !ol.Map || !ol.layer || !ol.proj) {
@@ -184,7 +185,37 @@
                 hitTolerance: 10
             });
 
-            if (!feature || feature.get("isUserMarker")) {
+            if (!feature) {
+                if (!pinEnabled) {
+                    return;
+                }
+
+                var coordinate = event.coordinate;
+                var pin = new ol.Feature({
+                    geometry: new ol.geom.Point(coordinate)
+                });
+                pin.setStyle(new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 8,
+                        fill: new ol.style.Fill({ color: "#b23a3a" }),
+                        stroke: new ol.style.Stroke({ color: "#ffffff", width: 2 })
+                    })
+                }));
+                vectorLayer.getSource().addFeature(pin);
+
+                var lonLat = ol.proj.toLonLat(coordinate);
+                if (window.parent && typeof window.parent.postMessage === "function") {
+                    window.parent.postMessage(JSON.stringify({
+                        type: "dealseeker-map-pin-selected",
+                        lat: lonLat[1],
+                        lng: lonLat[0]
+                    }), "*");
+                }
+
+                return;
+            }
+
+            if (feature.get("isUserMarker")) {
                 return;
             }
 
@@ -195,12 +226,12 @@
             }
 
             if (window.parent && typeof window.parent.postMessage === "function") {
-                window.parent.postMessage({
+                window.parent.postMessage(JSON.stringify({
                     type: "dealseeker-map-marker-selected",
                     lat: markerLat,
                     lng: markerLng,
                     name: feature.get("name") || ""
-                }, "*");
+                }), "*");
             }
         });
     }

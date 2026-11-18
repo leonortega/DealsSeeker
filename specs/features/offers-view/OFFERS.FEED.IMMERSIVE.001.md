@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive Vertical Full-Screen Main Page Feed
-- **Version**: `v1.5`
+- **Version**: `v1.6`
 - **Status**: Approved
 - **Context/View**: Offers View (Main Page)
 - **Priority**: High
@@ -68,6 +68,9 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R43`: The immersive offers view shall be the default offers presentation of the application when it starts with an authenticated session.
 - `OFFERS.FEED.IMMERSIVE.001-R44`: The map entry point of the immersive feed shall be labeled `Map mode` in English and `Modo mapa` in Spanish, and selecting it shall open the standard offers view.
 - `OFFERS.FEED.IMMERSIVE.001-R45`: The left panel shall not display an application-menu option nor a back control.
+- `OFFERS.FEED.IMMERSIVE.001-R51`: The immersive top bar shall be positioned below the device system status area, so that system indicators (battery, signal, and similar) do not overlap its controls.
+- `OFFERS.FEED.IMMERSIVE.001-R52`: When an offer has more than one photo, the photo navigation control shall be horizontally centered within the visible offer page area.
+- `OFFERS.FEED.IMMERSIVE.001-R53`: Each main navigation option of the immersive feed shall display its icon as a graphical emoji glyph rather than a monochrome text symbol.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -106,7 +109,7 @@ Scenario: Offer with multiple photos supports photo navigation
   Given an offer page with more than one photo
   When the user presses the left or right arrow keys or swipes horizontally over the page or uses the photo navigation control
   Then the displayed photo shall change
-  And a navigation control with one point per photo shall be available above the offer title, horizontally centered within the offer panel
+  And a navigation control with one point per photo shall be available above the offer title, horizontally centered within the visible offer page area
   And no scrollbar shall be displayed
 
 Scenario: Horizontal swipe changes the photo
@@ -119,6 +122,25 @@ Scenario: Vertical swipe still scrolls between offers
   Given the user is on the immersive offers view
   When the user swipes vertically over an offer page
   Then the feed shall move to the adjacent offer page
+
+Scenario: Multi-photo offer still allows vertical feed scrolling
+  Given an offer page with more than one photo
+  And the photo navigation control is displayed
+  When the user swipes vertically over that offer page
+  Then the feed shall move to the adjacent offer page
+  And the displayed photo shall remain unchanged
+
+Scenario: Immersive top bar clears the device status area
+  Given the user is on the immersive offers view on a mobile device
+  When the top bar is rendered
+  Then it shall be positioned below the device system status area
+  And its filter tabs and search control shall not overlap the system indicators
+
+Scenario: Immersive navigation icons are emoji glyphs
+  Given the user is on the immersive offers view
+  When the navigation options are rendered in the footer or the left panel
+  Then each option icon shall be displayed as an emoji glyph
+  And no option icon shall be rendered as a monochrome text symbol
 
 Scenario: A short swipe does not change the photo
   Given an offer page with more than one photo
@@ -227,6 +249,8 @@ Scenario: Empty feed state
 - Very long descriptions remain truncated until expanded.
 - Promoted and reported indicators remain visible in the overlay and/or side rail.
 - Empty offer result renders empty-state instead of blank feed.
+- Devices without a reported safe-area inset still clear the status area using a minimum top offset.
+- A vertical swipe over a multi-photo offer scrolls the feed without changing the displayed photo.
 
 ## Non-Functional Constraints
 - Vertical feed scrolling should remain smooth under typical offer counts.

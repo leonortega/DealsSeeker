@@ -2,7 +2,9 @@
 @inject IUserSessionService Session
 @inject IAppPreferencesService Preferences
 @inject IViewBusyService Busy
+@inject IBackNavigationService BackNavigation
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
 @implements IDisposable
 
 <div class="page @GetThemeClass()">
@@ -30,33 +32,45 @@
         <span class="shell-grid"></span>
     </div>
 
-    <main class="app-main">
-        <header class="top-row">
-            <div class="top-row-inner">
-                <div class="top-row-leading">
-                    <NavMenu IsOpen="_menuOpen" IsOpenChanged="OnMenuOpenChanged" ShowToggle="true" ShowSheet="false" />
-                </div>
-
-                <div class="app-brand">
-                    <img src="/images/dealseeker-icon.svg" alt="" class="app-brand-icon" />
-                    <div class="app-brand-copy">
-                        <span class="app-title">@T("app.title")</span>
-                    </div>
-                </div>
-
-                @if (Session.CurrentSession is { } activeSession)
-                {
-                    <div class="top-row-user-block" title="@activeSession.Email" aria-label="@activeSession.DisplayName">
-                        <div class="top-row-user">
-                            @GetUserInitial(activeSession.DisplayName)
+    <main class="app-main @(_isImmersive ? "app-main-immersive" : string.Empty)">
+        @if (!_isImmersive)
+        {
+            <header class="top-row">
+                <div class="top-row-inner">
+                    <div class="top-row-leading">
+                        <div class="app-brand">
+                            <img src="/images/dealseeker-icon.svg" alt="" class="app-brand-icon" />
+                            <div class="app-brand-copy">
+                                <span class="app-title">@T("app.title")</span>
+                            </div>
                         </div>
-                        <span class="top-row-user-name">@activeSession.DisplayName</span>
                     </div>
-                }
-            </div>
-        </header>
 
-        <article class="content" @key="_bodyRenderKey">
+                    <div class="top-row-trailing">
+                        @if (Session.CurrentSession is { } activeSession)
+                        {
+                            <div class="top-row-user-block" title="@activeSession.Email" aria-label="@activeSession.DisplayName">
+                                <div class="top-row-user">
+                                    @GetUserInitial(activeSession.DisplayName)
+                                </div>
+                                <span class="top-row-user-name">@activeSession.DisplayName</span>
+                            </div>
+                        }
+
+                        @if (_isStandardOffers)
+                        {
+                            <button class="btn-immersive" @onclick="OpenImmersiveView">
+                                @T("offers.immersiveView")
+                            </button>
+                        }
+
+                        <NavMenu IsOpen="_menuOpen" IsOpenChanged="OnMenuOpenChanged" ShowToggle="true" ShowSheet="false" />
+                    </div>
+                </div>
+            </header>
+        }
+
+        <article class="content @(_isImmersive ? "content-immersive" : string.Empty)" @key="_bodyRenderKey">
             @Body
         </article>
     </main>
@@ -67,15 +81,126 @@
     private string _bodyRenderKey = "en";
     private bool _menuOpen;
     private bool _menuVisible;
+    private bool _isImmersive;
+    private bool _isStandardOffers;
     private CancellationTokenSource? _menuAnimationCts;
+    private readonly List<string> _backStack = [];
+    private Func<Task<bool>>? _backHandler;
+    private string? _expectedBackLocation;
 
     protected override async Task OnInitializedAsync()
     {
         Preferences.Changed += OnPreferencesChanged;
         Busy.Changed += OnBusyChanged;
+        Navigation.LocationChanged += OnLocationChanged;
+        UpdateRouteFlags();
+        RecordLocation(CurrentLocation());
+        _backHandler = TryNavigateBackAsync;
+        BackNavigation.Register(_backHandler);
         await Preferences.InitializeAsync(Session.CurrentSession?.UserId, CancellationToken.None);
         _bodyRenderKey = BuildBodyRenderKey();
     }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        TrackBackStack();
+        UpdateRouteFlags();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void TrackBackStack() => RecordLocation(CurrentLocation());
+
+    private void RecordLocation(string location)
+    {
+        if (_expectedBackLocation is not null &&
+            string.Equals(location, _expectedBackLocation, StringComparison.OrdinalIgnoreCase))
+        {
+            _expectedBackLocation = null;
+            return;
+        }
+
+        // Entry and redirect views (/ , /login, /create-user) are never back targets: returning to
+        // them would replay a redirect or show an authentication view again.
+        if (IsTransientEntryView(location))
+        {
+            return;
+        }
+
+        if (_backStack.Count > 0 &&
+            string.Equals(_backStack[^1], location, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _backStack.Add(location);
+    }
+
+    private static bool IsTransientEntryView(string location)
+    {
+        var path = location.Split('?')[0];
+        return path.Equals("/", StringComparison.OrdinalIgnoreCase) ||
+               path.Equals("/login", StringComparison.OrdinalIgnoreCase) ||
+               path.Equals("/create-user", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string CurrentLocation()
+    {
+        var uri = new Uri(Navigation.Uri);
+        var path = uri.AbsolutePath.TrimEnd('/');
+        if (string.IsNullOrEmpty(path))
+        {
+            path = "/";
+        }
+
+        return string.Concat(path, uri.Query);
+    }
+
+    private Task<bool> TryNavigateBackAsync()
+    {
+        var completion = new TaskCompletionSource<bool>();
+        _ = InvokeAsync(async () =>
+        {
+            try
+            {
+                completion.TrySetResult(await NavigateBackCoreAsync());
+            }
+            catch (Exception ex)
+            {
+                completion.TrySetException(ex);
+            }
+        });
+
+        return completion.Task;
+    }
+
+    private Task<bool> NavigateBackCoreAsync()
+    {
+        if (_backStack.Count <= 1)
+        {
+            return Task.FromResult(false);
+        }
+
+        _backStack.RemoveAt(_backStack.Count - 1);
+        var target = _backStack[^1];
+        Serilog.Log.Debug("Back navigation targeting {Target}. Stack={Stack}", target, string.Join(" > ", _backStack));
+        if (string.Equals(target, CurrentLocation(), StringComparison.OrdinalIgnoreCase))
+        {
+            return Task.FromResult(_backStack.Count > 1);
+        }
+
+        _expectedBackLocation = target;
+        Navigation.NavigateTo(target, forceLoad: false);
+        return Task.FromResult(true);
+    }
+
+    private void UpdateRouteFlags()
+    {
+        var path = new Uri(Navigation.Uri).AbsolutePath.TrimEnd('/');
+        _isImmersive = path.Equals("/offers/immersive", StringComparison.OrdinalIgnoreCase);
+        _isStandardOffers = path.Equals("/offers", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void OpenImmersiveView() => Navigation.NavigateTo("/offers/immersive");
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -144,6 +269,13 @@
     {
         Preferences.Changed -= OnPreferencesChanged;
         Busy.Changed -= OnBusyChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
+        if (_backHandler is not null)
+        {
+            BackNavigation.Unregister(_backHandler);
+            _backHandler = null;
+        }
+
         _menuAnimationCts?.Cancel();
         _menuAnimationCts?.Dispose();
     }

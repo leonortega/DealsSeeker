@@ -65,7 +65,7 @@
     {
         if (Session.IsAuthenticated)
         {
-            Navigation.NavigateTo("/offers", forceLoad: false);
+            Navigation.NavigateTo("/offers/immersive", forceLoad: false);
         }
     }
 
@@ -93,7 +93,7 @@
 
             await Session.SetSessionAsync(session, CancellationToken.None);
             _status = T("auth.loginSuccess");
-            Navigation.NavigateTo("/offers", forceLoad: false);
+            Navigation.NavigateTo("/offers/immersive", forceLoad: false);
         }
         catch (Exception)
         {

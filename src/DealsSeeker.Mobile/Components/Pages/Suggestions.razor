@@ -14,6 +14,10 @@
         <div>
             <h2>@T("suggestions.send")</h2>
         </div>
+        @if (ReturnToImmersive)
+        {
+            <button class="btn-secondary" @onclick="BackToImmersive">@T("common.back")</button>
+        }
     </div>
 
     <label class="field-label" for="suggestionMessage">@T("suggestions.suggestion")</label>
@@ -30,6 +34,14 @@
 </section>
 
 @code {
+    [SupplyParameterFromQuery(Name = "from")]
+    public string? From { get; set; }
+
+    private bool ReturnToImmersive =>
+        string.Equals(From, "immersive", StringComparison.OrdinalIgnoreCase);
+
+    private void BackToImmersive() => Navigation.NavigateTo("/offers/immersive");
+
     private string _message = string.Empty;
     private string _contact = string.Empty;
     private string _statusMessage = string.Empty;
@@ -46,7 +58,7 @@
                 _statusMessage = T("suggestions.submitSuccess");
                 _message = string.Empty;
                 _contact = string.Empty;
-                Navigation.NavigateTo("/offers", forceLoad: false);
+                Navigation.NavigateTo("/offers/immersive", forceLoad: false);
             }
             else
             {

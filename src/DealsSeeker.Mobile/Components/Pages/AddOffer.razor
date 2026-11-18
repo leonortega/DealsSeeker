@@ -6,8 +6,10 @@
 @inject IUserSessionService Session
 @inject IAppPreferencesService Preferences
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 @using DealsSeeker.Shared.Tags
 @implements IDisposable
+@implements IAsyncDisposable
 
 <section class="page-hero">
     <div class="page-hero-copy">
@@ -151,6 +153,7 @@
             <h3>@T("addOffer.locationPreview")</h3>
         </div>
     </div>
+    <p class="muted">@T("add.mapPinHint")</p>
     <iframe class="map-frame map-frame-large" src="@BuildLocationMapUrl()" loading="lazy"></iframe>
     <div class="action-row">
         <button class="btn-main"
@@ -174,14 +177,14 @@
               class="field-input field-textarea"
               rows="5"
               value="@_description"
-              @oninput="OnDescriptionInput"></textarea>
+              @oninput="OnDescriptionInput"
+              @onblur="OnDescriptionBlur"></textarea>
 
     @{
-        var detectedWords = ExtractWords(_description);
+        var detectedWords = DetectedWords();
     }
     <div class="tag-section-block">
         <label class="field-label">@T("addOffer.detectedWords")</label>
-        <p class="muted">@T("addOffer.tapWordToTag")</p>
         @if (detectedWords.Count == 0)
         {
             <p class="muted">@T("addOffer.noDetectedWords")</p>
@@ -201,6 +204,7 @@
 
     <div class="tag-section-block">
         <label class="field-label">@T("addOffer.selectedTags")</label>
+        <p class="muted">@T("addOffer.tagsHint")</p>
         @if (_tags.Count == 0)
         {
             <p class="muted">@T("addOffer.noSelectedTags")</p>
@@ -210,36 +214,11 @@
             <div class="tag-list">
                 @foreach (var tag in _tags)
                 {
-                    <span class="tag-pill">
-                        @tag
-                        <button class="tag-remove" @onclick="() => RemoveTag(tag)">x</button>
-                    </span>
-                }
-            </div>
-        }
-    </div>
-
-    @{
-        var suggestedTags = GetSuggestedTags();
-    }
-    <div class="tag-section-block">
-        <label class="field-label">@T("addOffer.suggestions")</label>
-        <p class="muted">@T("addOffer.suggestedTagsHelp")</p>
-        @if (_tags.Count == 0)
-        {
-            <p class="muted">@T("addOffer.selectTagForSuggestions")</p>
-        }
-        else if (suggestedTags.Count == 0)
-        {
-            <p class="muted">@T("addOffer.noSuggestedTags")</p>
-        }
-        else
-        {
-            <div class="word-list">
-                @foreach (var suggestion in suggestedTags)
-                {
-                    <button class="word-chip" @onclick="() => AddTag(suggestion)">
-                        @suggestion
+                    <button class="tag-pill tag-pill-removable"
+                            @onclick="() => RemoveTag(tag)"
+                            title="@T("addOffer.tagsHint")">
+                        <span>@tag</span>
+                        <span class="tag-remove" aria-hidden="true">&times;</span>
                     </button>
                 }
             </div>
@@ -284,6 +263,12 @@
     private bool _loadingOwnedOffer;
     private bool _offerLoadFailed;
     private CancellationTokenSource? _locationSearchCts;
+    private readonly HashSet<string> _descriptionTagSources = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _removedTags = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _suggestionAddedTags = new(StringComparer.OrdinalIgnoreCase);
+    private DotNetObjectReference<AddOffer>? _mapPinReference;
+    private string? _mapPinListenerId;
+    private int _mapPinSequence;
     private readonly List<string> _tags = [];
     private readonly List<LocationSearchResultDto> _locationResults = [];
     private int _selectedImageIndex;
@@ -299,6 +284,24 @@
 
         await Preferences.InitializeAsync(Session.CurrentSession?.UserId, CancellationToken.None);
         _initialized = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _mapPinReference = DotNetObjectReference.Create(this);
+        try
+        {
+            _mapPinListenerId = await JS.InvokeAsync<string>("DealsSeekerMaps.registerMapPin", _mapPinReference);
+        }
+        catch
+        {
+            _mapPinListenerId = null;
+        }
     }
 
     protected override async Task OnParametersSetAsync()
@@ -567,11 +570,11 @@
         catch (OperationCanceledException)
         {
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             if (!token.IsCancellationRequested)
             {
-                _locationStatus = T("addOffer.locationSearchFailed");
+                _locationStatus = ApiErrorMessages.Describe(ex, T, "addOffer.locationSearchFailed");
             }
         }
         finally
@@ -597,10 +600,76 @@
     {
         _description = args.Value?.ToString() ?? string.Empty;
         _status = string.Empty;
+
         if (string.IsNullOrWhiteSpace(_description))
         {
             _tags.Clear();
+            _descriptionTagSources.Clear();
+            _removedTags.Clear();
+            _suggestionAddedTags.Clear();
+            return;
         }
+
+        AutoCreateCompletedWordTags();
+    }
+
+    private void OnDescriptionBlur(FocusEventArgs args) => CommitFinalDescriptionWord();
+
+    private void AutoCreateCompletedWordTags()
+    {
+        foreach (Match match in WordPattern.Matches(_description))
+        {
+            var word = match.Value;
+            var normalized = TagLexicon.NormalizeTag(word);
+            if (string.IsNullOrWhiteSpace(normalized))
+            {
+                continue;
+            }
+
+            var wordEndsAt = match.Index + match.Length;
+            var hasDelimiter = wordEndsAt < _description.Length && IsDelimiter(_description[wordEndsAt]);
+            var isSelfTerminatingFinalWord = word.EndsWith('%') &&
+                                             _description[wordEndsAt..].Trim().Length == 0;
+
+            if (isSelfTerminatingFinalWord || (hasDelimiter && normalized.Length >= 3))
+            {
+                AddDescriptionTag(normalized);
+            }
+        }
+    }
+
+    private void CommitFinalDescriptionWord()
+    {
+        if (string.IsNullOrWhiteSpace(_description))
+        {
+            return;
+        }
+
+        var words = ExtractWords(_description);
+        if (words.Count == 0)
+        {
+            return;
+        }
+
+        var finalWord = words[^1];
+        var normalized = TagLexicon.NormalizeTag(finalWord);
+        if (normalized.Length >= 3 || finalWord.EndsWith('%'))
+        {
+            AddDescriptionTag(normalized);
+        }
+    }
+
+    private static bool IsDelimiter(char value) =>
+        char.IsWhiteSpace(value) || value is '.' or ',' or ';' or ':' or '!' or '?';
+
+    private void AddDescriptionTag(string normalized)
+    {
+        if (string.IsNullOrWhiteSpace(normalized) || _removedTags.Contains(normalized))
+        {
+            return;
+        }
+
+        AddTagCore(normalized, fromDescription: true);
     }
 
     private void AddTag(string value)
@@ -611,23 +680,64 @@
             return;
         }
 
+        _removedTags.Remove(normalized);
+        AddTagCore(normalized, fromDescription: true);
+    }
+
+    private void AddTagCore(string normalized, bool fromDescription)
+    {
         if (_tags.Contains(normalized, StringComparer.OrdinalIgnoreCase))
         {
+            if (fromDescription)
+            {
+                _descriptionTagSources.Add(normalized);
+            }
+
             return;
         }
 
         _tags.Add(normalized);
         _status = string.Empty;
+
+        if (fromDescription)
+        {
+            _descriptionTagSources.Add(normalized);
+            AutoAddRelatedTags(normalized);
+        }
+    }
+
+    private void AutoAddRelatedTags(string sourceTag)
+    {
+        var suggestions = TagLexicon.GetSuggestedTags([sourceTag], Preferences.Language, maxSuggestions: 6);
+        foreach (var suggestion in suggestions)
+        {
+            var normalized = TagLexicon.NormalizeTag(suggestion);
+            if (normalized.Length < 3 ||
+                _removedTags.Contains(normalized) ||
+                _descriptionTagSources.Contains(normalized) ||
+                _tags.Contains(normalized, StringComparer.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            _tags.Add(normalized);
+            _suggestionAddedTags.Add(normalized);
+        }
     }
 
     private void RemoveTag(string tag)
     {
         _tags.Remove(tag);
+        var normalized = TagLexicon.NormalizeTag(tag);
+        if (!string.IsNullOrWhiteSpace(normalized))
+        {
+            _removedTags.Add(normalized);
+            _descriptionTagSources.Remove(normalized);
+            _suggestionAddedTags.Remove(normalized);
+        }
+
         _status = string.Empty;
     }
-
-    private IReadOnlyList<string> GetSuggestedTags()
-        => TagLexicon.GetSuggestedTags(_tags, Preferences.Language, maxSuggestions: 12);
 
     private async Task CreateOfferAsync()
     {
@@ -678,8 +788,15 @@
                 }
 
                 _status = string.Format(T("addOffer.createdWithId"), created.OfferId);
-                Navigation.NavigateTo("/offers", forceLoad: false);
+                Navigation.NavigateTo("/offers/immersive", forceLoad: false);
             }
+        }
+        catch (Exception ex)
+        {
+            _status = ApiErrorMessages.Describe(
+                ex,
+                T,
+                IsEditMode ? "addOffer.updateFailed" : "addOffer.createFailed");
         }
         finally
         {
@@ -689,6 +806,8 @@
 
     private bool ValidateOfferBeforeSave()
     {
+        CommitFinalDescriptionWord();
+
         var errors = new List<string>();
 
         if (!HasAttachedImage())
@@ -754,6 +873,15 @@
             .Where(tag => !string.IsNullOrWhiteSpace(tag))
             .Distinct(StringComparer.OrdinalIgnoreCase));
 
+        _descriptionTagSources.Clear();
+        foreach (var tag in _tags)
+        {
+            _descriptionTagSources.Add(tag);
+        }
+
+        _removedTags.Clear();
+        _suggestionAddedTags.Clear();
+
         _images.Clear();
         foreach (var image in (draft.Images ?? []).OrderBy(image => image.Order))
         {
@@ -783,6 +911,9 @@
         _searchingLocation = false;
         _isLocationConfirmed = false;
         _tags.Clear();
+        _descriptionTagSources.Clear();
+        _removedTags.Clear();
+        _suggestionAddedTags.Clear();
         _locationResults.Clear();
         _selectedImageIndex = 0;
     }
@@ -801,9 +932,19 @@
         return Math.Clamp(parsed, 1, 20);
     }
 
+    private static readonly Regex WordPattern = new(
+        @"\b[\p{L}\p{Nd}][\p{L}\p{Nd}\-%']*",
+        RegexOptions.Compiled);
+
+    private IReadOnlyList<string> DetectedWords() =>
+        ExtractWords(_description)
+            .Where(word => !_tags.Contains(TagLexicon.NormalizeTag(word), StringComparer.OrdinalIgnoreCase))
+            .ToArray();
+
     private static IReadOnlyList<string> ExtractWords(string text) =>
-        Regex.Matches(text ?? string.Empty, "\\b[\\p{L}\\p{Nd}][\\p{L}\\p{Nd}\\-']*%?(?=\\b|\\s|$|[.,;:!?])")
-            .Select(m => m.Value)
+        WordPattern.Matches(text ?? string.Empty)
+            .Select(match => match.Value)
+            .Where(word => !string.IsNullOrWhiteSpace(word))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Take(30)
             .ToArray();
@@ -822,10 +963,18 @@
 
         if (_location is null)
         {
-            return MapRendering.BuildMapEmbedUrl(new GeoPoint(40.7128, -74.0060), [], zoom: 14);
+            return MapRendering.BuildLocationPreviewMapUrl(
+                new GeoPoint(40.7128, -74.0060),
+                null,
+                zoom: 14,
+                pinSelection: true);
         }
 
-        return MapRendering.BuildLocationPreviewMapUrl(_location.Position, _location.Label, zoom: 15);
+        return MapRendering.BuildLocationPreviewMapUrl(
+            _location.Position,
+            _location.Label,
+            zoom: 15,
+            pinSelection: true);
     }
 
     private async Task<string> ResolveAutoLocationLabelAsync(GeoPoint point)
@@ -900,9 +1049,74 @@
         return matrix[sourceLength, targetLength];
     }
 
+    [JSInvokable]
+    public async Task HandleMapPinSelection(double lat, double lng)
+    {
+        var requestId = ++_mapPinSequence;
+        var point = new GeoPoint(lat, lng);
+        var fallbackLabel = T("add.pinnedLocation");
+
+        _location = new OfferLocationDto("map", fallbackLabel, point);
+        _locationQuery = fallbackLabel;
+        _isLocationConfirmed = false;
+        _locationResults.Clear();
+        _locationStatus = T("add.mapPinSelected");
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var resolved = await ApiClient.ReverseLocationAsync(point, CancellationToken.None);
+            if (requestId != _mapPinSequence)
+            {
+                return;
+            }
+
+            var label = resolved?.Label?.Trim();
+            if (!string.IsNullOrWhiteSpace(label))
+            {
+                _location = new OfferLocationDto("map", label, point);
+                _locationQuery = label;
+                _locationStatus = T("add.mapPinSelected");
+            }
+            else
+            {
+                _locationStatus = T("add.mapPinAddressUnavailable");
+            }
+        }
+        catch (Exception)
+        {
+            if (requestId != _mapPinSequence)
+            {
+                return;
+            }
+
+            _locationStatus = T("add.mapPinAddressUnavailable");
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
     public void Dispose()
     {
         _locationSearchCts?.Cancel();
         _locationSearchCts?.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Dispose();
+
+        if (!string.IsNullOrWhiteSpace(_mapPinListenerId))
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("DealsSeekerMaps.unregisterMapPin", _mapPinListenerId);
+            }
+            catch
+            {
+            }
+        }
+
+        _mapPinReference?.Dispose();
     }
 }

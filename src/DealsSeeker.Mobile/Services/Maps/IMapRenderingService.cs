@@ -6,5 +6,5 @@ public interface IMapRenderingService
 {
     string BuildMapEmbedUrl(GeoPoint center, IReadOnlyList<BusinessMarkerDto> markers, int zoom);
 
-    string BuildLocationPreviewMapUrl(GeoPoint location, string? label, int zoom);
+    string BuildLocationPreviewMapUrl(GeoPoint location, string? label, int zoom, bool pinSelection = false);
 }

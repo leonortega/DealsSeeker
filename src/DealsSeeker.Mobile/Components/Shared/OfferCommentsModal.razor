@@ -1,0 +1,231 @@
+@inject IDealsSeekerApiClient ApiClient
+@inject IAppPreferencesService Preferences
+@using System.Globalization
+@using DealsSeeker.Shared.Avatars
+@using DealsSeeker.Shared.Contracts.Comments
+
+@if (Offer is not null)
+{
+    <div class="modal-backdrop" @onclick="Close"></div>
+    <section class="offer-detail-modal comments-modal" role="dialog" aria-modal="true">
+        <div class="offer-detail-header">
+            <div>
+                <h2>@T("comments.title")</h2>
+                <p class="muted">@Offer.BusinessName</p>
+            </div>
+            <button class="close-button" @onclick="Close" aria-label="@T("nav.closeMenu")">
+                <span class="close-button-glyph" aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        @if (_loading)
+        {
+            <p class="muted">@T("comments.loading")</p>
+        }
+        else if (_comments.Count == 0)
+        {
+            <p class="muted">@T("comments.empty")</p>
+        }
+
+        @if (_comments.Count > 0)
+        {
+            <div class="comment-list">
+                @foreach (var comment in _comments)
+                {
+                    <article class="comment-card">
+                        <span class="comment-avatar" aria-hidden="true">@AvatarEmoji(comment.AvatarId)</span>
+                        <div class="comment-body">
+                            <div class="comment-meta">
+                                <strong class="comment-author">@comment.DisplayName</strong>
+                                <span class="comment-timestamp">@FormatTimestamp(comment.CreatedAtUtc)</span>
+                            </div>
+                            <p class="comment-text">@comment.Body</p>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+
+        @if (_hasMore)
+        {
+            <button class="btn-secondary" @onclick="LoadMoreAsync" disabled="@_loadingMore">
+                @(_loadingMore ? T("comments.loading") : T("comments.loadMore"))
+            </button>
+        }
+
+        <label class="field-label" for="commentBody">@T("comments.placeholder")</label>
+        <textarea id="commentBody"
+                  name="commentBody"
+                  class="field-input field-textarea"
+                  rows="3"
+                  @bind="_body"></textarea>
+
+        @if (!string.IsNullOrWhiteSpace(_status))
+        {
+            <p class="status-line error">@_status</p>
+        }
+
+        <button class="btn-main btn-main-accent" @onclick="PublishAsync" disabled="@_publishing">
+            @T("comments.publish")
+        </button>
+    </section>
+}
+
+@code {
+    private const int PageSize = 20;
+
+    [Parameter]
+    public OfferItemDto? Offer { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private readonly List<OfferCommentDto> _comments = [];
+    private readonly HashSet<string> _seenCommentIds = new(StringComparer.OrdinalIgnoreCase);
+    private string _body = string.Empty;
+    private string? _status;
+    private bool _loading;
+    private bool _loadingMore;
+    private bool _publishing;
+    private bool _hasMore;
+    private string? _nextCursor;
+    private string? _loadedOfferId;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Offer is null)
+        {
+            _loadedOfferId = null;
+            return;
+        }
+
+        if (string.Equals(_loadedOfferId, Offer.OfferId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _loadedOfferId = Offer.OfferId;
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _comments.Clear();
+        _seenCommentIds.Clear();
+        _body = string.Empty;
+        _status = null;
+        _nextCursor = null;
+        _hasMore = false;
+        _loading = true;
+
+        try
+        {
+            var response = await ApiClient.GetOfferCommentsAsync(_loadedOfferId!, PageSize, null, CancellationToken.None);
+            Append(response);
+        }
+        catch (Exception ex)
+        {
+            _status = ApiErrorMessages.Describe(ex, T, "comments.loadFailed");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadMoreAsync()
+    {
+        if (_loadingMore || !_hasMore || string.IsNullOrWhiteSpace(_nextCursor))
+        {
+            return;
+        }
+
+        _loadingMore = true;
+        _status = null;
+        try
+        {
+            var response = await ApiClient.GetOfferCommentsAsync(_loadedOfferId!, PageSize, _nextCursor, CancellationToken.None);
+            Append(response);
+        }
+        catch (Exception ex)
+        {
+            _status = ApiErrorMessages.Describe(ex, T, "comments.loadFailed");
+        }
+        finally
+        {
+            _loadingMore = false;
+        }
+    }
+
+    private void Append(OfferCommentsResponseDto response)
+    {
+        foreach (var comment in response.Comments)
+        {
+            if (_seenCommentIds.Add(comment.CommentId))
+            {
+                _comments.Add(comment);
+            }
+        }
+
+        _hasMore = response.HasMore && !string.IsNullOrWhiteSpace(response.NextCursor);
+        _nextCursor = response.NextCursor;
+    }
+
+    private async Task PublishAsync()
+    {
+        if (_publishing || Offer is null)
+        {
+            return;
+        }
+
+        var body = _body.Trim();
+        if (body.Length == 0)
+        {
+            _status = T("comments.bodyRequired");
+            return;
+        }
+
+        _publishing = true;
+        _status = null;
+        try
+        {
+            var created = await ApiClient.CreateOfferCommentAsync(Offer.OfferId, body, CancellationToken.None);
+            if (created is not null && _seenCommentIds.Add(created.CommentId))
+            {
+                _comments.Add(created);
+            }
+
+            _body = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            _status = ApiErrorMessages.Describe(ex, T, "comments.publishFailed");
+        }
+        finally
+        {
+            _publishing = false;
+        }
+    }
+
+    private Task Close() => OnClose.InvokeAsync();
+
+    private string T(string key) => Preferences.Translate(key);
+
+    private static string AvatarEmoji(string? avatarId)
+    {
+        var option = AvatarCatalog.Options.FirstOrDefault(candidate =>
+            string.Equals(candidate.AvatarId, avatarId, StringComparison.OrdinalIgnoreCase));
+        return option?.Emoji ?? AvatarCatalog.Options[0].Emoji;
+    }
+
+    private static string FormatTimestamp(string value)
+    {
+        return DateTimeOffset.TryParse(
+            value,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            out var parsed)
+            ? parsed.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)
+            : value;
+    }
+}

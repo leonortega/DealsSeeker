@@ -50,6 +50,10 @@
         <div>
             <h2>@T("reports.sendReport")</h2>
         </div>
+        @if (ReturnToImmersive)
+        {
+            <button class="btn-secondary" @onclick="BackToImmersive">@T("common.back")</button>
+        }
     </div>
 
     <label class="field-label" for="reportUserId">@T("reports.userId")</label>
@@ -72,6 +76,14 @@
 </section>
 
 @code {
+    [SupplyParameterFromQuery(Name = "from")]
+    public string? From { get; set; }
+
+    private bool ReturnToImmersive =>
+        string.Equals(From, "immersive", StringComparison.OrdinalIgnoreCase);
+
+    private void BackToImmersive() => Navigation.NavigateTo("/offers/immersive");
+
     private string _message = string.Empty;
     private string _offerId = string.Empty;
     private string _userId = string.Empty;
@@ -125,7 +137,7 @@
                 _previewOffer = null;
                 _fromOfferSelection = false;
                 _reportedAtUtc = DateTimeOffset.UtcNow;
-                Navigation.NavigateTo("/offers", forceLoad: false);
+                Navigation.NavigateTo("/offers/immersive", forceLoad: false);
             }
             else
             {

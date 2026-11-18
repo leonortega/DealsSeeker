@@ -26,7 +26,7 @@
         </div>
     </div>
 
-    @if (_loading)
+    @if (_loading && _offers.Count == 0)
     {
         <p class="muted">@T("offers.loading")</p>
     }
@@ -76,10 +76,21 @@
             }
         </div>
     }
+
+    @if (_hasMore)
+    {
+        <button class="btn-main" @onclick="LoadMoreFavoritesAsync" disabled="@_loadingMore">
+            @(_loadingMore ? T("offers.loading") : T("offers.loadMore"))
+        </button>
+    }
 </section>
 
 @code {
+    private const int PageSize = 20;
     private bool _loading;
+    private bool _loadingMore;
+    private bool _hasMore;
+    private int _page = 1;
     private string? _error;
     private GeoPoint _userLocation = new(40.7128, -74.0060);
     private List<OfferItemDto> _offers = [];
@@ -115,14 +126,18 @@
                     UserLocation: _userLocation,
                     RadiusMeters: 5000,
                     Locale: Preferences.Language,
-                    FavoritesOnly: true),
+                    FavoritesOnly: true,
+                    Page: 1,
+                    PageSize: PageSize),
                 CancellationToken.None);
 
             _offers = response.Offers.ToList();
+            _page = response.Page;
+            _hasMore = response.HasMore;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            _error = T("favorites.loadFailed");
+            _error = ApiErrorMessages.Describe(ex, T, "favorites.loadFailed");
         }
         finally
         {
@@ -130,16 +145,61 @@
         }
     }
 
-    private async Task RemoveFavoriteAsync(string offerId)
+    private async Task LoadMoreFavoritesAsync()
     {
-        var result = await ApiClient.SetOfferFavoriteAsync(offerId, new SetFavoriteRequest(false), CancellationToken.None);
-        if (!result.Success)
+        if (_loadingMore || !_hasMore)
         {
-            _error = T("favorites.removeFailed");
             return;
         }
 
-        await LoadFavoritesAsync();
+        _loadingMore = true;
+        _error = null;
+        try
+        {
+            var response = await ApiClient.SearchOffersAsync(
+                new SearchOffersRequest(
+                    Query: string.Empty,
+                    UserLocation: _userLocation,
+                    RadiusMeters: 5000,
+                    Locale: Preferences.Language,
+                    FavoritesOnly: true,
+                    Page: _page + 1,
+                    PageSize: PageSize),
+                CancellationToken.None);
+
+            _page = response.Page;
+            _hasMore = response.HasMore;
+
+            var knownIds = _offers.Select(offer => offer.OfferId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            _offers.AddRange(response.Offers.Where(offer => knownIds.Add(offer.OfferId)));
+        }
+        catch (Exception ex)
+        {
+            _error = ApiErrorMessages.Describe(ex, T, "favorites.loadFailed");
+        }
+        finally
+        {
+            _loadingMore = false;
+        }
+    }
+
+    private async Task RemoveFavoriteAsync(string offerId)
+    {
+        try
+        {
+            var result = await ApiClient.SetOfferFavoriteAsync(offerId, new SetFavoriteRequest(false), CancellationToken.None);
+            if (!result.Success)
+            {
+                _error = T("favorites.removeFailed");
+                return;
+            }
+
+            await LoadFavoritesAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ApiErrorMessages.Describe(ex, T, "favorites.removeFailed");
+        }
     }
 
     private Task OpenDirectionsAsync(GeoPoint destination) =>

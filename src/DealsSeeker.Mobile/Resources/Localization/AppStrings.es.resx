@@ -639,4 +639,109 @@
   <data name="offers.anyProblem" xml:space="preserve">
     <value>¿Algún problema?</value>
   </data>
+  <data name="common.cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="nav.createOffer" xml:space="preserve">
+    <value>Crear</value>
+  </data>
+  <data name="errors.rateLimited" xml:space="preserve">
+    <value>Demasiadas solicitudes. Intentá de nuevo en {0} segundos.</value>
+  </data>
+  <data name="errors.validationFailed" xml:space="preserve">
+    <value>Algunos valores no son válidos. Revisá el formulario.</value>
+  </data>
+  <data name="errors.serviceUnavailable" xml:space="preserve">
+    <value>El servicio no está disponible temporalmente. Intentá de nuevo.</value>
+  </data>
+  <data name="offers.immersiveView" xml:space="preserve">
+    <value>Modo inmersivo</value>
+  </data>
+  <data name="offers.tabFavorites" xml:space="preserve">
+    <value>Favoritos</value>
+  </data>
+  <data name="offers.tabViewAll" xml:space="preserve">
+    <value>Ver todo</value>
+  </data>
+  <data name="offers.mapMode" xml:space="preserve">
+    <value>Modo mapa</value>
+  </data>
+  <data name="offers.more" xml:space="preserve">
+    <value>más</value>
+  </data>
+  <data name="offers.loadMore" xml:space="preserve">
+    <value>Cargar más ofertas</value>
+  </data>
+  <data name="offers.action.comments" xml:space="preserve">
+    <value>Comentarios</value>
+  </data>
+  <data name="offers.action.favorite" xml:space="preserve">
+    <value>Favorito</value>
+  </data>
+  <data name="offers.action.directions" xml:space="preserve">
+    <value>¿Cómo llegar?</value>
+  </data>
+  <data name="offers.action.available" xml:space="preserve">
+    <value>Sí existe</value>
+  </data>
+  <data name="offers.action.unavailable" xml:space="preserve">
+    <value>No existe</value>
+  </data>
+  <data name="offers.action.report" xml:space="preserve">
+    <value>Reportar</value>
+  </data>
+  <data name="comments.title" xml:space="preserve">
+    <value>Comentarios</value>
+  </data>
+  <data name="comments.loading" xml:space="preserve">
+    <value>Cargando comentarios…</value>
+  </data>
+  <data name="comments.placeholder" xml:space="preserve">
+    <value>Escribí un comentario…</value>
+  </data>
+  <data name="comments.publish" xml:space="preserve">
+    <value>Publicar</value>
+  </data>
+  <data name="comments.empty" xml:space="preserve">
+    <value>Todavía no hay comentarios.</value>
+  </data>
+  <data name="comments.bodyRequired" xml:space="preserve">
+    <value>El mensaje del comentario es obligatorio.</value>
+  </data>
+  <data name="comments.loadFailed" xml:space="preserve">
+    <value>No se pudieron cargar los comentarios.</value>
+  </data>
+  <data name="comments.publishFailed" xml:space="preserve">
+    <value>No se pudo publicar el comentario.</value>
+  </data>
+  <data name="comments.loadMore" xml:space="preserve">
+    <value>Cargar más comentarios</value>
+  </data>
+  <data name="settings.avatar" xml:space="preserve">
+    <value>Avatar</value>
+  </data>
+  <data name="settings.avatarUpdated" xml:space="preserve">
+    <value>Avatar actualizado.</value>
+  </data>
+  <data name="settings.avatarUpdateFailed" xml:space="preserve">
+    <value>No se pudo actualizar el avatar.</value>
+  </data>
+  <data name="add.mapPinHint" xml:space="preserve">
+    <value>Toca el mapa para dejar un pin y usar ese punto como dirección.</value>
+  </data>
+  <data name="add.mapPinSelected" xml:space="preserve">
+    <value>Pin dejado.</value>
+  </data>
+  <data name="add.mapPinAddressUnavailable" xml:space="preserve">
+    <value>No se pudo resolver la dirección del punto marcado.</value>
+  </data>
+  <data name="add.pinnedLocation" xml:space="preserve">
+    <value>Ubicación marcada</value>
+  </data>
+  <data name="addOffer.tagsHint" xml:space="preserve">
+    <value>Tocá una etiqueta para quitarla.</value>
+  </data>
+  <data name="common.back" xml:space="preserve">
+    <value>Volver</value>
+  </data>
 </root>

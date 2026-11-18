@@ -60,7 +60,7 @@
 }
 
 .top-row {
-    padding: 0.9rem 1rem 0;
+    padding: calc(var(--status-bar-inset, 0px) + 0.9rem) 1rem 0;
     position: sticky;
     top: 0;
     z-index: 20;
@@ -211,7 +211,7 @@
 
 @media (max-width: 720px) {
     .top-row {
-        padding: 0.75rem 0.75rem 0;
+        padding: calc(var(--status-bar-inset, 0px) + 0.75rem) 0.75rem 0;
     }
 
     .top-row-inner {

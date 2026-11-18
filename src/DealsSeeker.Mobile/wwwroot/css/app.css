@@ -1,4 +1,5 @@
 :root {
+    --status-bar-inset: env(safe-area-inset-top, 0px);
     --color-bg: #f5f0e8;
     --color-bg-elevated: #f2ece3;
     --color-surface: rgba(255, 252, 247, 0.9);
@@ -133,6 +134,16 @@ body {
 
 body {
     margin: 0;
+}
+
+.status-bar-safe-area {
+    height: 0;
+}
+
+@media (max-width: 899px) {
+    :root {
+        --status-bar-inset: max(24px, env(safe-area-inset-top, 0px));
+    }
 }
 
 .app-host.app-host-loading {

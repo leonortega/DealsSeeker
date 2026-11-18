@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Map Display and Configured Navigation Launch
-- **Version**: `v1.6`
+- **Version**: `v1.7`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -36,6 +36,8 @@ Show user and business locations and support navigation to selected business usi
 - `OFFERS.MAP.001-R16`: Offer click or marker click navigation redirect shall use the configured navigation redirect provider even when map rendering uses a different provider.
 - `OFFERS.MAP.001-R17`: When coverage radius changes, map zoom shall adjust to visualize the selected radius coverage around the user location.
 - `OFFERS.MAP.001-R18`: Navigation travel mode shall be resolved from user preferences, defaulting to pedestrian when no override exists.
+- `OFFERS.MAP.001-R19`: Signals emitted by the embedded Offers map for marker selection shall be delivered to the hosting view as self-contained serialized messages that the hosting view can validate and ignore safely when they are not addressed to it.
+- `OFFERS.MAP.001-R20`: Receiving a map signal that is not addressed to the Offers view shall not interrupt Offers view operation or surface a runtime error to the user.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -81,6 +83,19 @@ Scenario: Coverage radius change refreshes map coverage and markers
   Then the map distance/coverage indicator shall show the new radius value
   And map markers shall refresh using the new radius filter
   And map zoom shall adjust to show the selected radius coverage
+
+Scenario: Embedded map signals keep the hosting view running
+  Given the Offers map is embedded in the hosting view
+  When the embedded map emits a marker selection signal
+  Then the signal shall be delivered as a self-contained serialized message
+  And the Offers view shall open directions for the selected marker when the signal is addressed to it
+  And the Offers view shall continue operating without a runtime error
+
+Scenario: Unrecognized embedded map signal is ignored
+  Given the Offers map is embedded in the hosting view
+  When the embedded map emits a signal that is not addressed to the Offers view
+  Then the signal shall be ignored
+  And no runtime error shall be surfaced to the user
 ```
 
 ## Example Inputs/Outputs
@@ -93,6 +108,7 @@ Scenario: Coverage radius change refreshes map coverage and markers
 - Location permission denied: map still shows business markers when available.
 - Native map app unavailable on mobile: system falls back to browser directions.
 - Address label unavailable: UI shows generic location label without numeric coordinates.
+- Embedded map emits a signal the hosting view does not recognize: signal is ignored and the Offers view keeps working.
 
 ## Non-Functional Constraints
 - Map updates shall stay consistent with current offer filter state.

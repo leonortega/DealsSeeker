@@ -6,6 +6,7 @@ using DealsSeeker.Mobile.Services.Auth;
 using DealsSeeker.Mobile.Services.Ui;
 using DealsSeeker.Shared.Contracts.Account;
 using DealsSeeker.Shared.Contracts.AddOffer;
+using DealsSeeker.Shared.Contracts.Comments;
 using DealsSeeker.Shared.Contracts.Common;
 using DealsSeeker.Shared.Contracts.Feedback;
 using DealsSeeker.Shared.Contracts.Offers;
@@ -38,7 +39,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         }
 
         await LogIfRequestFailedAsync("Login", response, cancellationToken: cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, "Login", cancellationToken);
         return await response.Content.ReadFromJsonAsync<AuthSessionDto>(cancellationToken: cancellationToken);
     }
 
@@ -65,7 +66,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         }
 
         await LogIfRequestFailedAsync("GetMyProfile", response, cancellationToken: cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, "GetMyProfile", cancellationToken);
         return await response.Content.ReadFromJsonAsync<UserProfileDto>(cancellationToken: cancellationToken);
     }
 
@@ -82,7 +83,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         }
 
         await LogIfRequestFailedAsync("GetMyOffers", response, cancellationToken: cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, "GetMyOffers", cancellationToken);
         var offers = await response.Content.ReadFromJsonAsync<IReadOnlyList<OfferItemDto>>(cancellationToken: cancellationToken) ?? [];
         if (offers.Count == 0)
         {
@@ -109,7 +110,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         }
 
         await LogIfRequestFailedAsync("GetMyOfferDraft", response, offerId, cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, "GetMyOfferDraft", cancellationToken);
         return await response.Content.ReadFromJsonAsync<AddOfferRequest>(cancellationToken: cancellationToken);
     }
 
@@ -119,7 +120,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         var httpRequest = CreateRequest(HttpMethod.Post, "/api/offers/search", request, requiresAuth: true);
         var response = await SendAsync(httpRequest, "SearchOffers", cancellationToken);
         await LogIfRequestFailedAsync("SearchOffers", response, cancellationToken: cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, "SearchOffers", cancellationToken);
         return await response.Content.ReadFromJsonAsync<SearchOffersResponse>(cancellationToken: cancellationToken)
                ?? new SearchOffersResponse([], []);
     }
@@ -130,8 +131,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         var httpRequest = CreateRequest(HttpMethod.Post, $"/api/offers/{offerId}/availability", request, requiresAuth: true);
         var response = await SendAsync(httpRequest, "VoteOfferAvailability", cancellationToken);
         await LogIfRequestFailedAsync("VoteOfferAvailability", response, offerId, cancellationToken);
-        return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
-               ?? new CommandResult(response.IsSuccessStatusCode, response.ReasonPhrase ?? "Availability vote processed.");
+        return await ReadCommandResultAsync(response, cancellationToken, "Availability vote processed.");
     }
 
     public async Task<CommandResult> ReportOfferAsync(string offerId, ReportOfferRequest request, CancellationToken cancellationToken)
@@ -140,8 +140,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         var httpRequest = CreateRequest(HttpMethod.Post, $"/api/offers/{offerId}/report", request);
         var response = await SendAsync(httpRequest, "ReportOffer", cancellationToken);
         await LogIfRequestFailedAsync("ReportOffer", response, offerId, cancellationToken);
-        return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
-               ?? new CommandResult(response.IsSuccessStatusCode, response.ReasonPhrase ?? "Offer report processed.");
+        return await ReadCommandResultAsync(response, cancellationToken, "Offer report processed.");
     }
 
     public async Task<CommandResult> SetOfferFavoriteAsync(string offerId, SetFavoriteRequest request, CancellationToken cancellationToken)
@@ -150,8 +149,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         var httpRequest = CreateRequest(HttpMethod.Post, $"/api/offers/{offerId}/favorite", request, requiresAuth: true);
         var response = await SendAsync(httpRequest, "SetOfferFavorite", cancellationToken);
         await LogIfRequestFailedAsync("SetOfferFavorite", response, offerId, cancellationToken);
-        return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
-               ?? new CommandResult(response.IsSuccessStatusCode, response.ReasonPhrase ?? "Favorite processed.");
+        return await ReadCommandResultAsync(response, cancellationToken, "Favorite processed.");
     }
 
     public async Task<OfferItemDto?> CreateOfferAsync(AddOfferRequest request, CancellationToken cancellationToken)
@@ -160,11 +158,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         var httpRequest = CreateRequest(HttpMethod.Post, "/api/offers", request, requiresAuth: true);
         var response = await SendAsync(httpRequest, "CreateOffer", cancellationToken);
         await LogIfRequestFailedAsync("CreateOffer", response, cancellationToken: cancellationToken);
-        if (!response.IsSuccessStatusCode)
-        {
-            return null;
-        }
-
+        await EnsureSuccessAsync(response, "CreateOffer", cancellationToken);
         return await response.Content.ReadFromJsonAsync<OfferItemDto>(cancellationToken: cancellationToken);
     }
 
@@ -174,11 +168,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         var httpRequest = CreateRequest(HttpMethod.Put, $"/api/offers/{offerId}", request, requiresAuth: true);
         var response = await SendAsync(httpRequest, "UpdateOffer", cancellationToken);
         await LogIfRequestFailedAsync("UpdateOffer", response, offerId, cancellationToken);
-        if (!response.IsSuccessStatusCode)
-        {
-            return null;
-        }
-
+        await EnsureSuccessAsync(response, "UpdateOffer", cancellationToken);
         return await response.Content.ReadFromJsonAsync<OfferItemDto>(cancellationToken: cancellationToken);
     }
 
@@ -188,8 +178,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         var request = CreateRequest(HttpMethod.Delete, $"/api/offers/{offerId}", requiresAuth: true);
         var response = await SendAsync(request, "DeleteOffer", cancellationToken);
         await LogIfRequestFailedAsync("DeleteOffer", response, offerId, cancellationToken);
-        return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
-               ?? new CommandResult(response.IsSuccessStatusCode, response.ReasonPhrase ?? "Offer deletion processed.");
+        return await ReadCommandResultAsync(response, cancellationToken, "Offer deletion processed.");
     }
 
     public async Task<IReadOnlyList<LocationSearchResultDto>> SearchLocationsAsync(string query, CancellationToken cancellationToken)
@@ -198,7 +187,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         var request = CreateRequest(HttpMethod.Get, $"/api/locations/search?query={Uri.EscapeDataString(query)}");
         var response = await SendAsync(request, "SearchLocations", cancellationToken);
         await LogIfRequestFailedAsync("SearchLocations", response, cancellationToken: cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, "SearchLocations", cancellationToken);
         return await response.Content.ReadFromJsonAsync<IReadOnlyList<LocationSearchResultDto>>(cancellationToken: cancellationToken) ?? [];
     }
 
@@ -216,7 +205,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         }
 
         await LogIfRequestFailedAsync("ReverseLocation", response, cancellationToken: cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, "ReverseLocation", cancellationToken);
         return await response.Content.ReadFromJsonAsync<LocationSearchResultDto>(cancellationToken: cancellationToken);
     }
 
@@ -226,8 +215,7 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         var httpRequest = CreateRequest(HttpMethod.Post, "/api/suggestions", request);
         var response = await SendAsync(httpRequest, "SubmitSuggestion", cancellationToken);
         await LogIfRequestFailedAsync("SubmitSuggestion", response, cancellationToken: cancellationToken);
-        return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
-               ?? new CommandResult(response.IsSuccessStatusCode, response.ReasonPhrase ?? "Suggestion processed.");
+        return await ReadCommandResultAsync(response, cancellationToken, "Suggestion processed.");
     }
 
     public async Task<CommandResult> SubmitReportAsync(ReportRequest request, CancellationToken cancellationToken)
@@ -236,8 +224,148 @@ public sealed class DealsSeekerApiClient(HttpClient httpClient, IUserSessionServ
         var httpRequest = CreateRequest(HttpMethod.Post, "/api/reports", request);
         var response = await SendAsync(httpRequest, "SubmitReport", cancellationToken);
         await LogIfRequestFailedAsync("SubmitReport", response, cancellationToken: cancellationToken);
+        return await ReadCommandResultAsync(response, cancellationToken, "Report processed.");
+    }
+
+    public async Task<CommandResult> SetMyAvatarAsync(string avatarId, CancellationToken cancellationToken)
+    {
+        using var _ = busy.Begin();
+        var httpRequest = CreateRequest(HttpMethod.Put, "/api/account/me/avatar", new SetAvatarRequest(avatarId), requiresAuth: true);
+        var response = await SendAsync(httpRequest, "SetMyAvatar", cancellationToken);
+        await LogIfRequestFailedAsync("SetMyAvatar", response, cancellationToken: cancellationToken);
+        await EnsureSuccessAsync(response, "SetMyAvatar", cancellationToken);
         return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
-               ?? new CommandResult(response.IsSuccessStatusCode, response.ReasonPhrase ?? "Report processed.");
+               ?? new CommandResult(true, "Avatar updated.");
+    }
+
+    public async Task<OfferCommentsResponseDto> GetOfferCommentsAsync(string offerId, int limit, string? after, CancellationToken cancellationToken)
+    {
+        using var _ = busy.Begin();
+        var query = $"?limit={limit}";
+        if (!string.IsNullOrWhiteSpace(after))
+        {
+            query += $"&after={Uri.EscapeDataString(after)}";
+        }
+
+        var httpRequest = CreateRequest(HttpMethod.Get, $"/api/offers/{Uri.EscapeDataString(offerId)}/comments{query}", requiresAuth: true);
+        var response = await SendAsync(httpRequest, "GetOfferComments", cancellationToken);
+        await LogIfRequestFailedAsync("GetOfferComments", response, offerId, cancellationToken);
+        await EnsureSuccessAsync(response, "GetOfferComments", cancellationToken);
+        return await response.Content.ReadFromJsonAsync<OfferCommentsResponseDto>(cancellationToken: cancellationToken)
+               ?? new OfferCommentsResponseDto([]);
+    }
+
+    public async Task<OfferCommentDto?> CreateOfferCommentAsync(string offerId, string body, CancellationToken cancellationToken)
+    {
+        using var _ = busy.Begin();
+        var httpRequest = CreateRequest(
+            HttpMethod.Post,
+            $"/api/offers/{Uri.EscapeDataString(offerId)}/comments",
+            new CreateCommentRequest(body),
+            requiresAuth: true);
+        var response = await SendAsync(httpRequest, "CreateOfferComment", cancellationToken);
+        await LogIfRequestFailedAsync("CreateOfferComment", response, offerId, cancellationToken);
+        await EnsureSuccessAsync(response, "CreateOfferComment", cancellationToken);
+        return await response.Content.ReadFromJsonAsync<OfferCommentDto>(cancellationToken: cancellationToken);
+    }
+
+    private static async Task<CommandResult> ReadCommandResultAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken,
+        string successMessage)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
+                   ?? new CommandResult(true, successMessage);
+        }
+
+        var problem = await TryReadProblemAsync(response, cancellationToken);
+        if (problem is not null)
+        {
+            var problemMessage = problem.Detail
+                                 ?? problem.Title
+                                 ?? response.ReasonPhrase
+                                 ?? "The request could not be completed.";
+
+            throw new ApiRequestException(
+                response.StatusCode,
+                problemMessage,
+                ResolveRetryAfter(response),
+                problem.Errors);
+        }
+
+        try
+        {
+            return await response.Content.ReadFromJsonAsync<CommandResult>(cancellationToken: cancellationToken)
+                   ?? new CommandResult(false, response.ReasonPhrase ?? "The request could not be completed.");
+        }
+        catch
+        {
+            return new CommandResult(false, response.ReasonPhrase ?? "The request could not be completed.");
+        }
+    }
+
+    private async Task EnsureSuccessAsync(HttpResponseMessage response, string operationName, CancellationToken cancellationToken)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        var problem = await TryReadProblemAsync(response, cancellationToken);
+        var message = problem?.Detail
+                      ?? problem?.Title
+                      ?? response.ReasonPhrase
+                      ?? "The request could not be completed.";
+
+        throw new ApiRequestException(
+            response.StatusCode,
+            message,
+            ResolveRetryAfter(response),
+            problem?.Errors);
+    }
+
+    private static async Task<ApiProblemDetails?> TryReadProblemAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await response.Content.ReadFromJsonAsync<ApiProblemDetails>(cancellationToken: cancellationToken);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static TimeSpan? ResolveRetryAfter(HttpResponseMessage response)
+    {
+        var retryAfter = response.Headers.RetryAfter;
+        if (retryAfter?.Delta is { } delta)
+        {
+            return delta;
+        }
+
+        if (retryAfter?.Date is { } date)
+        {
+            var wait = date - DateTimeOffset.UtcNow;
+            return wait > TimeSpan.Zero ? wait : TimeSpan.Zero;
+        }
+
+        return null;
+    }
+
+    private sealed class ApiProblemDetails
+    {
+        public string? Type { get; init; }
+
+        public string? Title { get; init; }
+
+        public int? Status { get; init; }
+
+        public string? Detail { get; init; }
+
+        public Dictionary<string, string[]>? Errors { get; init; }
     }
 
     private HttpRequestMessage CreateRequest(HttpMethod method, string uri, object? payload = null, bool requiresAuth = false)
