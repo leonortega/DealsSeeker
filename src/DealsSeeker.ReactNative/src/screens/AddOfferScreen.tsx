@@ -14,6 +14,7 @@ import { isRequestAborted } from '../api/client';
 import { apiConfig } from '../api/config';
 import { GeoPoint, OfferImageDto, OfferLocationDto } from '../api/types';
 import { MapPreview } from '../components/MapPreview';
+import { StandardHeader } from '../components/StandardHeader';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
 import { extractCompletedWord, extractWords } from '../utils/format';
@@ -505,11 +506,9 @@ export function AddOfferScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      <StandardHeader />
       <View style={styles.header}>
         <Text style={[styles.title, { color: palette.ink }]}>{editingOfferId ? t('add.editTitle') : t('add.title')}</Text>
-        <Pressable onPress={closeOverlay}>
-          <Text style={{ color: palette.accent, fontWeight: '700' }}>{t('common.back')}</Text>
-        </Pressable>
       </View>
 
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>

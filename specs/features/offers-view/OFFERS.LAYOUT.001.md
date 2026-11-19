@@ -19,7 +19,7 @@ Define required UI blocks for the Offers view.
 
 ## Requirements
 - `OFFERS.LAYOUT.001-R1`: The system shall display a search bar.
-- `OFFERS.LAYOUT.001-R2`: The system shall display a `+` button near the search bar.
+- `OFFERS.LAYOUT.001-R2`: The system shall not display a `+` button near the search bar; offer creation shall be available through the shared bottom footer.
 - `OFFERS.LAYOUT.001-R3`: The system shall display a map component.
 - `OFFERS.LAYOUT.001-R4`: The system shall display a coverage radius control directly below the search textbox.
 - `OFFERS.LAYOUT.001-R5`: The system shall display an offers feed area rendered as a grid/list presentation component below the map area.
@@ -30,7 +30,7 @@ Define required UI blocks for the Offers view.
 Scenario: Offers view shows all required sections
   Given the user navigates to the Offers section
   When the Offers view loads
-  Then the view shall show a search bar and a nearby plus button
+  Then the view shall show a search bar and no nearby plus button
   And a coverage radius control shall be visible below the search textbox
   And a map component shall be visible
   And an offers feed area shall be visible below the map area

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: My Account Profile
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: My Account View
 - **Priority**: Medium
@@ -29,6 +29,7 @@ Allow authenticated users to access their account information and manage the off
 - `ACCOUNT.PROFILE.001-R10`: Selecting `No` in the remove confirmation shall keep the offer unchanged.
 - `ACCOUNT.PROFILE.001-R11`: Selecting `Yes` in the remove confirmation shall delete the owned offer and remove it from the My Account offer list.
 - `ACCOUNT.PROFILE.001-R12`: Selecting `Edit` for an owned offer shall navigate to the Add Offer view in edit mode for that specific offer.
+- `ACCOUNT.PROFILE.001-R13`: On a mobile viewport, the logout action shall be rendered on its own line directly below the user's email address, aligned to the left edge of the account details.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -43,6 +44,13 @@ Scenario: User logs out from My Account
   When the user selects logout
   Then the user session shall end
   And the Login view shall be displayed
+
+Scenario: Logout is placed on its own left-aligned line on mobile
+  Given the user is authenticated
+  And the user is on My Account on a mobile viewport
+  When the account details are rendered
+  Then the logout action shall appear on a line below the user's email address
+  And the logout action shall be aligned to the left edge of the account details
 
 Scenario: User removes an owned offer
   Given the user is authenticated
@@ -79,6 +87,7 @@ Scenario: User edits an owned offer
 - If session becomes invalid while profile loads, session shall be cleared and user shall be redirected to login.
 - If the user has not created any offers, the owned-offers section shall show a non-error empty state.
 - If an owned offer no longer exists when edit or remove is requested, the system shall show a recoverable error state and keep the user in My Account.
+- A very long email address shall not push the logout action off the account details; the logout action remains on its own left-aligned line.
 
 ## Non-Functional Constraints
 - Profile data shall load without exposing sensitive fields not needed for UI.

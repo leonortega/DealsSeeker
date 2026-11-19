@@ -2,7 +2,7 @@
 
 ## Project Overview
 DealsSeeker is a .NET 10 app:
-- `DealsSeeker.Mobile`: .NET MAUI Blazor Hybrid mobile app.
+- `DealsSeeker.ReactNative`: Expo/React Native mobile and web client.
 - `DealsSeeker.Api`: ASP.NET Core 10 Minimal API.
 - `DealsSeeker.Shared`: shared contracts/models.
 
@@ -92,9 +92,8 @@ Application Shell, My Account (auth login/register/profile), Offers (search, sma
 Theme, localization, logging, map provider config, navigation mode (pedestrian/car), coordinate privacy, session persistence, smart search (exact + fuzzy + synonyms), promoted/reported offers, photo carousel.
 
 ## Implementation Scope
-- All changes SHALL target only the API (`DealsSeeker.Api`) and React Native (`DealsSeeker.ReactNative`) projects.
-- The .NET MAUI mobile project (`DealsSeeker.Mobile`) SHALL NOT be implemented/modified unless the user explicitly asks for it.
-- If a request implies mobile work, confirm with the user before touching `DealsSeeker.Mobile`.
+- Changes SHALL target the API (`DealsSeeker.Api`) and React Native (`DealsSeeker.ReactNative`) projects.
+- The React Native project is the single client for mobile and web; mobile work targets `DealsSeeker.ReactNative`.
 
 ## Change Workflow (Spec-First)
 - Any change (feature, bug fix, refactor affecting behavior) SHALL be preceded by a spec change.

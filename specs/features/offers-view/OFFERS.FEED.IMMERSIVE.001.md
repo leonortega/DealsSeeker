@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive Vertical Full-Screen Main Page Feed
-- **Version**: `v1.6`
+- **Version**: `v1.10`
 - **Status**: Approved
 - **Context/View**: Offers View (Main Page)
 - **Priority**: High
@@ -36,7 +36,7 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R13`: When no offers are available, the system shall render an empty-state message instead of feed pages.
 - `OFFERS.FEED.IMMERSIVE.001-R14`: The view shall not expose raw `lat` or `lng` values to users.
 - `OFFERS.FEED.IMMERSIVE.001-R15`: The feed shall remain scrollable and responsive on small mobile screens.
-- `OFFERS.FEED.IMMERSIVE.001-R16`: The standard application header shall provide an immersive-view button, placed immediately to the left of the menu button, labeled `Immersive view` in English and `Modo inmersivo` in Spanish, and selecting it shall open the immersive feed view.
+- `OFFERS.FEED.IMMERSIVE.001-R16`: The immersive feed shall be opened from the shared bottom footer view button labeled `New view` / `Nueva vista` with a ⭐ glyph; no new-view button shall be rendered in the standard header or the Offers hero area.
 - `OFFERS.FEED.IMMERSIVE.001-R17`: The immersive feed shall provide a map entry point; selecting it shall open the standard offers view, which displays the map for the current offers/location context.
 - `OFFERS.FEED.IMMERSIVE.001-R18`: In the immersive feed, the standard application header and bottom navigation bars shall not be rendered as separate bars.
 - `OFFERS.FEED.IMMERSIVE.001-R19`: The left section shall consolidate the entry points previously exposed by the header and bottom navigation, including search and the main navigation destinations.
@@ -49,14 +49,14 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R26`: The left panel shall contain all option buttons directly; no separate menu modal shall be required for immersive feed actions.
 - `OFFERS.FEED.IMMERSIVE.001-R27`: The search input shall be presented in the left/top area of the immersive feed.
 - `OFFERS.FEED.IMMERSIVE.001-R28`: The left panel shall remain static and shall not be part of offer page scrolling.
-- `OFFERS.FEED.IMMERSIVE.001-R29`: The left panel shall use a solid black background with a wider fixed width.
+- `OFFERS.FEED.IMMERSIVE.001-R29`: The left panel shall use the same surface color as the standard application UI with a wider fixed width.
 - `OFFERS.FEED.IMMERSIVE.001-R30`: Each option in the left panel shall display both an icon and a text label.
 - `OFFERS.FEED.IMMERSIVE.001-R31`: The left panel shall occupy a dedicated side column; offers shall occupy the remaining screen width rather than rendering under the panel.
 - `OFFERS.FEED.IMMERSIVE.001-R32`: The top of the left panel shall display the application logo and application name.
 - `OFFERS.FEED.IMMERSIVE.001-R33`: The left panel shall not include language, theme, or navigation-mode toggle buttons; those controls shall remain in the Account destination.
 - `OFFERS.FEED.IMMERSIVE.001-R34`: The left panel shall display coverage distance buttons below the search input, using the same radius options as the standard offers view.
-- `OFFERS.FEED.IMMERSIVE.001-R35`: Text in the left panel, including the application name, shall use white color.
-- `OFFERS.FEED.IMMERSIVE.001-R36`: Offer images shall be contained within the page; when an image does not fill the width, dark gray bars shall appear on the left and right so the page background remains fully covered.
+- `OFFERS.FEED.IMMERSIVE.001-R35`: Text in the left panel, including the application name, shall use the standard application UI text colors.
+- `OFFERS.FEED.IMMERSIVE.001-R36`: Offer images shall be contained within the page; when an image does not fill the width, bars using the page background color shall appear on the left and right so the page background remains fully covered.
 - `OFFERS.FEED.IMMERSIVE.001-R37`: When an offer has more than one photo, the immersive feed shall allow changing the displayed photo using left and right keyboard arrow keys, a horizontal swipe gesture over the offer page, and a navigation control with one point per photo, displayed above the offer title and horizontally centered within the offer panel.
 - `OFFERS.FEED.IMMERSIVE.001-R48`: A horizontal swipe gesture over the offer page shall change the displayed photo, in both pointer and touch environments.
 - `OFFERS.FED.IMMERSIVE.001-R49`: A horizontal swipe gesture over the offer page shall not prevent the user from scrolling vertically between offers.
@@ -71,6 +71,10 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R51`: The immersive top bar shall be positioned below the device system status area, so that system indicators (battery, signal, and similar) do not overlap its controls.
 - `OFFERS.FEED.IMMERSIVE.001-R52`: When an offer has more than one photo, the photo navigation control shall be horizontally centered within the visible offer page area.
 - `OFFERS.FEED.IMMERSIVE.001-R53`: Each main navigation option of the immersive feed shall display its icon as a graphical emoji glyph rather than a monochrome text symbol.
+- `OFFERS.FEED.IMMERSIVE.001-R54`: The immersive offers view shall use the same font family, font sizes and font weights as the standard application UI for all of its text.
+- `OFFERS.FEED.IMMERSIVE.001-R55`: The immersive offers view shall use the same color palette and surface treatment as the standard application UI for its side panel, top bar, footer, controls, status banners and search sheet.
+- `OFFERS.FEED.IMMERSIVE.001-R56`: The classic styling of the immersive offers view shall follow the active theme (light, dark or system) in the same way as the standard application UI.
+- `OFFERS.FEED.IMMERSIVE.001-R57`: The offer text overlay shall have no surrounding box, border or opaque background, so that the offer image remains unobstructed, while its text shall remain readable over offer images.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -183,12 +187,26 @@ Scenario: Immersive feed is the default offers presentation
   When the first view is displayed
   Then the immersive offers feed shall be displayed
 
-Scenario: User can try the immersive feed from the header
+Scenario: User can try the immersive feed from the shared footer
   Given the user is on the standard Offers view
-  When the user selects the immersive-view button in the header
+  When the user selects the ⭐ New view button in the footer
   Then the immersive feed view shall open
-  And the button shall be placed immediately to the left of the menu button
-  And the button shall be labeled `Immersive view` in English and `Modo inmersivo` in Spanish
+  And no new-view button shall be displayed in the standard header or the Offers hero area
+
+Scenario: Immersive view uses the classic application styling
+  Given the user is on the immersive offers view
+  When the view is rendered
+  Then its text shall use the same font family, sizes and weights as the standard application UI
+  And its side panel, top bar, footer, controls, status banners and search sheet shall use the same colors and surfaces as the standard application UI
+  And the offer text overlay shall have no surrounding box or opaque background and shall remain readable over the image
+
+Scenario: Immersive view follows the active theme
+  Given the user is on the immersive offers view
+  And the active theme is dark
+  When the view is rendered
+  Then its surfaces and text shall use the dark theme colors of the standard application UI
+  When the active theme changes to light
+  Then its surfaces and text shall update to the light theme colors of the standard application UI
 
 Scenario: Header and footer are consolidated on the left
   Given the user is on the immersive feed
@@ -213,10 +231,10 @@ Scenario: Left panel contains all options and static search
   And the search input shall be visible in the left/top area
   And the left panel shall not scroll with offer pages
 
-Scenario: Left panel is a static black side column
+Scenario: Left panel is a static side column with classic surfaces
   Given the user is on the immersive feed
   When the view loads
-  Then the left panel shall have a black background and wider fixed width
+  Then the left panel shall have the classic application surface background and wider fixed width
   And each option shall show an icon and text label
   And offers shall occupy the remaining screen width beside the panel
 
@@ -230,9 +248,9 @@ Scenario: Left panel header and distance controls
 Scenario: Left panel text and contained offer image
   Given the user is on the immersive feed
   When the view loads
-  Then left panel text, including the application name, shall be white
+  Then left panel text, including the application name, shall use the standard application UI text colors
   And offer images shall be contained within the page
-  And dark gray bars shall fill any remaining horizontal space
+  And bars using the page background color shall fill any remaining horizontal space
 
 Scenario: Empty feed state
   Given no offers are available
@@ -251,6 +269,8 @@ Scenario: Empty feed state
 - Empty offer result renders empty-state instead of blank feed.
 - Devices without a reported safe-area inset still clear the status area using a minimum top offset.
 - A vertical swipe over a multi-photo offer scrolls the feed without changing the displayed photo.
+- Offer text overlays remain readable over both light and dark offer images while their background stays transparent.
+- The new-offer and immersive-view buttons remain on the same row on narrow viewports, with the button labels truncating rather than wrapping.
 
 ## Non-Functional Constraints
 - Vertical feed scrolling should remain smooth under typical offer counts.

@@ -9,7 +9,7 @@ Feature: Offers layout and navigation to Add Offer
     When the Offers view is rendered
     Then a search bar is visible
     And a coverage radius control below the search textbox is visible
-    And a plus button near the search bar is visible
+    And no plus button near the search bar is visible
     And a map component is visible
     And an offers feed area below the map is visible
 
@@ -19,8 +19,14 @@ Feature: Offers layout and navigation to Add Offer
     When the Offers view is rendered
     Then a promoted offers section is visible above standard offers
 
-  Scenario: Plus button opens Add Offer view
+  Scenario: Create footer option opens Add Offer view
     Given the user is authenticated
     And the user is in Offers view
-    When the user presses the plus button
+    When the user selects Create in the bottom footer
+    Then the Add Offer view is displayed
+
+  Scenario: Create footer option opens Add Offer view from the immersive feed
+    Given the user is authenticated
+    And the user is on the immersive offers feed
+    When the user selects Create in the bottom footer
     Then the Add Offer view is displayed

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v1.8`
+- **Version**: `v1.22`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -25,18 +25,28 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R5`: The system shall persist authenticated session state on device so the user is not required to login again on every app launch.
 - `APP.SHELL.001-R6`: On app access with a persisted session, the system shall validate session activity; if the session is expired/invalid, the session shall be cleared and startup view shall be `Login`.
 - `APP.SHELL.001-R7`: After successful submission in `Suggestions` or `Reports` view (no errors), the system shall redirect to `Offers` view.
-- `APP.SHELL.001-R8`: The main navigation menu shall include quick controls to change app language and app theme.
-- `APP.SHELL.001-R9`: Menu-triggered language/theme changes shall apply instantly in the current view.
+- `APP.SHELL.001-R8`: The My Account view shall include quick controls to change app language and app theme.
+- `APP.SHELL.001-R9`: Language/theme changes made in My Account shall apply instantly in the current view.
 - `APP.SHELL.001-R10`: On application startup, the system shall display a branded splash screen for approximately 2 seconds before showing the first interactive view.
 - `APP.SHELL.001-R11`: The splash screen shall include app identity visuals and a startup animation, then exit with a smooth transition.
 - `APP.SHELL.001-R12`: When any active view is waiting for required data (for example, location resolution or search execution), the system shall display a blocking animated loading state.
 - `APP.SHELL.001-R13`: While the blocking loading state is visible, user interaction with the underlying view shall be prevented.
 - `APP.SHELL.001-R14`: The blocking loading state shall be dismissed automatically when all pending required operations complete.
-- `APP.SHELL.001-R15`: The standard application header shall place the menu button on the trailing side and, when the Offers view is displayed without an open overlay, shall place an immersive-view button immediately to its left, labeled `Immersive view` in English and `Modo inmersivo` in Spanish. Selecting it shall open the immersive offers feed.
+- `APP.SHELL.001-R15`: The standard application header and the Offers hero area shall not display a new-view button; the only view button shall be in the shared bottom footer.
 - `APP.SHELL.001-R16`: The standard application header shall be positioned below the device system status area, so that system indicators (battery, signal, and similar) do not overlap the header content.
 - `APP.SHELL.001-R17`: On Android, the system back gesture or back button shall navigate to the previously visited view within the application when one exists, instead of closing the application.
 - `APP.SHELL.001-R18`: When no previously visited view exists within the application, the Android system back gesture or back button shall leave the application using the platform default behavior.
 - `APP.SHELL.001-R19`: Back navigation shall preserve view context that the destination view restores on entry, including the offers search query and radius when returning to the offers feed.
+- `APP.SHELL.001-R20`: The standard application header shall not display a menu button or a hamburger icon toggle; navigation shall be provided through the bottom footer navigation and the My Account view.
+- `APP.SHELL.001-R21`: All views shall present the same bottom footer navigation with My Account (👤), Suggestions, Create, Offers (💲) and a view button in that order. At most one footer option shall be highlighted at a time, and the view button shall never be highlighted. Opening an overlay shall highlight only the option that opened it.
+- `APP.SHELL.001-R22`: The view button shall use ⭐ with the label `New view` when the standard view is selected and 🗺️ with the label `Map mode` when the immersive view is selected; selecting it shall change the selected view mode and shall display the offers view in the newly selected mode, even when the user was on another view such as Suggestions. The view button shall never be highlighted.
+- `APP.SHELL.001-R25`: The selected view mode shall persist while the user visits other views, including Add Offer. The Offers footer option shall return to the offers view using the previously selected mode. The mode shall change only when the user selects the view button.
+- `APP.SHELL.001-R23`: The footer shall use a dark surface that spans the full width of the screen, with a highlighted active option, shall be present in every view, and the Create option shall be the only entry point for starting a new offer from the standard view.
+- `APP.SHELL.001-R24`: No view shall display a back control; navigation between views shall be performed through the shared footer.
+- `APP.SHELL.001-R26`: On a mobile viewport, the shared footer shall span the full width of the screen and shall contain all five options, including the view button, entirely within its bounds.
+- `APP.SHELL.001-R27`: The footer options shall be evenly distributed across the available width and shall shrink as needed so that every option, including the view button, remains inside the footer.
+- `APP.SHELL.001-R28`: On a mobile viewport, each footer option label shall wrap to at most two centered lines beneath its icon instead of being truncated with an ellipsis.
+- `APP.SHELL.001-R29`: In the standard view, the application header shall scroll together with the view content and shall not remain pinned to the top while the user scrolls.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -69,19 +79,19 @@ Scenario: Suggestions and Reports success submissions redirect to Offers
   And the submit response is successful with no errors
   Then the system shall redirect the user to Offers view
 
-Scenario: Header places the immersive-view button left of the menu button
+Scenario: No view button is displayed in the header or hero
   Given the authenticated user is on the Offers view without an open overlay
-  When the standard application header is rendered
-  Then an immersive-view button shall be displayed immediately to the left of the menu button
-  And the button shall be labeled `Immersive view` in English and `Modo inmersivo` in Spanish
-  And selecting it shall open the immersive offers feed
+  When the standard header and the Offers hero area are rendered
+  Then no new-view button shall be displayed in the header
+  And no new-view button shall be displayed in the hero area
+  And the view button shall only be available in the shared bottom footer
 
 Scenario: Standard header clears the device status area
   Given the authenticated user is on any view that renders the standard application header
   And the app is running on a mobile device
   When the header is rendered
   Then the header shall be positioned below the device system status area
-  And the app title, user badge, and menu button shall not overlap the system indicators
+  And the app title and user badge shall not overlap the system indicators
 
 Scenario: Android back returns to the previously visited view
   Given the authenticated user has moved from one view to another within the application
@@ -103,9 +113,75 @@ Scenario: Android back returns from a destination opened in the immersive feed
   Then the immersive offers feed shall become visible again
   And the application shall remain open
 
-Scenario: Menu includes quick language and theme controls
-  Given the authenticated user opens the main navigation menu
-  When the menu is rendered
+Scenario: Standard header has no menu button
+  Given the authenticated user is on any standard view
+  When the standard application header is rendered
+  Then no Menu button shall be displayed
+  And no hamburger icon toggle shall be displayed
+  And navigation shall remain available through the bottom footer navigation
+
+Scenario: All views share the same footer
+  Given the authenticated user is on a standard view
+  When the footer is rendered
+  Then it shall display My Account with a 👤 icon, Suggestions, Create, Offers, and ⭐ New view in that order
+  And the footer shall be present in every view
+  And at most one option shall be highlighted at a time, with the view button never highlighted
+  And opening an overlay shall highlight only the option that opened it
+  And selecting Create shall open the Add Offer view
+  And selecting Offers shall open the standard offers view
+  And selecting New view shall open the immersive offers feed
+  And no plus button for creating an offer shall be displayed in the standard view
+  And no back control shall be displayed in any view
+
+Scenario: Immersive view uses the same footer with a Map mode label
+  Given the authenticated user is on the immersive offers feed
+  When the footer is rendered
+  Then it shall display My Account, Suggestions, Create, Offers, and 🗺️ Map mode in that order
+  And selecting Offers shall keep the immersive offers view
+  And selecting 🗺️ Map mode shall open the standard offers view
+  And the view button shall never be highlighted
+
+Scenario: Mobile footer spans the full screen width
+  Given the authenticated user is on a mobile viewport
+  When the shared footer is rendered
+  Then it shall span the full width of the screen
+  And all five options including the view button shall be fully visible inside the footer
+  And the options shall be evenly distributed across the footer
+
+Scenario: Mobile footer labels wrap to two centered lines
+  Given the authenticated user is on a mobile viewport
+  And at least one footer option has a label too long for a single line
+  When the shared footer is rendered
+  Then the long label shall wrap to at most two lines
+  And every label shall be centered beneath its icon
+  And no label shall be truncated with an ellipsis
+
+Scenario: Standard header scrolls with the view content
+  Given the authenticated user is in the standard view
+  When the user scrolls the active view
+  Then the application header shall scroll together with the view content
+  And the header shall not remain pinned to the top of the screen
+
+Scenario: Selected view mode persists across other views
+  Given the authenticated user has selected the immersive view mode
+  When the user opens Suggestions and then Add Offer from the footer
+  Then only the Add Offer option shall be highlighted
+  And when the user selects Offers in the footer
+  Then the immersive offers feed shall be displayed with the previously selected mode
+  And the mode shall remain until the user selects the view button again
+
+Scenario: View button redirects to the selected offers mode from another view
+  Given the authenticated user is on Suggestions
+  And the standard view mode is selected
+  When the user selects ⭐ New view in the footer
+  Then the immersive offers feed shall be displayed
+  When the user opens Suggestions again
+  And selects 🗺️ Map mode in the footer
+  Then the standard offers view shall be displayed
+
+Scenario: My Account includes quick language and theme controls
+  Given the authenticated user opens My Account
+  When the settings area is rendered
   Then language-change and theme-change controls shall be visible
   And selecting either control shall apply the change immediately
 
@@ -137,6 +213,8 @@ Scenario: Blocking loading state appears during required data waits
 - On devices without a reported safe-area inset, the header shall still clear the status area using a minimum offset.
 - Repeated back invocations shall walk back through visited views and shall not close the application while a previous in-app view remains.
 - Back invoked while a view is briefly replacing its content shall still resolve to the previous visited view rather than closing the application.
+- A very long localized footer label shall still fit within two lines and inside the footer bounds without an ellipsis.
+- When standard view content is shorter than the viewport, the header shall remain at its natural top position rather than shifting.
 
 ## Non-Functional Constraints
 - First visible shell and startup view should render without blocking on network responses.
@@ -144,6 +222,7 @@ Scenario: Blocking loading state appears during required data waits
 - Blocking loading animation should be lightweight and consistent across light/dark themes.
 
 ## Related Specs
+- `APP.API.CONNECTIVITY.001`
 - `APP.CONFIG.MAPS.001`
 - `APP.LOCALIZATION.001`
 - `APP.THEME.001`

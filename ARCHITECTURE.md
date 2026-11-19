@@ -1065,7 +1065,7 @@ Each has a BDD feature file, contract and example fixtures where data shape is r
 
 ## 9.5 Verification performed
 
-- `DealsSeeker.Api` and `DealsSeeker.Shared` build with **zero warnings and zero errors**. (`DealsSeeker.Mobile` cannot build in this environment because the `maui-android` workload is not installed — a pre-existing gap, and that project is explicitly out of scope.)
+- `DealsSeeker.Api` and `DealsSeeker.Shared` build with **zero warnings and zero errors**.
 - The React Native client type-checks cleanly (`tsc --noEmit`).
 - Live end-to-end checks against the running API confirmed: registration, login, session resolution, paged search with stable ordering and no cross-page duplicates, out-of-range pages returning an empty offer list while preserving the full marker set, validation rejections (`400` with the `errors` map), `401` for missing and invalid tokens, immediate session revocation on logout, invalid comment cursors rejected, `429` with `Retry-After`, `304` with a validator on all three conditional read endpoints, `200` with an empty collection for a legitimate "no results" lookup, `/health/live` and `/metrics` serving the custom counters, and WAL confirmed active on both database files with the log database in a separate file from the business database.
 
@@ -1074,4 +1074,4 @@ Each has a BDD feature file, contract and example fixtures where data shape is r
 - **A test project does not exist.** The repository had no automated tests before this work, and none were added. The verification above is manual. Adding `tests/DealsSeeker.Api.Tests` with the golden-file ranking equivalence check (item 5), migration idempotency checks (item 16) and endpoint contract tests is the recommended next step, together with the k6 harness from §5 Phase 0 that turns "supports high volume" into a measurable claim.
 - **The load-test baseline (Phase 0) has not been captured.** The observability needed to produce it is now in place, but the k6 scenarios themselves still need to be written and run against a seeded corpus.
 - **The client does not yet send `If-None-Match`.** The server exposes and honours validators, but the React Native client still performs unconditional reads.
-- **`DealsSeeker.Mobile` was not touched**, in line with the implementation scope in `AGENTS.md`.
+- **The .NET MAUI client was removed**; `DealsSeeker.ReactNative` is the only client, in line with the implementation scope in `AGENTS.md`.

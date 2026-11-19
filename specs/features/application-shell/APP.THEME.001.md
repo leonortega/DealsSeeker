@@ -22,9 +22,9 @@ Provide light and dark theme support aligned with device preference and user ove
 - `APP.THEME.001-R3`: The user shall be able to override system theme in app settings.
 - `APP.THEME.001-R4`: Manual override shall persist for the authenticated user account.
 - `APP.THEME.001-R5`: The user shall be able to reset theme behavior back to system default.
-- `APP.THEME.001-R6`: The main navigation menu shall include a theme-change control.
-- `APP.THEME.001-R7`: When the user changes theme from the menu control, the selected theme shall apply instantly in the current view without requiring app restart.
-- `APP.THEME.001-R8`: All app surfaces, including the immersive offer chrome, the mobile footer bar, the navigation menu, and the offers views, shall use the active theme colors and the shared button styles.
+- `APP.THEME.001-R6`: The My Account view shall include a theme-change control.
+- `APP.THEME.001-R7`: When the user changes theme from the My Account control, the selected theme shall apply instantly in the current view without requiring app restart.
+- `APP.THEME.001-R8`: All app surfaces, including the immersive offer chrome, the bottom footer navigation, and the offers views, shall use the active theme colors and the shared button styles.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -45,14 +45,14 @@ Scenario: User resets to system default
   When the user selects use system theme
   Then app theme shall follow current OS preference
 
-Scenario: User changes theme from menu control
+Scenario: User changes theme from My Account
   Given the app is using light theme
-  When the user selects dark theme from the menu theme control
+  When the user selects dark theme from the My Account theme control
   Then the current view shall switch to dark theme immediately
 
 Scenario: Surfaces share the active theme colors
   Given the app is using dark theme
-  When the user views the immersive offer chrome, the mobile footer bar, the navigation menu, and the offers views
+  When the user views the immersive offer chrome, the bottom footer navigation, and the offers views
   Then every surface shall use the active theme colors and the shared button styles
 ```
 

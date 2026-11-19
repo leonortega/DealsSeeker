@@ -20,8 +20,8 @@ Feature: Immersive view navigation to the standard offers view
     When the user selects the map mode option
     Then the search query and radius remain available in the standard offers view
 
-  Scenario: Back control is available in destinations opened from immersive view
+  Scenario: Destinations opened from immersive view have no back control
     Given the user is on the immersive offers view
-    When the user opens a destination from the left panel
-    Then a back control is available in that destination
-    And selecting it returns the user to the immersive offers view
+    When the user opens a destination from the footer
+    Then a back control is not available in that destination
+    And the shared bottom footer remains visible

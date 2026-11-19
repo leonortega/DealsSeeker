@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { OfferItemDto, UserProfileDto } from '../api/types';
 import { AvatarPicker } from '../components/AvatarPicker';
+import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
 import { avatarEmoji } from '../utils/avatars';
 import { shorten } from '../utils/format';
 
 export function AccountScreen() {
-  const { activeTab, api, avatarId, immersiveOffers, logout, openAddOffer, openTab, palette, preferences, saveAvatar, setLanguage, setNavigationMode, setThemeMode, t } =
+  const { activeTab, api, avatarId, logout, openAddOffer, palette, preferences, saveAvatar, setLanguage, setNavigationMode, setThemeMode, t } =
     useApp();
   const [profile, setProfile] = useState<UserProfileDto | null>(null);
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
@@ -55,24 +56,20 @@ export function AccountScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      <StandardHeader />
       <View style={[styles.hero, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
         <View style={[styles.avatar, { backgroundColor: palette.accentMuted }]}>
           <Text style={[styles.avatarText, { color: palette.accent }]}>{avatarEmoji(profile?.avatarId ?? avatarId)}</Text>
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[styles.heroTitle, { color: palette.ink }]}>{profile?.displayName ?? t('account.title')}</Text>
-          <View style={{ alignItems: 'center', flexDirection: 'row', gap: 8, marginTop: 4 }}>
-            <Text style={{ color: palette.inkMuted }}>{profile?.email ?? ''}</Text>
+          <View style={styles.accountDetails}>
+            <Text style={[styles.email, { color: palette.inkMuted }]}>{profile?.email ?? ''}</Text>
             <Pressable style={[styles.logout, { backgroundColor: palette.danger }]} onPress={() => void logout()}>
               <Text style={styles.logoutLabel}>{t('account.logout')}</Text>
             </Pressable>
           </View>
         </View>
-        {immersiveOffers ? (
-          <Pressable onPress={() => openTab('offers')}>
-            <Text style={{ color: palette.accent, fontWeight: '700' }}>{t('common.back')}</Text>
-          </Pressable>
-        ) : null}
       </View>
 
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
@@ -164,7 +161,17 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
   },
+  accountDetails: {
+    alignItems: 'flex-start',
+    flexDirection: 'column',
+    gap: 8,
+    marginTop: 4,
+  },
+  email: {
+    flexShrink: 1,
+  },
   logout: {
+    alignSelf: 'flex-start',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,

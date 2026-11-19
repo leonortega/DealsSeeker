@@ -18,6 +18,7 @@
 | Spec ID | Feature File | Contract | Examples |
 |---|---|---|---|
 | `APP.SHELL.001` | `bdd/app-shell.feature`, `bdd/account-management.feature` | N/A | `examples/application-shell/app-shell.startup.json` |
+| `APP.API.CONNECTIVITY.001` | `bdd/app-api-connectivity.feature` | N/A | N/A |
 | `APP.LOGGING.001` | `bdd/logging-configuration.feature` | N/A | `examples/application-shell/app-logging.configuration.json` |
 | `APP.CONFIG.MAPS.001` | `bdd/map-provider-configuration.feature` | `contracts/json-schema/location-search-result.schema.json`, `contracts/json-schema/location-search-results-response.schema.json`, `contracts/json-schema/geo-point.schema.json` | `examples/application-shell/app-config-maps.providers.json` |
 | `APP.THEME.001` | `bdd/app-theme.feature` | N/A | `examples/application-shell/app-theme.system-dark.json` |

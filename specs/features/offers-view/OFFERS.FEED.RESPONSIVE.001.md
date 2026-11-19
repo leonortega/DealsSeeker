@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive Feed Responsive Presentation
-- **Version**: `v1.0`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Offers View (Immersive)
 - **Priority**: High
@@ -21,7 +21,7 @@ Define how the immersive offers feed adapts its presentation to the available vi
 - `OFFERS.FEED.RESPONSIVE.001-R1`: The immersive offers view shall adapt its presentation to the available viewport width.
 - `OFFERS.FEED.RESPONSIVE.001-R2`: On a narrow viewport, the immersive offers view shall not render the fixed left side panel.
 - `OFFERS.FEED.RESPONSIVE.001-R3`: On a narrow viewport, the navigation options shall be presented in a bottom footer bar.
-- `OFFERS.FEED.RESPONSIVE.001-R4`: The bottom footer bar shall present the same options as the side panel, in the same order: map mode, favorites, account, suggestions, reports, create.
+- `OFFERS.FEED.RESPONSIVE.001-R4`: The bottom footer bar shall present My Account, Suggestions, Create, Offers, and Map mode in that order, using the same footer component, icons and visual style as the standard view.
 - `OFFERS.FEED.RESPONSIVE.001-R5`: On a narrow viewport, each footer option shall be presented as an icon with a short text label, and shall expose an accessible full label.
 - `OFFERS.FEED.RESPONSIVE.001-R6`: On a narrow viewport, the search input shall not be displayed inline; a search icon control shall be displayed in the top bar.
 - `OFFERS.FEED.RESPONSIVE.001-R7`: Selecting the search icon control shall open a search overlay containing the search input and the coverage distance buttons.
@@ -49,6 +49,8 @@ Define how the immersive offers feed adapts its presentation to the available vi
 - `OFFERS.FEED.RESPONSIVE.001-R29`: On a narrow viewport, the immersive offers view shall render an application header that floats above the offer images, without reducing the size of the offer page.
 - `OFFERS.FEED.RESPONSIVE.001-R30`: On a narrow viewport, the application header shall display the application identity icon, the feed filter tabs, and the search icon control.
 - `OFFERS.FEED.RESPONSIVE.001-R31`: On a wide viewport, the application identity and application name shall remain in the left side panel.
+- `OFFERS.FEED.RESPONSIVE.001-R32`: All user-facing labels of the search overlay, including its title, search action, radius label and cancel action, shall be rendered from the active language's localization resources and shall never display a raw resource key.
+- `OFFERS.FEED.RESPONSIVE.001-R33`: On a narrow viewport, the bottom footer bar shall span the full width of the screen, shall distribute all five options evenly across that width, and shall keep the view button fully inside the footer, truncating long labels to a single line when needed.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -58,7 +60,7 @@ Scenario: Narrow viewport uses a bottom footer instead of the side panel
   When the view is rendered
   Then the fixed left side panel shall not be displayed
   And a bottom footer bar shall be displayed
-  And the footer shall offer map mode, favorites, account, suggestions, reports, and create options in that order
+  And the footer shall offer My Account, Suggestions, Create, Offers, and Map mode in that order
 
 Scenario: Narrow viewport search is an icon that opens a search overlay
   Given the user is on the immersive offers view
@@ -78,6 +80,18 @@ Scenario: Search overlay applies or cancels the search
   And the overlay shall close
   When the user selects the cancel action
   Then the overlay shall close without applying the entered query
+
+Scenario: Search overlay labels are localized
+  Given the user is on the immersive offers view
+  And the app language is English
+  When the search overlay is opened
+  Then the title shall read `Search offers`
+  And the search action shall read `Search`
+  And the radius label and cancel action shall show their localized strings
+  When the app language is Spanish
+  Then the title shall read `Buscar ofertas`
+  And the search action shall read `Buscar`
+  And no label shall display a raw resource key
 
 Scenario: Bottom footer does not cover offer content
   Given the user is on the immersive offers view
@@ -201,6 +215,7 @@ Scenario: Wide viewport keeps the side panel
 - The search overlay remains usable when the feed has no offers to show.
 - A long footer label is truncated to one line instead of wrapping.
 - The footer bar does not intercept vertical feed swipes performed outside the option controls.
+- Every supported language provides the search overlay labels, so the overlay never falls back to displaying raw resource keys.
 
 ## Non-Functional Constraints
 - The responsive presentation shall remain smooth on small mobile screens.
@@ -213,3 +228,4 @@ Scenario: Wide viewport keeps the side panel
 - `OFFERS.SEARCH.001`
 - `OFFERS.LIST.ACTIONS.001`
 - `APP.SHELL.001`
+- `APP.LOCALIZATION.001`

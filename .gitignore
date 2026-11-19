@@ -14,7 +14,7 @@ artifacts
 *.user
 *.suo
 
-# MAUI build artifacts
+# Mobile app build artifacts
 *.apk
 *.aab
 *.msix

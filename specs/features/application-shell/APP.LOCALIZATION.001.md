@@ -24,8 +24,8 @@ Provide multi-language UI and dictionary behavior with system-locale defaults.
 - `APP.LOCALIZATION.001-R4`: Fuzzy/synonym dictionaries used by `OFFERS.SEARCH.SMART.001` and `ADD.OFFER.TAGS.SUGGESTIONS.001` shall load by selected language.
 - `APP.LOCALIZATION.001-R5`: Missing translation keys shall fall back to a configured default language.
 - `APP.LOCALIZATION.001-R6`: Missing language dictionaries for smart matching or suggestion expansion shall fall back without blocking feature usage.
-- `APP.LOCALIZATION.001-R7`: The main navigation menu shall include a language-change control.
-- `APP.LOCALIZATION.001-R8`: When the user changes language from the menu control, UI strings and language-dependent dictionaries shall update instantly in the current view without requiring app restart.
+- `APP.LOCALIZATION.001-R7`: The My Account view shall include a language-change control.
+- `APP.LOCALIZATION.001-R8`: When the user changes language from the My Account control, UI strings and language-dependent dictionaries shall update instantly in the current view without requiring app restart.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -41,9 +41,9 @@ Scenario: User changes language from settings
   Then UI strings shall be rendered from Spanish localization resources
   And search/tag dictionaries shall switch to Spanish resources
 
-Scenario: User changes language from menu control
+Scenario: User changes language from My Account
   Given the app is currently in English
-  When the user selects Spanish from the menu language control
+  When the user selects Spanish from the My Account language control
   Then visible UI strings in the current view shall update to Spanish immediately
   And search/tag dictionaries shall switch to Spanish resources immediately
 
@@ -68,3 +68,4 @@ Scenario: Missing translation key falls back
 - `APP.SHELL.001`
 - `OFFERS.SEARCH.SMART.001`
 - `ADD.OFFER.TAGS.SUGGESTIONS.001`
+- `OFFERS.FEED.RESPONSIVE.001`

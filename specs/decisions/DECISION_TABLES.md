@@ -103,8 +103,8 @@
 |---|---|---|
 | Initial theme source | Device/OS preference | Light or dark |
 | Manual override precedence | Override wins over OS theme | Until user resets to system |
-| Quick theme control location | Main navigation menu | Also configurable from settings |
-| Theme apply timing from menu | Immediate runtime apply | No app restart required |
+| Quick theme control location | My Account view | No menu button in the standard header |
+| Theme apply timing from My Account | Immediate runtime apply | No app restart required |
 | Reset behavior | Return to system-follow mode | Uses current OS preference |
 | Theme coverage | Both themes fully implemented | Applies across all app views |
 
@@ -114,8 +114,8 @@
 |---|---|---|
 | Default language value | Device/system locale | Applied at startup when no override |
 | Manual language override | Available in app settings | Persists for user account |
-| Quick language control location | Main navigation menu | Also configurable from settings |
-| Language apply timing from menu | Immediate runtime apply | UI text and language dictionaries refresh in current view |
+| Quick language control location | My Account view | No menu button in the standard header |
+| Language apply timing from My Account | Immediate runtime apply | UI text and language dictionaries refresh in current view |
 | UI string source | Externalized resource files | No hardcoded UI text |
 | Search dictionaries | Load by selected language | Used by smart search and tag suggestions |
 | Missing translation key | Fallback to default language | Prevents blank UI text |
@@ -243,7 +243,7 @@
 |---|---|---|
 | Default Offers presentation | Immersive full-screen feed | Applies at startup and after login |
 | Return from immersive feed | `Map mode` option opens the standard Offers view | Left panel has no back control |
-| Immersive entry point | Header button left of the menu button | Labeled `Immersive view` / `Modo inmersivo` |
+| Immersive entry point | Shared footer view button | ⭐ `New view` / `Nueva vista` in standard view; no header or hero view button |
 | Left panel option order | Map mode, Favorites, Account, Suggestions, Reports, Create | Create is always last |
 | Add Offer from immersive feed | Close immersive mode and open Add Offer | Add Offer renders with standard padding |
 | Destination opened from immersive feed | Shows a back control returning to the immersive feed | Only while immersive mode is enabled |

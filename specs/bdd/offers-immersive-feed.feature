@@ -106,12 +106,26 @@ Feature: Immersive vertical full-screen main page feed
     When the first view is displayed
     Then the immersive offers feed is displayed
 
-  Scenario: User can try the immersive feed from the header
+  Scenario: User can try the immersive feed from the shared footer
     Given the user is on the standard Offers view
-    When the user selects the immersive-view button in the header
+    When the user selects the ⭐ New view button in the footer
     Then the immersive feed view opens
-    And the button is placed immediately to the left of the menu button
-    And the button is labeled `Immersive view` in English and `Modo inmersivo` in Spanish
+    And no new-view button is displayed in the standard header or the Offers hero area
+
+  Scenario: Immersive view uses the classic application styling
+    Given the user is on the immersive offers view
+    When the view is rendered
+    Then its text uses the same font family, sizes and weights as the standard application UI
+    And its side panel, top bar, footer, controls, status banners and search sheet use the same colors and surfaces as the standard application UI
+    And the offer text overlay has no surrounding box or opaque background and stays readable over the image
+
+  Scenario: Immersive view follows the active theme
+    Given the user is on the immersive offers view
+    And the active theme is dark
+    When the view is rendered
+    Then its surfaces and text use the dark theme colors of the standard application UI
+    When the active theme changes to light
+    Then its surfaces and text update to the light theme colors of the standard application UI
 
   Scenario: Header and footer are consolidated on the left
     Given the user is on the immersive feed

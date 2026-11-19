@@ -39,7 +39,8 @@ npm install
 npm run start:dev-client
 ```
 
-For Android, use the helper script from the repo root so Windows path length and Android SDK variables are handled consistently:
+For Android, use the helper script from the repo root. It starts the API and the app in separate
+terminals, resolves the Android SDK/JDK, starts an emulator when needed, and builds/launches the app:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\run-reactnative-android.ps1

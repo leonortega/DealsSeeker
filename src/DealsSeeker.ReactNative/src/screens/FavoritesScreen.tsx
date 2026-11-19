@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import { OfferItemDto } from '../api/types';
+import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
 import { openDirections } from '../utils/maps';
 import { shorten } from '../utils/format';
@@ -9,7 +10,7 @@ import { shorten } from '../utils/format';
 const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 
 export function FavoritesScreen() {
-  const { api, closeOverlay, overlayRoute, palette, preferences, t } = useApp();
+  const { api, overlayRoute, palette, preferences, t } = useApp();
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -69,12 +70,10 @@ export function FavoritesScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      <StandardHeader />
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: palette.ink }]}>{t('favorites.title')}</Text>
-          <Pressable onPress={closeOverlay}>
-            <Text style={{ color: palette.accent, fontWeight: '700' }}>{t('common.back')}</Text>
-          </Pressable>
         </View>
         {offers.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('favorites.empty')}</Text> : null}
         {offers.map((offer) => (

@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DealsSeeker.Shared", "src\D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DealsSeeker.Api", "src\DealsSeeker.Api\DealsSeeker.Api.csproj", "{88A419BA-14A0-41CD-A70E-6FA62AE35F42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DealsSeeker.Mobile", "src\DealsSeeker.Mobile\DealsSeeker.Mobile.csproj", "{1D03DC02-2B0F-4EB6-8A7E-42BEEC1A3074}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,14 +26,9 @@ Global
 		{88A419BA-14A0-41CD-A70E-6FA62AE35F42}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88A419BA-14A0-41CD-A70E-6FA62AE35F42}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88A419BA-14A0-41CD-A70E-6FA62AE35F42}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1D03DC02-2B0F-4EB6-8A7E-42BEEC1A3074}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1D03DC02-2B0F-4EB6-8A7E-42BEEC1A3074}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1D03DC02-2B0F-4EB6-8A7E-42BEEC1A3074}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1D03DC02-2B0F-4EB6-8A7E-42BEEC1A3074}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{49B0FC25-4346-4D27-AD60-55FA11EB4650} = {B3303363-706A-4282-8D47-4B5AB8B330AD}
 		{88A419BA-14A0-41CD-A70E-6FA62AE35F42} = {B3303363-706A-4282-8D47-4B5AB8B330AD}
-		{1D03DC02-2B0F-4EB6-8A7E-42BEEC1A3074} = {B3303363-706A-4282-8D47-4B5AB8B330AD}
 	EndGlobalSection
 EndGlobal

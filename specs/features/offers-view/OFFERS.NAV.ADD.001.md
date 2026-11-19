@@ -14,21 +14,26 @@ Enable users to start offer creation from the Offers view.
 - User is in Offers view.
 
 ## Trigger
-- User presses the `+` button near search.
+- User selects the Create option in the shared bottom footer.
 
 ## Requirements
-- `OFFERS.NAV.ADD.001-R1`: The system shall navigate to Add Offer view when the `+` button is pressed.
+- `OFFERS.NAV.ADD.001-R1`: The system shall navigate to Add Offer view when the Create footer option is selected, in both the standard and immersive views.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
-Scenario: Plus button opens Add Offer view
+Scenario: Create footer option opens Add Offer view
   Given the user is in Offers view
-  When the user presses the plus button
+  When the user selects Create in the bottom footer
+  Then the Add Offer view shall be displayed
+
+Scenario: Create footer option opens Add Offer view from the immersive feed
+  Given the user is on the immersive offers feed
+  When the user selects Create in the bottom footer
   Then the Add Offer view shall be displayed
 ```
 
 ## Example Inputs/Outputs
-- Example input: Tap plus button.
+- Example input: Tap the Create footer option.
 - Expected output: Add Offer view opens.
 
 ## Edge Cases

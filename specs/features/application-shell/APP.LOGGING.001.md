@@ -56,3 +56,4 @@ Scenario: Logs are persisted to file and database
 
 ## Related Specs
 - `APP.SHELL.001`
+- `APP.API.CONNECTIVITY.001`

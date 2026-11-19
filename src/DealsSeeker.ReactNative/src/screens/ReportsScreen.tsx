@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
 
 export function ReportsScreen() {
-  const { activeTab, clearReportDraft, immersiveOffers, openTab, palette, reportDraft, session, api, t } = useApp();
+  const { activeTab, clearReportDraft, openTab, palette, reportDraft, session, api, t } = useApp();
   const [message, setMessage] = useState('');
   const [offerId, setOfferId] = useState('');
   const [reportedAtUtc, setReportedAtUtc] = useState(new Date().toISOString());
@@ -54,6 +55,7 @@ export function ReportsScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      <StandardHeader />
       {reportDraft ? (
         <View style={[styles.preview, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
           <Text style={[styles.previewTitle, { color: palette.ink }]}>{t('reports.preview')}</Text>
@@ -65,11 +67,6 @@ export function ReportsScreen() {
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: palette.ink }]}>{t('reports.title')}</Text>
-          {immersiveOffers ? (
-            <Pressable onPress={() => openTab('offers')}>
-              <Text style={{ color: palette.accent, fontWeight: '700' }}>{t('common.back')}</Text>
-            </Pressable>
-          ) : null}
         </View>
         <Text style={[styles.label, { color: palette.inkMuted }]}>{t('reports.userId')}</Text>
         <View style={[styles.readonly, { backgroundColor: palette.panel, borderColor: palette.border }]}>

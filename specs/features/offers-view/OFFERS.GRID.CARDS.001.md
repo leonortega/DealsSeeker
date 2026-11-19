@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Compact Responsive Offer Grid Cards
-- **Version**: `v0.2`
+- **Version**: `v0.3`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -22,6 +22,7 @@ Define a compact responsive offer-card layout with consistent visual structure a
 - `OFFERS.GRID.CARDS.001-R3`: The grid shall be responsive and adjust columns by viewport width.
 - `OFFERS.GRID.CARDS.001-R4`: Card content shall remain readable in compact form without breaking layout.
 - `OFFERS.GRID.CARDS.001-R5`: Card actions and state indicators required by related specs shall remain visible in the compact card layout.
+- `OFFERS.GRID.CARDS.001-R6`: On a narrow mobile viewport, the card's primary actions (favorite, directions, and comments) shall be stacked vertically with each action occupying the full card width, so localized labels wrap at word boundaries and do not break mid-word.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -36,6 +37,13 @@ Scenario: Grid adapts to screen size
   When the user switches between small and large screen widths
   Then card image framing shall remain visually consistent
   And the number of columns shall adjust responsively
+
+Scenario: Card actions stack on a narrow mobile viewport
+  Given offers are available on a narrow mobile viewport
+  And an offer has localized action labels longer than one word
+  When the card is rendered
+  Then the favorite, directions, and comments actions shall each occupy a full-width row
+  And each label shall wrap at word boundaries without breaking mid-word
 ```
 
 ## Example Inputs/Outputs
@@ -45,6 +53,7 @@ Scenario: Grid adapts to screen size
 ## Edge Cases
 - Very long descriptions truncate without overflowing card bounds.
 - Missing image still keeps card layout intact with placeholder.
+- Localized action labels containing long single words shall not overflow the full-width action rows.
 
 ## Non-Functional Constraints
 - Grid scrolling should remain smooth under typical list sizes.

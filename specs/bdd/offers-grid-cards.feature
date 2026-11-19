@@ -14,3 +14,10 @@ Feature: Compact responsive offer grid cards
     When the viewport width changes
     Then image framing stays visually consistent
     And the column count adjusts responsively
+
+  Scenario: Card actions stack on a narrow mobile viewport
+    Given offers are available on a narrow mobile viewport
+    And an offer has localized action labels longer than one word
+    When the card is rendered
+    Then the favorite, directions, and comments actions each occupy a full-width row
+    And each label wraps at word boundaries without breaking mid-word

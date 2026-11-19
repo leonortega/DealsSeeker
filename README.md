@@ -1,13 +1,13 @@
 # DealsSeeker (.NET 10 Option 1)
 
 Implementation stack:
-- `DealsSeeker.Mobile`: .NET MAUI Blazor Hybrid mobile app.
+- `DealsSeeker.ReactNative`: Expo/React Native mobile and web client.
 - `DealsSeeker.Api`: ASP.NET Core 10 Minimal API.
 - `DealsSeeker.Shared`: shared contracts/models.
 
 ## Solution
 - `DealsSeeker.sln`
-- `src/DealsSeeker.Mobile`
+- `src/DealsSeeker.ReactNative`
 - `src/DealsSeeker.Api`
 - `src/DealsSeeker.Shared`
 
@@ -16,38 +16,6 @@ Implementation stack:
 - `APP.NAVIGATION.MODE.001`: Per-user directions mode preference (`pedestrian` or `car`) applied to offer navigation actions.
 - `OFFERS.*`: Offers page with tag search, map section, distance bar, offer list, actions, and add-offer navigation.
 - `ADD.OFFER.*`: Add Offer page with image capture/upload, auto location, location search, confirm location, and tag long-press logic.
-
-## Run
-1. Install .NET 10 SDK and MAUI workload (if not already installed):
-```powershell
-Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile $env:TEMP\dotnet-install.ps1
-& $env:TEMP\dotnet-install.ps1 -Channel 10.0
-dotnet workload install maui
-```
-2. Run API:
-```powershell
-dotnet run --project src/DealsSeeker.Api
-```
-3. Run mobile app (Windows target):
-```powershell
-dotnet build src/DealsSeeker.Mobile/DealsSeeker.Mobile.csproj -f net10.0-windows10.0.19041.0
-dotnet run --project src/DealsSeeker.Mobile/DealsSeeker.Mobile.csproj -f net10.0-windows10.0.19041.0
-```
-4. Run mobile app (Android target):
-```powershell
-dotnet workload install maui
-adb devices
-$env:DEALSEEKER_API_BASEURL="http://10.0.2.2:5005"
-dotnet run --project src/DealsSeeker.Mobile/DealsSeeker.Mobile.csproj -f net10.0-android
-```
-
-Android notes:
-- Start the API with the HTTP launch profile when testing from the Android emulator:
-```powershell
-dotnet run --project .\src\DealsSeeker.Api --launch-profile http
-```
-- `10.0.2.2` is the Android emulator alias for the host machine. Do not use `localhost` from the emulator.
-- For a physical Android device, set `DEALSEEKER_API_BASEURL` to your PC's LAN IP instead of `10.0.2.2`.
 
 ## Run (React Native UI + API, two terminals)
 The React Native client expects the API on port **5005**. The `run-dev.ps1` script starts both
@@ -79,6 +47,15 @@ The API base URL handed to the UI follows the chosen platform:
 | `ios` / `web` | `http://localhost:5005` |
 | `device` | `http://<machine-lan-ip>:5005` |
 
+### Native Android build
+`run-reactnative-android.ps1` runs the API and the Android app in two separate terminals. It
+resolves the Android SDK/JDK, starts an emulator when no device is connected, and builds/launches
+the app with `expo run:android`:
+
+```powershell
+.\scripts\run-reactnative-android.ps1
+```
+
 ## Map Provider Configuration
 The app supports configurable map provider modules (`GoogleMaps`, `OpenLayers`).
 
@@ -88,17 +65,11 @@ API config (`src/DealsSeeker.Api/appsettings.json`):
 - `OpenLayers:*` (Photon geocoding settings)
 - `GoogleMaps:ApiKey` (required only when `GoogleMaps` is active/fallback and used)
 
-Mobile internal config:
-- `Api:GoogleMapsApiKey` (required when in-app rendering uses `GoogleMaps` and no fallback is desired)
-- `Api:MapDisplayProvider` / `Api:MapDisplayProviderFallback`
-- `Api:MapRedirectProvider` / `Api:MapRedirectProviderFallback`
-- environment variables also supported:
-  - `DEALSEEKER_GOOGLE_MAPS_API_KEY`
-  - `DEALSEEKER_MAP_DISPLAY_PROVIDER`
-  - `DEALSEEKER_MAP_DISPLAY_PROVIDER_FALLBACK`
-  - `DEALSEEKER_MAP_REDIRECT_PROVIDER`
-  - `DEALSEEKER_MAP_REDIRECT_PROVIDER_FALLBACK`
-  - legacy compatibility: `DEALSEEKER_MAP_PROVIDER`, `DEALSEEKER_MAP_PROVIDER_FALLBACK`
+React Native client config (environment variables, see `src/DealsSeeker.ReactNative/README.md`):
+- `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` (required when in-app rendering uses `GoogleMaps` and no fallback is desired)
+- `EXPO_PUBLIC_MAP_DISPLAY_PROVIDER` / `EXPO_PUBLIC_MAP_DISPLAY_PROVIDER_FALLBACK`
+- `EXPO_PUBLIC_MAP_REDIRECT_PROVIDER` / `EXPO_PUBLIC_MAP_REDIRECT_PROVIDER_FALLBACK`
+- legacy compatibility: `EXPO_PUBLIC_MAP_PROVIDER`, `EXPO_PUBLIC_MAP_PROVIDER_FALLBACK`
 
 ## Persistence (Dapper + SQLite)
 - API persistence uses `Dapper` with `SQLite`.

@@ -1,4 +1,4 @@
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useEffect, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
@@ -58,6 +58,8 @@ export function OfferCard({
   query,
 }: OfferCardProps) {
   const { palette, preferences, t } = useApp();
+  const { width } = useWindowDimensions();
+  const stackActions = width < 720;
   const imageUri = useOfferImageUri(offer.imageUrl);
   const canRenderImage = Boolean(imageUri) && !isSvgImageUri(imageUri);
   const [imageFailed, setImageFailed] = useState(false);
@@ -126,20 +128,22 @@ export function OfferCard({
           <Text style={[styles.warning, { color: palette.danger }]}>{t('offers.reportedWarning')}</Text>
         ) : null}
 
-        <View style={styles.actions}>
+        <View style={[styles.actions, stackActions && styles.actionsStacked]}>
           <Pressable
-            style={[styles.actionButton, { backgroundColor: offer.isFavorite ? palette.accentMuted : palette.panel }]}
+            style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: offer.isFavorite ? palette.accentMuted : palette.panel }]}
             onPress={() => onFavorite(offer)}
           >
-            <Text style={{ color: offer.isFavorite ? palette.accent : palette.ink }}>{t('offers.favorite')}</Text>
+            <Text style={[styles.actionLabel, { color: offer.isFavorite ? palette.accent : palette.ink }]}>
+              {t('offers.favorite')}
+            </Text>
           </Pressable>
-          <Pressable style={[styles.actionButton, { backgroundColor: palette.panel }]} onPress={() => onDirections(offer)}>
-            <Text style={{ color: palette.ink }}>
+          <Pressable style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.panel }]} onPress={() => onDirections(offer)}>
+            <Text style={[styles.actionLabel, { color: palette.ink }]}>
               {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
             </Text>
           </Pressable>
-          <Pressable style={[styles.actionButton, { backgroundColor: palette.panel }]} onPress={() => onComments(offer)}>
-            <Text style={{ color: palette.ink }}>{t('offers.action.comments')}</Text>
+          <Pressable style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.panel }]} onPress={() => onComments(offer)}>
+            <Text style={[styles.actionLabel, { color: palette.ink }]}>{t('offers.action.comments')}</Text>
           </Pressable>
         </View>
 
@@ -287,11 +291,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
   },
+  actionsStacked: {
+    flexDirection: 'column',
+    gap: 8,
+  },
   actionButton: {
     borderRadius: 14,
-    flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 12,
+  },
+  actionButtonRow: {
+    flex: 1,
+  },
+  actionLabel: {
+    fontWeight: '700',
+    textAlign: 'center',
   },
   voteSection: {
     borderTopWidth: 1,

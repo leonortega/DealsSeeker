@@ -7,7 +7,8 @@ import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
 import { openDirections } from '../utils/maps';
 import { immersiveBackdrop } from '../utils/theme';
-import { ImmersiveActionCaption, ImmersiveActionIconGlyph, ImmersiveFooterBar } from './ImmersiveFooterBar';
+import { AppFooterBar } from './AppFooterBar';
+import { ImmersiveActionCaption, ImmersiveActionIconGlyph } from './ImmersiveActionGlyphs';
 import { ImmersiveFeedTab, ImmersiveFeedTabs } from './ImmersiveFeedTabs';
 import { COVERAGE_DISTANCE_OPTIONS, ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
 
@@ -231,6 +232,17 @@ function ImmersiveOfferPage({
           {showCaptions ? <ImmersiveActionCaption label={t('offers.action.directions')} /> : null}
         </Pressable>
         <Pressable
+          accessibilityLabel={t('offers.action.report')}
+          accessibilityRole="button"
+          style={styles.railAction}
+          onPress={() => onReport(offer)}
+        >
+          <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
+            <ImmersiveActionIconGlyph kind="report" />
+          </View>
+          {showCaptions ? <ImmersiveActionCaption label={t('offers.action.report')} /> : null}
+        </Pressable>
+        <Pressable
           accessibilityLabel={t('offers.action.available')}
           accessibilityRole="button"
           disabled={offer.hasCurrentUserVoted}
@@ -255,17 +267,6 @@ function ImmersiveOfferPage({
           </View>
           <Text style={[styles.railCount, { color: palette.inkMuted }]}>{offer.negativeAvailabilityCount}</Text>
           {showCaptions ? <ImmersiveActionCaption label={t('offers.action.unavailable')} /> : null}
-        </Pressable>
-        <Pressable
-          accessibilityLabel={t('offers.action.report')}
-          accessibilityRole="button"
-          style={styles.railAction}
-          onPress={() => onReport(offer)}
-        >
-          <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
-            <ImmersiveActionIconGlyph kind="report" />
-          </View>
-          {showCaptions ? <ImmersiveActionCaption label={t('offers.action.report')} /> : null}
         </Pressable>
       </View>
 
@@ -361,7 +362,7 @@ export function ImmersiveOfferFeed({
   }
 
   function handleCreateOffer() {
-    closeImmersiveOffers();
+    // Keep the selected view mode so Offers returns to the immersive feed afterwards.
     openAddOffer();
   }
 
@@ -492,12 +493,14 @@ export function ImmersiveOfferFeed({
       </View>
 
       {isNarrow ? (
-        <ImmersiveFooterBar
-          onCreateOffer={handleCreateOffer}
-          onOpenAccount={() => openTab('account')}
-          onOpenMapMode={handleOpenMapMode}
-          onOpenReports={() => openTab('reports')}
-          onOpenSuggestions={() => openTab('suggestions')}
+        <AppFooterBar
+          items={[
+            { key: 'account', icon: '👤', label: t('nav.account'), onPress: () => openTab('account') },
+            { key: 'suggestions', icon: '✏️', label: t('nav.suggestions'), onPress: () => openTab('suggestions') },
+            { key: 'create', icon: '➕', label: t('nav.createOffer'), onPress: handleCreateOffer },
+            { key: 'offers', icon: '💲', label: t('nav.offers'), onPress: () => openTab('offers'), active: true },
+            { key: 'view', icon: '🗺️', label: t('offers.mapMode'), onPress: handleOpenMapMode },
+          ]}
         />
       ) : null}
 

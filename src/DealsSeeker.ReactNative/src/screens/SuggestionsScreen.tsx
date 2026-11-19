@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
 
 export function SuggestionsScreen() {
-  const { activeTab, api, immersiveOffers, openTab, palette, t } = useApp();
+  const { activeTab, api, openTab, palette, t } = useApp();
   const [message, setMessage] = useState('');
   const [contact, setContact] = useState('');
   const [status, setStatus] = useState<string | null>(null);
@@ -31,14 +32,10 @@ export function SuggestionsScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      <StandardHeader />
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: palette.ink }]}>{t('suggestions.title')}</Text>
-          {immersiveOffers ? (
-            <Pressable onPress={() => openTab('offers')}>
-              <Text style={{ color: palette.accent, fontWeight: '700' }}>{t('common.back')}</Text>
-            </Pressable>
-          ) : null}
         </View>
         <TextInput
           multiline
@@ -69,6 +66,7 @@ export function SuggestionsScreen() {
 
 const styles = StyleSheet.create({
   content: {
+    gap: 14,
     paddingBottom: 24,
   },
   header: {

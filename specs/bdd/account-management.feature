@@ -59,6 +59,13 @@ Feature: Account management for user lifecycle
     Then the user session ends
     And the Login view is shown
 
+  Scenario: Logout is placed on its own left-aligned line on mobile
+    Given the user is authenticated
+    And the user is on My Account on a mobile viewport
+    When the account details are rendered
+    Then the logout action appears on a line below the user's email address
+    And the logout action is aligned to the left edge of the account details
+
   Scenario: User edits an owned offer from My Account
     Given the user is authenticated
     And My Account shows an offer created by the user

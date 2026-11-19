@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive View Navigation
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Offers View (Immersive)
 - **Priority**: High
@@ -21,12 +21,8 @@ Define how the user returns from the immersive offers view to the standard offer
 - `OFFERS.IMMERSIVE.001-R2`: Selecting the map mode option shall close the immersive offers view and return the user to the standard offers view.
 - `OFFERS.IMMERSIVE.001-R3`: Returning to the standard offers view shall restore the standard application header and bottom navigation.
 - `OFFERS.IMMERSIVE.001-R4`: Closing the immersive view shall preserve the current search query, radius, and location context.
-- `OFFERS.IMMERSIVE.001-R5`: When a destination opened from the immersive left panel (account, suggestions, or reports) is displayed, it shall provide a back control.
-- `OFFERS.IMMERSIVE.001-R6`: Selecting that back control shall return the user to the immersive offers view.
-- `OFFERS.IMMERSIVE.001-R7`: The back control in those destinations shall only be displayed while the immersive offers mode is enabled.
-- `OFFERS.IMMERSIVE.001-R8`: In Account view, the back control shall be placed in the hero row on the right side, and the logout control shall be placed to the right of the email with a minimum gap.
-- `OFFERS.IMMERSIVE.001-R9`: In Suggestions and Reports views, the back control shall be placed in the panel header row on the right side, aligned with the title.
-- `OFFERS.IMMERSIVE.001-R10`: In Favorites view, the back control shall remain in the panel header row on the right side, aligned with the title, and shall close the Favorites overlay.
+- `OFFERS.IMMERSIVE.001-R5`: No destination view shall display a back control, including Account, Suggestions, Reports, Favorites and Add Offer.
+- `OFFERS.IMMERSIVE.001-R6`: Navigation out of a destination opened from the immersive view shall be performed through the shared bottom footer.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -47,11 +43,11 @@ Scenario: Context is preserved after returning
   When the user selects the map mode option
   Then the search query and radius shall remain available in the standard offers view
 
-Scenario: Back control is available in destinations opened from immersive view
+Scenario: Destinations opened from immersive view have no back control
   Given the user is on the immersive offers view
-  When the user opens a destination from the left panel
-  Then a back control is available in that destination
-  And selecting it returns the user to the immersive offers view
+  When the user opens a destination from the footer
+  Then no back control is available in that destination
+  And the shared bottom footer remains visible
 ```
 
 ## Example Inputs/Outputs

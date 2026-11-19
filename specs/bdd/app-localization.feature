@@ -15,9 +15,9 @@ Feature: App localization and language override
     Then UI strings switch to Spanish resources
     And search and tag suggestion dictionaries switch to Spanish resources
 
-  Scenario: Language change from menu applies instantly
+  Scenario: Language change from My Account applies instantly
     Given app language is English
-    When the user chooses Spanish from the menu language control
+    When the user chooses Spanish from the My Account language control
     Then visible UI text in the current view switches to Spanish immediately
     And search and tag suggestion dictionaries switch to Spanish immediately
 

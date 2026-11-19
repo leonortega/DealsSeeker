@@ -9,7 +9,17 @@ Feature: Immersive feed responsive presentation
     When the view is rendered
     Then the fixed left side panel is not displayed
     And a bottom footer bar is displayed
-    And the footer offers map mode, favorites, account, suggestions, reports, and create options in that order
+    And the footer offers My Account, Suggestions, Create, Offers, and Map mode in that order
+    And the footer uses the same icons and visual style as the standard view footer
+
+  Scenario: Narrow viewport footer spans the full screen width
+    Given the user is on the immersive offers view
+    And the viewport is narrow
+    When the bottom footer bar is rendered
+    Then it spans the full width of the screen
+    And all five options including the view button are fully visible inside the footer
+    And the options are evenly distributed across the footer
+    And a long label is truncated to a single line instead of pushing the view button outside the footer
 
   Scenario: Narrow viewport search is an icon that opens a search overlay
     Given the user is on the immersive offers view
@@ -29,6 +39,18 @@ Feature: Immersive feed responsive presentation
     And the overlay closes
     When the user selects the cancel action
     Then the overlay closes without applying the entered query
+
+  Scenario: Search overlay labels are localized
+    Given the user is on the immersive offers view
+    And the app language is English
+    When the search overlay is opened
+    Then the title reads `Search offers`
+    And the search action reads `Search`
+    And the radius label and cancel action show their localized strings
+    When the app language is Spanish
+    Then the title reads `Buscar ofertas`
+    And the search action reads `Buscar`
+    And no label displays a raw resource key
 
   Scenario: Bottom footer does not cover offer content
     Given the user is on the immersive offers view

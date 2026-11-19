@@ -9,6 +9,7 @@ import { MapPreview } from '../components/MapPreview';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetailModal } from '../components/OfferDetailModal';
 import { OfferCommentsModal } from '../components/OfferCommentsModal';
+import { StandardHeader } from '../components/StandardHeader';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
@@ -20,7 +21,7 @@ const radiusOptions = [500, 1000, 1500, 2500, 5000];
 const searchDebounceMs = 300;
 
 export function OffersScreen() {
-  const { activeTab, api, immersiveOffers, isPending, openAddOffer, palette, preferences, setReportDraft, t } =
+  const { activeTab, api, immersiveOffers, isPending, palette, preferences, setReportDraft, t } =
     useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const [query, setQuery] = useState('');
@@ -242,6 +243,7 @@ export function OffersScreen() {
   return (
     <>
       <ScrollView contentContainerStyle={styles.content}>
+        <StandardHeader />
         <View style={styles.heroRow}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.title, { color: palette.ink }]}>{t('offers.title')}</Text>
@@ -249,9 +251,6 @@ export function OffersScreen() {
               {t('offers.location')}: {userLocationLabel}
             </Text>
           </View>
-          <Pressable style={[styles.addButton, { backgroundColor: palette.accent }]} onPress={() => openAddOffer()}>
-            <Text style={styles.addButtonLabel}>＋</Text>
-          </Pressable>
         </View>
 
         <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
@@ -392,18 +391,6 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Georgia',
     fontSize: 30,
-    fontWeight: '700',
-  },
-  addButton: {
-    alignItems: 'center',
-    borderRadius: 16,
-    height: 54,
-    justifyContent: 'center',
-    width: 54,
-  },
-  addButtonLabel: {
-    color: '#fff',
-    fontSize: 28,
     fontWeight: '700',
   },
   panel: {
