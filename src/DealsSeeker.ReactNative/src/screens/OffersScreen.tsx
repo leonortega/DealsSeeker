@@ -9,19 +9,24 @@ import { MapPreview } from '../components/MapPreview';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetailModal } from '../components/OfferDetailModal';
 import { OfferCommentsModal } from '../components/OfferCommentsModal';
+import { HelpSheet } from '../components/HelpSheet';
+import { NavIcon } from '../components/NavIcon';
+import { OffersStatePanel } from '../components/OffersStatePanel';
+import { PresentationModeSwitch, type PresentationMode } from '../components/PresentationModeSwitch';
 import { StandardHeader } from '../components/StandardHeader';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { partitionOffers } from '../utils/format';
 import { openDirections } from '../utils/maps';
+import { resolveOffersViewState } from '../utils/offersState';
 
 const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
 const searchDebounceMs = 300;
 
 export function OffersScreen() {
-  const { activeTab, api, immersiveOffers, isPending, palette, preferences, setReportDraft, t } =
+  const { activeTab, api, closeImmersiveOffers, immersiveOffers, isPending, openAddOffer, openImmersiveOffers, palette, preferences, setReportDraft, t } =
     useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const [query, setQuery] = useState('');
@@ -34,11 +39,16 @@ export function OffersScreen() {
   const [userLocation, setUserLocation] = useState(fallbackLocation);
   const [userLocationLabel, setUserLocationLabel] = useState(t('offers.currentLocation'));
   const [status, setStatus] = useState<string | null>(null);
+  const [searchFailed, setSearchFailed] = useState(false);
+  const [helpVisible, setHelpVisible] = useState(false);
+  const [locationFallback, setLocationFallback] = useState(false);
+  const [locationNoticeDismissed, setLocationNoticeDismissed] = useState(false);
   const searchRequest = useAbortableRequest();
   const searchSequence = useRef(0);
 
   async function resolveCurrentLocation() {
     let nextLocation = fallbackLocation;
+    let usingFallback = false;
 
     try {
       const permission = await Location.requestForegroundPermissionsAsync();
@@ -50,21 +60,51 @@ export function OffersScreen() {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
+      } else {
+        usingFallback = true;
       }
     } catch {
+      usingFallback = true;
       nextLocation = fallbackLocation;
     }
 
     setUserLocation(nextLocation);
+    setLocationFallback(usingFallback);
+    setLocationNoticeDismissed(false);
 
     try {
       const reverse = await api.reverseLocation(nextLocation.lat, nextLocation.lng);
-      setUserLocationLabel(reverse?.label?.trim() || t('offers.currentLocation'));
+      const resolvedLabel = reverse?.label?.trim();
+      setUserLocationLabel(
+        usingFallback
+          ? resolvedLabel
+            ? `${t('offers.approximateArea')}: ${resolvedLabel}`
+            : t('offers.approximateArea')
+          : resolvedLabel || t('offers.currentLocation')
+      );
     } catch {
-      setUserLocationLabel(t('offers.currentLocation'));
+      setUserLocationLabel(usingFallback ? t('offers.approximateArea') : t('offers.currentLocation'));
     }
 
     return nextLocation;
+  }
+
+  async function retryLocation() {
+    const location = await resolveCurrentLocation();
+
+    try {
+      const response = await api.searchOffers({
+        query,
+        userLocation: location,
+        radiusMeters,
+        locale: preferences.language,
+        favoritesOnly,
+      });
+      setResults(response);
+      setSearchFailed(false);
+    } catch {
+      setSearchFailed(true);
+    }
   }
 
   async function search(
@@ -97,12 +137,13 @@ export function OffersScreen() {
 
       setResults(response);
       setStatus(null);
+      setSearchFailed(false);
     } catch (error) {
       if (isRequestAborted(error) || sequence !== searchSequence.current) {
         return;
       }
 
-      setStatus(t('offers.searchFailed'));
+      setSearchFailed(true);
     }
   }
 
@@ -130,16 +171,115 @@ export function OffersScreen() {
         });
         setResults(response);
         setStatus(null);
+        setSearchFailed(false);
       } catch (error) {
         if (isRequestAborted(error)) {
           return;
         }
-        setStatus(t('offers.searchFailed'));
+        setSearchFailed(true);
       }
     })();
   }, [activeTab, preferences.language]);
 
   if (activeTab !== 'offers') {
+    return null;
+  }
+
+  const state = resolveOffersViewState({
+    hasActiveFilters: query.trim().length > 0 || favoritesOnly,
+    hasOffers: results.offers.length > 0,
+    searchFailed,
+  });
+
+  const presentationMode: PresentationMode = immersiveOffers ? 'feed' : 'map';
+
+  function changePresentationMode(nextMode: PresentationMode) {
+    if (nextMode === 'feed') {
+      openImmersiveOffers();
+      return;
+    }
+    closeImmersiveOffers();
+  }
+
+  const modeSwitch = (
+    <PresentationModeSwitch
+      feedLabel={t('offers.mode.feed')}
+      mapLabel={t('offers.mode.map')}
+      onChange={changePresentationMode}
+      palette={palette}
+      value={presentationMode}
+    />
+  );
+
+  const helpButton = (
+    <Pressable
+      accessibilityLabel={t('common.help')}
+      accessibilityRole="button"
+      onPress={() => setHelpVisible(true)}
+      style={[styles.helpButton, { backgroundColor: palette.panel, borderColor: palette.border }]}
+    >
+      <NavIcon color={palette.ink} name="help" size={20} />
+    </Pressable>
+  );
+
+  const fallbackNotice = (
+    <View style={[styles.fallbackNotice, { backgroundColor: palette.card, borderColor: palette.border }]}>
+      <Text accessibilityLiveRegion="polite" style={[styles.fallbackText, { color: palette.ink }]}>
+        {t('offers.locationFallbackNotice')}
+      </Text>
+      <View style={styles.fallbackActions}>
+        <Pressable
+          accessibilityLabel={t('common.retry')}
+          accessibilityRole="button"
+          onPress={() => void retryLocation()}
+          style={[styles.fallbackButton, { backgroundColor: palette.accent }]}
+        >
+          <Text style={styles.fallbackButtonLabel}>{t('common.retry')}</Text>
+        </Pressable>
+        <Pressable
+          accessibilityLabel={t('common.close')}
+          accessibilityRole="button"
+          onPress={() => setLocationNoticeDismissed(true)}
+          style={[styles.fallbackButton, { backgroundColor: palette.panel }]}
+        >
+          <Text style={{ color: palette.ink }}>{t('common.close')}</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+
+  function clearFilters() {
+    setQuery('');
+    setFavoritesOnly(false);
+    setFeedTab('viewAll');
+    void search('', radiusMeters, false);
+  }
+
+  function panel(title: string, hint: string, actionLabel: string, onAction: () => void) {
+    return (
+      <OffersStatePanel
+        actionLabel={actionLabel}
+        hint={hint}
+        onAction={onAction}
+        palette={palette}
+        title={title}
+      />
+    );
+  }
+
+  function renderStatePanel() {
+    if (state.kind === 'search-error') {
+      return panel(t('offers.searchFailed'), t('offers.searchFailedHint'), t('offers.retry'), () => void search());
+    }
+
+    if (state.kind === 'no-results-filtered') {
+      return panel(t('offers.noResults'), t('offers.noResultsHint'), t('offers.clearFilters'), clearFilters);
+    }
+
+    if (state.kind === 'empty') {
+      return panel(t('offers.emptyTitle'), t('offers.emptyHint'), t('offers.createFirstOffer'), openAddOffer);
+    }
+
     return null;
   }
 
@@ -198,6 +338,8 @@ export function OffersScreen() {
 
     return (
       <>
+        {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
+        {renderStatePanel()}
         {isPending('offers-search') ? (
           <View style={[styles.progressBanner, { backgroundColor: palette.card, borderColor: palette.border }]}>
             <Text style={[styles.progressLabel, { color: palette.inkMuted }]}>{t('offers.loading')}</Text>
@@ -205,6 +347,8 @@ export function OffersScreen() {
         ) : null}
         <ImmersiveOfferFeed
           feedTab={feedTab}
+          headerControl={modeSwitch}
+          helpControl={helpButton}
           offers={combinedOffers}
           onComments={openOfferComments}
           onDirections={openOfferDirections}
@@ -236,6 +380,7 @@ export function OffersScreen() {
           onClose={() => setCommentsOffer(null)}
           visible={commentsOffer !== null}
         />
+        <HelpSheet onClose={() => setHelpVisible(false)} visible={helpVisible} />
       </>
     );
   }
@@ -243,6 +388,7 @@ export function OffersScreen() {
   return (
     <>
       <ScrollView contentContainerStyle={styles.content}>
+        {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
         <StandardHeader />
         <View style={styles.heroRow}>
           <View style={{ flex: 1 }}>
@@ -251,6 +397,10 @@ export function OffersScreen() {
               {t('offers.location')}: {userLocationLabel}
             </Text>
           </View>
+        </View>
+        <View style={styles.headerControls}>
+          {modeSwitch}
+          {helpButton}
         </View>
 
         <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
@@ -268,6 +418,9 @@ export function OffersScreen() {
             {radiusOptions.map((option) => (
               <Pressable
                 key={option}
+                accessibilityLabel={`${option} m`}
+                accessibilityRole="button"
+                accessibilityState={{ selected: option === radiusMeters }}
                 style={[
                   styles.radiusChip,
                   {
@@ -301,6 +454,8 @@ export function OffersScreen() {
             </Pressable>
           </View>
         </View>
+
+        {renderStatePanel()}
 
         <MapPreview
           businesses={results.businesses}
@@ -337,7 +492,6 @@ export function OffersScreen() {
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('nav.offers')}</Text>
-          {sections.feed.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('offers.noResults')}</Text> : null}
           <View style={styles.grid}>
             {sections.feed.map((offer) => (
               <View
@@ -374,6 +528,7 @@ export function OffersScreen() {
         onClose={() => setCommentsOffer(null)}
         visible={commentsOffer !== null}
       />
+      <HelpSheet onClose={() => setHelpVisible(false)} visible={helpVisible} />
     </>
   );
 }
@@ -387,6 +542,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: 14,
+  },
+  headerControls: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+  },
+  helpButton: {
+    alignItems: 'center',
+    borderRadius: 999,
+    borderWidth: 1,
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
+  fallbackNotice: {
+    borderRadius: 18,
+    borderWidth: 1,
+    gap: 10,
+    marginHorizontal: 16,
+    marginTop: 8,
+    padding: 14,
+  },
+  fallbackText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  fallbackActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  fallbackButton: {
+    alignItems: 'center',
+    borderRadius: 999,
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: 14,
+  },
+  fallbackButtonLabel: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '800',
   },
   title: {
     fontFamily: 'Georgia',
@@ -413,6 +610,7 @@ const styles = StyleSheet.create({
   radiusChip: {
     borderRadius: 999,
     borderWidth: 1,
+    minHeight: 44,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
@@ -423,6 +621,7 @@ const styles = StyleSheet.create({
   actionButton: {
     borderRadius: 16,
     flex: 1,
+    minHeight: 44,
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
@@ -443,7 +642,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   progressLabel: {
-    fontSize: 13,
+    fontSize: 14,
   },
   grid: {
     flexDirection: 'row',
