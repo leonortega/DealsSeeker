@@ -19,6 +19,7 @@ import { StandardHeader } from '../components/StandardHeader';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
 import { announceStatus } from '../utils/announce';
+import { statusColor, type StatusTone } from '../utils/statusNotice';
 import { extractCompletedWord, extractWords } from '../utils/format';
 import { getSuggestedTags, normalizeTag } from '../utils/tagLexicon';
 
@@ -125,12 +126,14 @@ export function AddOfferScreen() {
   const [mapCenter, setMapCenter] = useState<GeoPoint | null>(null);
   const [suggestionsSuppressed, setSuggestionsSuppressed] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<StatusTone>('neutral');
   const locationSearchRequest = useAbortableRequest();
   const locationSearchSequence = useRef(0);
   const pinSequence = useRef(0);
 
-  function reportStatus(message: string | null) {
+  function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
     setStatus(message);
+    setStatusTone(tone);
     announceStatus(message);
   }
 
@@ -148,7 +151,7 @@ export function AddOfferScreen() {
       if (editingOfferId) {
         const draft = await api.getMyOfferDraft(editingOfferId);
         if (!draft) {
-          reportStatus(t('add.loadFailed'));
+          reportStatus(t('add.loadFailed'), 'error');
           return;
         }
 
@@ -190,7 +193,7 @@ export function AddOfferScreen() {
         const permission = await Location.requestForegroundPermissionsAsync();
         if (!permission.granted) {
           setMapCenter(fallbackMapCenter);
-          reportStatus(t('add.currentLocationUnavailable'));
+          reportStatus(t('add.currentLocationUnavailable'), 'error');
           return;
         }
 
@@ -213,7 +216,7 @@ export function AddOfferScreen() {
         reportStatus(t('add.currentLocationAuto'));
       } catch {
         setMapCenter(fallbackMapCenter);
-        reportStatus(t('add.currentLocationUnavailable'));
+        reportStatus(t('add.currentLocationUnavailable'), 'error');
       }
     }
 
@@ -249,7 +252,7 @@ export function AddOfferScreen() {
           if (isRequestAborted(error) || sequence !== locationSearchSequence.current) {
             return;
           }
-          reportStatus(t('add.locationSearchFailed'));
+          reportStatus(t('add.locationSearchFailed'), 'error');
         }
       })();
     }, 300);
@@ -303,7 +306,7 @@ export function AddOfferScreen() {
         return;
       }
 
-      reportStatus(t('add.mapPinAddressUnavailable'));
+      reportStatus(t('add.mapPinAddressUnavailable'), 'error');
     }
   }
 
@@ -355,13 +358,13 @@ export function AddOfferScreen() {
 
   async function pickFromCamera() {
     if (images.length >= maxPhotos) {
-      reportStatus(t('add.maxPhotos'));
+      reportStatus(t('add.maxPhotos'), 'error');
       return;
     }
 
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      reportStatus(t('add.imageError'));
+      reportStatus(t('add.imageError'), 'error');
       return;
     }
 
@@ -377,7 +380,7 @@ export function AddOfferScreen() {
 
     const built = buildDraftImage(result.assets[0], images.length);
     if (!built) {
-      reportStatus(t('add.imageError'));
+      reportStatus(t('add.imageError'), 'error');
       return;
     }
 
@@ -387,7 +390,7 @@ export function AddOfferScreen() {
 
   async function pickFromGallery() {
     if (images.length >= maxPhotos) {
-      reportStatus(t('add.maxPhotos'));
+      reportStatus(t('add.maxPhotos'), 'error');
       return;
     }
 
@@ -409,7 +412,7 @@ export function AddOfferScreen() {
       .filter(Boolean) as DraftImage[];
 
     if (nextImages.length === 0) {
-      reportStatus(t('add.imageError'));
+      reportStatus(t('add.imageError'), 'error');
       return;
     }
 
@@ -462,7 +465,7 @@ export function AddOfferScreen() {
       errors.push(t('add.validationLocation'));
     }
 
-    reportStatus(errors.join(' '));
+    reportStatus(errors.join(' '), 'error');
     return errors.length === 0;
   }
 
@@ -487,7 +490,7 @@ export function AddOfferScreen() {
       try {
         await api.updateOffer(editingOfferId, payload);
       } catch (error) {
-        reportStatus(formatSubmitError(error, t('add.updateFailed')));
+        reportStatus(formatSubmitError(error, t('add.updateFailed')), 'error');
         return;
       }
 
@@ -502,7 +505,7 @@ export function AddOfferScreen() {
     try {
       await api.createOffer(payload);
     } catch (error) {
-      reportStatus(formatSubmitError(error, t('add.createFailed')));
+      reportStatus(formatSubmitError(error, t('add.createFailed')), 'error');
       return;
     }
 
@@ -772,7 +775,7 @@ export function AddOfferScreen() {
         <Text style={styles.submitLabel}>{editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}</Text>
       </Pressable>
       {status ? (
-        <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.ink }]}>
+        <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
           {status}
         </Text>
       ) : null}

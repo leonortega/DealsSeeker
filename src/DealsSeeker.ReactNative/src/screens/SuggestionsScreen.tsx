@@ -2,16 +2,21 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { announceStatus } from '../utils/announce';
+import { statusColor, type StatusTone } from '../utils/statusNotice';
 
 export function SuggestionsScreen() {
   const { activeTab, api, openTab, palette, t } = useApp();
+  const insets = useSafeAreaInsets();
   const [message, setMessage] = useState('');
   const [contact, setContact] = useState('');
   const [status, setStatus] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<StatusTone>('neutral');
 
-  function reportStatus(message: string | null) {
+  function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
     setStatus(message);
+    setStatusTone(tone);
     announceStatus(message);
   }
 
@@ -26,7 +31,7 @@ export function SuggestionsScreen() {
     });
 
     if (!result.success) {
-      reportStatus(t('suggestions.failed'));
+      reportStatus(t('suggestions.failed'), 'error');
       return;
     }
 
@@ -37,7 +42,7 @@ export function SuggestionsScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
       <StandardHeader />
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <View style={styles.header}>
@@ -72,7 +77,7 @@ export function SuggestionsScreen() {
           <Text style={styles.buttonLabel}>{t('suggestions.submit')}</Text>
         </Pressable>
         {status ? (
-          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.ink }]}>
+          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
             {status}
           </Text>
         ) : null}

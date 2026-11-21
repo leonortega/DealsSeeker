@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import * as Location from 'expo-location';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
 import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '../api/types';
 import { ImmersiveOfferFeed } from '../components/ImmersiveOfferFeed';
@@ -20,6 +21,7 @@ import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { partitionOffers } from '../utils/format';
 import { openDirections } from '../utils/maps';
 import { resolveOffersViewState } from '../utils/offersState';
+import { statusColor, type StatusTone } from '../utils/statusNotice';
 
 const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
@@ -29,6 +31,7 @@ export function OffersScreen() {
   const { activeTab, api, closeImmersiveOffers, immersiveOffers, isPending, openAddOffer, openImmersiveOffers, palette, preferences, setReportDraft, t } =
     useApp();
   const { width: viewportWidth } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [radiusMeters, setRadiusMeters] = useState(1500);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
@@ -39,6 +42,7 @@ export function OffersScreen() {
   const [userLocation, setUserLocation] = useState(fallbackLocation);
   const [userLocationLabel, setUserLocationLabel] = useState(t('offers.currentLocation'));
   const [status, setStatus] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<StatusTone>('neutral');
   const [searchFailed, setSearchFailed] = useState(false);
   const [helpVisible, setHelpVisible] = useState(false);
   const [locationFallback, setLocationFallback] = useState(false);
@@ -289,32 +293,38 @@ export function OffersScreen() {
     (Math.max(320, viewportWidth - 32) - (gridColumns - 1) * 12) / gridColumns
   );
 
+  function setActionStatus(message: string | null, tone: StatusTone = 'neutral') {
+    setStatus(message);
+    setStatusTone(tone);
+  }
+
   async function toggleFavorite(offer: OfferItemDto) {
-    setStatus(null);
+    setActionStatus(null);
     const result = await api.setOfferFavorite(offer.offerId, { isFavorite: !offer.isFavorite });
     if (!result.success) {
-      setStatus(t('offers.favoriteFailed'));
+      setActionStatus(t('offers.favoriteFailed'), 'error');
       return;
     }
 
     await search();
-    setStatus(t('offers.favoriteUpdated'));
+    setActionStatus(t('offers.favoriteUpdated'));
   }
 
   async function vote(offer: OfferItemDto, voteType: OfferAvailabilityVoteType) {
-    setStatus(null);
+    setActionStatus(null);
     const result = await api.voteOfferAvailability(offer.offerId, { vote: voteType });
     if (!result.success) {
-      setStatus(
+      setActionStatus(
         result.message.toLowerCase().includes('already')
           ? t('offers.voteAlreadySubmitted')
-          : t('offers.voteFailed')
+          : t('offers.voteFailed'),
+        'error'
       );
       await search();
       return;
     }
 
-    setStatus(t('offers.feedbackRegistered'));
+    setActionStatus(t('offers.feedbackRegistered'));
     await search();
   }
 
@@ -345,7 +355,7 @@ export function OffersScreen() {
           <View pointerEvents="box-none" style={styles.feedbackToast}>
             <Text
               accessibilityLiveRegion="polite"
-              style={[styles.feedbackToastText, { backgroundColor: palette.card, borderColor: palette.border, color: palette.ink }]}
+              style={[styles.feedbackToastText, { backgroundColor: palette.card, borderColor: palette.border, color: statusColor(palette, statusTone) }]}
             >
               {status}
             </Text>
@@ -398,7 +408,7 @@ export function OffersScreen() {
 
   return (
     <>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
         {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
         <StandardHeader />
         <View style={styles.heroRow}>
@@ -523,7 +533,7 @@ export function OffersScreen() {
             ))}
           </View>
         </View>
-        {status ? <Text style={[styles.status, { color: palette.ink }]}>{status}</Text> : null}
+        {status ? <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>{status}</Text> : null}
       </ScrollView>
 
       <OfferDetailModal

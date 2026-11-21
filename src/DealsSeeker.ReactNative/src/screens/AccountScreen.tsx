@@ -5,18 +5,23 @@ import { AvatarPicker } from '../components/AvatarPicker';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
 import { announceStatus } from '../utils/announce';
+import { statusColor, type StatusTone } from '../utils/statusNotice';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { avatarEmoji } from '../utils/avatars';
 import { shorten } from '../utils/format';
 
 export function AccountScreen() {
   const { activeTab, api, avatarId, logout, openAddOffer, palette, preferences, saveAvatar, setLanguage, setNavigationMode, setThemeMode, t } =
     useApp();
+  const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState<UserProfileDto | null>(null);
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
   const [status, setStatus] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<StatusTone>('neutral');
 
-  function reportStatus(message: string | null) {
+  function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
     setStatus(message);
+    setStatusTone(tone);
     announceStatus(message);
   }
 
@@ -48,7 +53,7 @@ export function AccountScreen() {
           void (async () => {
             const result = await api.deleteOffer(offer.offerId);
             if (!result.success) {
-              reportStatus(t('account.offerRemoveFailed'));
+              reportStatus(t('account.offerRemoveFailed'), 'error');
               return;
             }
 
@@ -61,7 +66,7 @@ export function AccountScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
       <StandardHeader />
       <View style={[styles.hero, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
         <View style={[styles.avatar, { backgroundColor: palette.accentMuted }]}>
@@ -153,7 +158,7 @@ export function AccountScreen() {
         ))}
       </View>
       {status ? (
-        <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.ink }]}>
+        <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
           {status}
         </Text>
       ) : null}

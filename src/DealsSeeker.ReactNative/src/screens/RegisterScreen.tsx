@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
 import { announceStatus } from '../utils/announce';
+import { authFormStyles } from '../utils/authFormStyles';
 import { validateEmail, validateStrongPassword } from '../utils/format';
 
 export function RegisterScreen() {
@@ -68,16 +69,16 @@ export function RegisterScreen() {
   return (
     <KeyboardAvoidingView
       behavior="padding"
-      style={[styles.root, { backgroundColor: palette.background }]}
+      style={[authFormStyles.root, { backgroundColor: palette.background }]}
     >
-      <View style={[styles.formCard, { backgroundColor: palette.card, borderColor: palette.border }]}>
+      <View style={[authFormStyles.formCard, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <Text style={[styles.formTitle, { color: palette.ink }]}>{t('auth.registerTitle')}</Text>
         <TextInput
           accessibilityLabel={t('auth.displayName')}
           onChangeText={setDisplayName}
           placeholder={t('auth.displayName')}
           placeholderTextColor={palette.inkMuted}
-          style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
+          style={[authFormStyles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
           value={displayName}
         />
         <TextInput
@@ -87,7 +88,7 @@ export function RegisterScreen() {
           onChangeText={setEmail}
           placeholder={t('auth.email')}
           placeholderTextColor={palette.inkMuted}
-          style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
+          style={[authFormStyles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
           value={email}
         />
         <TextInput
@@ -96,22 +97,22 @@ export function RegisterScreen() {
           placeholder={t('auth.password')}
           placeholderTextColor={palette.inkMuted}
           secureTextEntry
-          style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
+          style={[authFormStyles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
           value={password}
         />
         <Pressable
           accessibilityLabel={t('auth.registerButton')}
           accessibilityRole="button"
-          style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+          style={[authFormStyles.primaryButton, { backgroundColor: palette.accent }]}
           onPress={() => void submit()}
         >
-          <Text style={styles.primaryButtonLabel}>{t('auth.registerButton')}</Text>
+          <Text style={authFormStyles.primaryButtonLabel}>{t('auth.registerButton')}</Text>
         </Pressable>
         <Pressable accessibilityLabel={t('auth.loginLink')} accessibilityRole="link" onPress={showLogin}>
-          <Text style={[styles.link, { color: palette.accent }]}>{t('auth.loginLink')}</Text>
+          <Text style={[authFormStyles.link, { color: palette.accent }]}>{t('auth.loginLink')}</Text>
         </Pressable>
         {status ? (
-          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.danger }]}>
+          <Text accessibilityLiveRegion="polite" style={[authFormStyles.status, { color: palette.danger }]}>
             {status}
           </Text>
         ) : null}
@@ -121,49 +122,9 @@ export function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  formCard: {
-    borderRadius: 28,
-    borderWidth: 1,
-    gap: 12,
-    padding: 20,
-  },
   formTitle: {
     fontFamily: 'Georgia',
     fontSize: 24,
-    fontWeight: '700',
-  },
-  input: {
-    borderRadius: 16,
-    borderWidth: 1,
-    fontSize: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-  },
-  primaryButton: {
-    borderRadius: 28,
-    paddingVertical: 15,
-  },
-  primaryButtonLabel: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '800',
-    textAlign: 'center',
-  },
-  link: {
-    alignItems: 'center',
-    fontSize: 14,
-    fontWeight: '700',
-    justifyContent: 'center',
-    minHeight: 44,
-    textAlign: 'center',
-  },
-  status: {
-    fontSize: 14,
     fontWeight: '700',
   },
 });

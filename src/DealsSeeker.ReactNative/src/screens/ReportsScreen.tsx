@@ -2,17 +2,22 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { announceStatus } from '../utils/announce';
+import { statusColor, type StatusTone } from '../utils/statusNotice';
 
 export function ReportsScreen() {
   const { activeTab, clearReportDraft, openTab, palette, reportDraft, session, api, t } = useApp();
+  const insets = useSafeAreaInsets();
   const [message, setMessage] = useState('');
   const [offerId, setOfferId] = useState('');
   const [reportedAtUtc, setReportedAtUtc] = useState(new Date().toISOString());
   const [status, setStatus] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<StatusTone>('neutral');
 
-  function reportStatus(message: string | null) {
+  function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
     setStatus(message);
+    setStatusTone(tone);
     announceStatus(message);
   }
 
@@ -35,7 +40,7 @@ export function ReportsScreen() {
 
   async function submit() {
     if (!message.trim()) {
-      reportStatus(t('reports.messageRequired'));
+      reportStatus(t('reports.messageRequired'), 'error');
       return;
     }
 
@@ -47,7 +52,7 @@ export function ReportsScreen() {
     });
 
     if (!result.success) {
-      reportStatus(t('reports.failed'));
+      reportStatus(t('reports.failed'), 'error');
       return;
     }
 
@@ -60,7 +65,7 @@ export function ReportsScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
       <StandardHeader />
       {reportDraft ? (
         <View style={[styles.preview, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
@@ -112,7 +117,7 @@ export function ReportsScreen() {
           <Text style={styles.buttonLabel}>{t('reports.submit')}</Text>
         </Pressable>
         {status ? (
-          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.ink }]}>
+          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
             {status}
           </Text>
         ) : null}

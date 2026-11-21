@@ -99,7 +99,7 @@ function buildMapHtml({
 
       body {
         color: ${textColor};
-        font-family: Arial, sans-serif;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
       }
 
       .message {

@@ -5,6 +5,7 @@ import { OfferItemDto } from '../api/types';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
 import { announceStatus } from '../utils/announce';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { openDirections } from '../utils/maps';
 import { shorten } from '../utils/format';
 
@@ -12,6 +13,7 @@ const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 
 export function FavoritesScreen() {
   const { api, overlayRoute, palette, preferences, t } = useApp();
+  const insets = useSafeAreaInsets();
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -75,7 +77,7 @@ export function FavoritesScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
       <StandardHeader />
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <View style={styles.header}>
@@ -109,7 +111,7 @@ export function FavoritesScreen() {
           </View>
         ))}
         {status ? (
-          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.ink }]}>
+          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.danger }]}>
             {status}
           </Text>
         ) : null}
