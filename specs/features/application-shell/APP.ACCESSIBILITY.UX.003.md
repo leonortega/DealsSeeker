@@ -85,3 +85,4 @@ Scenario: Success is perceivable before navigation
 - `REPORTS.SUBMIT.001`
 - `OFFERS.DETAIL.ACTIONS.001`
 - `OFFERS.COMMENTS.001`
+- `APP.LOCATION.FALLBACK.001`

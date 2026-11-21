@@ -2,10 +2,13 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v1.22`
+- **Version**: `v2.0`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
+
+## Navigation restructure (v2.0)
+Requirements R3 and R15 are superseded by `OFFERS.MODE.SWITCH.001`: the startup default is the `Feed` presentation selected in the Offers header, and presentation switching is no longer a bottom-footer button. R1's section list remains authoritative for the shared bottom navigation; Add Offer is reached from a single floating action button per `OFFERS.NAV.ADD.001`.
 
 ## Purpose
 Define global app sections and startup landing behavior based on session state.
@@ -20,7 +23,7 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R0`: The system shall be a mobile application named `DealsSeeker`.
 - `APP.SHELL.001-R1`: The system shall provide the main navigation sections: `My Account`, `Offers`, `Suggestions`, `Reports`.
 - `APP.SHELL.001-R2`: When there is no active authenticated session, the first view at startup shall be `Login`.
-- `APP.SHELL.001-R3`: When there is an active authenticated session, the first view at startup shall be `Offers`, presented as the immersive full-screen offers feed.
+- `APP.SHELL.001-R3`: When there is an active authenticated session, the first view at startup shall be `Offers`, with the `Feed` presentation selected by default as defined in `OFFERS.MODE.SWITCH.001`.
 - `APP.SHELL.001-R4`: After successful login or successful user creation, the system shall navigate to `Offers`.
 - `APP.SHELL.001-R5`: The system shall persist authenticated session state on device so the user is not required to login again on every app launch.
 - `APP.SHELL.001-R6`: On app access with a persisted session, the system shall validate session activity; if the session is expired/invalid, the session shall be cleared and startup view shall be `Login`.
@@ -32,7 +35,7 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R12`: When any active view is waiting for required data (for example, location resolution or search execution), the system shall display a blocking animated loading state.
 - `APP.SHELL.001-R13`: While the blocking loading state is visible, user interaction with the underlying view shall be prevented.
 - `APP.SHELL.001-R14`: The blocking loading state shall be dismissed automatically when all pending required operations complete.
-- `APP.SHELL.001-R15`: The standard application header and the Offers hero area shall not display a new-view button; the only view button shall be in the shared bottom footer.
+- `APP.SHELL.001-R15`: The standard application header and the Offers hero area shall not display a presentation-switch button; presentation shall be chosen through the Offers header mode control defined in `OFFERS.MODE.SWITCH.001`.
 - `APP.SHELL.001-R16`: The standard application header shall be positioned below the device system status area, so that system indicators (battery, signal, and similar) do not overlap the header content.
 - `APP.SHELL.001-R17`: On Android, the system back gesture or back button shall navigate to the previously visited view within the application when one exists, instead of closing the application.
 - `APP.SHELL.001-R18`: When no previously visited view exists within the application, the Android system back gesture or back button shall leave the application using the platform default behavior.
@@ -234,3 +237,5 @@ Scenario: Blocking loading state appears during required data waits
 - `SUGGESTIONS.SUBMIT.001`
 - `REPORTS.SUBMIT.001`
 - `APP.SEARCH.INTERACTION.001`
+- `APP.HELP.001`
+- `APP.LOCATION.FALLBACK.001`

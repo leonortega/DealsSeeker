@@ -34,6 +34,7 @@
 | `APP.HELP.001` | `bdd/app-help.feature` | N/A | N/A |
 | `APP.ACCESSIBILITY.UX.002` | `bdd/app-accessibility-control-semantics.feature` | N/A | N/A |
 | `APP.ACCESSIBILITY.UX.003` | `bdd/app-announced-feedback.feature` | N/A | N/A |
+| `APP.LOCATION.FALLBACK.001` | `bdd/app-location-fallback.feature` | N/A | N/A |
 | `ADD.OFFER.LOCATION.003` | `bdd/add-offer-accessible-map-pin.feature` | `contracts/json-schema/offer-location.schema.json`, `contracts/json-schema/geo-point.schema.json` | `examples/add-offer/add-offer-map-pin.json` |
 | `ACCOUNT.AUTH.LOGIN.001` | `bdd/account-management.feature` | `contracts/json-schema/login-request.schema.json`, `contracts/json-schema/auth-session.schema.json` | `examples/account-management/login-user.input.json`, `examples/account-management/login-user.output.json` |
 | `ACCOUNT.AUTH.REGISTER.001` | `bdd/account-management.feature` | `contracts/json-schema/register-user-request.schema.json`, `contracts/json-schema/command-result.schema.json` | `examples/account-management/register-user.input.json`, `examples/account-management/register-user.output.json` |
