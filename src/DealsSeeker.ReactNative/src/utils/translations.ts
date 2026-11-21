@@ -122,7 +122,7 @@ const english: TranslationDictionary = {
   'offers.action.favorite': 'favorite',
   'offers.action.directions': 'directions',
   'offers.action.available': 'available',
-  'offers.action.unavailable': 'removed',
+  'offers.action.unavailable': 'No longer available',
   'offers.action.report': 'report',
   'offers.more': 'more',
   'offers.map': 'Map',

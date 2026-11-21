@@ -136,7 +136,6 @@ export function OffersScreen() {
       }
 
       setResults(response);
-      setStatus(null);
       setSearchFailed(false);
     } catch (error) {
       if (isRequestAborted(error) || sequence !== searchSequence.current) {
@@ -291,6 +290,7 @@ export function OffersScreen() {
   );
 
   async function toggleFavorite(offer: OfferItemDto) {
+    setStatus(null);
     const result = await api.setOfferFavorite(offer.offerId, { isFavorite: !offer.isFavorite });
     if (!result.success) {
       setStatus(t('offers.favoriteFailed'));
@@ -302,6 +302,7 @@ export function OffersScreen() {
   }
 
   async function vote(offer: OfferItemDto, voteType: OfferAvailabilityVoteType) {
+    setStatus(null);
     const result = await api.voteOfferAvailability(offer.offerId, { vote: voteType });
     if (!result.success) {
       setStatus(
@@ -340,6 +341,16 @@ export function OffersScreen() {
       <>
         {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
         {renderStatePanel()}
+        {status ? (
+          <View pointerEvents="box-none" style={styles.feedbackToast}>
+            <Text
+              accessibilityLiveRegion="polite"
+              style={[styles.feedbackToastText, { backgroundColor: palette.card, borderColor: palette.border, color: palette.ink }]}
+            >
+              {status}
+            </Text>
+          </View>
+        ) : null}
         {isPending('offers-search') ? (
           <View style={[styles.progressBanner, { backgroundColor: palette.card, borderColor: palette.border }]}>
             <Text style={[styles.progressLabel, { color: palette.inkMuted }]}>{t('offers.loading')}</Text>
@@ -584,6 +595,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '800',
+  },
+  feedbackToast: {
+    alignItems: 'flex-start',
+    bottom: 176,
+    left: 16,
+    maxWidth: '70%',
+    position: 'absolute',
+    right: 16,
+    zIndex: 5,
+  },
+  feedbackToastText: {
+    borderRadius: 12,
+    borderWidth: 1,
+    fontSize: 13,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   title: {
     fontFamily: 'Georgia',
