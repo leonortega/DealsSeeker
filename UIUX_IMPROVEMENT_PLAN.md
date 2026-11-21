@@ -333,10 +333,20 @@ Delivered: roles, labels and states across auth, Add Offer, account, secondary, 
 
 Verification: `npm test` 36 suites / 235 tests, `npm run typecheck` clean. Native device/screen-reader capture verification is outstanding (user-supplied).
 
+### Cycle B — Location trust (COMPLETE)
+
+Approved spec `APP.LOCATION.FALLBACK.001` and `bdd/app-location-fallback.feature`. When device location is denied or fails, the Offers view no longer labels the fallback area as "current": it shows an approximate-area notice with distinct "Use my location" and "Dismiss" actions in both presentations, announces the change, and re-searches on retry. Area labels describe the resolved location after a successful retry, and no raw coordinates surface.
+
+### Cycle C — Adaptivity (COMPLETE)
+
+Approved spec `APP.ADAPTIVE.UX.002` (v1.1) and `bdd/app-adaptive-ux-002.feature`. Delivered: 44-unit floor across auth, offer cards, Add Offer, account, secondary screens, modals and overlays; removed fixed `lineHeight` from offer/detail descriptions so text scales; restored map pinch-zoom; Reduce Motion now drives modal transitions, zoom springs and animated carousel scroll through `useReduceMotion` + `resolveMotionPreferences`. R7/BDD added when E2E showed the action rail colliding with the top bar on short viewports — captions are now omitted when vertical space is insufficient, with controls still labelled.
+
+E2E caught and fixed three regressions from the fallback notice: duplicate "Retry"/"Close" accessible names, and the top-bar containers swallowing taps on the offer action rail. All 14 E2E flows pass again.
+
+Verification after B + C: `npm test` 38 suites / 245 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14.
+
 ### Remaining cycles (queued)
 
-- **B — Location trust**: `APP.LOCATION.FALLBACK.001` — disclose the approximate/fallback area, provide retry and browse-without-precise-location paths.
-- **C — Adaptivity**: `APP.ADAPTIVE.UX.002` — 44-unit floor across the remaining surfaces, remove fixed `lineHeight`, restore map pinch-zoom, honor Reduce Motion.
-- **D — Feedback & copy**: immersive action confirmations, correct detail-sheet close copy (done in Cycle A), consistent status severity.
+- **D — Feedback & copy**: immersive action confirmations, consistent status severity (correct detail-sheet close copy was done in Cycle A).
 - **E — Theming & cleanup**: route map pin/background through palette roles, unify placeholder glyphs, 28px primary radius, dedupe auth styles, scrim-tap dismissal, Android keyboard avoidance, bottom safe-area inset, success-before-navigation, record WebView coordinate privacy in the threat model.
 
