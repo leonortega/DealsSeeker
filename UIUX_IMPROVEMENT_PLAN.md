@@ -357,5 +357,13 @@ Privacy note carried forward: raw coordinates are still serialised into the map 
 
 ### Status
 
-All five cycles (A–E) from the 2026-11-21 fresh evidence pass are complete. Final verification: `npm test` 39 suites / 250 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14. Outstanding: user-supplied native captures and VoiceOver/TalkBack sign-off before shipping.
+All five cycles (A–E) from the 2026-11-21 fresh evidence pass are complete.
+
+### Capture review follow-up (light-theme phone, Mapa + Feed)
+
+Two user-supplied captures were checked against the source. The Map presentation and the immersive Feed presentation matched the implementation (mode switch, ES locale strings, radius chips, OpenLayers badge, caption-less icon rail, centered FAB, night footer). The gear circle and "States" text in the captures are device/status-bar overlays — no such controls or strings exist in source.
+
+One real defect was found in the Feed capture: the availability counts under the thumbs buttons used `palette.inkMuted` (`#5f6d63` in the light theme) on the fixed forest backdrop (`#1b2f28`), roughly 2.7:1 contrast. `APP.THEME.001` v0.3 adds R9 plus a BDD scenario; `immersiveInk` / `immersiveInkMuted` tokens were added in `theme.ts` and applied to the rail counts, top-bar title and feed tabs so all fixed-backdrop chrome shares one foreground treatment. RED → GREEN evidence in commit `3b905ff` → `25ad958`.
+
+Final verification: `npm test` 39 suites / 251 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14. Outstanding: VoiceOver/TalkBack sign-off and remaining palette/orientation captures before shipping.
 
