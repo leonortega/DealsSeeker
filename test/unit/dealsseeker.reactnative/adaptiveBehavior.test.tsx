@@ -92,7 +92,9 @@ describe('adaptive behavior (APP.ADAPTIVE.UX.002)', () => {
   it('keeps the auth link at the touch floor', async () => {
     await render(<LoginScreen />);
     const link = screen.getByRole('link', { name: 'auth.createAccountLink' });
-    expect(StyleSheet.flatten(link.props.style).minHeight).toBeGreaterThanOrEqual(44);
+    expect(link).toBeTruthy();
+    const linkText = screen.getByText('auth.createAccountLink');
+    expect(StyleSheet.flatten(linkText.props.style).minHeight).toBeGreaterThanOrEqual(44);
   });
 
   it('keeps offer card vote controls at the touch floor', async () => {

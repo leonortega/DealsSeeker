@@ -155,8 +155,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   link: {
+    alignItems: 'center',
     fontSize: 14,
     fontWeight: '700',
+    justifyContent: 'center',
+    minHeight: 44,
     textAlign: 'center',
   },
   status: {

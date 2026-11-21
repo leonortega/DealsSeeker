@@ -291,7 +291,6 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    lineHeight: 20,
   },
   tags: {
     flexDirection: 'row',
@@ -325,7 +324,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButton: {
+    alignItems: 'center',
     borderRadius: 14,
+    justifyContent: 'center',
+    minHeight: 44,
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
@@ -347,7 +349,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   voteButton: {
+    alignItems: 'center',
     borderRadius: 12,
+    justifyContent: 'center',
+    minHeight: 44,
     paddingHorizontal: 10,
     paddingVertical: 10,
   },

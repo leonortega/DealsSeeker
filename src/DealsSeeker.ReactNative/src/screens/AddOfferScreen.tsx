@@ -842,8 +842,11 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   button: {
+    alignItems: 'center',
     borderRadius: 16,
     flex: 1,
+    justifyContent: 'center',
+    minHeight: 44,
     paddingHorizontal: 12,
     paddingVertical: 13,
   },
@@ -864,6 +867,8 @@ const styles = StyleSheet.create({
   resultRow: {
     borderRadius: 14,
     borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 44,
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
@@ -879,8 +884,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   wordChip: {
+    alignItems: 'center',
     borderRadius: 999,
     borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 44,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },

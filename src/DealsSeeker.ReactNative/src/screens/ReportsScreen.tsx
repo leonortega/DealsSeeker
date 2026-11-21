@@ -188,8 +188,11 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   button: {
+    alignItems: 'center',
     borderRadius: 18,
+    justifyContent: 'center',
     marginTop: 6,
+    minHeight: 44,
     paddingVertical: 15,
   },
   buttonLabel: {

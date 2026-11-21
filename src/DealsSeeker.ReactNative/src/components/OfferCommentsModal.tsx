@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { OfferCommentDto, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
+import { useReduceMotion } from '../hooks/useReduceMotion';
+import { resolveMotionPreferences } from '../utils/motion';
 import { avatarEmoji } from '../utils/avatars';
 
 interface OfferCommentsModalProps {
@@ -21,6 +23,7 @@ function formatCommentDate(value: string) {
 
 export function OfferCommentsModal({ offer, visible, onClose }: OfferCommentsModalProps) {
   const { api, palette, t } = useApp();
+  const motion = resolveMotionPreferences(useReduceMotion());
   const [comments, setComments] = useState<OfferCommentDto[]>([]);
   const [body, setBody] = useState('');
   const [status, setStatus] = useState<string | null>(null);
@@ -117,7 +120,7 @@ export function OfferCommentsModal({ offer, visible, onClose }: OfferCommentsMod
   }
 
   return (
-    <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
+    <Modal animationType={motion.modalAnimation} transparent visible={visible} onRequestClose={onClose}>
       <View style={[styles.backdrop, { backgroundColor: palette.overlay }]}>
         <View accessibilityViewIsModal style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <View style={styles.header}>
@@ -216,7 +219,11 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   closeButton: {
+    alignItems: 'center',
     alignSelf: 'flex-start',
+    justifyContent: 'center',
+    minHeight: 44,
+    minWidth: 44,
     paddingVertical: 4,
   },
   close: {

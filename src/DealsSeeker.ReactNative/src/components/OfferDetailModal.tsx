@@ -17,7 +17,9 @@ import {
 import { OfferItemDto } from '../api/types';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { useApp } from '../hooks/useApp';
+import { useReduceMotion } from '../hooks/useReduceMotion';
 import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
+import { resolveMotionPreferences } from '../utils/motion';
 import { formatDistanceMeters } from '../utils/format';
 
 interface OfferDetailModalProps {
@@ -50,6 +52,7 @@ function ZoomableImage({
   placeholderSymbol: string;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
+  const motion = resolveMotionPreferences(useReduceMotion());
   const imageUri = useOfferImageUri(imageUrl);
   const canRenderImage = Boolean(imageUri) && !isSvgImageUri(imageUri);
   const scale = useRef(new Animated.Value(1)).current;
@@ -91,6 +94,12 @@ function ZoomableImage({
     translateY.setValue(nextTranslateY);
   }
 
+  function zoomAnimation(value: Animated.Value, toValue: number) {
+    return motion.springEnabled
+      ? Animated.spring(value, { damping: 18, stiffness: 170, toValue, useNativeDriver: true })
+      : Animated.timing(value, { duration: 0, toValue, useNativeDriver: true });
+  }
+
   function settleTransform() {
     const nextScale = clampScale(scaleRef.current);
     const nextTranslateX = nextScale <= 1.01 ? 0 : clampOffset('x', translateRef.current.x, nextScale);
@@ -100,24 +109,9 @@ function ZoomableImage({
     translateRef.current = { x: nextTranslateX, y: nextTranslateY };
 
     Animated.parallel([
-      Animated.spring(scale, {
-        damping: 18,
-        stiffness: 170,
-        toValue: scaleRef.current,
-        useNativeDriver: true,
-      }),
-      Animated.spring(translateX, {
-        damping: 18,
-        stiffness: 170,
-        toValue: translateRef.current.x,
-        useNativeDriver: true,
-      }),
-      Animated.spring(translateY, {
-        damping: 18,
-        stiffness: 170,
-        toValue: translateRef.current.y,
-        useNativeDriver: true,
-      }),
+      zoomAnimation(scale, scaleRef.current),
+      zoomAnimation(translateX, translateRef.current.x),
+      zoomAnimation(translateY, translateRef.current.y),
     ]).start();
   }
 
@@ -262,6 +256,7 @@ function OfferGalleryImage({
 
 export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onComments, visible }: OfferDetailModalProps) {
   const { palette, preferences, t } = useApp();
+  const motion = resolveMotionPreferences(useReduceMotion());
   const { width: viewportWidth } = useWindowDimensions();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
@@ -280,7 +275,7 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
   const carouselWidth = Math.max(220, viewportWidth - 132);
 
   function scrollToImage(index: number, animated: boolean) {
-    detailScrollRef.current?.scrollToOffset({ offset: index * carouselWidth, animated });
+    detailScrollRef.current?.scrollToOffset({ offset: index * carouselWidth, animated: animated && motion.animatedScroll });
   }
 
   function updateSelectedImage(index: number, animated: boolean) {
@@ -334,7 +329,7 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
 
   return (
     <>
-      <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
+      <Modal animationType={motion.modalAnimation} transparent visible={visible} onRequestClose={onClose}>
         <View style={[styles.backdrop, { backgroundColor: palette.overlay }]}> 
         <View accessibilityViewIsModal testID="offer-detail-sheet" style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <View style={styles.header}>
@@ -502,8 +497,12 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   closeButton: {
+    alignItems: 'center',
     alignSelf: 'flex-start',
     flexShrink: 0,
+    justifyContent: 'center',
+    minHeight: 44,
+    minWidth: 44,
     paddingVertical: 4,
   },
   close: {
@@ -523,9 +522,9 @@ const styles = StyleSheet.create({
   galleryButton: {
     alignItems: 'center',
     borderRadius: 999,
-    height: 40,
+    height: 44,
     justifyContent: 'center',
-    width: 40,
+    width: 44,
   },
   galleryButtonDisabled: {
     opacity: 0.35,
@@ -606,7 +605,6 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 15,
-    lineHeight: 22,
   },
   meta: {
     fontSize: 13,

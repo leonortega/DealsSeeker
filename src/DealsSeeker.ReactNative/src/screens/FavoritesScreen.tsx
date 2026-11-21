@@ -154,8 +154,11 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   button: {
+    alignItems: 'center',
     borderRadius: 18,
     flex: 1,
+    justifyContent: 'center',
+    minHeight: 44,
     paddingHorizontal: 12,
     paddingVertical: 12,
   },

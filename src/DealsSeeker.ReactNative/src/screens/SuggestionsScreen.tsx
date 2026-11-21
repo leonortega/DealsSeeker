@@ -117,7 +117,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   button: {
+    alignItems: 'center',
     borderRadius: 18,
+    justifyContent: 'center',
+    minHeight: 44,
     paddingVertical: 15,
   },
   buttonLabel: {
