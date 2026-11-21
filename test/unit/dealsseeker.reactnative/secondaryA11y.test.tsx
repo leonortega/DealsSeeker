@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { AccessibilityInfo } from 'react-native';
 import { SuggestionsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/SuggestionsScreen';
 import { ReportsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/ReportsScreen';
@@ -71,5 +72,13 @@ describe('secondary surface accessibility (APP.ACCESSIBILITY.UX.002/003)', () =>
   it('announces the help sheet as a modal with a labelled close control', async () => {
     await render(<HelpSheet onClose={mockCloseHelp} visible />);
     expect(screen.getByRole('button', { name: 'common.close' })).toBeTruthy();
+  });
+
+  it('shows a failed submission as an error status', async () => {
+    mockSubmitSuggestion.mockResolvedValue({ success: false });
+    await render(<SuggestionsScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'suggestions.submit' }));
+    const status = await screen.findByText('suggestions.failed');
+    expect(StyleSheet.flatten(status.props.style).color).toBe('#8d2f2f');
   });
 });

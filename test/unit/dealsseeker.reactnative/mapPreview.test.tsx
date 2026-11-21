@@ -64,6 +64,13 @@ describe('MapPreview', () => {
     expect(html).not.toContain('#e94f37');
   });
 
+  it('uses the system sans font stack in the embedded document', async () => {
+    await renderMap();
+    const html = screen.getByTestId('map-webview').props.source.html as string;
+    expect(html).not.toContain('Arial');
+    expect(html).toContain('system-ui');
+  });
+
   it('shows a provider badge and coverage footer', async () => {
     await renderMap();
     expect(screen.getByText(/offers.provider\./)).toBeTruthy();

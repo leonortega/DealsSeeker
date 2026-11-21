@@ -19,6 +19,17 @@ Feature: Design-system conformance and dialog recovery
     When the success message is shown
     Then the message remains perceivable before the user is moved to another view
 
+  Scenario: Error status is visually distinct
+    Given a form submission has failed
+    When the error status is displayed
+    Then it is visually distinct from a success status
+    And its meaning is also conveyed by the message text
+
+  Scenario: Embedded web documents share the app font stack
+    Given an embedded map is rendered
+    When the document is loaded
+    Then it uses the application's system sans font stack
+
   Scenario: Keyboard and cutouts do not hide controls
     Given the on-screen keyboard is open or the device has a bottom cutout
     When the user edits the last field of a form

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Design-system conformance and dialog recovery
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application shell, Offers View, My Account, Add Offer, Suggestions, Reports
 - **Priority**: Low
@@ -23,6 +23,9 @@ Close the remaining design-system and recovery gaps without changing the establi
 - `APP.POLISH.UX.001-R4`: On platforms that resize the window for the keyboard, text entry shall remain visible while editing.
 - `APP.POLISH.UX.001-R5`: The bottommost control in a scrollable view shall not be hidden by display cutouts or system bars.
 - `APP.POLISH.UX.001-R6`: Equivalent controls in different views shall use the same placeholder treatment and the same primary-action shape.
+- `APP.POLISH.UX.001-R7`: Error status messages shall be visually distinguishable from neutral and success messages, while their meaning shall also be conveyed by text.
+- `APP.POLISH.UX.001-R8`: Embedded web documents shall use the application's system sans font stack.
+- `APP.POLISH.UX.001-R9`: Every scrollable surface shall keep its bottommost control clear of display cutouts and system bars.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
