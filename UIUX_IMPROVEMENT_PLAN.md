@@ -345,8 +345,17 @@ E2E caught and fixed three regressions from the fallback notice: duplicate "Retr
 
 Verification after B + C: `npm test` 38 suites / 245 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14.
 
-### Remaining cycles (queued)
+### Cycle D — Feedback & copy (COMPLETE)
 
-- **D — Feedback & copy**: immersive action confirmations, consistent status severity (correct detail-sheet close copy was done in Cycle A).
-- **E — Theming & cleanup**: route map pin/background through palette roles, unify placeholder glyphs, 28px primary radius, dedupe auth styles, scrim-tap dismissal, Android keyboard avoidance, bottom safe-area inset, success-before-navigation, record WebView coordinate privacy in the threat model.
+Approved spec `OFFERS.UX.002` and `bdd/offers-action-feedback.feature`. Favorite/vote outcomes are now shown as an announced, non-blocking toast inside the immersive feed. A search no longer clears an action confirmation, and each new action replaces the previous one. The EN unavailable label changed from "removed" to "No longer available" to match the ES semantics.
+
+### Cycle E — Theming & cleanup (COMPLETE)
+
+Approved spec `APP.POLISH.UX.001` and `bdd/app-polish-ux.feature`. Embedded maps now receive the active palette and use its accent/danger/success roles instead of an invented red and off-token background. Detail, comments and fullscreen dialogs close when the scrim is tapped. Successful submissions remain visible for a beat before navigating. Auth keyboards use padding on both platforms, Add Offer scroll content respects the bottom safe-area inset, primary buttons use the pinned 28px radius, and placeholder glyphs are unified.
+
+Privacy note carried forward: raw coordinates are still serialised into the map WebView document and `postMessage` payloads. This is inherent to rendering a map and is not user-visible, but it should be recorded in the privacy threat model rather than treated as a UI breach.
+
+### Status
+
+All five cycles (A–E) from the 2026-11-21 fresh evidence pass are complete. Final verification: `npm test` 39 suites / 250 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14. Outstanding: user-supplied native captures and VoiceOver/TalkBack sign-off before shipping.
 
