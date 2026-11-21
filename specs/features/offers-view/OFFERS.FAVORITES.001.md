@@ -79,3 +79,4 @@ Scenario: Unauthenticated user opens My Favorites
 - `ACCOUNT.PROFILE.001`
 - `APP.NAVIGATION.MODE.001`
 - `OFFERS.IMMERSIVE.001`
+- `APP.ACCESSIBILITY.UX.002`

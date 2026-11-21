@@ -115,3 +115,4 @@ Scenario: User loads the next page of comments
 - `OFFERS.LIST.ACTIONS.001`
 - `OFFERS.FEED.IMMERSIVE.001`
 - `APP.THEME.001`
+- `APP.ACCESSIBILITY.UX.003`

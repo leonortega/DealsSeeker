@@ -114,3 +114,4 @@ Scenario: Edit mode shows stored offer location on the mini map
 - `ADD.OFFER.LAYOUT.001`
 - `APP.CONFIG.MAPS.001`
 - `APP.LOCATION.PROVIDER.RESILIENCE.001`
+- `ADD.OFFER.LOCATION.003`

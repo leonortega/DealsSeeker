@@ -29,6 +29,12 @@
 | `APP.LOCATION.PROVIDER.RESILIENCE.001` | `bdd/app-location-provider-resilience.feature` | `contracts/json-schema/problem-details.schema.json` | `examples/application-shell/app-location-provider.all-failed.json`, `examples/application-shell/app-location-provider.no-results.json` |
 | `APP.RESPONSE.CONDITIONAL.001` | `bdd/app-response-conditional.feature` | N/A | `examples/application-shell/app-response-conditional.not-modified.json` |
 | `APP.SEARCH.INTERACTION.001` | `bdd/app-search-interaction.feature` | N/A | N/A |
+| `APP.RESILIENCE.UX.001` | `bdd/app-resilience-ux.feature` | N/A | N/A |
+| `APP.ACCESSIBILITY.UX.001` | `bdd/app-accessibility-ux.feature` | N/A | N/A |
+| `APP.HELP.001` | `bdd/app-help.feature` | N/A | N/A |
+| `APP.ACCESSIBILITY.UX.002` | `bdd/app-accessibility-control-semantics.feature` | N/A | N/A |
+| `APP.ACCESSIBILITY.UX.003` | `bdd/app-announced-feedback.feature` | N/A | N/A |
+| `ADD.OFFER.LOCATION.003` | `bdd/add-offer-accessible-map-pin.feature` | `contracts/json-schema/offer-location.schema.json`, `contracts/json-schema/geo-point.schema.json` | `examples/add-offer/add-offer-map-pin.json` |
 | `ACCOUNT.AUTH.LOGIN.001` | `bdd/account-management.feature` | `contracts/json-schema/login-request.schema.json`, `contracts/json-schema/auth-session.schema.json` | `examples/account-management/login-user.input.json`, `examples/account-management/login-user.output.json` |
 | `ACCOUNT.AUTH.REGISTER.001` | `bdd/account-management.feature` | `contracts/json-schema/register-user-request.schema.json`, `contracts/json-schema/command-result.schema.json` | `examples/account-management/register-user.input.json`, `examples/account-management/register-user.output.json` |
 | `ACCOUNT.PROFILE.001` | `bdd/account-management.feature` | `contracts/json-schema/user-profile.schema.json`, `contracts/json-schema/account-offers-response.schema.json`, `contracts/json-schema/offer-item.schema.json`, `contracts/json-schema/add-offer-draft.schema.json`, `contracts/json-schema/command-result.schema.json` | `examples/account-management/my-profile.output.json`, `examples/account-management/my-owned-offers.output.json`, `examples/account-management/owned-offer-draft.output.json`, `examples/account-management/logout.output.json` |
@@ -41,6 +47,8 @@
 | `OFFERS.SEARCH.001` | `bdd/offers-search.feature` | `contracts/json-schema/offer-search-request.schema.json`, `contracts/json-schema/offer-search-response.schema.json`, `contracts/json-schema/offer-item.schema.json`, `contracts/json-schema/business-marker.schema.json`, `contracts/json-schema/geo-point.schema.json` | `examples/offers-search/search-by-tag.input.json`, `examples/offers-search/search-by-tag.output.json`, `examples/offers-search/search-empty.output.json` |
 | `OFFERS.SEARCH.PAGINATION.001` | `bdd/offers-search-pagination.feature` | `contracts/json-schema/offer-search-request.schema.json`, `contracts/json-schema/offer-search-response.schema.json`, `contracts/json-schema/offer-item.schema.json`, `contracts/json-schema/business-marker.schema.json` | `examples/offers-search/search-paged.input.json`, `examples/offers-search/search-paged.output.json`, `examples/offers-search/search-page-out-of-range.output.json` |
 | `OFFERS.SEARCH.SMART.001` | `bdd/offers-smart-search.feature` | `contracts/json-schema/offer-search-request.schema.json`, `contracts/json-schema/offer-search-response.schema.json`, `contracts/json-schema/offer-item.schema.json`, `contracts/json-schema/business-marker.schema.json` | `examples/offers-view/offers-smart-search.fuzzy.json` |
+| `OFFERS.UX.001` | `bdd/offers-ux.feature` | N/A | N/A |
+| `OFFERS.MODE.SWITCH.001` | `bdd/offers-mode-switch.feature` | N/A | N/A |
 | `OFFERS.FEED.PROMOTED.001` | `bdd/offers-promoted.feature` | `contracts/json-schema/offer-search-response.schema.json` | `examples/offers-view/offers-promoted-feed.json` |
 | `OFFERS.FEED.IMMERSIVE.001` | `bdd/offers-immersive-feed.feature` | `contracts/json-schema/offer-search-response.schema.json` | `examples/offers-view/offers-immersive-feed.render.json`, `examples/offers-view/offers-immersive-feed.multi-photo.json` |
 | `OFFERS.FEED.RESPONSIVE.001` | `bdd/offers-immersive-responsive.feature` | N/A | `examples/offers-view/offers-immersive-feed.responsive.json` |

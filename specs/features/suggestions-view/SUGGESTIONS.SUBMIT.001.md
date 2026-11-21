@@ -55,3 +55,4 @@ Scenario: Blank suggestion is rejected
 
 ## Related Specs
 - `APP.SHELL.001`
+- `APP.ACCESSIBILITY.UX.003`

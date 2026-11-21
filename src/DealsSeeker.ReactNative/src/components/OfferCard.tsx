@@ -70,7 +70,12 @@ export function OfferCard({
 
   return (
     <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border, shadowColor: palette.shadow }]}>
-      <Pressable style={[styles.visual, { backgroundColor: palette.accentMuted }]} onPress={() => onOpenDetail(offer)}>
+      <Pressable
+        accessibilityLabel={t('offers.openDetail')}
+        accessibilityRole="button"
+        style={[styles.visual, { backgroundColor: palette.accentMuted }]}
+        onPress={() => onOpenDetail(offer)}
+      >
         {canRenderImage && !imageFailed ? (
           <Image
             resizeMode="cover"
@@ -130,6 +135,9 @@ export function OfferCard({
 
         <View style={[styles.actions, stackActions && styles.actionsStacked]}>
           <Pressable
+            accessibilityLabel={t('offers.favorite')}
+            accessibilityRole="button"
+            accessibilityState={{ selected: offer.isFavorite }}
             style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: offer.isFavorite ? palette.accentMuted : palette.panel }]}
             onPress={() => onFavorite(offer)}
           >
@@ -137,12 +145,22 @@ export function OfferCard({
               {t('offers.favorite')}
             </Text>
           </Pressable>
-          <Pressable style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.panel }]} onPress={() => onDirections(offer)}>
+          <Pressable
+            accessibilityLabel={preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+            accessibilityRole="button"
+            style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.panel }]}
+            onPress={() => onDirections(offer)}
+          >
             <Text style={[styles.actionLabel, { color: palette.ink }]}>
               {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
             </Text>
           </Pressable>
-          <Pressable style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.panel }]} onPress={() => onComments(offer)}>
+          <Pressable
+            accessibilityLabel={t('offers.action.comments')}
+            accessibilityRole="button"
+            style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.panel }]}
+            onPress={() => onComments(offer)}
+          >
             <Text style={[styles.actionLabel, { color: palette.ink }]}>{t('offers.action.comments')}</Text>
           </Pressable>
         </View>
@@ -151,6 +169,9 @@ export function OfferCard({
           <Text style={[styles.meta, { color: palette.ink }]}>{t('offers.available')}</Text>
           <View style={styles.voteRow}>
             <Pressable
+              accessibilityLabel={`${t('offers.action.available')} ${offer.positiveAvailabilityCount}`}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
               disabled={offer.hasCurrentUserVoted}
               onPress={() => onVote(offer, 1)}
               style={[
@@ -162,6 +183,9 @@ export function OfferCard({
               <Text style={{ color: palette.ink }}>👍 {offer.positiveAvailabilityCount}</Text>
             </Pressable>
             <Pressable
+              accessibilityLabel={`${t('offers.action.unavailable')} ${offer.negativeAvailabilityCount}`}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
               disabled={offer.hasCurrentUserVoted}
               onPress={() => onVote(offer, 2)}
               style={[
@@ -172,7 +196,12 @@ export function OfferCard({
             >
               <Text style={{ color: palette.ink }}>👎 {offer.negativeAvailabilityCount}</Text>
             </Pressable>
-            <Pressable style={[styles.voteButton, { backgroundColor: palette.panel }]} onPress={() => onReport(offer)}>
+            <Pressable
+              accessibilityLabel={t('offers.report')}
+              accessibilityRole="button"
+              style={[styles.voteButton, { backgroundColor: palette.panel }]}
+              onPress={() => onReport(offer)}
+            >
               <Text style={{ color: palette.ink }}>{t('offers.report')}</Text>
             </Pressable>
           </View>

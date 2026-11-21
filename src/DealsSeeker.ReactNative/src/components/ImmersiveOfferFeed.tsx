@@ -1,5 +1,5 @@
-import { FlatList, Image, LayoutChangeEvent, PanResponder, Platform, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, Image, LayoutChangeEvent, PanResponder, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
@@ -7,12 +7,16 @@ import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
 import { openDirections } from '../utils/maps';
 import { immersiveBackdrop } from '../utils/theme';
-import { AppFooterBar } from './AppFooterBar';
 import { ImmersiveActionCaption, ImmersiveActionIconGlyph } from './ImmersiveActionGlyphs';
 import { ImmersiveFeedTab, ImmersiveFeedTabs } from './ImmersiveFeedTabs';
-import { COVERAGE_DISTANCE_OPTIONS, ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
+import { ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
+import { NavIcon } from './NavIcon';
 
 const NARROW_BREAKPOINT = 768;
+
+export function shouldShowImmersiveCaptions(isNarrow: boolean, fontScale: number) {
+  return !isNarrow && fontScale < 1.5;
+}
 
 interface ImmersiveOfferFeedProps {
   offers: OfferItemDto[];
@@ -27,6 +31,8 @@ interface ImmersiveOfferFeedProps {
   onSearch: (query: string) => void;
   feedTab: ImmersiveFeedTab;
   onFeedTabChange: (tab: ImmersiveFeedTab) => void;
+  headerControl?: ReactNode;
+  helpControl?: ReactNode;
 }
 
 function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string; placeholderSymbol: string }) {
@@ -212,6 +218,7 @@ function ImmersiveOfferPage({
         <Pressable
           accessibilityLabel={t('offers.action.favorite')}
           accessibilityRole="button"
+          accessibilityState={{ selected: offer.isFavorite }}
           style={styles.railAction}
           onPress={() => onFavorite(offer)}
         >
@@ -245,6 +252,7 @@ function ImmersiveOfferPage({
         <Pressable
           accessibilityLabel={t('offers.action.available')}
           accessibilityRole="button"
+          accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
           disabled={offer.hasCurrentUserVoted}
           style={[styles.railAction, offer.hasCurrentUserVoted && styles.disabled]}
           onPress={() => onVote(offer, 1)}
@@ -258,6 +266,7 @@ function ImmersiveOfferPage({
         <Pressable
           accessibilityLabel={t('offers.action.unavailable')}
           accessibilityRole="button"
+          accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
           disabled={offer.hasCurrentUserVoted}
           style={[styles.railAction, offer.hasCurrentUserVoted && styles.disabled]}
           onPress={() => onVote(offer, 2)}
@@ -274,7 +283,7 @@ function ImmersiveOfferPage({
         {hasMultipleImages ? (
           <View pointerEvents="box-none" style={styles.immersivePhotoNav}>
             {showPhotoArrows ? (
-              <Pressable accessibilityLabel={t('offers.previousImage')} onPress={showPreviousImage} style={styles.immersivePhotoNavButton}>
+              <Pressable accessibilityLabel={t('offers.previousImage')} accessibilityRole="button" onPress={showPreviousImage} style={styles.immersivePhotoNavButton}>
                 <Text style={styles.immersivePhotoNavLabel}>‹</Text>
               </Pressable>
             ) : null}
@@ -282,6 +291,10 @@ function ImmersiveOfferPage({
               {images.map((_, index) => (
                 <Pressable
                   key={`photo-dot-${index}`}
+                  accessibilityLabel={`${t('offers.goToImage')} ${index + 1}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: index === selectedImageIndex }}
+                  hitSlop={{ top: 18, bottom: 18, left: 18, right: 18 }}
                   onPress={() => updateSelectedImage(index)}
                   style={[
                     styles.immersivePhotoDot,
@@ -291,7 +304,7 @@ function ImmersiveOfferPage({
               ))}
             </View>
             {showPhotoArrows ? (
-              <Pressable accessibilityLabel={t('offers.nextImage')} onPress={showNextImage} style={styles.immersivePhotoNavButton}>
+              <Pressable accessibilityLabel={t('offers.nextImage')} accessibilityRole="button" onPress={showNextImage} style={styles.immersivePhotoNavButton}>
                 <Text style={styles.immersivePhotoNavLabel}>›</Text>
               </Pressable>
             ) : null}
@@ -342,15 +355,11 @@ export function ImmersiveOfferFeed({
   onSearch,
   feedTab,
   onFeedTabChange,
+  headerControl,
+  helpControl,
 }: ImmersiveOfferFeedProps) {
-  const { height, width } = useWindowDimensions();
-  const {
-    closeImmersiveOffers,
-    openAddOffer,
-    openTab,
-    palette,
-    t,
-  } = useApp();
+  const { fontScale, height, width } = useWindowDimensions();
+  const { palette, t } = useApp();
   const [searchQuery, setSearchQuery] = useState(query);
   const [searchVisible, setSearchVisible] = useState(false);
   const [feedHeight, setFeedHeight] = useState(0);
@@ -361,80 +370,14 @@ export function ImmersiveOfferFeed({
     setFeedHeight(event.nativeEvent.layout.height);
   }
 
-  function handleCreateOffer() {
-    // Keep the selected view mode so Offers returns to the immersive feed afterwards.
-    openAddOffer();
-  }
-
-  function handleOpenMapMode() {
-    closeImmersiveOffers();
-    openTab('offers');
-  }
-
   function handleApplySearch() {
     onSearch(searchQuery);
     setSearchVisible(false);
   }
 
-  const leftPanel = (
-    <View style={[styles.leftPanel, { backgroundColor: palette.backgroundRaised, borderRightColor: palette.border }]}>
-      <Image source={require('../../assets/icon.png')} style={styles.logo} />
-      <Text style={[styles.appName, { color: palette.ink }]}>{t('app.title')}</Text>
-      <ImmersiveFeedTabs activeTab={feedTab} onChangeTab={onFeedTabChange} />
-      <TextInput
-        onSubmitEditing={() => onSearch(searchQuery)}
-        placeholder={t('offers.searchPlaceholder')}
-        placeholderTextColor={palette.inkMuted}
-        returnKeyType="search"
-        style={[styles.leftInput, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
-      <View style={styles.radiusRow}>
-        {COVERAGE_DISTANCE_OPTIONS.map((option) => {
-          const selected = option === radiusMeters;
-          return (
-            <Pressable
-              key={option}
-              style={[
-                styles.radiusChip,
-                {
-                  backgroundColor: selected ? palette.accentMuted : palette.panel,
-                  borderColor: selected ? palette.accent : palette.border,
-                },
-              ]}
-              onPress={() => onRadiusChange(option)}
-            >
-              <Text style={{ color: selected ? palette.accent : palette.ink, fontSize: 11, fontWeight: '700' }}>
-                {option} m
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      <Pressable style={[styles.leftButton, { backgroundColor: palette.panel, borderColor: palette.border }]} onPress={handleOpenMapMode}>
-        <Text style={[styles.leftButtonText, { color: palette.ink }]}>🗺️ {t('offers.mapMode')}</Text>
-      </Pressable>
-      <Pressable style={[styles.leftButton, { backgroundColor: palette.panel, borderColor: palette.border }]} onPress={() => openTab('account')}>
-        <Text style={[styles.leftButtonText, { color: palette.ink }]}>👤 {t('nav.account')}</Text>
-      </Pressable>
-      <Pressable style={[styles.leftButton, { backgroundColor: palette.panel, borderColor: palette.border }]} onPress={() => openTab('suggestions')}>
-        <Text style={[styles.leftButtonText, { color: palette.ink }]}>✏️ {t('nav.suggestions')}</Text>
-      </Pressable>
-      <Pressable style={[styles.leftButton, { backgroundColor: palette.panel, borderColor: palette.border }]} onPress={() => openTab('reports')}>
-        <Text style={[styles.leftButtonText, { color: palette.ink }]}>🚩 {t('nav.reports')}</Text>
-      </Pressable>
-      <Pressable style={[styles.leftButton, { backgroundColor: palette.panel, borderColor: palette.border }]} onPress={handleCreateOffer}>
-        <Text style={[styles.leftButtonText, { color: palette.ink }]}>➕ {t('nav.createOffer')}</Text>
-      </Pressable>
-    </View>
-  );
-
   return (
     <View style={styles.container}>
       <View style={styles.contentRow}>
-        {isNarrow ? null : leftPanel}
-
         <View onLayout={handleFeedAreaLayout} style={styles.feedArea}>
           <FlatList
             style={{ flex: 1 }}
@@ -453,7 +396,7 @@ export function ImmersiveOfferFeed({
               <View style={{ height: pageHeight }}>
                 <ImmersiveOfferPage
                   offer={item}
-                  showCaptions={!isNarrow}
+                  showCaptions={shouldShowImmersiveCaptions(isNarrow, fontScale)}
                   showPhotoArrows={!isNarrow}
                   onDirections={onDirections}
                   onFavorite={onFavorite}
@@ -463,46 +406,32 @@ export function ImmersiveOfferFeed({
                 />
               </View>
             )}
-            ListEmptyComponent={
-              <View style={[styles.empty, { height: pageHeight }]}>
-                <Text style={{ color: palette.inkMuted }}>{t('offers.noResults')}</Text>
-              </View>
-            }
+            ListEmptyComponent={<View style={[styles.empty, { height: pageHeight }]} />}
           />
 
-          {isNarrow ? (
-            <View
-              pointerEvents="box-none"
-              style={styles.topBar}
-            >
-              <View style={styles.topBarContent}>
-                <Image source={require('../../assets/icon.png')} style={[styles.topBarLogo, { backgroundColor: palette.panel }]} />
-                <ImmersiveFeedTabs activeTab={feedTab} onChangeTab={onFeedTabChange} />
+          <View pointerEvents="box-none" style={styles.topBar}>
+            <View style={styles.topBarContent}>
+              <Image source={require('../../assets/icon.png')} style={[styles.topBarLogo, { backgroundColor: palette.panel }]} />
+              {isNarrow ? null : <Text style={[styles.topBarTitle, { color: '#f7f1e8' }]}>{t('app.title')}</Text>}
+              <View style={styles.modeSlot}>{headerControl}</View>
+              <View style={styles.topActions}>
                 <Pressable
                   accessibilityLabel={t('offers.search')}
                   accessibilityRole="button"
                   onPress={() => setSearchVisible(true)}
                   style={[styles.searchIconButton, { backgroundColor: palette.panel, borderColor: palette.border }]}
                 >
-                  <Text style={[styles.searchIcon, { color: palette.ink }]}>🔍</Text>
+                  <NavIcon color={palette.ink} name="search" size={20} />
                 </Pressable>
+                {helpControl}
               </View>
             </View>
-          ) : null}
+            <View style={styles.tabsRow}>
+              <ImmersiveFeedTabs activeTab={feedTab} onChangeTab={onFeedTabChange} />
+            </View>
+          </View>
         </View>
       </View>
-
-      {isNarrow ? (
-        <AppFooterBar
-          items={[
-            { key: 'account', icon: '👤', label: t('nav.account'), onPress: () => openTab('account') },
-            { key: 'suggestions', icon: '✏️', label: t('nav.suggestions'), onPress: () => openTab('suggestions') },
-            { key: 'create', icon: '➕', label: t('nav.createOffer'), onPress: handleCreateOffer },
-            { key: 'offers', icon: '💲', label: t('nav.offers'), onPress: () => openTab('offers'), active: true },
-            { key: 'view', icon: '🗺️', label: t('offers.mapMode'), onPress: handleOpenMapMode },
-          ]}
-        />
-      ) : null}
 
       <ImmersiveSearchOverlay
         onChangeQuery={setSearchQuery}
@@ -546,6 +475,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
+  modeSlot: {
+    maxWidth: 360,
+  },
+  topActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  tabsRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 4,
+  },
+  topBarTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
   topBarLogo: {
     borderRadius: 999,
     height: 40,
@@ -556,12 +502,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 999,
     borderWidth: 1,
-    height: 40,
+    height: 44,
     justifyContent: 'center',
-    width: 40,
-  },
-  searchIcon: {
-    fontSize: 18,
+    width: 44,
   },
   searchRow: {
     flexDirection: 'row',
@@ -603,49 +546,6 @@ const styles = StyleSheet.create({
     top: 12,
     width: 110,
   },
-  leftPanel: {
-    borderRightWidth: 1,
-    gap: 8,
-    padding: 12,
-    width: 220,
-  },
-  logo: {
-    height: 48,
-    resizeMode: 'contain',
-    width: 48,
-  },
-  radiusRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  radiusChip: {
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  leftInput: {
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-  },
-  leftButton: {
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-  },
-  leftButtonText: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  appName: {
-    fontSize: 20,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
   railAction: {
     alignItems: 'center',
     gap: 2,
@@ -654,6 +554,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 16,
     justifyContent: 'center',
+    minHeight: 44,
     minWidth: 52,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -763,9 +664,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',
     borderRadius: 999,
-    height: 32,
+    height: 44,
     justifyContent: 'center',
-    width: 32,
+    width: 44,
   },
   immersivePhotoNavLabel: {
     color: '#fff',

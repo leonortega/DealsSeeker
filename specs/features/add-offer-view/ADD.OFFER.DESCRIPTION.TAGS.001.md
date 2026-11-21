@@ -143,3 +143,4 @@ Scenario: Save is blocked when no tags are selected
 - `ADD.OFFER.LAYOUT.001`
 - `ADD.OFFER.TAGS.SUGGESTIONS.001`
 - `OFFERS.SEARCH.001`
+- `APP.ACCESSIBILITY.UX.003`

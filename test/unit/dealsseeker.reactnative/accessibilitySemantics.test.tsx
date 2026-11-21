@@ -101,7 +101,7 @@ describe('accessible control semantics (APP.ACCESSIBILITY.UX.002)', () => {
       />
     );
     expect(screen.getByRole('button', { name: 'offers.favorite' }).props.accessibilityState).toEqual({ selected: true });
-    expect(screen.getByRole('button', { name: /available/ }).props.accessibilityState).toEqual({ disabled: true });
+    expect(screen.getByRole('button', { name: /^offers\.action\.available/ }).props.accessibilityState).toEqual({ disabled: true });
   });
 
   it('exposes favorite selected state and labels photo dots in the immersive feed', async () => {

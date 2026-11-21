@@ -69,3 +69,4 @@ Scenario: Provider failure uses fallback behavior
 - `OFFERS.MAP.001`
 - `ADD.OFFER.LOCATION.001`
 - `APP.LOCATION.PROVIDER.RESILIENCE.001`
+- `ADD.OFFER.LOCATION.003`

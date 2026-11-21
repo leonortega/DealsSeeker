@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { announceStatus } from '../utils/announce';
 
 export function LoginScreen() {
   const { api, palette, setSession, showRegister, t } = useApp();
@@ -18,13 +19,17 @@ export function LoginScreen() {
       });
 
       if (!session) {
-        setStatus(t('auth.invalidCredentials'));
+        const message = t('auth.invalidCredentials');
+        setStatus(message);
+        announceStatus(message);
         return;
       }
 
       await setSession(session);
     } catch {
-      setStatus(t('auth.loginFailed'));
+      const message = t('auth.loginFailed');
+      setStatus(message);
+      announceStatus(message);
     }
   }
 
@@ -42,6 +47,7 @@ export function LoginScreen() {
       <View style={[styles.formCard, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <Text style={[styles.formTitle, { color: palette.ink }]}>{t('auth.loginTitle')}</Text>
         <TextInput
+          accessibilityLabel={t('auth.email')}
           autoCapitalize="none"
           keyboardType="email-address"
           onChangeText={setEmail}
@@ -51,6 +57,7 @@ export function LoginScreen() {
           value={email}
         />
         <TextInput
+          accessibilityLabel={t('auth.password')}
           onChangeText={setPassword}
           placeholder={t('auth.password')}
           placeholderTextColor={palette.inkMuted}
@@ -58,13 +65,22 @@ export function LoginScreen() {
           style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
           value={password}
         />
-        <Pressable style={[styles.primaryButton, { backgroundColor: palette.accent }]} onPress={() => void submit()}>
+        <Pressable
+          accessibilityLabel={t('auth.loginButton')}
+          accessibilityRole="button"
+          style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+          onPress={() => void submit()}
+        >
           <Text style={styles.primaryButtonLabel}>{t('auth.loginButton')}</Text>
         </Pressable>
-        <Pressable onPress={showRegister}>
+        <Pressable accessibilityLabel={t('auth.createAccountLink')} accessibilityRole="link" onPress={showRegister}>
           <Text style={[styles.link, { color: palette.accent }]}>{t('auth.createAccountLink')}</Text>
         </Pressable>
-        {status ? <Text style={[styles.status, { color: palette.danger }]}>{status}</Text> : null}
+        {status ? (
+          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.danger }]}>
+            {status}
+          </Text>
+        ) : null}
       </View>
     </KeyboardAvoidingView>
   );
