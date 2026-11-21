@@ -33,6 +33,7 @@ export function ImmersiveSearchOverlay({
           <Text style={[styles.title, { color: palette.ink }]}>{t('offers.searchOffers')}</Text>
 
           <TextInput
+            accessibilityLabel={t('offers.searchPlaceholder')}
             autoFocus
             onChangeText={onChangeQuery}
             onSubmitEditing={onSearch}
@@ -50,6 +51,9 @@ export function ImmersiveSearchOverlay({
               return (
                 <Pressable
                   key={option}
+                  accessibilityLabel={`${option} m`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
                   onPress={() => onChangeRadius(option)}
                   style={[
                     styles.distanceChip,
@@ -125,8 +129,11 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   distanceChip: {
+    alignItems: 'center',
     borderRadius: 999,
     borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 44,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
@@ -137,8 +144,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   actionButton: {
+    alignItems: 'center',
     borderRadius: 999,
     borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 44,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },

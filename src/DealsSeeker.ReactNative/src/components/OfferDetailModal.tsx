@@ -336,17 +336,19 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
     <>
       <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
         <View style={[styles.backdrop, { backgroundColor: palette.overlay }]}> 
-        <View style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <View accessibilityViewIsModal testID="offer-detail-sheet" style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <View style={styles.header}>
             <Text numberOfLines={2} style={[styles.title, { color: palette.ink }]}>{offer.businessName}</Text>
-            <Pressable hitSlop={8} onPress={onClose} style={styles.closeButton}>
-              <Text style={[styles.close, { color: palette.ink }]}>{t('offers.fullscreenClose')}</Text>
+            <Pressable accessibilityLabel={t('offers.close')} accessibilityRole="button" hitSlop={8} onPress={onClose} style={styles.closeButton}>
+              <Text style={[styles.close, { color: palette.ink }]}>{t('offers.close')}</Text>
             </Pressable>
           </View>
 
           <View style={[styles.gallery, { backgroundColor: palette.accentMuted }]}>
             <Pressable
               accessibilityLabel={t('offers.previousImage')}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !hasMultipleImages }}
               disabled={!hasMultipleImages}
               onPress={showPreviousImage}
               style={[styles.galleryButton, !hasMultipleImages && styles.galleryButtonDisabled]}
@@ -381,6 +383,8 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
 
             <Pressable
               accessibilityLabel={t('offers.nextImage')}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !hasMultipleImages }}
               disabled={!hasMultipleImages}
               onPress={showNextImage}
               style={[styles.galleryButton, !hasMultipleImages && styles.galleryButtonDisabled]}
@@ -421,10 +425,10 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
 
       <Modal animationType="fade" transparent visible={fullscreenVisible} onRequestClose={() => setFullscreenVisible(false)}>
         <View style={[styles.fullscreenBackdrop, { backgroundColor: palette.overlay }]}> 
-          <View style={[styles.fullscreenSheet, { backgroundColor: palette.card, borderColor: palette.border }]}> 
+          <View accessibilityViewIsModal style={[styles.fullscreenSheet, { backgroundColor: palette.card, borderColor: palette.border }]}> 
             <View style={styles.header}>
               <Text numberOfLines={1} style={[styles.title, { color: palette.ink }]}>{offer.businessName}</Text>
-              <Pressable hitSlop={8} onPress={() => setFullscreenVisible(false)} style={styles.closeButton}>
+              <Pressable accessibilityLabel={t('offers.fullscreenClose')} accessibilityRole="button" hitSlop={8} onPress={() => setFullscreenVisible(false)} style={styles.closeButton}>
                 <Text style={[styles.close, { color: palette.ink }]}>{t('offers.fullscreenClose')}</Text>
               </Pressable>
             </View>

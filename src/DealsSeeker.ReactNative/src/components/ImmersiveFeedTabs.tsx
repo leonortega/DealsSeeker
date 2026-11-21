@@ -17,7 +17,9 @@ export function ImmersiveFeedTabs({
     { key: 'viewAll', label: t('offers.tabViewAll') },
   ];
 
-  const inactiveColor = palette.inkMuted;
+  // The immersive feed uses a fixed forest backdrop, so its chrome stays light in both themes.
+  const activeColor = '#f7f1e8';
+  const inactiveColor = '#c6d0c9';
 
   return (
     <View style={styles.tabs}>
@@ -32,7 +34,7 @@ export function ImmersiveFeedTabs({
             onPress={() => onChangeTab(tab.key)}
             style={styles.tab}
           >
-            <Text numberOfLines={1} style={[styles.tabLabel, { color: selected ? palette.ink : inactiveColor }]}>
+            <Text numberOfLines={1} style={[styles.tabLabel, { color: selected ? activeColor : inactiveColor }]}>
               {tab.label}
             </Text>
             <View style={[styles.tabIndicator, { backgroundColor: selected ? palette.accent : 'transparent' }]} />
@@ -52,7 +54,9 @@ const styles = StyleSheet.create({
   tab: {
     alignItems: 'center',
     gap: 4,
+    justifyContent: 'center',
     maxWidth: 110,
+    minHeight: 44,
   },
   tabLabel: {
     fontSize: 13,

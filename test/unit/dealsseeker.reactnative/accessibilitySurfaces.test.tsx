@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { AccessibilityInfo, View } from 'react-native';
+import { AccessibilityInfo } from 'react-native';
 import { RegisterScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/RegisterScreen';
 import { AddOfferScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
 import { OfferDetailModal } from '../../../src/DealsSeeker.ReactNative/src/components/OfferDetailModal';
@@ -108,7 +108,7 @@ describe('accessible contribution and auth surfaces (APP.ACCESSIBILITY.UX.002)',
     await screen.findByText('add.currentLocationUnavailable');
     const action = screen.getByRole('button', { name: 'add.setPinAtCenter' });
     await fireEvent.press(action);
-    expect(await screen.findByText('add.pinnedLocation')).toBeTruthy();
+    expect(await screen.findByText(/add\.pinnedLocation/)).toBeTruthy();
   });
 
   it('labels the search-overlay chips and buttons with their state', async () => {
@@ -148,8 +148,7 @@ describe('focused dialogs (APP.ACCESSIBILITY.UX.003)', () => {
         visible
       />
     );
-    const sheet = screen.UNSAFE_getAllByType(View).find((node) => node.props.accessibilityViewIsModal === true);
-    expect(sheet).toBeTruthy();
+    expect(screen.getByTestId('offer-detail-sheet').props.accessibilityViewIsModal).toBe(true);
     expect(screen.getByRole('button', { name: 'offers.close' })).toBeTruthy();
   });
 });

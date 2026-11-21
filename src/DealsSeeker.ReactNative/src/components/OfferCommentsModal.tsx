@@ -119,12 +119,12 @@ export function OfferCommentsModal({ offer, visible, onClose }: OfferCommentsMod
   return (
     <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
       <View style={[styles.backdrop, { backgroundColor: palette.overlay }]}>
-        <View style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <View accessibilityViewIsModal style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <View style={styles.header}>
             <Text numberOfLines={2} style={[styles.title, { color: palette.ink }]}>
               {t('comments.title')}
             </Text>
-            <Pressable hitSlop={8} onPress={onClose} style={styles.closeButton}>
+            <Pressable accessibilityLabel={t('offers.close')} accessibilityRole="button" hitSlop={8} onPress={onClose} style={styles.closeButton}>
               <Text style={[styles.close, { color: palette.ink }]}>{t('offers.close')}</Text>
             </Pressable>
           </View>

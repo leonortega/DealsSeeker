@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { announceStatus } from '../utils/announce';
 import { validateEmail, validateStrongPassword } from '../utils/format';
 
 export function RegisterScreen() {
@@ -10,26 +11,31 @@ export function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<string | null>(null);
 
+  function reportStatus(message: string | null) {
+    setStatus(message);
+    announceStatus(message);
+  }
+
   async function submit() {
     const trimmedName = displayName.trim();
     const trimmedEmail = email.trim();
 
     if (!trimmedName) {
-      setStatus(t('auth.nameRequired'));
+      reportStatus(t('auth.nameRequired'));
       return;
     }
 
     if (!validateEmail(trimmedEmail)) {
-      setStatus(t('auth.emailRequired'));
+      reportStatus(t('auth.emailRequired'));
       return;
     }
 
     if (!validateStrongPassword(password)) {
-      setStatus(t('auth.passwordRequired'));
+      reportStatus(t('auth.passwordRequired'));
       return;
     }
 
-    setStatus(null);
+    reportStatus(null);
 
     try {
       const registerResult = await api.registerUser({
@@ -39,7 +45,7 @@ export function RegisterScreen() {
       });
 
       if (!registerResult.success) {
-        setStatus(t('auth.registerFailed'));
+        reportStatus(t('auth.registerFailed'));
         return;
       }
 
@@ -49,13 +55,13 @@ export function RegisterScreen() {
       });
 
       if (!session) {
-        setStatus(t('auth.registerFailed'));
+        reportStatus(t('auth.registerFailed'));
         return;
       }
 
       await setSession(session);
     } catch {
-      setStatus(t('auth.registerFailed'));
+      reportStatus(t('auth.registerFailed'));
     }
   }
 
@@ -67,6 +73,7 @@ export function RegisterScreen() {
       <View style={[styles.formCard, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <Text style={[styles.formTitle, { color: palette.ink }]}>{t('auth.registerTitle')}</Text>
         <TextInput
+          accessibilityLabel={t('auth.displayName')}
           onChangeText={setDisplayName}
           placeholder={t('auth.displayName')}
           placeholderTextColor={palette.inkMuted}
@@ -74,6 +81,7 @@ export function RegisterScreen() {
           value={displayName}
         />
         <TextInput
+          accessibilityLabel={t('auth.email')}
           autoCapitalize="none"
           keyboardType="email-address"
           onChangeText={setEmail}
@@ -83,6 +91,7 @@ export function RegisterScreen() {
           value={email}
         />
         <TextInput
+          accessibilityLabel={t('auth.password')}
           onChangeText={setPassword}
           placeholder={t('auth.password')}
           placeholderTextColor={palette.inkMuted}
@@ -90,13 +99,22 @@ export function RegisterScreen() {
           style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
           value={password}
         />
-        <Pressable style={[styles.primaryButton, { backgroundColor: palette.accent }]} onPress={() => void submit()}>
+        <Pressable
+          accessibilityLabel={t('auth.registerButton')}
+          accessibilityRole="button"
+          style={[styles.primaryButton, { backgroundColor: palette.accent }]}
+          onPress={() => void submit()}
+        >
           <Text style={styles.primaryButtonLabel}>{t('auth.registerButton')}</Text>
         </Pressable>
-        <Pressable onPress={showLogin}>
+        <Pressable accessibilityLabel={t('auth.loginLink')} accessibilityRole="link" onPress={showLogin}>
           <Text style={[styles.link, { color: palette.accent }]}>{t('auth.loginLink')}</Text>
         </Pressable>
-        {status ? <Text style={[styles.status, { color: palette.danger }]}>{status}</Text> : null}
+        {status ? (
+          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.danger }]}>
+            {status}
+          </Text>
+        ) : null}
       </View>
     </KeyboardAvoidingView>
   );

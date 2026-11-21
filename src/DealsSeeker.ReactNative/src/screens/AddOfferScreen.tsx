@@ -17,6 +17,7 @@ import { MapPreview } from '../components/MapPreview';
 import { StandardHeader } from '../components/StandardHeader';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
+import { announceStatus } from '../utils/announce';
 import { extractCompletedWord, extractWords } from '../utils/format';
 import { getSuggestedTags, normalizeTag } from '../utils/tagLexicon';
 
@@ -126,6 +127,11 @@ export function AddOfferScreen() {
   const locationSearchSequence = useRef(0);
   const pinSequence = useRef(0);
 
+  function reportStatus(message: string | null) {
+    setStatus(message);
+    announceStatus(message);
+  }
+
   const isVisible = overlayRoute?.name === 'add-offer';
   const editingOfferId = overlayRoute?.name === 'add-offer' ? overlayRoute.offerId : undefined;
 
@@ -135,12 +141,12 @@ export function AddOfferScreen() {
     }
 
     async function loadDraft() {
-      setStatus(null);
+      reportStatus(null);
 
       if (editingOfferId) {
         const draft = await api.getMyOfferDraft(editingOfferId);
         if (!draft) {
-          setStatus(t('add.loadFailed'));
+          reportStatus(t('add.loadFailed'));
           return;
         }
 
@@ -182,7 +188,7 @@ export function AddOfferScreen() {
         const permission = await Location.requestForegroundPermissionsAsync();
         if (!permission.granted) {
           setMapCenter(fallbackMapCenter);
-          setStatus(t('add.currentLocationUnavailable'));
+          reportStatus(t('add.currentLocationUnavailable'));
           return;
         }
 
@@ -202,10 +208,10 @@ export function AddOfferScreen() {
         });
         setLocationQuery(label);
         setMapCenter(currentPosition);
-        setStatus(t('add.currentLocationAuto'));
+        reportStatus(t('add.currentLocationAuto'));
       } catch {
         setMapCenter(fallbackMapCenter);
-        setStatus(t('add.currentLocationUnavailable'));
+        reportStatus(t('add.currentLocationUnavailable'));
       }
     }
 
@@ -241,7 +247,7 @@ export function AddOfferScreen() {
           if (isRequestAborted(error) || sequence !== locationSearchSequence.current) {
             return;
           }
-          setStatus(t('add.locationSearchFailed'));
+          reportStatus(t('add.locationSearchFailed'));
         }
       })();
     }, 300);
@@ -279,7 +285,7 @@ export function AddOfferScreen() {
     setLocationQuery(fallbackLabel);
     setLocationResults([]);
     setSuggestionsSuppressed(true);
-    setStatus(t('add.mapPinSelected'));
+    reportStatus(t('add.mapPinSelected'));
 
     try {
       const reverse = await api.reverseLocation(position.lat, position.lng);
@@ -295,7 +301,7 @@ export function AddOfferScreen() {
         return;
       }
 
-      setStatus(t('add.mapPinAddressUnavailable'));
+      reportStatus(t('add.mapPinAddressUnavailable'));
     }
   }
 
@@ -347,13 +353,13 @@ export function AddOfferScreen() {
 
   async function pickFromCamera() {
     if (images.length >= maxPhotos) {
-      setStatus(t('add.maxPhotos'));
+      reportStatus(t('add.maxPhotos'));
       return;
     }
 
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      setStatus(t('add.imageError'));
+      reportStatus(t('add.imageError'));
       return;
     }
 
@@ -369,7 +375,7 @@ export function AddOfferScreen() {
 
     const built = buildDraftImage(result.assets[0], images.length);
     if (!built) {
-      setStatus(t('add.imageError'));
+      reportStatus(t('add.imageError'));
       return;
     }
 
@@ -379,7 +385,7 @@ export function AddOfferScreen() {
 
   async function pickFromGallery() {
     if (images.length >= maxPhotos) {
-      setStatus(t('add.maxPhotos'));
+      reportStatus(t('add.maxPhotos'));
       return;
     }
 
@@ -401,7 +407,7 @@ export function AddOfferScreen() {
       .filter(Boolean) as DraftImage[];
 
     if (nextImages.length === 0) {
-      setStatus(t('add.imageError'));
+      reportStatus(t('add.imageError'));
       return;
     }
 
@@ -454,7 +460,7 @@ export function AddOfferScreen() {
       errors.push(t('add.validationLocation'));
     }
 
-    setStatus(errors.join(' '));
+    reportStatus(errors.join(' '));
     return errors.length === 0;
   }
 
@@ -479,11 +485,11 @@ export function AddOfferScreen() {
       try {
         await api.updateOffer(editingOfferId, payload);
       } catch (error) {
-        setStatus(formatSubmitError(error, t('add.updateFailed')));
+        reportStatus(formatSubmitError(error, t('add.updateFailed')));
         return;
       }
 
-      setStatus(t('add.updated'));
+      reportStatus(t('add.updated'));
       closeOverlay();
       openTab('account');
       return;
@@ -492,11 +498,11 @@ export function AddOfferScreen() {
     try {
       await api.createOffer(payload);
     } catch (error) {
-      setStatus(formatSubmitError(error, t('add.createFailed')));
+      reportStatus(formatSubmitError(error, t('add.createFailed')));
       return;
     }
 
-    setStatus(t('add.created'));
+    reportStatus(t('add.created'));
     closeOverlay();
     openTab('offers');
   }
@@ -525,6 +531,9 @@ export function AddOfferScreen() {
             {images.map((image, index) => (
               <Pressable
                 key={`${image.previewUri}-${index}`}
+                accessibilityLabel={`${t('offers.goToImage')} ${index + 1}`}
+                accessibilityRole="button"
+                accessibilityState={{ selected: index === selectedImageIndex }}
                 onPress={() => setSelectedImageIndex(index)}
                 style={[
                   styles.thumbnailWrap,
@@ -554,11 +563,21 @@ export function AddOfferScreen() {
         </View>
         {images.length > 0 ? (
           <View style={styles.actionRow}>
-            <Pressable style={[styles.button, { backgroundColor: palette.panel }]} onPress={() => moveImage(-1)}>
-              <Text style={{ color: palette.ink }}>←</Text>
+            <Pressable
+              accessibilityLabel={t('offers.previousImage')}
+              accessibilityRole="button"
+              style={[styles.button, { backgroundColor: palette.panel }]}
+              onPress={() => moveImage(-1)}
+            >
+              <Text accessible={false} style={{ color: palette.ink }}>←</Text>
             </Pressable>
-            <Pressable style={[styles.button, { backgroundColor: palette.panel }]} onPress={() => moveImage(1)}>
-              <Text style={{ color: palette.ink }}>→</Text>
+            <Pressable
+              accessibilityLabel={t('offers.nextImage')}
+              accessibilityRole="button"
+              style={[styles.button, { backgroundColor: palette.panel }]}
+              onPress={() => moveImage(1)}
+            >
+              <Text accessible={false} style={{ color: palette.ink }}>→</Text>
             </Pressable>
             <Pressable style={[styles.button, { backgroundColor: palette.panelAlt }]} onPress={removeCurrentImage}>
               <Text style={{ color: palette.danger }}>{t('common.remove')}</Text>
@@ -573,6 +592,7 @@ export function AddOfferScreen() {
           {t('add.currentAddress')}: {location?.label ?? t('add.locationUnavailable')}
         </Text>
         <TextInput
+          accessibilityLabel={t('add.locationSearch')}
           editable={!locationConfirmed}
           onChangeText={(value) => {
             setLocationQuery(value);
@@ -601,7 +621,7 @@ export function AddOfferScreen() {
               setLocationResults([]);
               setSuggestionsSuppressed(true);
               setMapCenter(result.position);
-              setStatus(t('add.locationSelected'));
+              reportStatus(t('add.locationSelected'));
             }}
           >
             <Text style={{ color: palette.ink }}>{result.label}</Text>
@@ -631,24 +651,37 @@ export function AddOfferScreen() {
             onMapTap={(point) => void handleMapTap(point)}
           />
         ) : null}
+        <Pressable
+          accessibilityLabel={t('add.setPinAtCenter')}
+          accessibilityRole="button"
+          onPress={() => void handleMapTap(location?.position ?? mapCenter ?? fallbackMapCenter)}
+          style={[styles.button, { backgroundColor: palette.panelAlt }]}
+        >
+          <Text style={{ color: palette.ink }}>{t('add.setPinAtCenter')}</Text>
+        </Pressable>
         <View style={styles.actionRow}>
           <Pressable
+            accessibilityLabel={t('add.confirmLocation')}
+            accessibilityRole="button"
+            accessibilityState={{ selected: locationConfirmed }}
             style={[styles.button, { backgroundColor: locationConfirmed ? palette.panel : palette.accentMuted }]}
             onPress={() => {
               if (!location) {
                 return;
               }
               setLocationConfirmed(true);
-              setStatus(t('add.locationConfirmed'));
+              reportStatus(t('add.locationConfirmed'));
             }}
           >
             <Text style={{ color: locationConfirmed ? palette.inkMuted : palette.accent }}>{t('add.confirmLocation')}</Text>
           </Pressable>
           <Pressable
+            accessibilityLabel={t('add.editLocation')}
+            accessibilityRole="button"
             style={[styles.button, { backgroundColor: locationConfirmed ? palette.panel : palette.panelAlt }]}
             onPress={() => {
               setLocationConfirmed(false);
-              setStatus(t('add.locationEditEnabled'));
+              reportStatus(t('add.locationEditEnabled'));
             }}
           >
             <Text style={{ color: palette.ink }}>{t('add.editLocation')}</Text>
@@ -659,6 +692,7 @@ export function AddOfferScreen() {
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.description')}</Text>
         <TextInput
+          accessibilityLabel={t('add.description')}
           multiline
           onChangeText={(value) => {
             setDescription(value);
@@ -723,10 +757,19 @@ export function AddOfferScreen() {
         </View>
       </View>
 
-      <Pressable style={[styles.submitButton, { backgroundColor: palette.accent }]} onPress={() => void submit()}>
+      <Pressable
+        accessibilityLabel={editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
+        accessibilityRole="button"
+        style={[styles.submitButton, { backgroundColor: palette.accent }]}
+        onPress={() => void submit()}
+      >
         <Text style={styles.submitLabel}>{editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}</Text>
       </Pressable>
-      {status ? <Text style={[styles.status, { color: palette.ink }]}>{status}</Text> : null}
+      {status ? (
+        <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.ink }]}>
+          {status}
+        </Text>
+      ) : null}
     </ScrollView>
   );
 }
