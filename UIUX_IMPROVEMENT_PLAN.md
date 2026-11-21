@@ -365,5 +365,7 @@ Two user-supplied captures were checked against the source. The Map presentation
 
 One real defect was found in the Feed capture: the availability counts under the thumbs buttons used `palette.inkMuted` (`#5f6d63` in the light theme) on the fixed forest backdrop (`#1b2f28`), roughly 2.7:1 contrast. `APP.THEME.001` v0.3 adds R9 plus a BDD scenario; `immersiveInk` / `immersiveInkMuted` tokens were added in `theme.ts` and applied to the rail counts, top-bar title and feed tabs so all fixed-backdrop chrome shares one foreground treatment. RED → GREEN evidence in commit `3b905ff` → `25ad958`.
 
-Final verification: `npm test` 39 suites / 251 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14. Outstanding: VoiceOver/TalkBack sign-off and remaining palette/orientation captures before shipping.
+All P3 findings from the fresh audit are now closed: placeholder glyphs unified, primary radius pinned, scrim-tap dismissal, keyboard avoidance, safe-area insets on every scrollable surface, success-before-navigation, status severity colors, system font stack in the embedded map, shared auth form styles, and the WebView coordinate-privacy note recorded. `APP.POLISH.UX.001` v1.1 added R7–R9 plus matching BDD scenarios.
+
+Final verification: `npm test` 39 suites / 253 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14. Outstanding: VoiceOver/TalkBack sign-off and remaining palette/orientation captures before shipping.
 
