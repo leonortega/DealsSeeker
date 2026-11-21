@@ -69,3 +69,4 @@ Scenario: Metadata labels stay legible at default text size
 - `OFFERS.LAYOUT.001`
 - `APP.ACCESSIBILITY.UX.002`
 - `APP.ACCESSIBILITY.UX.003`
+- `APP.ADAPTIVE.UX.002`

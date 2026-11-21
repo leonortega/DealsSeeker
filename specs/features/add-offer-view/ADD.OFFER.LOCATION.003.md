@@ -69,3 +69,4 @@ Scenario: Other draft content is preserved
 - `APP.ACCESSIBILITY.UX.002`
 - `APP.ACCESSIBILITY.UX.003`
 - `APP.CONFIG.MAPS.001`
+- `APP.ADAPTIVE.UX.002`

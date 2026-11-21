@@ -229,3 +229,4 @@ Scenario: Wide viewport keeps the side panel
 - `OFFERS.LIST.ACTIONS.001`
 - `APP.SHELL.001`
 - `APP.LOCALIZATION.001`
+- `APP.ADAPTIVE.UX.002`
