@@ -29,3 +29,9 @@ Feature: Theme behavior with system default and override
     Given the app is using dark theme
     When the user views the immersive offer chrome, the bottom footer navigation, and the offers views
     Then every surface uses the active theme colors and the shared button styles
+
+  Scenario: Immersive metadata stays legible in the light theme
+    Given the app is using the light theme
+    When the immersive offer feed displays availability counts on the fixed backdrop
+    Then the counts use a light foreground that remains legible
+    And the same foreground is used when the dark theme is active

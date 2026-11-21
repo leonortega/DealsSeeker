@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: System-Aware Theme with Manual Override
-- **Version**: `v0.2`
+- **Version**: `v0.3`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: Medium
@@ -25,6 +25,7 @@ Provide light and dark theme support aligned with device preference and user ove
 - `APP.THEME.001-R6`: The My Account view shall include a theme-change control.
 - `APP.THEME.001-R7`: When the user changes theme from the My Account control, the selected theme shall apply instantly in the current view without requiring app restart.
 - `APP.THEME.001-R8`: All app surfaces, including the immersive offer chrome, the bottom footer navigation, and the offers views, shall use the active theme colors and the shared button styles.
+- `APP.THEME.001-R9`: Text and metadata drawn on the fixed immersive backdrop shall use a foreground that remains legible in both themes, regardless of the active theme's text color.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -54,6 +55,12 @@ Scenario: Surfaces share the active theme colors
   Given the app is using dark theme
   When the user views the immersive offer chrome, the bottom footer navigation, and the offers views
   Then every surface shall use the active theme colors and the shared button styles
+
+Scenario: Immersive metadata stays legible in the light theme
+  Given the app is using the light theme
+  When the immersive offer feed displays availability counts on the fixed backdrop
+  Then the counts use a light foreground that remains legible
+  And the same foreground is used when the dark theme is active
 ```
 
 ## Example Inputs/Outputs
