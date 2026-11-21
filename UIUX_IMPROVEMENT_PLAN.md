@@ -1,0 +1,342 @@
+# UI/UX Improvement Plan — Impeccable-Driven
+
+## 0. Status & Purpose
+
+- **P3 test-debt pass**: global Jest coverage ~25% → 50.77% with six new test files (AppContext, auth screens, secondary screens, account/OfferCard, presentation components, image hook); typecheck clean. Remaining 0% files are the large presentational/integration components (MapPreview, modals, AddOfferScreen).
+- **P3 fully closed**: help surface shipped (`APP.HELP.001`); global Jest coverage ~25% → 64.69% (33 suites / 222 tests); automated phone-landscape E2E check added (14/14 E2E pass); tablet split view formally closed as by-design because DESIGN.md pins the phone-first composition and bans a wide desktop reflow. Typecheck clean.
+- **Execution status**: CLOSED, CI-locked. Phases 1–5 executed. Spec-first + TDD cycles shipped: recoverable discovery states (`OFFERS.UX.001`, `APP.RESILIENCE.UX.001`), accessible control sizes (`APP.ACCESSIBILITY.UX.001`), unified navigation (`OFFERS.MODE.SWITCH.001`), SVG icon sets, and capture-driven layout/contrast/safe-area/large-text fixes. Final critique 32/40 (from 21), final audit 17/20 (from 13); 22 Jest suites / 139 tests and 12 Playwright E2E tests pass; `npm run typecheck` is clean. Device captures reviewed across phone dark/light, tablet dark/light and 200% text. No P0/P1/P2 findings remain; only P3 follow-ups are recorded in `.impeccable/tdd/offers-discovery-states.tdd.md`.
+- **Status**: Planning draft — the original plan; the three shipped cycles above have been validated and approved.
+- **Purpose**: Improve the DealsSeeker UI/UX in phased, evidence-first passes using the commands of the `impeccable` skill, while honoring the repo's spec-first workflow (AGENTS.md).
+- **Scope**: `src/DealsSeeker.ReactNative` (single client for mobile + web). API changes only if a UX fix requires new behavior.
+- **Important**: This document is a *plan*. The BDD scenarios in §4 are **proposed drafts**. Per AGENTS.md, each must be split into a spec file, validated, linked bidirectionally, set to `Approved`, and registered in `TRACEABILITY.md` **before** any corresponding implementation. No code change is valid without that step.
+
+---
+
+## 1. Impeccable skill review (what we're using)
+
+`impeccable` is a design-director playbook of ~28 commands grounded in this project's `PRODUCT.md` + `DESIGN.md`. It keeps a critique history in `.impeccable/critique/` that later commands reuse.
+
+| Category | Commands | Role in this plan |
+|---|---|---|
+| **Evaluate** | `critique`, `audit` | Produce the backlog everything else consumes. `critique` = UX heuristic scoring; `audit` = technical quality. |
+| **Build** | `init`, `document`, `shape`, `extract`, `craft` | `shape` plans UX before code (no implementation). `init`/`document` are already satisfied here. |
+| **Refine** | `polish`, `harden`, `onboard`, `bolder`, `quieter`, `distill` | Fix while preserving the incumbent "Trail Map" world. `polish` is the mandated closer. |
+| **Enhance** | `animate`, `colorize`, `typeset`, `layout`, `delight`, `overdrive` | Targeted craft once the basics pass. |
+| **Fix** | `clarify`, `adapt`, `optimize` | Copy, device/platform fit, performance. |
+| **Iterate** | `live`, `generate` | **Not applicable** — web-only; this project is native/adaptive. |
+
+Rules that govern our use of it:
+
+- **Refinement preserves, redesign replaces.** DealsSeeker has an established, documented design world ("The Trail Map"). Default to refinement, not a visual overhaul.
+- **Native platforms run critique/audit from source** — no browser detector, no overlays. Screenshots come from simulator / emulator / hardware, never a browser.
+- **`polish` closes the loop** — it reads the latest critique snapshot and closes it when its P0/P1 issues are cleared.
+- **Evaluations are read-only** — `critique` and `audit` need no spec change; commands that change observable behavior do.
+
+---
+
+## 2. Current state (from `impeccable context` + signals)
+
+- ✅ `PRODUCT.md` and `DESIGN.md` exist and are strong → **skip `init` / `document`**.
+- ⚠️ `critique.latest` is **null** → the app has been **never critiqued**. Biggest immediate gap.
+- Platform is **adaptive** (mobile-native first, web secondary) → **`live`, `generate`, `impeccable detect` do not apply**; dev server is not running either.
+- Strong existing assets: rich behavioral specs/BDD, JSON contracts, examples, traceability matrix, and an established color/type/radius system with daylight + forest-night palettes.
+- Spec-first repo: behavior changes require an Approved spec + BDD scenario first.
+
+**Design world to preserve (from DESIGN.md):** warm paper ground, forest ink, one terracotta waypoint accent, Georgia only for landmarks, 999px pills for tags/chips/filters, one soft card shadow, night-dark footer in both themes, both palettes tested, and no raw `lat`/`lng` in Add Offer / Offers views.
+
+---
+
+## 3. Phases (analyzed plan)
+
+### Lead with these 3 (highest value)
+
+1. `/impeccable critique src/DealsSeeker.ReactNative/src/screens/OffersScreen.tsx` — first-ever UX baseline; Nielsen scores, priority issues, and a snapshot for `polish`.
+2. `/impeccable audit src/DealsSeeker.ReactNative` — native code-level check (a11y, perf, theming, HIG/Material conformance, adaptivity).
+3. `/impeccable shape OffersFeed` — plan discovery-path improvements before code; returns a brief, no implementation.
+
+### Phase 0 — Foundation (already done)
+Product + design context captured. No action.
+
+### Phase 1 — Diagnose (evidence before opinions)
+
+| Command | Target | Why |
+|---|---|---|
+| `critique` | `OffersScreen.tsx` → `AddOfferScreen.tsx` → `AccountScreen.tsx` | Establish scores + per-surface snapshots. Native = design review only (no detector). |
+| `audit` | `src/DealsSeeker.ReactNative` | Find systemic a11y/theming/platform gaps across all screens. |
+
+Outputs feed §4 specs and the refinement commands below.
+
+### Phase 2 — Decide direction
+
+| Command | When |
+|---|---|
+| `shape <feature>` | For any new/reworked flow (empty states, onboarding, navigation). Produces a brief that feeds the spec-first workflow. |
+
+### Phase 3 — Fix, mapped to findings
+
+| Finding | Command | Proposed spec (§4) |
+|---|---|---|
+| Vague labels, errors, empty-state copy, localization text | `/impeccable clarify` | `OFFERS.UX.001`, `ADD.OFFER.UX.001` |
+| First-run / no-offers-nearby / favorites empty + activation | `/impeccable onboard` | `APP.ONBOARD.001` |
+| Offline, 429 rate-limit, location-provider failures, long/RTL text | `/impeccable harden` | `APP.RESILIENCE.UX.001` |
+| Tablet / landscape / iOS-vs-Android conformance | `/impeccable adapt` | `APP.ADAPTIVE.UX.001` |
+| Feed scroll / photo performance | `/impeccable optimize` | (existing perf specs) |
+| Spacing, type scale, hierarchy drift | `/impeccable layout` / `typeset` | `APP.ACCESSIBILITY.UX.001` |
+| Flat/bland vs over-loud surfaces | `bolder` / `quieter` / `colorize` / `distill` | within DESIGN.md rules |
+| Purposeful motion | `/impeccable animate` | within DESIGN.md rules |
+
+### Phase 4 — Close
+
+- `/impeccable polish <surface>` — final QA on each touched path; clears the critique snapshot when its issues are fixed.
+
+### Phase 5 — Verify & reconcile with the workflow
+
+- Re-run `critique` + `audit` to show score movement.
+- For observable behavior changes: **spec → validate → Approve → implement** (AGENTS.md BDD flow).
+- Verify with the `browser` skill on the web client and simulator/emulator/hardware captures on native (both palettes, phone + tablet, both orientations, 200% text scaling).
+- Run `ponytail-review` on the final diff; reconcile structural findings with `design-pattern-review`.
+
+### Suggested starting scope
+Start with the **discovery path** — `OffersScreen.tsx` (immersive feed, search, cards, map) — the core user job and the most reused surface. Then **AddOfferScreen** (contribution job), then **AccountScreen/Login/Register** (first-run + trust).
+
+---
+
+## 4. Proposed BDD scenarios (DRAFT — gate before implementation)
+
+These are the acceptance criteria the improvements must satisfy. They follow the ID convention `<VIEW>.<AREA>.<NNN>` and include positive + edge scenarios. **Each feature below becomes its own `specs/features/<view-slug>/` spec and `specs/bdd/<name>.feature` file once validated and approved.**
+
+### 4.1 `OFFERS.UX.001` — Offers discovery clarity & empty states
+*Target file: `specs/bdd/offers-ux.feature` · related: `OFFERS.FEED.IMMERSIVE.001`, `OFFERS.SEARCH.001`, `OFFERS.GRID.CARDS.001`*
+
+```gherkin
+Feature: Offers discovery clarity and recoverable empty states
+  As a deal hunter
+  I want the discovery path to make the primary action obvious and recover cleanly from empty results
+  So that I can find a relevant nearby offer without dead ends
+
+  Scenario: One primary action leads the discovery path
+    Given the user is on the Offers view with offers available
+    When the view is rendered
+    Then a single primary discovery action is visually dominant
+    And the waypoint accent is reserved for the active path and primary action
+    And secondary actions remain neutral
+
+  Scenario: Search with no results offers a next step
+    Given the user searched with a tag that returns no offers
+    When the no-results state is displayed
+    Then a message explains that no offers matched
+    And an action to clear the search or try a nearby tag is available
+    And the user can return to the full offer list
+
+  Scenario: Empty feed state directs the user to contribute
+    Given no offers are available in the user's radius
+    When the Offers view loads
+    Then an empty-state message explains why the feed is empty
+    And an action to create the first offer is available
+```
+
+### 4.2 `APP.ONBOARD.001` — First run to first value
+*Target file: `specs/bdd/app-onboarding.feature` · related: `APP.SHELL.001`, `OFFERS.UX.001`*
+
+```gherkin
+Feature: First-run guidance to first value
+  As a first-time deal hunter
+  I want to reach a relevant nearby offer quickly
+  So that I understand the product's value without a lengthy tutorial
+
+  Scenario: First launch guides the user to nearby offers
+    Given the app is launched for the first time with an authenticated session
+    When the first view is displayed
+    Then the immersive offers feed is displayed as the default presentation
+    And any guidance is brief, optional, and skippable
+
+  Scenario: Guidance is not repeated for returning users
+    Given the user has already completed first-run guidance
+    When the app is launched again
+    Then first-run guidance is not displayed again
+
+  Scenario: Location permission denial still leads to value
+    Given the user denies location permission on first run
+    When the Offers view loads
+    Then an explanation of what was missed is shown
+    And a way to browse without precise location remains available
+```
+
+### 4.3 `APP.RESILIENCE.UX.001` — Actionable error and edge states
+*Target file: `specs/bdd/app-resilience-ux.feature` · related: `APP.RATE.LIMIT.001`, `APP.LOCATION.PROVIDER.RESILIENCE.001`, `APP.API.CONNECTIVITY.001`*
+
+```gherkin
+Feature: Actionable error, offline, and localization states
+  As a user on a real mobile connection
+  I want errors to explain what happened and how to recover
+  So that I am never stranded by a failed request or unusual input
+
+  Scenario: Offline load shows a retry path
+    Given the device has no network connection
+    When the user attempts to load offers
+    Then a message states the connection is unavailable
+    And a retry action is available
+
+  Scenario: Rate-limit response is presented accessibly
+    Given the API responds with a rate-limit error
+    When the error reaches the client
+    Then the message states the limit in plain language
+    And the user is told when they can try again
+    And no internal status code is shown as the primary message
+
+  Scenario: Long or localized text does not break the layout
+    Given a localized offer title substantially longer than its English text
+    When the offer is displayed
+    Then the title wraps or truncates without overlapping controls
+    And all primary actions remain reachable
+```
+
+### 4.4 `ADD.OFFER.UX.001` — Contribution flow feedback
+*Target file: `specs/bdd/add-offer-ux.feature` · related: `ADD.OFFER.LAYOUT.001`, `ADD.OFFER.LOCATION.001`, `ADD.OFFER.DESCRIPTION.TAGS.001`*
+
+```gherkin
+Feature: Clear contribution flow feedback
+  As a community contributor
+  I want clear feedback while creating an offer
+  So that I can complete a valid offer without guessing what failed
+
+  Scenario: Missing required content is explained at the point of action
+    Given the user is in the Add Offer view
+    And a required item such as photo, description, tag, or location is missing
+    When the user attempts to submit
+    Then the request is not sent
+    And each missing item is identified with guidance to correct it
+    And entered data is preserved
+
+  Scenario: Successful contribution confirms the outcome
+    Given the user submitted a valid offer
+    When the create-offer request succeeds
+    Then the app confirms the offer was created
+    And the user is returned to the Offers view
+
+  Scenario: Coordinate privacy is preserved
+    Given an offer with a confirmed location is displayed in Add Offer or Offers
+    When the user views the location information
+    Then no raw latitude or longitude values are shown to the user
+```
+
+### 4.5 `APP.ADAPTIVE.UX.001` — Device class and orientation
+*Target file: `specs/bdd/app-adaptive-ux.feature` · related: `OFFERS.FEED.RESPONSIVE.001`, `OFFERS.GRID.CARDS.001`*
+
+```gherkin
+Feature: Adaptive presentation across device classes
+  As a user on a phone, tablet, or in landscape
+  I want the layout to restructure for my screen
+  So that core discovery and contribution tasks remain usable everywhere
+
+  Scenario: Tablet presentation restructures rather than stretches
+    Given the app is running on a tablet-sized screen
+    When the Offers view is displayed
+    Then the layout uses the available width with a multi-column or split arrangement
+    And the phone layout is not simply scaled up
+
+  Scenario: Landscape orientation keeps controls reachable
+    Given the device is in landscape orientation
+    When the user views an offer
+    Then primary discovery and action controls are not clipped or overlapped
+    And no core functionality is hidden
+
+  Scenario: Phone-sized window on a tablet still works
+    Given a tablet is in a split-screen or narrow window
+    When the Offers view is displayed
+    Then the compact layout is used and controls remain reachable
+```
+
+### 4.6 `APP.ACCESSIBILITY.UX.001` — Accessibility and both palettes
+*Target file: `specs/bdd/app-accessibility-ux.feature` · related: `APP.THEME.001`, `OFFERS.FEED.IMMERSIVE.001`*
+
+```gherkin
+Feature: Accessible and theme-complete surfaces
+  As a user with accessibility needs or a dark-theme preference
+  I want every surface to be readable and operable in both themes
+  So that I can use the app in my own context
+
+  Scenario: Touch targets meet the platform minimum
+    Given any supported screen on a phone
+    When its tappable controls are rendered
+    Then each control meets the platform minimum touch target size
+    And adjacent targets have sufficient spacing
+
+  Scenario: Both palettes hold contrast
+    Given the active theme is light
+    When a surface is rendered
+    Then text and controls meet contrast requirements
+    When the active theme switches to dark
+    Then the forest-night palette is applied and contrast is maintained
+
+  Scenario: Large text scaling does not clip content
+    Given the system font size is set to a large accessibility size
+    When a form or offer detail is displayed
+    Then labels and controls remain readable and unclipped
+    And primary actions remain reachable
+```
+
+---
+
+## 5. Traceability rows to add (when specs are created)
+
+Add to `specs/traceability/TRACEABILITY.md` for each new spec:
+
+| Spec ID | Feature File | Contract | Examples |
+|---|---|---|---|
+| `OFFERS.UX.001` | `bdd/offers-ux.feature` | N/A | TBD render fixture |
+| `APP.ONBOARD.001` | `bdd/app-onboarding.feature` | N/A | TBD |
+| `APP.RESILIENCE.UX.001` | `bdd/app-resilience-ux.feature` | `contracts/json-schema/problem-details.schema.json` | existing rate-limit / location examples |
+| `ADD.OFFER.UX.001` | `bdd/add-offer-ux.feature` | `contracts/json-schema/add-offer-draft.schema.json` | existing add-offer examples |
+| `APP.ADAPTIVE.UX.001` | `bdd/app-adaptive-ux.feature` | N/A | `examples/offers-view/offers-immersive-feed.responsive.json` |
+| `APP.ACCESSIBILITY.UX.001` | `bdd/app-accessibility-ux.feature` | N/A | TBD |
+
+Also add bidirectional `Related Specs` entries in the dependent specs listed under each feature above.
+
+---
+
+## 6. Guardrails / do-not-violate
+
+- **Spec-first**: no behavior implementation until its spec is validated and `Approved` (AGENTS.md).
+- **Implementation scope**: API + React Native only; the React Native project is the single client.
+- **Design world**: preserve "The Trail Map" — terracotta only on the active path, Georgia only for landmarks, 999px pills, one soft shadow, night-dark footer in both themes.
+- **Coordinate privacy**: no raw `lat`/`lng` in Add Offer or Offers views.
+- **Native verification**: screenshots from simulator/emulator/hardware, both palettes, phone + tablet, both orientations, text scaling. Web verification via the `browser` skill.
+- **Refinement, not redesign**: do not replace the incumbent world without explicit approval.
+
+---
+
+## 7. Next action
+
+Run the Phase 1 read-only evaluations first (no spec change needed):
+
+1. `/impeccable critique src/DealsSeeker.ReactNative/src/screens/OffersScreen.tsx`
+2. `/impeccable audit src/DealsSeeker.ReactNative`
+
+Then use their findings to confirm, adjust, or drop the proposed BDD scenarios in §4 before creating/approving the actual specs.
+
+---
+
+## 8. Fresh evidence pass (2026-11-21) — reopened after closure
+
+The original plan was closed, so the next iteration began with a new read-only critique + native audit of the current source (no spec change needed for evaluation).
+
+- **Fresh critique**: 29/40 (Good), down from the recorded 32/40 because a deeper pass surfaced a silent New York fallback, action feedback dropped in the immersive presentation, six equal-weight offer actions, and touch-target gaps in newer controls. Snapshot: `.impeccable/critique/2026-11-21T17-06-00Z__reactnative-src-screens-offersscreen-tsx-887c58d9.md`.
+- **Fresh audit**: 13/20 (Acceptable), down from 17/20. The earlier pass was shallow: the new pass found no accessibility roles/labels/states/live regions across 11 lower-coverage screens, sub-44 targets throughout, fixed `lineHeight` clipping at 200% text, a map WebView that blocks pinch-zoom, and an off-palette map-pin color. Snapshot: `.impeccable/audit/2026-11-21T17-06-06Z__project.md`.
+- **Direction chosen by the user**: accessibility baseline first; scope = everything found; native visual verification by user-supplied captures.
+
+### Cycle A — Accessibility baseline (COMPLETE)
+
+Approved specs: `APP.ACCESSIBILITY.UX.002`, `APP.ACCESSIBILITY.UX.003`, `ADD.OFFER.LOCATION.003`. Three BDD features added; traceability and bidirectional links updated. TDD evidence: `.impeccable/tdd/accessibility-baseline.tdd.md`.
+
+Delivered: roles, labels and states across auth, Add Offer, account, secondary, detail/comments and immersive surfaces; `announceStatus` live-region announcements; modal focus confinement; accessible center-pin action; 44-unit floor for immersive tabs, overlay chips and dialog buttons.
+
+Verification: `npm test` 36 suites / 235 tests, `npm run typecheck` clean. Native device/screen-reader capture verification is outstanding (user-supplied).
+
+### Remaining cycles (queued)
+
+- **B — Location trust**: `APP.LOCATION.FALLBACK.001` — disclose the approximate/fallback area, provide retry and browse-without-precise-location paths.
+- **C — Adaptivity**: `APP.ADAPTIVE.UX.002` — 44-unit floor across the remaining surfaces, remove fixed `lineHeight`, restore map pinch-zoom, honor Reduce Motion.
+- **D — Feedback & copy**: immersive action confirmations, correct detail-sheet close copy (done in Cycle A), consistent status severity.
+- **E — Theming & cleanup**: route map pin/background through palette roles, unify placeholder glyphs, 28px primary radius, dedupe auth styles, scrim-tap dismissal, Android keyboard avoidance, bottom safe-area inset, success-before-navigation, record WebView coordinate privacy in the threat model.
+
