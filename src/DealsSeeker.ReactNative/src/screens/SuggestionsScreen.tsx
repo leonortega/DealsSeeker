@@ -33,7 +33,7 @@ export function SuggestionsScreen() {
     setMessage('');
     setContact('');
     reportStatus(t('suggestions.success'));
-    openTab('offers');
+    setTimeout(() => openTab('offers'), 900);
   }
 
   return (
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: 28,
     justifyContent: 'center',
     minHeight: 44,
     paddingVertical: 15,

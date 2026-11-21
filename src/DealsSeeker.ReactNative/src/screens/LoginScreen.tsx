@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
 import { announceStatus } from '../utils/announce';
 
@@ -35,7 +35,7 @@ export function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior="padding"
       style={[styles.root, { backgroundColor: palette.background }]}
     >
       <View style={[styles.brandCard, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   primaryButton: {
-    borderRadius: 18,
+    borderRadius: 28,
     paddingVertical: 15,
   },
   primaryButtonLabel: {

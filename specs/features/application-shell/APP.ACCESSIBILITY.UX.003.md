@@ -88,3 +88,4 @@ Scenario: Success is perceivable before navigation
 - `APP.LOCATION.FALLBACK.001`
 - `APP.ADAPTIVE.UX.002`
 - `OFFERS.UX.002`
+- `APP.POLISH.UX.001`

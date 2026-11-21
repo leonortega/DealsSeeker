@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
 import { apiConfig } from '../api/config';
 import { GeoPoint, OfferImageDto, OfferLocationDto } from '../api/types';
@@ -110,6 +111,7 @@ function dedupeLocationSearchResults(results: LocationSearchResult[]) {
 
 export function AddOfferScreen() {
   const { api, closeOverlay, openTab, overlayRoute, palette, preferences, t } = useApp();
+  const insets = useSafeAreaInsets();
   const [images, setImages] = useState<DraftImage[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [description, setDescription] = useState('');
@@ -490,8 +492,10 @@ export function AddOfferScreen() {
       }
 
       reportStatus(t('add.updated'));
-      closeOverlay();
-      openTab('account');
+      setTimeout(() => {
+        closeOverlay();
+        openTab('account');
+      }, 900);
       return;
     }
 
@@ -503,15 +507,17 @@ export function AddOfferScreen() {
     }
 
     reportStatus(t('add.created'));
-    closeOverlay();
-    openTab('offers');
+    setTimeout(() => {
+      closeOverlay();
+      openTab('offers');
+    }, 900);
   }
 
   const detectedWords = extractWords(description).filter((word) => !tags.includes(normalizeTag(word)));
   const previewImage = images[selectedImageIndex];
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
       <StandardHeader />
       <View style={styles.header}>
         <Text style={[styles.title, { color: palette.ink }]}>{editingOfferId ? t('add.editTitle') : t('add.title')}</Text>
@@ -523,7 +529,7 @@ export function AddOfferScreen() {
           {previewImage?.previewUri ? (
             <Image source={{ uri: previewImage.previewUri }} style={styles.previewImage} />
           ) : (
-            <Text style={[styles.emptyImage, { color: palette.inkMuted }]}>◎</Text>
+            <Text style={[styles.emptyImage, { color: palette.inkMuted }]}>▤</Text>
           )}
         </View>
         {images.length > 1 ? (
@@ -546,7 +552,7 @@ export function AddOfferScreen() {
                   <Image source={{ uri: image.previewUri }} style={styles.thumbnail} />
                 ) : (
                   <View style={[styles.thumbnailPlaceholder, { backgroundColor: palette.panelAlt }]}>
-                    <Text style={[styles.thumbnailPlaceholderText, { color: palette.inkMuted }]}>◎</Text>
+                    <Text style={[styles.thumbnailPlaceholderText, { color: palette.inkMuted }]}>▤</Text>
                   </View>
                 )}
               </Pressable>
@@ -893,7 +899,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   submitButton: {
-    borderRadius: 20,
+    borderRadius: 28,
     paddingVertical: 16,
   },
   submitLabel: {

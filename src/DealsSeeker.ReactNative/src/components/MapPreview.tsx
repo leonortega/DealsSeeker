@@ -4,6 +4,7 @@ import { createElement, useEffect, useRef } from 'react';
 import { apiConfig, normalizeProvider, resolveDisplayProvider } from '../api/config';
 import { BusinessMarkerDto, GeoPoint } from '../api/types';
 import { useApp } from '../hooks/useApp';
+import type { Palette } from '../utils/theme';
 
 interface MapPreviewProps {
   center: GeoPoint;
@@ -54,7 +55,7 @@ function buildMapHtml({
   googleMapsApiKey,
   showUserMarker,
   zoom,
-  themeMode,
+  palette,
   interactive,
 }: {
   center: GeoPoint;
@@ -64,14 +65,14 @@ function buildMapHtml({
   googleMapsApiKey: string;
   showUserMarker: boolean;
   zoom: number;
-  themeMode: 'light' | 'dark';
+  palette: Palette;
   interactive: boolean;
 }) {
-  const background = themeMode === 'dark' ? '#22332f' : '#edf3e7';
-  const textColor = themeMode === 'dark' ? '#f7f1e8' : '#1f3128';
-  const userColor = themeMode === 'dark' ? '#7ec48c' : '#2f6e46';
-  const businessColor = themeMode === 'dark' ? '#f08f62' : '#b85c38';
-  const pinColor = themeMode === 'dark' ? '#e94f37' : '#d92b1c';
+  const background = palette.mode === 'dark' ? palette.panel : palette.panelAlt;
+  const textColor = palette.ink;
+  const userColor = palette.success;
+  const businessColor = palette.accent;
+  const pinColor = palette.danger;
   const markerPayload = markers.map((marker) => ({
     businessId: marker.businessId,
     lat: marker.location.lat,
@@ -481,7 +482,7 @@ export function MapPreview({
     markers: businesses,
     provider,
     showUserMarker,
-    themeMode: palette.mode,
+    palette,
     zoom,
     interactive,
   });

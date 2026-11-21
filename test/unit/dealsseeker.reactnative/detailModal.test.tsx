@@ -76,6 +76,12 @@ describe('OfferDetailModal', () => {
     expect(screen.getByText('snacks')).toBeTruthy();
   });
 
+  it('closes when the scrim is tapped', async () => {
+    await renderModal();
+    await fireEvent.press(screen.getByRole('button', { name: 'common.close', includeHiddenElements: true }));
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
   it('closes from the header control', async () => {
     await renderModal();
     await fireEvent.press(screen.getByText('offers.close'));

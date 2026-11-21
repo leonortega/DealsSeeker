@@ -70,3 +70,4 @@ Scenario: Surfaces share the active theme colors
 ## Related Specs
 - `APP.SHELL.001`
 - `OFFERS.COMMENTS.001`
+- `APP.POLISH.UX.001`

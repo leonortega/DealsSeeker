@@ -56,7 +56,7 @@ export function ReportsScreen() {
     setReportedAtUtc(new Date().toISOString());
     clearReportDraft();
     reportStatus(t('reports.success'));
-    openTab('offers');
+    setTimeout(() => openTab('offers'), 900);
   }
 
   return (
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: 28,
     justifyContent: 'center',
     marginTop: 6,
     minHeight: 44,
