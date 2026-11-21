@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { immersiveInk, immersiveInkMuted } from '../utils/theme';
 
 export type ImmersiveFeedTab = 'favorites' | 'viewAll';
 
@@ -18,8 +19,8 @@ export function ImmersiveFeedTabs({
   ];
 
   // The immersive feed uses a fixed forest backdrop, so its chrome stays light in both themes.
-  const activeColor = '#f7f1e8';
-  const inactiveColor = '#c6d0c9';
+  const activeColor = immersiveInk;
+  const inactiveColor = immersiveInkMuted;
 
   return (
     <View style={styles.tabs}>

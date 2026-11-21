@@ -6,7 +6,7 @@ import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
 import { openDirections } from '../utils/maps';
-import { immersiveBackdrop } from '../utils/theme';
+import { immersiveBackdrop, immersiveInk, immersiveInkMuted } from '../utils/theme';
 import { ImmersiveActionCaption, ImmersiveActionIconGlyph } from './ImmersiveActionGlyphs';
 import { ImmersiveFeedTab, ImmersiveFeedTabs } from './ImmersiveFeedTabs';
 import { ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
@@ -260,7 +260,7 @@ function ImmersiveOfferPage({
           <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
             <ImmersiveActionIconGlyph kind="votePositive" />
           </View>
-          <Text style={[styles.railCount, { color: palette.inkMuted }]}>{offer.positiveAvailabilityCount}</Text>
+          <Text style={[styles.railCount, { color: immersiveInkMuted }]}>{offer.positiveAvailabilityCount}</Text>
           {showCaptions ? <ImmersiveActionCaption label={t('offers.action.available')} /> : null}
         </Pressable>
         <Pressable
@@ -274,7 +274,7 @@ function ImmersiveOfferPage({
           <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
             <ImmersiveActionIconGlyph kind="voteNegative" />
           </View>
-          <Text style={[styles.railCount, { color: palette.inkMuted }]}>{offer.negativeAvailabilityCount}</Text>
+          <Text style={[styles.railCount, { color: immersiveInkMuted }]}>{offer.negativeAvailabilityCount}</Text>
           {showCaptions ? <ImmersiveActionCaption label={t('offers.action.unavailable')} /> : null}
         </Pressable>
       </View>
@@ -412,7 +412,7 @@ export function ImmersiveOfferFeed({
           <View pointerEvents="box-none" style={styles.topBar}>
             <View pointerEvents="box-none" style={styles.topBarContent}>
               <Image source={require('../../assets/icon.png')} style={[styles.topBarLogo, { backgroundColor: palette.panel }]} />
-              {isNarrow ? null : <Text style={[styles.topBarTitle, { color: '#f7f1e8' }]}>{t('app.title')}</Text>}
+              {isNarrow ? null : <Text style={[styles.topBarTitle, { color: immersiveInk }]}>{t('app.title')}</Text>}
               <View pointerEvents="box-none" style={styles.modeSlot}>{headerControl}</View>
               <View pointerEvents="box-none" style={styles.topActions}>
                 <Pressable

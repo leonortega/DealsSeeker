@@ -58,6 +58,15 @@ const darkPalette: Palette = {
  * Backdrop color used behind the immersive offer feed, independent of the active theme.
  */
 export const immersiveBackdrop = '#1b2f28';
+export const immersiveInk = '#f7f1e8';
+export const immersiveInkMuted = '#c6d0c9';
+
+export function resolveShellChrome(immersive: boolean, palette: Palette) {
+  return {
+    background: immersive ? immersiveBackdrop : palette.background,
+    statusBarStyle: immersive || palette.mode === 'dark' ? ('light' as const) : ('dark' as const),
+  };
+}
 
 export function resolveTheme(themeMode: ThemeMode, systemScheme: 'light' | 'dark' | null | undefined) {  if (themeMode === 'dark') {
     return darkPalette;
