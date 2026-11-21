@@ -87,3 +87,4 @@ Scenario: Success is perceivable before navigation
 - `OFFERS.COMMENTS.001`
 - `APP.LOCATION.FALLBACK.001`
 - `APP.ADAPTIVE.UX.002`
+- `OFFERS.UX.002`

@@ -2,10 +2,13 @@
 
 ## Metadata
 - **Title**: Immersive Vertical Full-Screen Main Page Feed
-- **Version**: `v1.10`
+- **Version**: `v2.0`
 - **Status**: Approved
 - **Context/View**: Offers View (Main Page)
 - **Priority**: High
+
+## Navigation restructure (v2.0)
+The following navigation-related requirements are superseded by `OFFERS.MODE.SWITCH.001`, `APP.SHELL.001` and `OFFERS.NAV.ADD.001`: R4–R7, R16–R35, R42–R45 and R53. The immersive feed no longer has a static left navigation panel or a footer mode button; both presentations share one bottom navigation, presentation is chosen in the Offers header mode control, and Add Offer is opened from a single floating action button. All non-navigation requirements (feed paging, photo carousel, overlays, theme, privacy, states) remain in force.
 
 ## Purpose
 Define a new main-page browsing experience that presents offers as a vertical, full-screen, one-offer-per-viewport immersive feed, with application identity and discovery controls on the left, offer actions on the right, and offer text/tags in the lower-left description area.
@@ -75,6 +78,10 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R55`: The immersive offers view shall use the same color palette and surface treatment as the standard application UI for its side panel, top bar, footer, controls, status banners and search sheet.
 - `OFFERS.FEED.IMMERSIVE.001-R56`: The classic styling of the immersive offers view shall follow the active theme (light, dark or system) in the same way as the standard application UI.
 - `OFFERS.FEED.IMMERSIVE.001-R57`: The offer text overlay shall have no surrounding box, border or opaque background, so that the offer image remains unobstructed, while its text shall remain readable over offer images.
+- `OFFERS.FEED.IMMERSIVE.001-R58`: Text and labels placed directly over the fixed forest backdrop, including the top-bar title, feed tabs and action captions, shall use light foreground colors that hold contrast in both the light and dark themes.
+- `OFFERS.FEED.IMMERSIVE.001-R59`: On wide screens the presentation mode control shall keep a compact width and shall not stretch across the full screen.
+- `OFFERS.FEED.IMMERSIVE.001-R60`: While the immersive feed is displayed, the safe-area background and the status-bar treatment shall use the fixed forest presentation so the full-bleed surface is not framed by a light band, in both themes.
+- `OFFERS.FEED.IMMERSIVE.001-R61`: At increased text sizes, every offer action in the side rail shall remain visible and independently tappable, with no overlapping labels or clipped controls; decorative captions may be omitted when the controls carry accessible names.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -295,3 +302,9 @@ Scenario: Empty feed state
 - `APP.THEME.001`
 - `APP.LOCALIZATION.001`
 - `OFFERS.COMMENTS.001`
+- `OFFERS.UX.001`
+- `APP.RESILIENCE.UX.001`
+- `APP.ACCESSIBILITY.UX.001`
+- `OFFERS.MODE.SWITCH.001`
+- `OFFERS.NAV.ADD.001`
+- `OFFERS.UX.002`
