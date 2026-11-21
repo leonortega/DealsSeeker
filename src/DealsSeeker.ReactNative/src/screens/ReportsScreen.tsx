@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
+import { announceStatus } from '../utils/announce';
 
 export function ReportsScreen() {
   const { activeTab, clearReportDraft, openTab, palette, reportDraft, session, api, t } = useApp();
@@ -9,6 +10,11 @@ export function ReportsScreen() {
   const [offerId, setOfferId] = useState('');
   const [reportedAtUtc, setReportedAtUtc] = useState(new Date().toISOString());
   const [status, setStatus] = useState<string | null>(null);
+
+  function reportStatus(message: string | null) {
+    setStatus(message);
+    announceStatus(message);
+  }
 
   useEffect(() => {
     if (!reportDraft) {
@@ -29,7 +35,7 @@ export function ReportsScreen() {
 
   async function submit() {
     if (!message.trim()) {
-      setStatus(t('reports.messageRequired'));
+      reportStatus(t('reports.messageRequired'));
       return;
     }
 
@@ -41,7 +47,7 @@ export function ReportsScreen() {
     });
 
     if (!result.success) {
-      setStatus(t('reports.failed'));
+      reportStatus(t('reports.failed'));
       return;
     }
 
@@ -49,7 +55,7 @@ export function ReportsScreen() {
     setOfferId('');
     setReportedAtUtc(new Date().toISOString());
     clearReportDraft();
-    setStatus(t('reports.success'));
+    reportStatus(t('reports.success'));
     openTab('offers');
   }
 
@@ -74,6 +80,7 @@ export function ReportsScreen() {
         </View>
         <Text style={[styles.label, { color: palette.inkMuted }]}>{t('reports.offerId')}</Text>
         <TextInput
+          accessibilityLabel={t('reports.offerId')}
           editable={!reportDraft}
           onChangeText={setOfferId}
           style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
@@ -81,6 +88,7 @@ export function ReportsScreen() {
         />
         <Text style={[styles.label, { color: palette.inkMuted }]}>{t('reports.message')}</Text>
         <TextInput
+          accessibilityLabel={t('reports.message')}
           multiline
           onChangeText={setMessage}
           placeholder={t('reports.message')}
@@ -95,10 +103,19 @@ export function ReportsScreen() {
         <View style={[styles.readonly, { backgroundColor: palette.panel, borderColor: palette.border }]}>
           <Text style={{ color: palette.ink }}>{reportedAtUtc.replace('T', ' ').replace(/\.\d{3}Z$/u, ' UTC')}</Text>
         </View>
-        <Pressable style={[styles.button, { backgroundColor: palette.danger }]} onPress={() => void submit()}>
+        <Pressable
+          accessibilityLabel={t('reports.submit')}
+          accessibilityRole="button"
+          style={[styles.button, { backgroundColor: palette.danger }]}
+          onPress={() => void submit()}
+        >
           <Text style={styles.buttonLabel}>{t('reports.submit')}</Text>
         </Pressable>
-        {status ? <Text style={[styles.status, { color: palette.ink }]}>{status}</Text> : null}
+        {status ? (
+          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.ink }]}>
+            {status}
+          </Text>
+        ) : null}
       </View>
     </ScrollView>
   );

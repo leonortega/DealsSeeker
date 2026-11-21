@@ -2,12 +2,18 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
+import { announceStatus } from '../utils/announce';
 
 export function SuggestionsScreen() {
   const { activeTab, api, openTab, palette, t } = useApp();
   const [message, setMessage] = useState('');
   const [contact, setContact] = useState('');
   const [status, setStatus] = useState<string | null>(null);
+
+  function reportStatus(message: string | null) {
+    setStatus(message);
+    announceStatus(message);
+  }
 
   if (activeTab !== 'suggestions') {
     return null;
@@ -20,13 +26,13 @@ export function SuggestionsScreen() {
     });
 
     if (!result.success) {
-      setStatus(t('suggestions.failed'));
+      reportStatus(t('suggestions.failed'));
       return;
     }
 
     setMessage('');
     setContact('');
-    setStatus(t('suggestions.success'));
+    reportStatus(t('suggestions.success'));
     openTab('offers');
   }
 
@@ -38,6 +44,7 @@ export function SuggestionsScreen() {
           <Text style={[styles.title, { color: palette.ink }]}>{t('suggestions.title')}</Text>
         </View>
         <TextInput
+          accessibilityLabel={t('suggestions.message')}
           multiline
           onChangeText={setMessage}
           placeholder={t('suggestions.message')}
@@ -49,16 +56,26 @@ export function SuggestionsScreen() {
           value={message}
         />
         <TextInput
+          accessibilityLabel={t('suggestions.contact')}
           onChangeText={setContact}
           placeholder={t('suggestions.contact')}
           placeholderTextColor={palette.inkMuted}
           style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
           value={contact}
         />
-        <Pressable style={[styles.button, { backgroundColor: palette.accent }]} onPress={() => void submit()}>
+        <Pressable
+          accessibilityLabel={t('suggestions.submit')}
+          accessibilityRole="button"
+          style={[styles.button, { backgroundColor: palette.accent }]}
+          onPress={() => void submit()}
+        >
           <Text style={styles.buttonLabel}>{t('suggestions.submit')}</Text>
         </Pressable>
-        {status ? <Text style={[styles.status, { color: palette.ink }]}>{status}</Text> : null}
+        {status ? (
+          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.ink }]}>
+            {status}
+          </Text>
+        ) : null}
       </View>
     </ScrollView>
   );

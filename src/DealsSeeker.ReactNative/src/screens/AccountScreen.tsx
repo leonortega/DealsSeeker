@@ -4,6 +4,7 @@ import { OfferItemDto, UserProfileDto } from '../api/types';
 import { AvatarPicker } from '../components/AvatarPicker';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
+import { announceStatus } from '../utils/announce';
 import { avatarEmoji } from '../utils/avatars';
 import { shorten } from '../utils/format';
 
@@ -13,6 +14,11 @@ export function AccountScreen() {
   const [profile, setProfile] = useState<UserProfileDto | null>(null);
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
   const [status, setStatus] = useState<string | null>(null);
+
+  function reportStatus(message: string | null) {
+    setStatus(message);
+    announceStatus(message);
+  }
 
   useEffect(() => {
     if (activeTab !== 'account') {
@@ -42,12 +48,12 @@ export function AccountScreen() {
           void (async () => {
             const result = await api.deleteOffer(offer.offerId);
             if (!result.success) {
-              setStatus(t('account.offerRemoveFailed'));
+              reportStatus(t('account.offerRemoveFailed'));
               return;
             }
 
             setOffers((current) => current.filter((item) => item.offerId !== offer.offerId));
-            setStatus(t('account.offerRemoved'));
+            reportStatus(t('account.offerRemoved'));
           })();
         },
       },
@@ -65,7 +71,12 @@ export function AccountScreen() {
           <Text style={[styles.heroTitle, { color: palette.ink }]}>{profile?.displayName ?? t('account.title')}</Text>
           <View style={styles.accountDetails}>
             <Text style={[styles.email, { color: palette.inkMuted }]}>{profile?.email ?? ''}</Text>
-            <Pressable style={[styles.logout, { backgroundColor: palette.danger }]} onPress={() => void logout()}>
+            <Pressable
+              accessibilityLabel={t('account.logout')}
+              accessibilityRole="button"
+              style={[styles.logout, { backgroundColor: palette.danger }]}
+              onPress={() => void logout()}
+            >
               <Text style={styles.logoutLabel}>{t('account.logout')}</Text>
             </Pressable>
           </View>
@@ -76,6 +87,9 @@ export function AccountScreen() {
         <Text style={[styles.panelTitle, { color: palette.ink }]}>{t('account.settings')}</Text>
         <View style={styles.row}>
           <Pressable
+            accessibilityLabel={preferences.themeMode === 'dark' ? t('nav.darkTheme') : t('nav.lightTheme')}
+            accessibilityRole="button"
+            accessibilityState={{ selected: preferences.themeMode === 'dark' }}
             style={[styles.choice, { backgroundColor: palette.panel, borderColor: palette.border }]}
             onPress={() => void setThemeMode(preferences.themeMode === 'dark' ? 'light' : 'dark')}
           >
@@ -84,12 +98,17 @@ export function AccountScreen() {
             </Text>
           </Pressable>
           <Pressable
+            accessibilityLabel={t('nav.language')}
+            accessibilityRole="button"
             style={[styles.choice, { backgroundColor: palette.panel, borderColor: palette.border }]}
             onPress={() => void setLanguage(preferences.language === 'en' ? 'es' : 'en')}
           >
             <Text style={{ color: palette.ink }}>{preferences.language.toUpperCase()}</Text>
           </Pressable>
           <Pressable
+            accessibilityLabel={preferences.navigationMode === 'car' ? t('nav.car') : t('nav.pedestrian')}
+            accessibilityRole="button"
+            accessibilityState={{ selected: preferences.navigationMode === 'car' }}
             style={[styles.choice, { backgroundColor: palette.panel, borderColor: palette.border }]}
             onPress={() => void setNavigationMode(preferences.navigationMode === 'car' ? 'pedestrian' : 'car')}
           >
@@ -113,17 +132,31 @@ export function AccountScreen() {
             <Text style={[styles.offerTitle, { color: palette.ink }]}>{offer.businessName}</Text>
             <Text style={{ color: palette.inkMuted }}>{shorten(offer.description, 100)}</Text>
             <View style={styles.actionRow}>
-              <Pressable style={[styles.smallButton, { backgroundColor: palette.accentMuted }]} onPress={() => openAddOffer(offer.offerId)}>
+              <Pressable
+                accessibilityLabel={t('account.editOffer')}
+                accessibilityRole="button"
+                style={[styles.smallButton, { backgroundColor: palette.accentMuted }]}
+                onPress={() => openAddOffer(offer.offerId)}
+              >
                 <Text style={{ color: palette.accent }}>{t('account.editOffer')}</Text>
               </Pressable>
-              <Pressable style={[styles.smallButton, { backgroundColor: palette.panelAlt }]} onPress={() => removeOffer(offer)}>
+              <Pressable
+                accessibilityLabel={t('account.removeOffer')}
+                accessibilityRole="button"
+                style={[styles.smallButton, { backgroundColor: palette.panelAlt }]}
+                onPress={() => removeOffer(offer)}
+              >
                 <Text style={{ color: palette.danger }}>{t('account.removeOffer')}</Text>
               </Pressable>
             </View>
           </View>
         ))}
       </View>
-      {status ? <Text style={[styles.status, { color: palette.ink }]}>{status}</Text> : null}
+      {status ? (
+        <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.ink }]}>
+          {status}
+        </Text>
+      ) : null}
     </ScrollView>
   );
 }

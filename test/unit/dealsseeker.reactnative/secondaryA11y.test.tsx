@@ -5,6 +5,7 @@ import { ReportsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/
 import { FavoritesScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/FavoritesScreen';
 import { HelpSheet } from '../../../src/DealsSeeker.ReactNative/src/components/HelpSheet';
 
+let mockActiveTab = 'suggestions';
 const mockSubmitSuggestion = jest.fn();
 const mockSubmitReport = jest.fn();
 const mockGetFavorites = jest.fn();
@@ -14,7 +15,7 @@ const mockCloseHelp = jest.fn();
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
-    activeTab: 'suggestions',
+    activeTab: mockActiveTab,
     api: {
       submitSuggestion: mockSubmitSuggestion,
       submitReport: mockSubmitReport,
@@ -43,6 +44,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
 describe('secondary surface accessibility (APP.ACCESSIBILITY.UX.002/003)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockActiveTab = 'suggestions';
     jest.spyOn(AccessibilityInfo, 'announceForAccessibility').mockImplementation(() => {});
     mockSubmitSuggestion.mockResolvedValue({ success: false });
     mockGetFavorites.mockResolvedValue([]);
@@ -60,6 +62,7 @@ describe('secondary surface accessibility (APP.ACCESSIBILITY.UX.002/003)', () =>
   });
 
   it('associates the report offer-id label with its field', async () => {
+    mockActiveTab = 'reports';
     mockGetFavorites.mockResolvedValue([]);
     await render(<ReportsScreen />);
     expect(screen.getByLabelText('reports.offerId')).toBeTruthy();

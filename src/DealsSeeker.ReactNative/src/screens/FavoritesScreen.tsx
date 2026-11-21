@@ -4,6 +4,7 @@ import * as Location from 'expo-location';
 import { OfferItemDto } from '../api/types';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
+import { announceStatus } from '../utils/announce';
 import { openDirections } from '../utils/maps';
 import { shorten } from '../utils/format';
 
@@ -13,6 +14,11 @@ export function FavoritesScreen() {
   const { api, overlayRoute, palette, preferences, t } = useApp();
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
   const [status, setStatus] = useState<string | null>(null);
+
+  function reportStatus(message: string | null) {
+    setStatus(message);
+    announceStatus(message);
+  }
 
   useEffect(() => {
     if (overlayRoute?.name !== 'favorites') {
@@ -47,7 +53,7 @@ export function FavoritesScreen() {
         });
         setOffers(response.offers);
       } catch {
-        setStatus(t('favorites.loadFailed'));
+        reportStatus(t('favorites.loadFailed'));
       }
     }
 
@@ -61,7 +67,7 @@ export function FavoritesScreen() {
   async function removeFavorite(offer: OfferItemDto) {
     const result = await api.setOfferFavorite(offer.offerId, { isFavorite: false });
     if (!result.success) {
-      setStatus(t('favorites.removeFailed'));
+      reportStatus(t('favorites.removeFailed'));
       return;
     }
 
@@ -82,6 +88,8 @@ export function FavoritesScreen() {
             <Text style={{ color: palette.inkMuted }}>{shorten(offer.description, 110)}</Text>
             <View style={styles.actionRow}>
               <Pressable
+                accessibilityLabel={preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+                accessibilityRole="button"
                 style={[styles.button, { backgroundColor: palette.panelAlt }]}
                 onPress={() => void openDirections(offer.location, preferences.navigationMode)}
               >
@@ -89,13 +97,22 @@ export function FavoritesScreen() {
                   {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
                 </Text>
               </Pressable>
-              <Pressable style={[styles.button, { backgroundColor: palette.panelAlt }]} onPress={() => void removeFavorite(offer)}>
+              <Pressable
+                accessibilityLabel={t('offers.favoriteRemove')}
+                accessibilityRole="button"
+                style={[styles.button, { backgroundColor: palette.panelAlt }]}
+                onPress={() => void removeFavorite(offer)}
+              >
                 <Text style={{ color: palette.danger, fontWeight: '700', textAlign: 'center' }}>{t('offers.favoriteRemove')}</Text>
               </Pressable>
             </View>
           </View>
         ))}
-        {status ? <Text style={[styles.status, { color: palette.ink }]}>{status}</Text> : null}
+        {status ? (
+          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.ink }]}>
+            {status}
+          </Text>
+        ) : null}
       </View>
     </ScrollView>
   );
