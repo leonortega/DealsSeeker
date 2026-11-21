@@ -229,20 +229,20 @@ export function OffersScreen() {
       </Text>
       <View style={styles.fallbackActions}>
         <Pressable
-          accessibilityLabel={t('common.retry')}
+          accessibilityLabel={t('offers.useMyLocation')}
           accessibilityRole="button"
           onPress={() => void retryLocation()}
           style={[styles.fallbackButton, { backgroundColor: palette.accent }]}
         >
-          <Text style={styles.fallbackButtonLabel}>{t('common.retry')}</Text>
+          <Text style={styles.fallbackButtonLabel}>{t('offers.useMyLocation')}</Text>
         </Pressable>
         <Pressable
-          accessibilityLabel={t('common.close')}
+          accessibilityLabel={t('offers.dismissNotice')}
           accessibilityRole="button"
           onPress={() => setLocationNoticeDismissed(true)}
           style={[styles.fallbackButton, { backgroundColor: palette.panel }]}
         >
-          <Text style={{ color: palette.ink }}>{t('common.close')}</Text>
+          <Text style={{ color: palette.ink }}>{t('offers.dismissNotice')}</Text>
         </Pressable>
       </View>
     </View>
@@ -557,16 +557,16 @@ const styles = StyleSheet.create({
     width: 44,
   },
   fallbackNotice: {
-    borderRadius: 18,
+    borderRadius: 12,
     borderWidth: 1,
-    gap: 10,
+    gap: 4,
     marginHorizontal: 16,
-    marginTop: 8,
-    padding: 14,
+    marginTop: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   fallbackText: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 12,
   },
   fallbackActions: {
     flexDirection: 'row',

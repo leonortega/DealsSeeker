@@ -73,7 +73,7 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
   it('discloses an approximate area instead of the current area when permission is denied', async () => {
     await render(<OffersScreen />);
     expect(await screen.findByText('offers.locationFallbackNotice')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'common.retry' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'offers.useMyLocation' })).toBeTruthy();
     expect(screen.queryByText('offers.location: offers.currentLocation')).toBeNull();
   });
 
@@ -83,7 +83,7 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
 
     mockRequestPermission.mockResolvedValue({ granted: true });
     mockReverseLocation.mockResolvedValue({ label: 'Central Station' });
-    await fireEvent.press(screen.getByRole('button', { name: 'common.retry' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.useMyLocation' }));
 
     await waitFor(() => expect(screen.queryByText('offers.locationFallbackNotice')).toBeNull());
     expect(screen.getByText(/Central Station/)).toBeTruthy();
@@ -97,7 +97,7 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
     await render(<OffersScreen />);
     await screen.findByText('offers.locationFallbackNotice');
 
-    await fireEvent.press(screen.getByRole('button', { name: 'common.close' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.dismissNotice' }));
 
     await waitFor(() => expect(screen.queryByText('offers.locationFallbackNotice')).toBeNull());
     expect(mockSearchOffers).toHaveBeenCalled();
@@ -107,6 +107,6 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
     mockImmersive = true;
     await render(<OffersScreen />);
     expect(await screen.findByText('offers.locationFallbackNotice')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'common.retry' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'offers.useMyLocation' })).toBeTruthy();
   });
 });

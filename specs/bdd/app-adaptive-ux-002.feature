@@ -26,6 +26,12 @@ Feature: Adaptive touch, text, zoom, and motion behavior
     Then the state change is presented without the animated motion
     And the same information and controls remain available
 
+  Scenario: Decorative captions yield to a short viewport
+    Given the available vertical space is insufficient for decorative action captions
+    When the offer actions are displayed
+    Then the captions are omitted
+    And every action remains labelled for assistive technology
+
   Scenario: Reduced motion in both themes and landscape
     Given reduced motion is enabled and the device is in landscape
     When a surface is rendered in either theme

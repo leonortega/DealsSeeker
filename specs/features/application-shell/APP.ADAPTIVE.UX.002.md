@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Adaptive touch, text, zoom, and motion behavior
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application shell, Offers View, My Account, Add Offer, Suggestions, Reports
 - **Priority**: Medium
@@ -24,6 +24,7 @@ Keep every surface operable when text is enlarged, when a map is zoomed by pinch
 - `APP.ADAPTIVE.UX.002-R4`: When the system requests reduced motion, animated transitions and gesture-driven motion shall be replaced by a crossfade or an immediate state change.
 - `APP.ADAPTIVE.UX.002-R5`: These requirements shall hold in both themes and in landscape orientation.
 - `APP.ADAPTIVE.UX.002-R6`: A reduced-motion preference shall not remove feedback or hide a state change.
+- `APP.ADAPTIVE.UX.002-R7`: When the available vertical space is insufficient for decorative action captions without overlapping other controls, the system shall omit those captions while keeping each control labelled for assistive technology.
 
 ## Acceptance Criteria (BDD)
 ```gherkin

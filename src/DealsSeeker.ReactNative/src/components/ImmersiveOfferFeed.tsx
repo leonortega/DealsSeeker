@@ -14,8 +14,8 @@ import { NavIcon } from './NavIcon';
 
 const NARROW_BREAKPOINT = 768;
 
-export function shouldShowImmersiveCaptions(isNarrow: boolean, fontScale: number) {
-  return !isNarrow && fontScale < 1.5;
+export function shouldShowImmersiveCaptions(isNarrow: boolean, fontScale: number, availableHeight = Infinity) {
+  return !isNarrow && fontScale < 1.5 && availableHeight >= 640;
 }
 
 interface ImmersiveOfferFeedProps {
@@ -396,7 +396,7 @@ export function ImmersiveOfferFeed({
               <View style={{ height: pageHeight }}>
                 <ImmersiveOfferPage
                   offer={item}
-                  showCaptions={shouldShowImmersiveCaptions(isNarrow, fontScale)}
+                  showCaptions={shouldShowImmersiveCaptions(isNarrow, fontScale, pageHeight)}
                   showPhotoArrows={!isNarrow}
                   onDirections={onDirections}
                   onFavorite={onFavorite}
@@ -410,11 +410,11 @@ export function ImmersiveOfferFeed({
           />
 
           <View pointerEvents="box-none" style={styles.topBar}>
-            <View style={styles.topBarContent}>
+            <View pointerEvents="box-none" style={styles.topBarContent}>
               <Image source={require('../../assets/icon.png')} style={[styles.topBarLogo, { backgroundColor: palette.panel }]} />
               {isNarrow ? null : <Text style={[styles.topBarTitle, { color: '#f7f1e8' }]}>{t('app.title')}</Text>}
-              <View style={styles.modeSlot}>{headerControl}</View>
-              <View style={styles.topActions}>
+              <View pointerEvents="box-none" style={styles.modeSlot}>{headerControl}</View>
+              <View pointerEvents="box-none" style={styles.topActions}>
                 <Pressable
                   accessibilityLabel={t('offers.search')}
                   accessibilityRole="button"
