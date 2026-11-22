@@ -105,7 +105,7 @@ Start with the **discovery path** — `OffersScreen.tsx` (immersive feed, search
 
 These are the acceptance criteria the improvements must satisfy. They follow the ID convention `<VIEW>.<AREA>.<NNN>` and include positive + edge scenarios. **Each feature below becomes its own `specs/features/<view-slug>/` spec and `specs/bdd/<name>.feature` file once validated and approved.**
 
-### 4.1 `OFFERS.UX.001` — Offers discovery clarity & empty states
+### 4.1 `OFFERS.UX.001` — Offers discovery clarity & empty states (Approved, implemented)
 *Target file: `specs/bdd/offers-ux.feature` · related: `OFFERS.FEED.IMMERSIVE.001`, `OFFERS.SEARCH.001`, `OFFERS.GRID.CARDS.001`*
 
 ```gherkin
@@ -135,7 +135,7 @@ Feature: Offers discovery clarity and recoverable empty states
     And an action to create the first offer is available
 ```
 
-### 4.2 `APP.ONBOARD.001` — First run to first value
+### 4.2 `APP.ONBOARD.001` — First run to first value (Approved, implemented in Cycle F)
 *Target file: `specs/bdd/app-onboarding.feature` · related: `APP.SHELL.001`, `OFFERS.UX.001`*
 
 ```gherkin
@@ -162,7 +162,7 @@ Feature: First-run guidance to first value
     And a way to browse without precise location remains available
 ```
 
-### 4.3 `APP.RESILIENCE.UX.001` — Actionable error and edge states
+### 4.3 `APP.RESILIENCE.UX.001` — Actionable error and edge states (Approved, implemented)
 *Target file: `specs/bdd/app-resilience-ux.feature` · related: `APP.RATE.LIMIT.001`, `APP.LOCATION.PROVIDER.RESILIENCE.001`, `APP.API.CONNECTIVITY.001`*
 
 ```gherkin
@@ -191,7 +191,7 @@ Feature: Actionable error, offline, and localization states
     And all primary actions remain reachable
 ```
 
-### 4.4 `ADD.OFFER.UX.001` — Contribution flow feedback
+### 4.4 `ADD.OFFER.UX.001` — Contribution flow feedback (Approved, implemented in Cycle F)
 *Target file: `specs/bdd/add-offer-ux.feature` · related: `ADD.OFFER.LAYOUT.001`, `ADD.OFFER.LOCATION.001`, `ADD.OFFER.DESCRIPTION.TAGS.001`*
 
 ```gherkin
@@ -220,7 +220,7 @@ Feature: Clear contribution flow feedback
     Then no raw latitude or longitude values are shown to the user
 ```
 
-### 4.5 `APP.ADAPTIVE.UX.001` — Device class and orientation
+### 4.5 `APP.ADAPTIVE.UX.001` — Device class and orientation (Approved, implemented in Cycle F; tablet split-view remains out of scope by design)
 *Target file: `specs/bdd/app-adaptive-ux.feature` · related: `OFFERS.FEED.RESPONSIVE.001`, `OFFERS.GRID.CARDS.001`*
 
 ```gherkin
@@ -247,7 +247,7 @@ Feature: Adaptive presentation across device classes
     Then the compact layout is used and controls remain reachable
 ```
 
-### 4.6 `APP.ACCESSIBILITY.UX.001` — Accessibility and both palettes
+### 4.6 `APP.ACCESSIBILITY.UX.001` — Accessibility and both palettes (Approved, implemented)
 *Target file: `specs/bdd/app-accessibility-ux.feature` · related: `APP.THEME.001`, `OFFERS.FEED.IMMERSIVE.001`*
 
 ```gherkin
@@ -280,7 +280,7 @@ Feature: Accessible and theme-complete surfaces
 
 ## 5. Traceability rows to add (when specs are created)
 
-Add to `specs/traceability/TRACEABILITY.md` for each new spec:
+All six rows below have been added to `specs/traceability/TRACEABILITY.md`, with bidirectional `Related Specs` links in the dependent specs. Original table retained for reference:
 
 | Spec ID | Feature File | Contract | Examples |
 |---|---|---|---|
@@ -306,14 +306,9 @@ Also add bidirectional `Related Specs` entries in the dependent specs listed und
 
 ---
 
-## 7. Next action
+## 7. Next action (resolved)
 
-Run the Phase 1 read-only evaluations first (no spec change needed):
-
-1. `/impeccable critique src/DealsSeeker.ReactNative/src/screens/OffersScreen.tsx`
-2. `/impeccable audit src/DealsSeeker.ReactNative`
-
-Then use their findings to confirm, adjust, or drop the proposed BDD scenarios in §4 before creating/approving the actual specs.
+The Phase 1 evaluations were run and re-run; their findings drove the six §4 specs and the five cycles recorded in §8. All §4 specs are now Approved and implemented, and all §5 rows are in the traceability matrix. The remaining verification is native/screen-reader sign-off (§6) and the optional focus-return P2 from the final critique snapshot — not a new spec from this section.
 
 ---
 
@@ -367,5 +362,28 @@ One real defect was found in the Feed capture: the availability counts under the
 
 All P3 findings from the fresh audit are now closed: placeholder glyphs unified, primary radius pinned, scrim-tap dismissal, keyboard avoidance, safe-area insets on every scrollable surface, success-before-navigation, status severity colors, system font stack in the embedded map, shared auth form styles, and the WebView coordinate-privacy note recorded. `APP.POLISH.UX.001` v1.1 added R7–R9 plus matching BDD scenarios.
 
-Final verification: `npm test` 39 suites / 253 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14. Outstanding: VoiceOver/TalkBack sign-off and remaining palette/orientation captures before shipping.
+Final verification after Cycles A–E: `npm test` 39 suites / 253 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14.
+
+### Cycle F — Original plan §4 completion (COMPLETE)
+
+The three §4 draft specs never created earlier are now Approved, linked in the traceability matrix, and implemented:
+
+- `APP.ONBOARD.001` — first-run guidance: a brief, skippable modal shown once per device, persisted via `dealseeker.onboarding.completed`; the immersive feed remains the default presentation and location denial still offers a browse path.
+- `ADD.OFFER.UX.001` — contribution feedback formalized: missing-item validation, preserved input, announced outcomes, perceivable success before navigation, and coordinate privacy. These behaviors were already present across other specs; this spec makes them explicit and BDD-verifiable.
+- `APP.ADAPTIVE.UX.001` — device-class behavior formalized: phone-first composition on all targets, additional grid columns via `resolveOffersGridColumns`, landscape control reachability, and compact layout in narrow windows. Tablet split-view remains explicitly out of scope by design.
+
+E2E seeds the first-run flag for returning-user journeys so the one-time tip does not block them.
+
+Final verification: `npm test` 41 suites / 258 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14. Outstanding: VoiceOver/TalkBack sign-off, remaining palette/orientation captures, and the optional dialog focus-return P2 from the final critique.
+
+---
+
+## 9. Shape brief — OffersFeed (retrospective)
+
+- **Job and audience:** a local deal hunter discovers a nearby offer quickly, usually one-handed and often on a mobile connection; mode is Operate, and the success criterion is reaching a relevant offer without dead ends.
+- **Outcome and proof:** the primary action is advancing through the immersive feed and acting on an offer; recovery states (empty, no-results, search failure, location fallback) each expose a next step, and raw coordinates never surface.
+- **Selected direction:** preserve the established "Trail Map" world — fixed forest backdrop, one terracotta accent on the active path, night footer, Georgia landmarks — and refine rather than redesign. The focal moment is the full-screen offer with its action rail; the top bar carries identity, presentation mode, tabs and search.
+- **Scope and boundaries:** one phone-first composition ships to every target; no wide desktop reflow, no third accent color, no custom global navigation. Tablet split-view is an explicit anti-goal.
+- **Interaction and layout:** two-row top bar, paged feed with swipe/photos and keyboard equivalents on web, bottom footer plus one centered create FAB, announced status feedback, Reduce Motion and 200%-text policies, 44-unit touch floors.
+- **Constraints and open decisions:** spec-first for every behavior change; EN/ES localization; Dapper/SQLite API behind a minimal client contract; native visual and screen-reader verification still required before shipping. The one open design question is whether to promote a single primary action on the offer rail.
 
