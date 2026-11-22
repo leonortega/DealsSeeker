@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer View Layout Composition
-- **Version**: `v2.2`
+- **Version**: `v2.3`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -32,7 +32,9 @@ Define required UI blocks for add-offer data entry in both create and edit modes
 - `ADD.OFFER.LAYOUT.001-R13`: The save action shall validate required offer content before submitting the create-offer or edit-offer request.
 - `ADD.OFFER.LAYOUT.001-R14`: When required offer content is missing, the system shall block submission and show a validation error state in Add Offer view.
 - `ADD.OFFER.LAYOUT.001-R15`: In edit mode, the mini map preview shall render the persisted offer location from backend storage after the owned-offer draft is loaded.
-- `ADD.OFFER.LAYOUT.001-R16`: The tag section shall display only a short hint that tapping a selected tag removes it. No word-detection guidance text shall be displayed above the detected words.
+- `ADD.OFFER.LAYOUT.001-R16`: The tag section shall display a short hint that tapping a selected tag removes it and a brief note that related tags are added automatically. No word-detection guidance text shall be displayed above the detected words.
+- `ADD.OFFER.LAYOUT.001-R17`: In edit mode, when the owned offer draft cannot be loaded, the system shall show a recoverable error state that blocks submission and offers `Retry` and `Cancel` actions.
+- `ADD.OFFER.LAYOUT.001-R18`: The view shall expose an explicit `Cancel` action following `ADD.OFFER.EXIT.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -71,12 +73,25 @@ Scenario: Add Offer submission is blocked when required content is missing
   Then the system shall not send the create-offer request
   And the system shall show a validation error state
 
-Scenario: Tag section shows only the removal hint
+Scenario: Tag section shows the removal and auto-tag hints
   Given the user opens Add Offer view
   When the tag section loads
   Then a hint shall state that tapping a selected tag removes it
+  And a brief note shall state that related tags are added automatically
   And no word-detection guidance text shall be displayed
   And no Suggested Tags section shall be displayed
+
+Scenario: Edit draft load failure blocks submission
+  Given the user opens Add Offer view in edit mode for a user-owned offer
+  And the owned offer draft cannot be loaded
+  When the load attempt fails
+  Then a recoverable error state is shown
+  And submission is blocked
+  And Retry and Cancel actions are offered
+
+Scenario: Explicit cancel action is present
+  Given the user opens Add Offer view
+  Then an explicit Cancel action is visible
 ```
 
 ## Example Inputs/Outputs
@@ -104,3 +119,9 @@ Scenario: Tag section shows only the removal hint
 - `ADD.OFFER.LOCATION.003`
 - `APP.POLISH.UX.001`
 - `ADD.OFFER.UX.001`
+- `ADD.OFFER.EXIT.001`
+- `ADD.OFFER.KEYBOARD.001`
+- `ADD.OFFER.ICONOGRAPHY.001`
+- `ADD.OFFER.INPUT.BOUNDS.001`
+- `ADD.OFFER.VISUAL.HIERARCHY.001`
+- `ADD.OFFER.TABLET.LAYOUT.001`

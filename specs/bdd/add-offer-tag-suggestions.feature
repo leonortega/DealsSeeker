@@ -31,3 +31,10 @@ Feature: Silent auto-addition of suggested tags in Add Offer view
     When the user clears the description text
     Then the selected tag list is empty
     And no suggestion state remains
+
+  Scenario: Inline note explains automatic tag addition
+    Given the user opens Add Offer view
+    When the tag section loads
+    Then a brief inline note states that related tags are added automatically
+    And no Suggested Tags section is displayed
+    And no per-tag provenance markers are displayed

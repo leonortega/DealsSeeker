@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
+  BackHandler,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   Text,
   TextInput,
   View,
@@ -21,7 +26,9 @@ import { useApp } from '../hooks/useApp';
 import { announceStatus } from '../utils/announce';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
 import { extractCompletedWord, extractWords } from '../utils/format';
+import { resolveAddOfferColumns } from '../utils/layout';
 import { getSuggestedTags, normalizeTag } from '../utils/tagLexicon';
+import { primaryButtonText } from '../utils/theme';
 
 interface DraftImage {
   previewUri: string | null;
@@ -35,10 +42,17 @@ interface LocationSearchResult {
 
 const maxPhotos = 8;
 const minAutoTagLength = 3;
+const successDwellMs = 3000;
+const descriptionMaxLength = 500;
+const locationQueryMaxLength = 120;
 
 const fallbackMapCenter: GeoPoint = { lat: 0, lng: 0 };
 const pinnedAreaRadiusMeters = 500;
 const unpinnedAreaRadiusMeters = 20000;
+
+export function keyboardAvoidanceBehavior(os: string) {
+  return os === 'ios' ? 'padding' : 'height';
+}
 
 function resolveImagePreviewUri(image: OfferImageDto) {
   const candidate = image.dataUrl?.trim();
@@ -111,8 +125,10 @@ function dedupeLocationSearchResults(results: LocationSearchResult[]) {
 }
 
 export function AddOfferScreen() {
-  const { api, closeOverlay, openTab, overlayRoute, palette, preferences, t } = useApp();
+  const { api, closeOverlay, isPending, openTab, overlayRoute, palette, preferences, t } = useApp();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const columns = Platform.OS === 'web' ? 1 : resolveAddOfferColumns(width);
   const [images, setImages] = useState<DraftImage[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [description, setDescription] = useState('');
@@ -127,9 +143,45 @@ export function AddOfferScreen() {
   const [suggestionsSuppressed, setSuggestionsSuppressed] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<StatusTone>('neutral');
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [searchAttempt, setSearchAttempt] = useState(0);
+  const [searchCompleted, setSearchCompleted] = useState(false);
+  const [searchFailed, setSearchFailed] = useState(false);
   const locationSearchRequest = useAbortableRequest();
   const locationSearchSequence = useRef(0);
   const pinSequence = useRef(0);
+  const navigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const discardPromptOpen = useRef(false);
+  const isVisible = overlayRoute?.name === 'add-offer';
+  const hasDraftContent =
+    images.length > 0 ||
+    description.trim().length > 0 ||
+    tags.length > 0 ||
+    locationConfirmed ||
+    (location !== null && location.source !== 'auto');
+
+  useEffect(
+    () => () => {
+      if (navigationTimer.current) {
+        clearTimeout(navigationTimer.current);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!isVisible) {
+      return;
+    }
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      handleCancel();
+      return true;
+    });
+
+    return () => subscription.remove();
+  }, [isVisible, hasDraftContent, t]);
 
   function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
     setStatus(message);
@@ -137,7 +189,49 @@ export function AddOfferScreen() {
     announceStatus(message);
   }
 
-  const isVisible = overlayRoute?.name === 'add-offer';
+  const searchFeedbackVisible = isVisible && !locationConfirmed && locationQuery.trim().length >= 3;
+  const isSearching = searchFeedbackVisible && !suggestionsSuppressed && isPending('locations-search');
+
+  function handleCancel() {
+    if (discardPromptOpen.current) {
+      return;
+    }
+
+    if (!hasDraftContent) {
+      closeOverlay();
+      return;
+    }
+
+    discardPromptOpen.current = true;
+    Alert.alert(t('add.discardTitle'), t('add.discardBody'), [
+      {
+        text: t('add.keepEditing'),
+        style: 'cancel',
+        onPress: () => {
+          discardPromptOpen.current = false;
+        },
+      },
+      {
+        text: t('add.discardConfirm'),
+        style: 'destructive',
+        onPress: () => {
+          discardPromptOpen.current = false;
+          closeOverlay();
+        },
+      },
+    ]);
+  }
+
+  function handleRetryLoad() {
+    setLoadFailed(false);
+    setLoadAttempt((current) => current + 1);
+  }
+
+  function handleRetrySearch() {
+    setSearchFailed(false);
+    setSearchAttempt((current) => current + 1);
+  }
+
   const editingOfferId = overlayRoute?.name === 'add-offer' ? overlayRoute.offerId : undefined;
 
   useEffect(() => {
@@ -147,33 +241,41 @@ export function AddOfferScreen() {
 
     async function loadDraft() {
       reportStatus(null);
+      setLoadFailed(false);
 
       if (editingOfferId) {
-        const draft = await api.getMyOfferDraft(editingOfferId);
-        if (!draft) {
+        try {
+          const draft = await api.getMyOfferDraft(editingOfferId);
+          if (!draft) {
+            setLoadFailed(true);
+            reportStatus(t('add.loadFailed'), 'error');
+            return;
+          }
+
+          const draftTags = (draft.tags ?? []).map(normalizeTag).filter(Boolean);
+          setDescription(draft.description ?? '');
+          setTags(draftTags);
+          setSeedTags(draftTags);
+          setDismissedTags([]);
+          setImages(
+            (draft.images ?? []).map((image, index) => ({
+              previewUri: resolveImagePreviewUri(image),
+              metadata: {
+                ...image,
+                order: index,
+              },
+            }))
+          );
+          setLocation(draft.location ?? null);
+          setLocationQuery(draft.location?.label ?? '');
+          setLocationConfirmed(Boolean(draft.location));
+          setSuggestionsSuppressed(true);
+          setMapCenter(draft.location?.position ?? fallbackMapCenter);
+        } catch {
+          setLoadFailed(true);
           reportStatus(t('add.loadFailed'), 'error');
-          return;
         }
 
-        const draftTags = (draft.tags ?? []).map(normalizeTag).filter(Boolean);
-        setDescription(draft.description ?? '');
-        setTags(draftTags);
-        setSeedTags(draftTags);
-        setDismissedTags([]);
-        setImages(
-          (draft.images ?? []).map((image, index) => ({
-            previewUri: resolveImagePreviewUri(image),
-            metadata: {
-              ...image,
-              order: index,
-            },
-          }))
-        );
-        setLocation(draft.location ?? null);
-        setLocationQuery(draft.location?.label ?? '');
-        setLocationConfirmed(Boolean(draft.location));
-        setSuggestionsSuppressed(true);
-        setMapCenter(draft.location?.position ?? fallbackMapCenter);
         return;
       }
 
@@ -221,16 +323,20 @@ export function AddOfferScreen() {
     }
 
     void loadDraft();
-  }, [isVisible, editingOfferId]);
+  }, [isVisible, editingOfferId, loadAttempt]);
 
   useEffect(() => {
     if (!isVisible || locationConfirmed || suggestionsSuppressed) {
+      setSearchCompleted(false);
+      setSearchFailed(false);
       return;
     }
 
     const trimmedQuery = locationQuery.trim();
     if (trimmedQuery.length < 3) {
       setLocationResults([]);
+      setSearchCompleted(false);
+      setSearchFailed(false);
       return;
     }
 
@@ -247,12 +353,20 @@ export function AddOfferScreen() {
           if (sequence !== locationSearchSequence.current) {
             return;
           }
-          setLocationResults(dedupeLocationSearchResults(results));
+
+          const uniqueResults = dedupeLocationSearchResults(results);
+          setLocationResults(uniqueResults);
+          setSearchCompleted(uniqueResults.length === 0);
+          setSearchFailed(false);
         } catch (error) {
           if (isRequestAborted(error) || sequence !== locationSearchSequence.current) {
             return;
           }
-          reportStatus(t('add.locationSearchFailed'), 'error');
+
+          setLocationResults([]);
+          setSearchCompleted(false);
+          setSearchFailed(true);
+          announceStatus(t('add.locationSearchFailed'));
         }
       })();
     }, 300);
@@ -261,7 +375,7 @@ export function AddOfferScreen() {
       clearTimeout(timeoutId);
       locationSearchRequest.abort();
     };
-  }, [isVisible, locationConfirmed, locationQuery, suggestionsSuppressed]);
+  }, [isVisible, locationConfirmed, locationQuery, suggestionsSuppressed, searchAttempt]);
 
   useEffect(() => {
     if (!isVisible) {
@@ -312,6 +426,38 @@ export function AddOfferScreen() {
 
   if (!isVisible) {
     return null;
+  }
+
+  if (loadFailed) {
+    return (
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
+        <StandardHeader />
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: palette.ink }]}>{t('add.editTitle')}</Text>
+        </View>
+        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <Text style={[styles.status, { color: palette.danger }]}>{t('add.loadFailed')}</Text>
+          <View style={styles.actionRow}>
+            <Pressable
+              accessibilityLabel={t('add.retry')}
+              accessibilityRole="button"
+              onPress={handleRetryLoad}
+              style={[styles.button, { backgroundColor: palette.accentMuted }]}
+            >
+              <Text style={{ color: palette.accent }}>{t('add.retry')}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityLabel={t('add.cancel')}
+              accessibilityRole="button"
+              onPress={handleCancel}
+              style={[styles.button, { backgroundColor: palette.panel }]}
+            >
+              <Text style={{ color: palette.ink }}>{t('add.cancel')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </ScrollView>
+    );
   }
 
   function addTag(value: string, source: 'description' | 'manual' | 'suggestion' = 'description') {
@@ -494,11 +640,11 @@ export function AddOfferScreen() {
         return;
       }
 
-      reportStatus(t('add.updated'));
-      setTimeout(() => {
+      reportStatus(t('add.updated'), 'success');
+      navigationTimer.current = setTimeout(() => {
         closeOverlay();
         openTab('account');
-      }, 900);
+      }, successDwellMs);
       return;
     }
 
@@ -509,281 +655,380 @@ export function AddOfferScreen() {
       return;
     }
 
-    reportStatus(t('add.created'));
-    setTimeout(() => {
+    reportStatus(t('add.created'), 'success');
+    navigationTimer.current = setTimeout(() => {
       closeOverlay();
       openTab('offers');
-    }, 900);
+    }, successDwellMs);
   }
 
   const detectedWords = extractWords(description).filter((word) => !tags.includes(normalizeTag(word)));
   const previewImage = images[selectedImageIndex];
 
   return (
-    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
-      <StandardHeader />
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: palette.ink }]}>{editingOfferId ? t('add.editTitle') : t('add.title')}</Text>
-      </View>
+    <KeyboardAvoidingView
+      behavior={keyboardAvoidanceBehavior(Platform.OS)}
+      style={styles.keyboardView}
+      testID="add-offer-keyboard-view"
+    >
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}
+        keyboardShouldPersistTaps="handled"
+        testID="add-offer-scroll"
+      >
+        <StandardHeader />
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: palette.ink }]}>{editingOfferId ? t('add.editTitle') : t('add.title')}</Text>
+          <Pressable
+            accessibilityLabel={t('add.cancel')}
+            accessibilityRole="button"
+            onPress={handleCancel}
+            style={styles.inlineAction}
+          >
+            <Text style={{ color: palette.inkMuted }}>{t('add.cancel')}</Text>
+          </Pressable>
+        </View>
 
-      <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.images')}</Text>
-        <View style={[styles.imageStage, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
-          {previewImage?.previewUri ? (
-            <Image source={{ uri: previewImage.previewUri }} style={styles.previewImage} />
-          ) : (
-            <Text style={[styles.emptyImage, { color: palette.inkMuted }]}>▤</Text>
-          )}
-        </View>
-        {images.length > 1 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.thumbnailRow}>
-            {images.map((image, index) => (
-              <Pressable
-                key={`${image.previewUri}-${index}`}
-                accessibilityLabel={`${t('offers.goToImage')} ${index + 1}`}
-                accessibilityRole="button"
-                accessibilityState={{ selected: index === selectedImageIndex }}
-                onPress={() => setSelectedImageIndex(index)}
-                style={[
-                  styles.thumbnailWrap,
-                  {
-                    borderColor: index === selectedImageIndex ? palette.accent : palette.border,
-                  },
-                ]}
-              >
-                {image.previewUri ? (
-                  <Image source={{ uri: image.previewUri }} style={styles.thumbnail} />
-                ) : (
-                  <View style={[styles.thumbnailPlaceholder, { backgroundColor: palette.panelAlt }]}>
-                    <Text style={[styles.thumbnailPlaceholderText, { color: palette.inkMuted }]}>▤</Text>
-                  </View>
-                )}
-              </Pressable>
-            ))}
-          </ScrollView>
-        ) : null}
-        <View style={styles.actionRow}>
-          <Pressable style={[styles.button, { backgroundColor: palette.panel }]} onPress={() => void pickFromCamera()}>
-            <Text style={{ color: palette.ink }}>{t('add.takePhoto')}</Text>
-          </Pressable>
-          <Pressable style={[styles.button, { backgroundColor: palette.accentMuted }]} onPress={() => void pickFromGallery()}>
-            <Text style={{ color: palette.accent }}>{t('add.upload')}</Text>
-          </Pressable>
-        </View>
-        {images.length > 0 ? (
+        <View
+          style={columns === 2 ? styles.tabletRow : styles.stack}
+          testID={columns === 2 ? 'add-offer-tablet-columns' : undefined}
+        >
+          <View style={styles.column} testID="add-offer-column-primary">
+        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.images')}</Text>
+          <View style={[styles.imageStage, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
+            {previewImage?.previewUri ? (
+              <Image source={{ uri: previewImage.previewUri }} style={styles.previewImage} />
+            ) : (
+              <Text style={[styles.emptyImage, { color: palette.inkMuted }]}>{t('add.noPhoto')}</Text>
+            )}
+          </View>
+          {images.length > 1 ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.thumbnailRow}>
+              {images.map((image, index) => (
+                <Pressable
+                  key={`${image.previewUri}-${index}`}
+                  accessibilityLabel={`${t('offers.goToImage')} ${index + 1}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: index === selectedImageIndex }}
+                  onPress={() => setSelectedImageIndex(index)}
+                  style={[
+                    styles.thumbnailWrap,
+                    {
+                      borderColor: index === selectedImageIndex ? palette.accent : palette.border,
+                    },
+                  ]}
+                >
+                  {image.previewUri ? (
+                    <Image source={{ uri: image.previewUri }} style={styles.thumbnail} />
+                  ) : (
+                    <View style={[styles.thumbnailPlaceholder, { backgroundColor: palette.panelAlt }]}>
+                      <Text style={[styles.thumbnailPlaceholderText, { color: palette.inkMuted }]}>
+                        {t('add.photoPlaceholder')}
+                      </Text>
+                    </View>
+                  )}
+                </Pressable>
+              ))}
+            </ScrollView>
+          ) : null}
           <View style={styles.actionRow}>
             <Pressable
-              accessibilityLabel={t('offers.previousImage')}
-              accessibilityRole="button"
+              testID="add-take-photo"
               style={[styles.button, { backgroundColor: palette.panel }]}
-              onPress={() => moveImage(-1)}
+              onPress={() => void pickFromCamera()}
             >
-              <Text accessible={false} style={{ color: palette.ink }}>←</Text>
+              <Text style={{ color: palette.ink }}>{t('add.takePhoto')}</Text>
             </Pressable>
             <Pressable
-              accessibilityLabel={t('offers.nextImage')}
-              accessibilityRole="button"
-              style={[styles.button, { backgroundColor: palette.panel }]}
-              onPress={() => moveImage(1)}
+              testID="add-upload"
+              style={[styles.button, { backgroundColor: palette.accentMuted }]}
+              onPress={() => void pickFromGallery()}
             >
-              <Text accessible={false} style={{ color: palette.ink }}>→</Text>
-            </Pressable>
-            <Pressable style={[styles.button, { backgroundColor: palette.panelAlt }]} onPress={removeCurrentImage}>
-              <Text style={{ color: palette.danger }}>{t('common.remove')}</Text>
+              <Text style={{ color: palette.accent }}>{t('add.upload')}</Text>
             </Pressable>
           </View>
-        ) : null}
-      </View>
+          {images.length > 0 ? (
+            <View style={styles.actionRow}>
+              <Pressable
+                testID="add-move-left"
+                accessibilityLabel={t('add.moveLeft')}
+                accessibilityRole="button"
+                style={[styles.secondaryAction, { backgroundColor: palette.card, borderColor: palette.border }]}
+                onPress={() => moveImage(-1)}
+              >
+                <Text style={{ color: palette.inkMuted }}>{t('add.moveLeft')}</Text>
+              </Pressable>
+              <Pressable
+                testID="add-move-right"
+                accessibilityLabel={t('add.moveRight')}
+                accessibilityRole="button"
+                style={[styles.secondaryAction, { backgroundColor: palette.card, borderColor: palette.border }]}
+                onPress={() => moveImage(1)}
+              >
+                <Text style={{ color: palette.inkMuted }}>{t('add.moveRight')}</Text>
+              </Pressable>
+              <Pressable
+                testID="add-remove-image"
+                accessibilityLabel={t('common.remove')}
+                accessibilityRole="button"
+                style={[styles.secondaryAction, { backgroundColor: palette.card, borderColor: palette.border }]}
+                onPress={removeCurrentImage}
+              >
+                <Text style={{ color: palette.danger }}>{t('common.remove')}</Text>
+              </Pressable>
+            </View>
+          ) : null}
+        </View>
 
-      <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.location')}</Text>
-        <Text style={{ color: palette.inkMuted }}>
-          {t('add.currentAddress')}: {location?.label ?? t('add.locationUnavailable')}
-        </Text>
-        <TextInput
-          accessibilityLabel={t('add.locationSearch')}
-          editable={!locationConfirmed}
-          onChangeText={(value) => {
-            setLocationQuery(value);
-            setSuggestionsSuppressed(false);
-          }}
-          placeholder={t('add.locationSearch')}
-          placeholderTextColor={palette.inkMuted}
-          style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
-          value={locationQuery}
-        />
-        {locationQuery.trim().length > 0 && locationQuery.trim().length < 3 ? (
-          <Text style={{ color: palette.inkMuted }}>{t('add.locationPlaceholder')}</Text>
-        ) : null}
-        {locationResults.map((result) => (
-          <Pressable
-            key={getLocationSearchResultKey(result)}
-            style={[styles.resultRow, { backgroundColor: palette.panel, borderColor: palette.border }]}
-            onPress={() => {
-              setLocation({
-                source: 'search',
-                label: result.label,
-                position: result.position,
-              });
-              setLocationQuery(result.label);
-              setLocationConfirmed(false);
-              setLocationResults([]);
-              setSuggestionsSuppressed(true);
-              setMapCenter(result.position);
-              reportStatus(t('add.locationSelected'));
+        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.location')}</Text>
+          <Text style={{ color: palette.inkMuted }}>
+            {t('add.currentAddress')}: {location?.label ?? t('add.locationUnavailable')}
+          </Text>
+          <TextInput
+            accessibilityLabel={t('add.locationSearch')}
+            editable={!locationConfirmed}
+            maxLength={locationQueryMaxLength}
+            onChangeText={(value) => {
+              setLocationQuery(value);
+              setSuggestionsSuppressed(false);
             }}
-          >
-            <Text style={{ color: palette.ink }}>{result.label}</Text>
-          </Pressable>
-        ))}
-        <Text style={{ color: palette.inkMuted }}>{t('add.mapPinHint')}</Text>
-        {location || mapCenter ? (
-          <MapPreview
-            businesses={
-              location
-                ? [
-                    {
-                      businessId: 'selected',
-                      distanceMeters: 0,
-                      location: location.position,
-                      name: location.label ?? t('add.pinnedLocation'),
-                    },
-                  ]
-                : []
-            }
-            center={location?.position ?? mapCenter ?? fallbackMapCenter}
-            height={300}
-            radiusMeters={500}
-            showUserMarker={false}
-            showCoverage={false}
-            interactive
-            onMapTap={(point) => void handleMapTap(point)}
+            placeholder={t('add.locationSearch')}
+            placeholderTextColor={palette.inkMuted}
+            style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
+            value={locationQuery}
           />
-        ) : null}
-        <Pressable
-          accessibilityLabel={t('add.setPinAtCenter')}
-          accessibilityRole="button"
-          onPress={() => void handleMapTap(location?.position ?? mapCenter ?? fallbackMapCenter)}
-          style={[styles.button, { backgroundColor: palette.panelAlt }]}
-        >
-          <Text style={{ color: palette.ink }}>{t('add.setPinAtCenter')}</Text>
-        </Pressable>
-        <View style={styles.actionRow}>
+          {locationQuery.trim().length > 0 && locationQuery.trim().length < 3 ? (
+            <Text style={{ color: palette.inkMuted }}>{t('add.locationPlaceholder')}</Text>
+          ) : null}
+          {isSearching ? (
+            <Text accessibilityLiveRegion="polite" style={{ color: palette.inkMuted }}>
+              {t('add.searchingLocations')}
+            </Text>
+          ) : null}
+          {!isSearching && searchFailed && searchFeedbackVisible ? (
+            <View style={styles.searchFeedback}>
+              <Text accessibilityLiveRegion="polite" style={{ color: palette.danger }}>
+                {t('add.locationSearchFailed')}
+              </Text>
+              <Pressable
+                accessibilityLabel={t('add.retry')}
+                accessibilityRole="button"
+                onPress={handleRetrySearch}
+                style={styles.inlineAction}
+              >
+                <Text style={{ color: palette.accent }}>{t('add.retry')}</Text>
+              </Pressable>
+            </View>
+          ) : null}
+          {!isSearching && !searchFailed && searchCompleted && searchFeedbackVisible ? (
+            <Text style={{ color: palette.inkMuted }}>{t('add.noLocationResults')}</Text>
+          ) : null}
+          {locationResults.map((result) => (
+            <Pressable
+              key={getLocationSearchResultKey(result)}
+              style={[styles.resultRow, { backgroundColor: palette.panel, borderColor: palette.border }]}
+              onPress={() => {
+                setLocation({
+                  source: 'search',
+                  label: result.label,
+                  position: result.position,
+                });
+                setLocationQuery(result.label);
+                setLocationConfirmed(false);
+                setLocationResults([]);
+                setSuggestionsSuppressed(true);
+                setMapCenter(result.position);
+                reportStatus(t('add.locationSelected'));
+              }}
+            >
+              <Text style={{ color: palette.ink }}>{result.label}</Text>
+            </Pressable>
+          ))}
+          <Text style={{ color: palette.inkMuted }}>{t('add.mapPinHint')}</Text>
+          {location || mapCenter ? (
+            <MapPreview
+              businesses={
+                location
+                  ? [
+                      {
+                        businessId: 'selected',
+                        distanceMeters: 0,
+                        location: location.position,
+                        name: location.label ?? t('add.pinnedLocation'),
+                      },
+                    ]
+                  : []
+              }
+              center={location?.position ?? mapCenter ?? fallbackMapCenter}
+              height={300}
+              radiusMeters={500}
+              showUserMarker={false}
+              showCoverage={false}
+              interactive
+              onMapTap={(point) => void handleMapTap(point)}
+            />
+          ) : null}
           <Pressable
-            accessibilityLabel={t('add.confirmLocation')}
+            accessibilityLabel={t('add.setPinAtCenter')}
             accessibilityRole="button"
-            accessibilityState={{ selected: locationConfirmed }}
-            style={[styles.button, { backgroundColor: locationConfirmed ? palette.panel : palette.accentMuted }]}
-            onPress={() => {
-              if (!location) {
+            onPress={() => void handleMapTap(location?.position ?? mapCenter ?? fallbackMapCenter)}
+            style={[styles.button, { backgroundColor: palette.panelAlt }]}
+          >
+            <Text style={{ color: palette.ink }}>{t('add.setPinAtCenter')}</Text>
+          </Pressable>
+          <View style={styles.actionRow}>
+            <Pressable
+              accessibilityLabel={t('add.confirmLocation')}
+              accessibilityRole="button"
+              accessibilityState={{ selected: locationConfirmed, disabled: !location || locationConfirmed }}
+              disabled={!location || locationConfirmed}
+              style={[
+                styles.button,
+                {
+                  backgroundColor: locationConfirmed ? palette.panel : palette.accentMuted,
+                  opacity: !location || locationConfirmed ? 0.45 : 1,
+                },
+              ]}
+              onPress={() => {
+                setLocationConfirmed(true);
+                reportStatus(t('add.locationConfirmed'));
+              }}
+            >
+              <Text style={{ color: locationConfirmed ? palette.inkMuted : palette.accent }}>{t('add.confirmLocation')}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityLabel={t('add.editLocation')}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !locationConfirmed }}
+              disabled={!locationConfirmed}
+              style={[
+                styles.button,
+                {
+                  backgroundColor: locationConfirmed ? palette.panel : palette.panelAlt,
+                  opacity: locationConfirmed ? 1 : 0.45,
+                },
+              ]}
+              onPress={() => {
+                setLocationConfirmed(false);
+                reportStatus(t('add.locationEditEnabled'));
+              }}
+            >
+              <Text style={{ color: palette.ink }}>{t('add.editLocation')}</Text>
+            </Pressable>
+          </View>
+        </View>
+
+          </View>
+          <View style={styles.column} testID="add-offer-column-secondary">
+        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.description')}</Text>
+          <TextInput
+            accessibilityLabel={t('add.description')}
+            maxLength={descriptionMaxLength}
+            multiline
+            onChangeText={(value) => {
+              setDescription(value);
+              if (!value.trim()) {
+                setTags([]);
+                setSeedTags([]);
+                setDismissedTags([]);
                 return;
               }
-              setLocationConfirmed(true);
-              reportStatus(t('add.locationConfirmed'));
-            }}
-          >
-            <Text style={{ color: locationConfirmed ? palette.inkMuted : palette.accent }}>{t('add.confirmLocation')}</Text>
-          </Pressable>
-          <Pressable
-            accessibilityLabel={t('add.editLocation')}
-            accessibilityRole="button"
-            style={[styles.button, { backgroundColor: locationConfirmed ? palette.panel : palette.panelAlt }]}
-            onPress={() => {
-              setLocationConfirmed(false);
-              reportStatus(t('add.locationEditEnabled'));
-            }}
-          >
-            <Text style={{ color: palette.ink }}>{t('add.editLocation')}</Text>
-          </Pressable>
-        </View>
-      </View>
 
-      <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.description')}</Text>
-        <TextInput
-          accessibilityLabel={t('add.description')}
-          multiline
-          onChangeText={(value) => {
-            setDescription(value);
-            if (!value.trim()) {
-              setTags([]);
-              setSeedTags([]);
-              setDismissedTags([]);
-              return;
-            }
-
-            const completedWord = extractCompletedWord(value);
-            if (completedWord) {
-              const normalized = normalizeTag(completedWord);
-              if (normalized.length >= minAutoTagLength) {
-                addTag(normalized);
-              }
-            } else {
-              const lastWord = extractWords(value).at(-1);
-              if (lastWord && /[^\p{L}\p{Nd}]$/u.test(lastWord)) {
-                const normalized = normalizeTag(lastWord);
+              const completedWord = extractCompletedWord(value);
+              if (completedWord) {
+                const normalized = normalizeTag(completedWord);
                 if (normalized.length >= minAutoTagLength) {
                   addTag(normalized);
                 }
+              } else {
+                const lastWord = extractWords(value).at(-1);
+                if (lastWord && /[^\p{L}\p{Nd}]$/u.test(lastWord)) {
+                  const normalized = normalizeTag(lastWord);
+                  if (normalized.length >= minAutoTagLength) {
+                    addTag(normalized);
+                  }
+                }
               }
-            }
-          }}
-          onBlur={() => commitFinalWordTag()}
-          placeholder={t('add.descriptionPlaceholder')}
-          placeholderTextColor={palette.inkMuted}
-          style={[
-            styles.textarea,
-            { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink },
-          ]}
-          value={description}
-        />
-        <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.detectedWords')}</Text>
-        <View style={styles.wordGrid}>
-          {detectedWords.map((word) => (
-            <Pressable
-              key={word}
-              style={[styles.wordChip, { backgroundColor: palette.panel, borderColor: palette.border }]}
-              onPress={() => addTag(word, 'manual')}
-            >
-              <Text style={{ color: palette.ink }}>{word}</Text>
-            </Pressable>
-          ))}
+            }}
+            onBlur={() => commitFinalWordTag()}
+            placeholder={t('add.descriptionPlaceholder')}
+            placeholderTextColor={palette.inkMuted}
+            style={[
+              styles.textarea,
+              { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink },
+            ]}
+            value={description}
+          />
+          <Text style={{ color: palette.inkMuted }}>{t('add.descriptionMaxHint')}</Text>
+          <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.detectedWords')}</Text>
+          <View style={styles.wordGrid}>
+            {detectedWords.map((word) => (
+              <Pressable
+                key={word}
+                style={[styles.wordChip, { backgroundColor: palette.panel, borderColor: palette.border }]}
+                onPress={() => addTag(word, 'manual')}
+              >
+                <Text style={{ color: palette.ink }}>{word}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.tags')}</Text>
+          <Text style={{ color: palette.inkMuted }}>{t('add.tagsHint')}</Text>
+          <Text style={{ color: palette.inkMuted }}>{t('add.tagsAutoHint')}</Text>
+          <View style={styles.wordGrid}>
+            {tags.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('add.noTags')}</Text> : null}
+            {tags.map((tag) => (
+              <Pressable
+                key={tag}
+                style={[styles.wordChip, { backgroundColor: palette.accentMuted, borderColor: palette.border }]}
+                onPress={() => removeTag(tag)}
+              >
+                <Text style={{ color: palette.accent }}>{tag}</Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
 
-        <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.tags')}</Text>
-        <Text style={{ color: palette.inkMuted }}>{t('add.tagsHint')}</Text>
-        <View style={styles.wordGrid}>
-          {tags.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('add.noTags')}</Text> : null}
-          {tags.map((tag) => (
-            <Pressable
-              key={tag}
-              style={[styles.wordChip, { backgroundColor: palette.accentMuted, borderColor: palette.border }]}
-              onPress={() => removeTag(tag)}
-            >
-              <Text style={{ color: palette.accent }}>{tag} ×</Text>
-            </Pressable>
-          ))}
+        <Pressable
+          accessibilityLabel={editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
+          accessibilityRole="button"
+          style={[styles.submitButton, { backgroundColor: palette.accent }]}
+          onPress={() => void submit()}
+        >
+          <Text style={styles.submitLabel}>{editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}</Text>
+        </Pressable>
+        {status ? (
+          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
+            {status}
+          </Text>
+        ) : null}
+          </View>
         </View>
-      </View>
-
-      <Pressable
-        accessibilityLabel={editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
-        accessibilityRole="button"
-        style={[styles.submitButton, { backgroundColor: palette.accent }]}
-        onPress={() => void submit()}
-      >
-        <Text style={styles.submitLabel}>{editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}</Text>
-      </Pressable>
-      {status ? (
-        <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
-          {status}
-        </Text>
-      ) : null}
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  keyboardView: {
+    flex: 1,
+  },
+  tabletRow: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 16,
+  },
+  stack: {
+    gap: 14,
+  },
+  column: {
+    flex: 1,
+    gap: 14,
+  },
   content: {
     gap: 14,
     paddingBottom: 24,
@@ -822,7 +1067,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   emptyImage: {
-    fontSize: 72,
+    fontSize: 15,
+    fontWeight: '700',
   },
   thumbnailRow: {
     maxHeight: 74,
@@ -844,11 +1090,22 @@ const styles = StyleSheet.create({
     width: 68,
   },
   thumbnailPlaceholderText: {
-    fontSize: 22,
+    fontSize: 11,
+    fontWeight: '700',
   },
   actionRow: {
     flexDirection: 'row',
     gap: 10,
+  },
+  inlineAction: {
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: 8,
+  },
+  searchFeedback: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
   },
   button: {
     alignItems: 'center',
@@ -858,6 +1115,16 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: 12,
     paddingVertical: 13,
+  },
+  secondaryAction: {
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    flex: 0,
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   input: {
     borderRadius: 16,
@@ -906,7 +1173,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   submitLabel: {
-    color: '#fff',
+    color: primaryButtonText,
     fontSize: 16,
     fontWeight: '800',
     textAlign: 'center',

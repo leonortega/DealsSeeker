@@ -20,6 +20,7 @@ Enable users to start offer creation from a single, consistent action in both pr
 - `OFFERS.NAV.ADD.001-R1`: The system shall navigate to the Add Offer view when the create-offer floating action button is selected, in both the standard and immersive presentations.
 - `OFFERS.NAV.ADD.001-R2`: The create action shall not be presented as a destination in the shared bottom navigation.
 - `OFFERS.NAV.ADD.001-R3`: Only one create-offer action shall be visible at a time.
+- `OFFERS.NAV.ADD.001-R4`: The create action shall open the Add Offer view in create mode with no offer identifier, regardless of any event value supplied by the trigger.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -27,6 +28,7 @@ Scenario: Create action opens Add Offer view
   Given the user is in Offers view
   When the user selects the create-offer floating action button
   Then the Add Offer view shall be displayed
+  And no offer identifier is associated with the view
 
 Scenario: Create action opens Add Offer view from the immersive feed
   Given the user is on the immersive offers feed

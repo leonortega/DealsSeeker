@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Clear contribution flow feedback
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: Medium
@@ -21,9 +21,10 @@ Let a contributor complete a valid offer without guessing what failed, and confi
 - `ADD.OFFER.UX.001-R2`: Each missing item shall be identified with guidance to correct it.
 - `ADD.OFFER.UX.001-R3`: Entered data shall be preserved after a rejected submission.
 - `ADD.OFFER.UX.001-R4`: A successful contribution shall be confirmed in plain language.
-- `ADD.OFFER.UX.001-R5`: The success confirmation shall remain perceivable before the user leaves the view.
+- `ADD.OFFER.UX.001-R5`: The success confirmation shall remain perceivable for at least 3 seconds before the view closes.
 - `ADD.OFFER.UX.001-R6`: Feedback shall be announced to assistive technology.
 - `ADD.OFFER.UX.001-R7`: Raw coordinate values shall not be shown in the location UI.
+- `ADD.OFFER.UX.001-R8`: The success confirmation shall use a success visual tone distinct from validation errors.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -39,6 +40,8 @@ Scenario: Successful contribution confirms the outcome
   Given the user submitted a valid offer
   When the create-offer request succeeds
   Then the app confirms the offer was created
+  And the confirmation uses a success visual tone distinct from errors
+  And the confirmation remains perceivable for at least 3 seconds
   And the user is returned to the Offers view after the confirmation is perceivable
 
 Scenario: Feedback is announced
@@ -71,3 +74,5 @@ Scenario: Coordinate privacy is preserved
 - `ADD.OFFER.DESCRIPTION.TAGS.001`
 - `APP.ACCESSIBILITY.UX.003`
 - `APP.POLISH.UX.001`
+- `ADD.OFFER.EXIT.001`
+- `ADD.OFFER.KEYBOARD.001`

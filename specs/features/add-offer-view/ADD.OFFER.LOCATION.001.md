@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer Location Auto-Populate, Confirm, and Live Suggestions
-- **Version**: `v1.7`
+- **Version**: `v1.8`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -38,6 +38,10 @@ Define location lifecycle during add-offer flow.
 - `ADD.OFFER.LOCATION.001-R19`: If reverse-geocoding cannot resolve an address label, the UI shall show a generic location label without exposing numeric coordinates.
 - `ADD.OFFER.LOCATION.001-R20`: The save action shall require the current location to be explicitly confirmed before create-offer or edit-offer submission proceeds.
 - `ADD.OFFER.LOCATION.001-R21`: In edit mode, after the owned offer draft is loaded from backend storage, the mini map shall display the location persisted for that offer in the database.
+- `ADD.OFFER.LOCATION.001-R22`: While a location lookup is in flight, the system shall show a searching indicator in the location section.
+- `ADD.OFFER.LOCATION.001-R23`: When a lookup returns no results, the system shall show a no-results message in the location section.
+- `ADD.OFFER.LOCATION.001-R24`: When a lookup fails, the system shall show an error with a retry path and shall leave the current draft location unchanged.
+- `ADD.OFFER.LOCATION.001-R25`: A disabled `Confirm Location` or `Edit Location` control shall not be operable, and its disabled state shall be exposed to assistive technology.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -90,6 +94,26 @@ Scenario: Edit mode shows stored offer location on the mini map
   When the draft data finishes loading
   Then the location textbox shall show the stored location label
   And the mini map shall display the stored offer location from the database
+
+Scenario: Searching and no-results states are visible
+  Given the user typed at least 3 characters in the location input
+  When the location lookup is in flight
+  Then a searching indicator is shown in the location section
+  When the lookup returns no results
+  Then a no-results message is shown in the location section
+
+Scenario: Search failure offers retry and keeps the draft location
+  Given a location is selected for the draft
+  When the location lookup fails
+  Then an error with a retry path is shown
+  And the current draft location is unchanged
+
+Scenario: Disabled location controls are not operable
+  Given Confirm Location has been pressed
+  Then Confirm Location is disabled and not operable
+  And Edit Location is enabled
+  When assistive technology inspects Confirm Location
+  Then its disabled state is announced
 ```
 
 ## Example Inputs/Outputs
@@ -116,3 +140,4 @@ Scenario: Edit mode shows stored offer location on the mini map
 - `APP.LOCATION.PROVIDER.RESILIENCE.001`
 - `ADD.OFFER.LOCATION.003`
 - `ADD.OFFER.UX.001`
+- `ADD.OFFER.INPUT.BOUNDS.001`

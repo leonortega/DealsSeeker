@@ -145,3 +145,4 @@ Scenario: Save is blocked when no tags are selected
 - `OFFERS.SEARCH.001`
 - `APP.ACCESSIBILITY.UX.003`
 - `ADD.OFFER.UX.001`
+- `ADD.OFFER.INPUT.BOUNDS.001`

@@ -57,6 +57,8 @@ const darkPalette: Palette = {
 /**
  * Backdrop color used behind the immersive offer feed, independent of the active theme.
  */
+export const primaryButtonText = '#ffffff';
+
 export const immersiveBackdrop = '#1b2f28';
 export const immersiveInk = '#f7f1e8';
 export const immersiveInkMuted = '#c6d0c9';

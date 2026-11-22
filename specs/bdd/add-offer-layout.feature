@@ -42,9 +42,22 @@ Feature: Add Offer layout required controls
     Then the create-offer request is not sent
     And a validation error state is shown
 
-  Scenario: Tag section shows only the removal hint
+  Scenario: Tag section shows the removal and auto-tag hints
     Given the user navigates to Add Offer view
     When the tag section loads
     Then a hint states that tapping a selected tag removes it
+    And a brief note states that related tags are added automatically
     And no word-detection guidance text is displayed
     And no Suggested Tags section is displayed
+
+  Scenario: Edit draft load failure blocks submission
+    Given the user opens Add Offer view in edit mode for a user-owned offer
+    And the owned offer draft cannot be loaded
+    When the load attempt fails
+    Then a recoverable error state is shown
+    And submission is blocked
+    And Retry and Cancel actions are offered
+
+  Scenario: Explicit cancel action is present
+    Given the user navigates to Add Offer view
+    Then an explicit Cancel action is visible

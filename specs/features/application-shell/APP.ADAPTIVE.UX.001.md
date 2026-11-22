@@ -61,3 +61,4 @@ Scenario: A narrow window uses the compact layout
 - `OFFERS.GRID.CARDS.001`
 - `APP.ADAPTIVE.UX.002`
 - `APP.THEME.001`
+- `ADD.OFFER.TABLET.LAYOUT.001`

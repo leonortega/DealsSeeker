@@ -24,6 +24,7 @@ Feature: Offers layout and navigation to Add Offer
     And the user is in Offers view
     When the user selects the create-offer floating action button
     Then the Add Offer view is displayed
+    And no offer identifier is associated with the view
 
   Scenario: Create action opens Add Offer view from the immersive feed
     Given the user is authenticated

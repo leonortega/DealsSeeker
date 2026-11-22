@@ -344,7 +344,11 @@ export function AppProvider({ children }: PropsWithChildren) {
     immersiveOffers,
     openImmersiveOffers: () => setImmersiveOffers(true),
     closeImmersiveOffers: () => setImmersiveOffers(false),
-    openAddOffer: (offerId) => setOverlayRoute({ name: 'add-offer', offerId }),
+    openAddOffer: (offerId) =>
+      setOverlayRoute({
+        name: 'add-offer',
+        offerId: typeof offerId === 'string' ? offerId : undefined,
+      }),
     closeOverlay: () => setOverlayRoute(null),
     setReportDraft,
     clearReportDraft: () => setReportDraftState(null),

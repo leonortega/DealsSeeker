@@ -102,3 +102,51 @@ describe('MapPreview', () => {
     expect(onMapTap).not.toHaveBeenCalled();
   });
 });
+
+describe('MapPreview source stability', () => {
+  function renderWithProps(center = { lat: 40.7, lng: -74 }) {
+    return render(
+      <MapPreview
+        businesses={[{ ...marker, location: { ...marker.location } }]}
+        center={center}
+        onMapTap={jest.fn()}
+        onSelectMarker={jest.fn()}
+        radiusMeters={1500}
+      />
+    );
+  }
+
+  it('keeps the same WebView source when only prop identities change', async () => {
+    const view = await renderWithProps();
+    const before = screen.getByTestId('map-webview').props.source;
+
+    await view.rerender(
+      <MapPreview
+        businesses={[{ ...marker, location: { ...marker.location } }]}
+        center={{ lat: 40.7, lng: -74 }}
+        onMapTap={jest.fn()}
+        onSelectMarker={jest.fn()}
+        radiusMeters={1500}
+      />
+    );
+
+    expect(screen.getByTestId('map-webview').props.source).toBe(before);
+  });
+
+  it('rebuilds the source when the map center changes', async () => {
+    const view = await renderWithProps();
+    const before = screen.getByTestId('map-webview').props.source;
+
+    await view.rerender(
+      <MapPreview
+        businesses={[{ ...marker, location: { ...marker.location } }]}
+        center={{ lat: 41.2, lng: -73.5 }}
+        onMapTap={jest.fn()}
+        onSelectMarker={jest.fn()}
+        radiusMeters={1500}
+      />
+    );
+
+    expect(screen.getByTestId('map-webview').props.source).not.toBe(before);
+  });
+});

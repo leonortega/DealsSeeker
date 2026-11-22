@@ -15,6 +15,8 @@ Feature: Clear contribution flow feedback
     Given the user submitted a valid offer
     When the create-offer request succeeds
     Then the app confirms the offer was created
+    And the confirmation uses a success visual tone distinct from errors
+    And the confirmation remains perceivable for at least 3 seconds
     And the user is returned to the Offers view after the confirmation is perceivable
 
   Scenario: Feedback is announced

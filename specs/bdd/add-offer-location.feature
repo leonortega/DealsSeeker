@@ -84,3 +84,23 @@ Feature: Add Offer location suggestions and mini map
     When the user taps a point on the mini map
     Then the draft location is replaced by the tapped point
     And the location textbox shows the resolved address label for the tapped point
+
+  Scenario: Searching and no-results feedback
+    Given the user typed at least 3 characters in the location input
+    When the location lookup is in flight
+    Then a searching indicator is shown in the location section
+    When the lookup returns no results
+    Then a no-results message is shown in the location section
+
+  Scenario: Search failure offers retry and keeps the draft location
+    Given a location is selected for the draft
+    When the location lookup fails
+    Then an error with a retry path is shown
+    And the current draft location is unchanged
+
+  Scenario: Disabled location controls cannot be pressed
+    Given Confirm Location has been pressed
+    Then Confirm Location is disabled and not operable
+    And Edit Location is enabled
+    When assistive technology inspects Confirm Location
+    Then its disabled state is announced

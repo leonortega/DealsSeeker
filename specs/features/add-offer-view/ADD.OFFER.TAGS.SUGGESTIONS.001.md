@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Silent Auto-Addition of Suggested Tags
-- **Version**: `v2.1`
+- **Version**: `v2.2`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: Medium
@@ -25,6 +25,7 @@ Automatically add related tags derived from the tags the user created from the d
 - `ADD.OFFER.TAGS.SUGGESTIONS.001-R5`: Suggested tags whose normalized form has fewer than 3 characters shall be ignored.
 - `ADD.OFFER.TAGS.SUGGESTIONS.001-R6`: A tag removed by the user shall not be automatically re-added unless the user adds it again explicitly or the description is cleared.
 - `ADD.OFFER.TAGS.SUGGESTIONS.001-R7`: When the description is cleared, the description-derived tag set and all related auto-add state shall be cleared.
+- `ADD.OFFER.TAGS.SUGGESTIONS.001-R8`: The tag section shall display a brief inline note explaining that related tags are added automatically, without a dedicated Suggested Tags section or per-tag provenance markers.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -56,6 +57,13 @@ Scenario: Clearing description clears suggestion state
   When the user clears the description text
   Then the selected tag list shall be empty
   And no suggestion state shall remain
+
+Scenario: Inline note explains automatic tag addition
+  Given the user opens Add Offer view
+  When the tag section loads
+  Then a brief inline note shall state that related tags are added automatically
+  And no Suggested Tags section shall be displayed
+  And no per-tag provenance markers shall be displayed
 ```
 
 ## Example Inputs/Outputs

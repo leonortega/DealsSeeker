@@ -110,6 +110,14 @@ describe('AppProvider', () => {
     expect(context?.overlayRoute).toBeNull();
   });
 
+  it('does not treat a trigger event as an offer id when creating', async () => {
+    await renderProvider();
+
+    await act(() => (context?.openAddOffer as ((offerId?: unknown) => void) | undefined)?.({ nativeEvent: {} }));
+
+    expect(context?.overlayRoute).toEqual({ name: 'add-offer', offerId: undefined });
+  });
+
   it('opens and closes the immersive presentation', async () => {
     await renderProvider();
 

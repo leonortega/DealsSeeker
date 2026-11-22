@@ -1,6 +1,6 @@
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { createElement, useEffect, useRef } from 'react';
+import { createElement, useEffect, useMemo, useRef } from 'react';
 import { apiConfig, normalizeProvider, resolveDisplayProvider } from '../api/config';
 import { BusinessMarkerDto, GeoPoint } from '../api/types';
 import { useApp } from '../hooks/useApp';
@@ -475,17 +475,42 @@ export function MapPreview({
   const provider = resolveDisplayProvider();
   const fallbackProvider = normalizeProvider(apiConfig.mapDisplayProviderFallback);
   const zoom = calculateMapZoomForCoverage(radiusMeters, center.lat);
-  const html = buildMapHtml({
-    center,
-    fallbackProvider,
-    googleMapsApiKey: apiConfig.googleMapsApiKey,
-    markers: businesses,
-    provider,
-    showUserMarker,
-    palette,
-    zoom,
-    interactive,
-  });
+  const markerSignature = businesses
+    .map((marker) => `${marker.businessId}|${marker.location.lat}|${marker.location.lng}|${marker.name ?? ''}`)
+    .join(';');
+  const html = useMemo(
+    () =>
+      buildMapHtml({
+        center,
+        fallbackProvider,
+        googleMapsApiKey: apiConfig.googleMapsApiKey,
+        markers: businesses,
+        provider,
+        showUserMarker,
+        palette,
+        zoom,
+        interactive,
+      }),
+    [
+      center.lat,
+      center.lng,
+      markerSignature,
+      fallbackProvider,
+      apiConfig.googleMapsApiKey,
+      provider,
+      showUserMarker,
+      palette.mode,
+      palette.panel,
+      palette.panelAlt,
+      palette.ink,
+      palette.success,
+      palette.accent,
+      palette.danger,
+      zoom,
+      interactive,
+    ]
+  );
+  const source = useMemo(() => ({ html }), [html]);
 
   const webViewRef = useRef<any>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -584,7 +609,7 @@ export function MapPreview({
           onLoad={() => sendPin(pin ?? null)}
           ref={webViewRef}
           scrollEnabled={false}
-          source={{ html }}
+          source={source}
           style={styles.map}
         />
       )}
