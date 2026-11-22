@@ -21,6 +21,12 @@ Feature: Visible action feedback in the immersive presentation
     Then the feedback is announced
     And the action rail and the mode control remain tappable
 
+  Scenario: One primary action leads the offer rail
+    Given the immersive offers feed is active
+    When an offer is displayed
+    Then one action is visually marked as the primary action
+    And maintenance actions remain visually secondary
+
   Scenario: New feedback replaces the previous feedback
     Given a confirmation is displayed after a successful action
     When the user performs another action that fails

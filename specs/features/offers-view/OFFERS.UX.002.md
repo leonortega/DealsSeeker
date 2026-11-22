@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Visible action feedback in the immersive presentation
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers View (immersive presentation)
 - **Priority**: High
@@ -25,6 +25,7 @@ Ensure that offer actions confirm their outcome where the user actually works, i
 - `OFFERS.UX.002-R5`: The feedback shall use the active language and theme.
 - `OFFERS.UX.002-R6`: The feedback shall not block the action rail, the mode control, or the primary actions.
 - `OFFERS.UX.002-R7`: Subsequent successful actions shall replace the previous feedback.
+- `OFFERS.UX.002-R8`: The immersive offer action rail shall mark one primary action visually and keep maintenance actions visually secondary.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
