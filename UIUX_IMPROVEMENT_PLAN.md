@@ -385,5 +385,14 @@ Final verification: `npm test` 41 suites / 258 tests, `npm run typecheck` clean,
 - **Selected direction:** preserve the established "Trail Map" world — fixed forest backdrop, one terracotta accent on the active path, night footer, Georgia landmarks — and refine rather than redesign. The focal moment is the full-screen offer with its action rail; the top bar carries identity, presentation mode, tabs and search.
 - **Scope and boundaries:** one phone-first composition ships to every target; no wide desktop reflow, no third accent color, no custom global navigation. Tablet split-view is an explicit anti-goal.
 - **Interaction and layout:** two-row top bar, paged feed with swipe/photos and keyboard equivalents on web, bottom footer plus one centered create FAB, announced status feedback, Reduce Motion and 200%-text policies, 44-unit touch floors.
-- **Constraints and open decisions:** spec-first for every behavior change; EN/ES localization; Dapper/SQLite API behind a minimal client contract; native visual and screen-reader verification still required before shipping. The one open design question is whether to promote a single primary action on the offer rail.
+- **Constraints and open decisions:** spec-first for every behavior change; EN/ES localization; Dapper/SQLite API behind a minimal client contract; native visual and screen-reader verification still required before shipping.
+
+### Final critique follow-up (both P2s closed)
+
+The closeout critique (37/40) left two P2s, and both were implemented through the spec-first flow:
+
+- **Primary offer action** — `OFFERS.UX.002` v1.1 added R8 plus a BDD scenario. Directions is now the single terracotta-marked rail action with a white glyph; a subtle divider separates it from the maintenance actions (report, votes). RED/GREEN: `82d0a3e` → `ce5bb0d`/`80e2745`.
+- **Dialog focus return** — `APP.ACCESSIBILITY.UX.003-R5` was already Approved; a shared `focusReturn.ts` helper now restores assistive-technology focus from the opener ref on dismissal of Help, Search, Offer Detail and Comments dialogs.
+
+Verification: `npm test` 42 suites / 260 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14. The plan now has no open implementation items; only native/screen-reader sign-off remains.
 
