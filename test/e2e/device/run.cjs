@@ -19,6 +19,7 @@ process.env.MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED = 'true';
 process.env.MAESTRO_DRIVER_STARTUP_TIMEOUT = process.env.MAESTRO_DRIVER_STARTUP_TIMEOUT || '120000';
 
 const allFlows = [
+  'app-shell-modal-back.yaml',
   'auth-register.yaml',
   'auth-login-logout.yaml',
   'auth-invalid.yaml',

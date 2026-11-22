@@ -1,11 +1,10 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { BackHandler, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 import { OffersStatePanel } from '../../../src/DealsSeeker.ReactNative/src/components/OffersStatePanel';
 
 let mockImmersiveOffers = false;
 const mockCloseImmersiveOffers = jest.fn();
-const backHandlers: Array<() => boolean> = [];
 
 jest.mock('expo-location', () => ({
   LocationAccuracy: { Balanced: 3 },
@@ -68,28 +67,10 @@ const palette = {
 describe('Offers device findings', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    backHandlers.length = 0;
     mockImmersiveOffers = false;
-    jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_event, handler) => {
-      backHandlers.push(handler as () => boolean);
-      return { remove: jest.fn() };
-    });
   });
 
   afterEach(() => jest.restoreAllMocks());
-
-  it('closes the immersive view on system Back without leaving the app', async () => {
-    mockImmersiveOffers = true;
-    await render(<OffersScreen />);
-
-    let consumed = false;
-    await act(async () => {
-      consumed = backHandlers.map((handler) => handler()).some(Boolean);
-    });
-
-    expect(consumed).toBe(true);
-    expect(mockCloseImmersiveOffers).toHaveBeenCalledTimes(1);
-  });
 
   it('keeps the recovery action compact so the create control cannot cover it', async () => {
     const onAction = jest.fn();

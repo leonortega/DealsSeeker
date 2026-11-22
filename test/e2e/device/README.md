@@ -20,8 +20,9 @@ The runner registers a fresh user via the API, passes credentials to each flow w
 
 ## Flows and web-test parity
 
-| Web test (`test/e2e/*.spec.ts`) | Device flow |
+| Behavior | Device flow |
 |---|---|
+| Add Offer modal + discard on Back (`APP.SHELL.003`) | `flows/app-shell-modal-back.yaml` |
 | register from UI | `flows/auth-register.yaml` |
 | login and logout | `flows/auth-login-logout.yaml` |
 | invalid credentials | `flows/auth-invalid.yaml` |
