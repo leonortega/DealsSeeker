@@ -1,5 +1,5 @@
 import { FlatList, Image, LayoutChangeEvent, PanResponder, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactNode, type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
@@ -33,6 +33,7 @@ interface ImmersiveOfferFeedProps {
   onFeedTabChange: (tab: ImmersiveFeedTab) => void;
   headerControl?: ReactNode;
   helpControl?: ReactNode;
+  returnFocusRef?: RefObject<unknown>;
 }
 
 function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string; placeholderSymbol: string }) {
@@ -210,7 +211,7 @@ function ImmersiveOfferPage({
           style={styles.railAction}
           onPress={() => onComments(offer)}
         >
-          <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
+          <View testID="rail-secondary-action" style={[styles.railButton, { backgroundColor: palette.panel }]}>
             <ImmersiveActionIconGlyph kind="comments" />
           </View>
           {showCaptions ? <ImmersiveActionCaption label={t('offers.action.comments')} /> : null}
@@ -233,11 +234,12 @@ function ImmersiveOfferPage({
           style={styles.railAction}
           onPress={() => void onDirections(offer)}
         >
-          <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
-            <ImmersiveActionIconGlyph kind="directions" />
+          <View testID="rail-primary-action" style={[styles.railButton, { backgroundColor: palette.accent }]}>
+            <ImmersiveActionIconGlyph kind="directions" prominent />
           </View>
           {showCaptions ? <ImmersiveActionCaption label={t('offers.action.directions')} /> : null}
         </Pressable>
+        <View style={styles.railDivider} />
         <Pressable
           accessibilityLabel={t('offers.action.report')}
           accessibilityRole="button"
@@ -357,6 +359,7 @@ export function ImmersiveOfferFeed({
   onFeedTabChange,
   headerControl,
   helpControl,
+  returnFocusRef,
 }: ImmersiveOfferFeedProps) {
   const { fontScale, height, width } = useWindowDimensions();
   const { palette, t } = useApp();
@@ -439,6 +442,7 @@ export function ImmersiveOfferFeed({
         onClose={() => setSearchVisible(false)}
         onSearch={handleApplySearch}
         query={searchQuery}
+        returnFocusRef={returnFocusRef}
         radiusMeters={radiusMeters}
         visible={searchVisible}
       />
@@ -558,6 +562,12 @@ const styles = StyleSheet.create({
     minWidth: 52,
     paddingHorizontal: 12,
     paddingVertical: 10,
+  },
+  railDivider: {
+    backgroundColor: 'rgba(255,255,255,0.28)',
+    height: 1,
+    marginVertical: 2,
+    width: 28,
   },
   railCount: {
     fontSize: 11,
