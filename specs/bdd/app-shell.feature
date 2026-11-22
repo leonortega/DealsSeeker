@@ -15,7 +15,7 @@ Feature: Application shell and session-aware landing
     And there is an active authenticated session
     When the user starts the application
     Then Offers is the first visible view
-    And the immersive full-screen offers feed is presented
+    And the Feed presentation is selected in the Offers header mode control
 
   Scenario: App starts at Login when persisted session is expired
     Given the DealsSeeker mobile application is launchable
@@ -32,13 +32,12 @@ Feature: Application shell and session-aware landing
     And the response is successful with no errors
     Then the app redirects to Offers view
 
-  Scenario: No view button is displayed in the header or hero
+  Scenario: No duplicate presentation control in the header or hero
     Given the user is authenticated
     And the user is on the Offers view without an open overlay
     When the standard header and the Offers hero area are rendered
-    Then no new-view button is displayed in the header
-    And no new-view button is displayed in the hero area
-    And the view button is only available in the shared bottom footer
+    Then no presentation control is duplicated in the header outside the mode control
+    And no presentation control is displayed in the hero area
 
   Scenario: Standard header clears the device status area
     Given the user is authenticated
@@ -66,7 +65,7 @@ Feature: Application shell and session-aware landing
     Given the user is authenticated
     And the app is running on an Android device
     And the user is on the immersive offers feed
-    When the user opens My Account, Suggestions, Reports, or Add Offer from the immersive feed navigation
+    When the user opens My Account, Suggestions, or Reports from the shared navigation, or Add Offer from the create action
     And the user invokes the system back gesture or back button
     Then the immersive offers feed is visible again
     And the application remains open
@@ -83,31 +82,30 @@ Feature: Application shell and session-aware landing
     Given the user is authenticated
     And the user is on a standard view
     When the footer is rendered
-    Then it displays My Account with a 👤 icon, Suggestions, Create, Offers with a 💲 icon, and ⭐ New view in that order
+    Then it displays My Account, Suggestions, Reports, and Offers in that order
+    And each destination uses an icon from the same authored monochrome set
     And the footer is present in every view
-    And at most one option is highlighted at a time, with the view button never highlighted
+    And at most one destination is highlighted at a time
     And opening an overlay highlights only the option that opened it
-    And selecting Create opens the Add Offer view
     And selecting Offers opens the standard offers view
-    And selecting New view opens the immersive offers feed
-    And no plus button for creating an offer is displayed in the standard view
+    And no create-offer destination is displayed in the footer
+    And no presentation-switch destination is displayed in the footer
     And no back control is displayed in any view
 
-  Scenario: Immersive view uses the same footer with a Map mode label
+  Scenario: Immersive view uses the same footer
     Given the user is authenticated
     And the user is on the immersive offers feed
     When the footer is rendered
-    Then it displays My Account, Suggestions, Create, Offers, and 🗺️ Map mode in that order
-    And selecting Offers keeps the immersive offers view
-    And selecting Map mode opens the standard offers view
-    And the view button is never highlighted
+    Then it displays the same four destinations as the standard view
+    And selecting Offers keeps the current presentation selected
+    And no presentation-switch destination is displayed in the footer
 
   Scenario: Mobile footer spans the full screen width
     Given the user is authenticated
     And the user is on a mobile viewport
     When the shared footer is rendered
     Then it spans the full width of the screen
-    And all five options including the view button are fully visible inside the footer
+    And all four destinations are fully visible inside the footer
     And the options are evenly distributed across the footer
 
   Scenario: Mobile footer labels wrap to two centered lines
@@ -126,23 +124,19 @@ Feature: Application shell and session-aware landing
     Then the application header scrolls together with the view content
     And the header does not remain pinned to the top of the screen
 
-  Scenario: Selected view mode persists across other views
+  Scenario: Selected presentation persists across other views
     Given the user is authenticated
-    And the user has selected the immersive view mode
-    When the user opens Suggestions and then Add Offer from the footer
-    Then only the Add Offer option is highlighted
-    And when the user selects Offers in the footer
-    Then the immersive offers feed is displayed with the previously selected mode
-    And the mode remains until the user selects the view button again
+    And the user has selected the Map presentation in the Offers header
+    When the user opens Suggestions and returns to Offers
+    Then the Map presentation is still selected
+    And the mode remains for the current session
 
-  Scenario: View button redirects to the selected offers mode from another view
+  Scenario: Create action is a single floating action button
     Given the user is authenticated
-    And the user is on Suggestions with the standard view mode selected
-    When the user selects New view in the footer
-    Then the immersive offers feed is displayed
-    When the user opens Suggestions again
-    And selects Map mode in the footer
-    Then the standard offers view is displayed
+    And the user is on any standard view
+    When a create-offer action is rendered
+    Then exactly one create-offer floating action button is available
+    And selecting it opens the Add Offer view
 
   Scenario: My Account includes instant language and theme controls
     Given the user is authenticated

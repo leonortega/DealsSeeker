@@ -2,7 +2,10 @@ import { StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppFooterBar } from './src/components/AppFooterBar';
+import { CreateOfferFab } from './src/components/CreateOfferFab';
 import { LoadingOverlay } from './src/components/LoadingOverlay';
+import { NavIcon, type NavIconName } from './src/components/NavIcon';
+import { resolveShellChrome } from './src/utils/theme';
 import { AppProvider } from './src/context/AppContext';
 import { useApp } from './src/hooks/useApp';
 import { AccountScreen } from './src/screens/AccountScreen';
@@ -27,7 +30,7 @@ function AuthRoot() {
 }
 
 function AuthenticatedRoot() {
-  const { activeTab, bootstrapped, closeImmersiveOffers, immersiveOffers, isAuthenticated, openAddOffer, openImmersiveOffers, openTab, overlayRoute, palette, t } = useApp();
+  const { activeTab, bootstrapped, immersiveOffers, isAuthenticated, openAddOffer, openTab, overlayRoute, palette, t } = useApp();
 
   if (!bootstrapped) {
     return <SplashScreen />;
@@ -39,21 +42,22 @@ function AuthenticatedRoot() {
 
   // The immersive feed is full-bleed; every other view keeps the standard content padding.
   const immersiveFeedVisible = immersiveOffers && !overlayRoute && activeTab === 'offers';
+  const shellChrome = resolveShellChrome(immersiveFeedVisible, palette);
 
-  function handleViewButton() {
-    if (immersiveOffers) {
-      closeImmersiveOffers();
-      openTab('offers');
-      return;
-    }
-
-    openImmersiveOffers();
-    openTab('offers');
+  function footerItem(key: string, icon: NavIconName, label: string, tab: 'account' | 'suggestions' | 'reports' | 'offers') {
+    const active = !overlayRoute && activeTab === tab;
+    return {
+      key,
+      icon: <NavIcon color={active ? '#f08f62' : '#c6d0c9'} name={icon} />,
+      label,
+      onPress: () => openTab(tab),
+      active,
+    };
   }
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: palette.background }]}>
-      <StatusBar style={palette.mode === 'dark' ? 'light' : 'dark'} />
+    <SafeAreaView style={[styles.root, { backgroundColor: shellChrome.background }]}>
+      <StatusBar style={shellChrome.statusBarStyle} />
       <View style={[styles.screenContent, immersiveFeedVisible && styles.immersiveContent]}>
         {overlayRoute?.name === 'add-offer' ? <AddOfferScreen /> : null}
         {overlayRoute?.name === 'favorites' ? <FavoritesScreen /> : null}
@@ -67,21 +71,16 @@ function AuthenticatedRoot() {
         ) : null}
       </View>
 
-      {!immersiveFeedVisible ? (
-        <AppFooterBar
-          items={[
-            { key: 'account', icon: '👤', label: t('nav.account'), onPress: () => openTab('account'), active: !overlayRoute && activeTab === 'account' },
-            { key: 'suggestions', icon: '✏️', label: t('nav.suggestions'), onPress: () => openTab('suggestions'), active: !overlayRoute && activeTab === 'suggestions' },
-            { key: 'create', icon: '➕', label: t('nav.createOffer'), onPress: () => openAddOffer(), active: overlayRoute?.name === 'add-offer' },
-            { key: 'offers', icon: '💲', label: t('nav.offers'), onPress: () => openTab('offers'), active: !overlayRoute && activeTab === 'offers' },
-            {
-              key: 'view',
-              icon: immersiveOffers ? '🗺️' : '⭐',
-              label: immersiveOffers ? t('offers.mapMode') : t('offers.newView'),
-              onPress: handleViewButton,
-            },
-          ]}
-        />
+      <AppFooterBar
+        items={[
+          footerItem('account', 'account', t('nav.account'), 'account'),
+          footerItem('suggestions', 'suggestions', t('nav.suggestions'), 'suggestions'),
+          footerItem('reports', 'reports', t('nav.reports'), 'reports'),
+          footerItem('offers', 'offers', t('nav.offers'), 'offers'),
+        ]}
+      />
+      {!overlayRoute ? (
+        <CreateOfferFab label={t('nav.createOffer')} onPress={openAddOffer} palette={palette} />
       ) : null}
       <LoadingOverlay />
     </SafeAreaView>

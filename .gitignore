@@ -8,6 +8,13 @@ obj/
 Data/
 Logs/
 artifacts
+coverage/
+TestResults/
+test-results/
+playwright-report/
+test/e2e/.artifacts/
+test/performance/.artifacts/
+__pycache__/
 
 # VS
 .vs/

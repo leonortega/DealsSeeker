@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 /**
@@ -13,7 +14,7 @@ const footerInkMuted = '#c6d0c9';
 
 export interface FooterItem {
   key: string;
-  icon: string;
+  icon: ReactNode;
   label: string;
   onPress: () => void;
   active?: boolean;
@@ -49,7 +50,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     borderWidth: 1,
     flexDirection: 'row',
-    gap: 4,
+    gap: 8,
     marginBottom: 10,
     marginHorizontal: 16,
     paddingHorizontal: 6,
@@ -81,9 +82,9 @@ const styles = StyleSheet.create({
   label: {
     color: footerInkMuted,
     flexShrink: 1,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
-    lineHeight: 13,
+    lineHeight: 14,
     textAlign: 'center',
   },
   labelActive: {

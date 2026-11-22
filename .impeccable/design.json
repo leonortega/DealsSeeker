@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19T00:00:00Z",
+  "title": "Design System: DealsSeeker",
+  "extensions": {
+    "colorMeta": {
+      "kiln-terracotta": {
+        "role": "primary",
+        "displayName": "Kiln Terracotta",
+        "canonical": "oklch(53% 0.14 45)",
+        "tonalRamp": ["#3d1c10", "#5e2c18", "#7d3c22", "#9a4a2c", "#b85c38", "#cc7a58", "#dda081", "#edc8b4"]
+      },
+      "forest-ink": {
+        "role": "neutral",
+        "displayName": "Forest Ink",
+        "canonical": "oklch(22% 0.04 155)",
+        "tonalRamp": ["#0a110d", "#101b15", "#17261f", "#1f3128", "#2f4a3c", "#426655", "#638574", "#9cb8ab"]
+      },
+      "warm-paper": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "canonical": "oklch(95% 0.02 80)",
+        "tonalRamp": ["#4a453d", "#6d665c", "#918a7e", "#b8b0a3", "#ddd4c6", "#f4efe6", "#f9f5ee", "#fdfbf7"]
+      },
+      "sage-panel": {
+        "role": "secondary",
+        "displayName": "Sage Panel",
+        "canonical": "oklch(93% 0.03 150)",
+        "tonalRamp": ["#2d4037", "#43584c", "#5b7265", "#7d9487", "#a6b9ab", "#c9d9ca", "#e6f0e6", "#f4f8f4"]
+      },
+      "ember-accent": {
+        "role": "primary",
+        "displayName": "Ember Accent",
+        "canonical": "oklch(70% 0.14 48)",
+        "tonalRamp": ["#4a2414", "#733a21", "#9c512f", "#c46d43", "#f08f62", "#f5a77e", "#f9c6a8", "#fde4d5"]
+      },
+      "night-paper": {
+        "role": "neutral",
+        "displayName": "Night Paper",
+        "canonical": "oklch(14% 0.02 160)",
+        "tonalRamp": ["#040806", "#0a100e", "#101815", "#17201d", "#22302b", "#30433c", "#476258", "#7d948b"]
+      },
+      "trail-forest": {
+        "role": "neutral",
+        "displayName": "Trail Forest",
+        "canonical": "oklch(18% 0.04 160)",
+        "tonalRamp": ["#050b08", "#0c1712", "#13231d", "#1b2f28", "#294539", "#3a5f4f", "#527e6b", "#8ab3a4"]
+      },
+      "sand-border": {
+        "role": "neutral",
+        "displayName": "Sand Border",
+        "canonical": "oklch(82% 0.04 80)",
+        "tonalRamp": ["#4c4437", "#726753", "#9a8c74", "#bcad96", "#d7c9b5", "#e5dac9", "#f0e9de", "#f8f4ed"]
+      },
+      "clay-deep": {
+        "role": "tertiary",
+        "displayName": "Clay Deep",
+        "canonical": "oklch(30% 0.07 48)",
+        "tonalRamp": ["#1f1109", "#331c10", "#472817", "#5e3a2a", "#7d5139", "#9c7055", "#c0957d", "#e0c4b5"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Brand moments only — splash wordmark and authentication hero." },
+      "headline": { "displayName": "Headline", "purpose": "Screen titles, offer names, modal and form headers." },
+      "title": { "displayName": "Title", "purpose": "Primary button labels, selected tabs, emphasized metadata." },
+      "body": { "displayName": "Body", "purpose": "Descriptions, comments, and supporting copy." },
+      "label": { "displayName": "Label", "purpose": "Tags, badges, section markers, and action captions." }
+    },
+    "shadows": [
+      { "name": "offer-card", "value": "0 8px 18px rgba(31, 49, 40, 0.18)", "purpose": "The single raised-surface shadow on offer cards." },
+      { "name": "day-scrim", "value": "rgba(22, 30, 28, 0.52)", "purpose": "Dim the layer behind modals and the search sheet." },
+      { "name": "night-scrim", "value": "rgba(4, 7, 6, 0.66)", "purpose": "Dark-mode scrim behind overlays." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "No custom motion is defined in the native code; use this only for web parity transitions." }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single terracotta action on a screen — submit, search, save.",
+      "html": "<button class=\"ds-btn-primary\">SAVE OFFER</button>",
+      "css": ".ds-btn-primary { background: #b85c38; color: #fff; font: 800 16px/1.3 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 15px 20px; border: 0; border-radius: 28px; cursor: pointer; transition: background 0.2s, transform 0.2s; } .ds-btn-primary:hover { background: #9a4a2c; } .ds-btn-primary:focus-visible { outline: 2px solid #b85c38; outline-offset: 3px; } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action on a cream surface with a sand hairline.",
+      "html": "<button class=\"ds-btn-ghost\">Cancel</button>",
+      "css": ".ds-btn-ghost { background: #fffdf8; color: #1f3128; border: 1px solid #d7c9b5; border-radius: 16px; padding: 14px; font: 700 14px/1.3 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; transition: background 0.2s, border-color 0.2s; } .ds-btn-ghost:hover { background: #fff9f0; border-color: #b85c38; } .ds-btn-ghost:focus-visible { outline: 2px solid #b85c38; outline-offset: 2px; } .ds-btn-ghost:disabled { opacity: 0.45; cursor: not-allowed; }"
+    },
+    {
+      "name": "Offer Card",
+      "kind": "card",
+      "refersTo": "offer-card",
+      "description": "The raised, image-led offer summary with one soft shadow.",
+      "html": "<article class=\"ds-offer-card\"><h3 class=\"ds-offer-card__name\">Riverside Bakery</h3><p class=\"ds-offer-card__body\">Half-price day-old loaves until 6pm.</p><div class=\"ds-offer-card__tags\"><span class=\"ds-offer-card__tag\">BAKERY</span><span class=\"ds-offer-card__tag\">0.4 KM</span></div></article>",
+      "css": ".ds-offer-card { display: block; max-width: 340px; background: #fffdf8; color: #1f3128; border: 1px solid #d7c9b5; border-radius: 26px; padding: 16px; box-shadow: 0 8px 18px rgba(31, 49, 40, 0.18); font: 400 14px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: box-shadow 0.2s; } .ds-offer-card:hover { box-shadow: 0 10px 22px rgba(31, 49, 40, 0.22); } .ds-offer-card__name { font: 700 22px/1.15 Georgia, 'Times New Roman', serif; margin: 0 0 8px; } .ds-offer-card__body { margin: 0 0 12px; } .ds-offer-card__tags { display: flex; flex-wrap: wrap; gap: 8px; } .ds-offer-card__tag { border: 1px solid #d7c9b5; border-radius: 999px; padding: 6px 10px; font: 700 11px/1.3 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Cream field with a sand hairline and terracotta focus treatment.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search offers\" aria-label=\"Search offers\">",
+      "css": ".ds-input { display: block; width: 100%; background: #fffdf8; border: 1px solid #d7c9b5; border-radius: 16px; padding: 14px; color: #1f3128; font: 400 16px/1.3 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: border-color 0.2s, box-shadow 0.2s; } .ds-input::placeholder { color: #5f6d63; } .ds-input:hover { border-color: #b85c38; } .ds-input:focus { outline: none; border-color: #b85c38; box-shadow: 0 0 0 2px rgba(184, 92, 56, 0.15); } .ds-input:disabled { opacity: 0.45; cursor: not-allowed; }"
+    },
+    {
+      "name": "Chip / Tag",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Fully rounded filter or tag, with a terracotta selected state.",
+      "html": "<div style=\"display:flex; gap:8px;\"><button class=\"ds-chip\" aria-pressed=\"true\">NEARBY</button><button class=\"ds-chip\" aria-pressed=\"false\">FOOD</button></div>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; background: #e6f0e6; color: #1f3128; border: 1px solid transparent; border-radius: 999px; padding: 6px 10px; font: 700 11px/1.3 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; transition: background 0.2s, border-color 0.2s; } .ds-chip:hover { border-color: #b85c38; } .ds-chip:focus-visible { outline: 2px solid #b85c38; outline-offset: 2px; } .ds-chip[aria-pressed=\"true\"] { background: #b85c38; color: #fff; } .ds-chip[aria-pressed=\"true\"]:hover { background: #9a4a2c; }"
+    },
+    {
+      "name": "Bottom Navigation Tab",
+      "kind": "nav",
+      "refersTo": "footer-tab-active",
+      "description": "Always night-dark footer with a clay active tile and ember icon.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Primary\"><button class=\"ds-nav-tab\" aria-selected=\"true\"><span class=\"ds-nav-tab__icon\">&#9679;</span>Offers</button><button class=\"ds-nav-tab\" aria-selected=\"false\"><span class=\"ds-nav-tab__icon\">&#9675;</span>Account</button></nav>",
+      "css": ".ds-nav { display: flex; gap: 4px; max-width: 360px; background: #22332f; border: 1px solid #476258; border-radius: 28px; padding: 8px 6px; } .ds-nav-tab { flex: 1; min-height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: transparent; border: 0; border-radius: 18px; color: #c6d0c9; font: 700 10px/1.3 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; transition: background 0.2s, color 0.2s; } .ds-nav-tab__icon { font-size: 16px; font-weight: 800; line-height: 1; } .ds-nav-tab:hover { color: #f7f1e8; } .ds-nav-tab:focus-visible { outline: 2px solid #f08f62; outline-offset: 2px; } .ds-nav-tab[aria-selected=\"true\"] { background: #5e3a2a; color: #f7f1e8; } .ds-nav-tab[aria-selected=\"true\"] .ds-nav-tab__icon { color: #f08f62; }"
+    },
+    {
+      "name": "Immersive Feed Tab",
+      "kind": "nav",
+      "refersTo": "button-primary",
+      "description": "Overlay tab over photography — a 3px terracotta indicator marks the selection.",
+      "html": "<div style=\"display:flex; gap:14px;\"><button class=\"ds-feed-tab\" aria-selected=\"true\">Nearby<span class=\"ds-feed-tab__indicator\"></span></button><button class=\"ds-feed-tab\" aria-selected=\"false\">Favorites<span class=\"ds-feed-tab__indicator\"></span></button></div>",
+      "css": ".ds-feed-tab { display: flex; flex-direction: column; align-items: center; gap: 4px; background: transparent; border: 0; padding: 4px; color: #c6d0c9; font: 700 13px/1.3 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45); cursor: pointer; } .ds-feed-tab__indicator { width: 18px; height: 3px; border-radius: 2px; background: transparent; transition: background 0.2s; } .ds-feed-tab:hover { color: #f7f1e8; } .ds-feed-tab:focus-visible { outline: 2px solid #f08f62; outline-offset: 2px; } .ds-feed-tab[aria-selected=\"true\"] { color: #f7f1e8; } .ds-feed-tab[aria-selected=\"true\"] .ds-feed-tab__indicator { background: #f08f62; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Trail Map",
+    "overview": "DealsSeeker reads like a well-kept local trail map: warm paper ground, deep forest ink, and a single burnt-terracotta mark for the path you are on and the actions worth taking. The palette is deliberately earthy rather than corporate; discovery feels like consulting a guide someone left at the trailhead, not scanning a marketplace. The one accent is sparse on purpose — its rarity is what makes an active tab, a primary button, and a selected filter legible at a glance.\n\nThe typography follows the same cartographer's logic. Georgia acts as the landmark: it appears on the product name, screen titles, offer names, and the rare brand moment, never on the operational text that does the work. Everything else — descriptions, distances, tags, buttons, micro-labels — stays on the system sans, tight and unpretentious. Surfaces are generously rounded but never soft enough to lose structure; a single low shadow lifts offer cards off the page, and everything else is held in place by 1px borders and tonal steps.\n\nThe system ships one mobile-native language to iOS, Android, and web from a single codebase. Two complete palettes cover light and dark: a daylight paper-and-forest scheme and a forest-night scheme for low-light browsing. The immersive photo feed is the deliberate exception — it is always laid on a fixed forest backdrop (#1b2f28), with the app name and logo present, so the imagery carries the moment and the interface recedes. No standalone logo file or documented voice guide exists in the project; the wordmark is set in Georgia and the mark is a rounded square.",
+    "keyCharacteristics": [
+      "Warm paper and forest green carry the structure; terracotta is the only wayfinding accent.",
+      "Georgia for landmarks, system sans for everything operational.",
+      "Generous 16–28px radii; chips, badges, and filters are full pills.",
+      "One soft ambient shadow on raised cards; 1px borders and tonal shifts do the rest.",
+      "Two full palettes (daylight and forest-night); the bottom navigation stays night-dark in both.",
+      "Compact 700–800 weight micro-labels with wide tracking for metadata and actions."
+    ],
+    "rules": [
+      { "name": "The Waypoint Rule", "body": "Terracotta marks the path: primary actions, selected tabs, selected chips, the tab indicator. It stays on a small fraction of any screen; paper and forest carry the rest.", "section": "colors" },
+      { "name": "The Night Footer Rule", "body": "The bottom navigation is always the forest-night surface (#22332f with a #476258 hairline), in light and dark themes alike. Only its active tile adopts the terracotta family (#5e3a2a fill, #f08f62 icon).", "section": "colors" },
+      { "name": "The Landmark Rule", "body": "Georgia is reserved for names, headlines, and brand moments. Body copy, metadata, and controls stay on the system sans — a paragraph is never set in Georgia.", "section": "typography" },
+      { "name": "The Grounded Shadow Rule", "body": "Depth comes from one low, soft shadow (8px down, 18px blur). No layered or hard-offset shadows — borders and tonal steps do the rest.", "section": "elevation" },
+      { "name": "The Pill Rule", "body": "Tags, badges, filters, and search controls are fully rounded (999px); structural surfaces keep 12–28px corners. The two shape languages never mix on one element.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do keep terracotta to the active path — primary actions, selected tabs, selected chips, the tab indicator.",
+      "Do set names and headlines in Georgia at 700; keep body, metadata, and controls on the system sans.",
+      "Do keep the bottom navigation night-dark in both themes, with the terracotta family only on its active tile.",
+      "Do use 999px pills for tags, badges, filters, and search controls, with 16–28px corners on structural surfaces.",
+      "Do use one soft card shadow (0 8 18) plus a 1px hairline; keep controls at least 44pt tall (footer tabs are 68px).",
+      "Do test both palettes — the daylight paper scheme and the forest-night scheme — on every new surface."
+    ],
+    "donts": [
+      "Don't set body copy or metadata in Georgia; it is for landmarks only.",
+      "Don't invent a third accent color. Sage is secondary, clay is tertiary, and success/danger are status-only.",
+      "Don't stack shadows or use hard-offset shadows; the system is flat at rest with one ambient lift.",
+      "Don't add a hover-only affordance or a wide desktop reflow — native touch is the primary target and web shares the phone-first composition.",
+      "Don't hardcode a new surface color when a palette role already exists; the hardcoded footer is the one deliberate exception."
+    ]
+  }
+}

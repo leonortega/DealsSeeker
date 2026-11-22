@@ -19,14 +19,14 @@ Feature: Offers layout and navigation to Add Offer
     When the Offers view is rendered
     Then a promoted offers section is visible above standard offers
 
-  Scenario: Create footer option opens Add Offer view
+  Scenario: Create action opens Add Offer view
     Given the user is authenticated
     And the user is in Offers view
-    When the user selects Create in the bottom footer
+    When the user selects the create-offer floating action button
     Then the Add Offer view is displayed
 
-  Scenario: Create footer option opens Add Offer view from the immersive feed
+  Scenario: Create action opens Add Offer view from the immersive feed
     Given the user is authenticated
     And the user is on the immersive offers feed
-    When the user selects Create in the bottom footer
+    When the user selects the create-offer floating action button
     Then the Add Offer view is displayed

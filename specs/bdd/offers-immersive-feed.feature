@@ -11,12 +11,12 @@ Feature: Immersive vertical full-screen main page feed
     And the user can move vertically between offers
     And the previous grid layout is not used
 
-  Scenario: Left side exposes identity and discovery controls
+  Scenario: Top bar exposes identity and discovery controls
     Given the main page is displayed
-    When the user views the left side of the screen
+    When the user views the top bar
     Then the application name and logo are visible
     And search options are available
-    And entry points for the main navigation destinations are available
+    And entry points for the main navigation destinations are available in the shared bottom navigation
 
   Scenario: Offer controls remain available in side rail
     Given an offer page is displayed
@@ -81,42 +81,41 @@ Feature: Immersive vertical full-screen main page feed
     Then each photo is rendered as a full-page background occupying the whole page area
     And the displayed photo is not an empty or collapsed visual
 
-  Scenario: Left panel offers a create-offer option as the last option
+  Scenario: Create offer is available from a single floating action button
     Given the user is in the immersive feed
-    When the user views the left panel
-    Then a create-offer option is available as the last option of the left panel
-    And the option is labeled `Create` in English and `Crear` in Spanish
+    When the user views the available actions
+    Then a single create-offer floating action button is available
     And selecting it opens the Add Offer view
+    And no create-offer item is presented as a bottom navigation destination
 
-  Scenario: Left panel omits the application menu option and the back option
+  Scenario: Immersive view omits the application menu and back controls
     Given the user is in the immersive feed
-    When the user views the left panel
-    Then an application-menu option is not available
-    And a back option is not available
+    When the user views the available controls
+    Then an application-menu control is not available
+    And a back control is not available
 
-  Scenario: Map entry point opens the standard offers view
+  Scenario: Map option in the header mode control opens the standard offers view
     Given the user is in the immersive feed
-    When the user selects the map entry point
+    When the user selects the Map option in the Offers header mode control
     Then the standard offers view is displayed
     And the map is displayed for the current offers and location context
-    And the entry point is labeled `Map mode` in English and `Modo mapa` in Spanish
 
-  Scenario: Immersive feed is the default offers presentation
+  Scenario: Feed is the default presentation on a cold start
     Given the application starts with an authenticated session
     When the first view is displayed
-    Then the immersive offers feed is displayed
+    Then the Feed presentation is selected
 
-  Scenario: User can try the immersive feed from the shared footer
+  Scenario: Presentation is chosen in the Offers header
     Given the user is on the standard Offers view
-    When the user selects the ⭐ New view button in the footer
+    When the user selects the Feed option in the header mode control
     Then the immersive feed view opens
-    And no new-view button is displayed in the standard header or the Offers hero area
+    And no mode control is presented as a bottom navigation destination
 
   Scenario: Immersive view uses the classic application styling
     Given the user is on the immersive offers view
     When the view is rendered
     Then its text uses the same font family, sizes and weights as the standard application UI
-    And its side panel, top bar, footer, controls, status banners and search sheet use the same colors and surfaces as the standard application UI
+    And its top bar, footer, controls, status banners and search sheet use the same colors and surfaces as the standard application UI
     And the offer text overlay has no surrounding box or opaque background and stays readable over the image
 
   Scenario: Immersive view follows the active theme
@@ -127,27 +126,49 @@ Feature: Immersive vertical full-screen main page feed
     When the active theme changes to light
     Then its surfaces and text update to the light theme colors of the standard application UI
 
-  Scenario: Header and footer are consolidated on the left
+  Scenario: Unified bottom navigation remains available in immersive
     Given the user is on the immersive feed
     When the view loads
-    Then the standard header and bottom navigation bars are not rendered separately
-    And their entry points are available in the left section
-    And bottom navigation destinations are reachable directly through left panel options
+    Then the same bottom navigation as the standard view is displayed
+    And main navigation destinations are reachable from that bottom navigation
+    And no separate left navigation panel is rendered
     And preference options remain available in the Account destination
 
-  Scenario: Left menu is static and contains map and navigation destinations
-    Given the user is on the immersive feed
-    When the user scrolls between offers
-    Then the left menu remains visible in the same position
-    And the map option is available inside the menu
-    And no header buttons are rendered
-    And footer navigation destinations appear as options inside the menu
-
-  Scenario: Immersive navigation icons are emoji glyphs
+  Scenario: Navigation icons use one consistent authored set
     Given the user is on the immersive offers view
-    When the navigation options are rendered in the footer or the left panel
-    Then each option icon is displayed as an emoji glyph
-    And no option icon is rendered as a monochrome text symbol
+    When navigation options are rendered in the bottom navigation
+    Then each option uses an icon from the same authored monochrome set
+    And no emoji glyph is used as a navigation icon
+
+  Scenario: Immersive chrome stays readable in the light theme
+    Given the light theme is active
+    And the immersive offers feed is displayed
+    When the top-bar title, feed tabs and action captions are rendered over the fixed forest backdrop
+    Then each uses a light foreground color with sufficient contrast
+    And no text is rendered in dark ink over that backdrop
+
+  Scenario: Presentation control stays compact on a wide screen
+    Given the app is running on a tablet-sized screen
+    When the immersive top bar is rendered
+    Then the presentation control keeps a compact width
+    And it does not stretch across the full screen
+
+  Scenario: Offer actions stay reachable at large text size
+    Given the system text size is set to 200 percent
+    And the immersive offers feed is displayed on a wide screen
+    When the side action rail is rendered
+    Then every action remains visible and independently tappable
+    And no action label overlaps another action
+    And no action control is clipped by the screen edge
+
+  Scenario: Immersive feed has no light safe-area band in either theme
+    Given the immersive offers feed is displayed
+    And the light theme is active
+    When the safe areas and status bar are rendered
+    Then the safe-area background uses the fixed forest presentation
+    And the status-bar icons stay visible against it
+    When the dark theme is active
+    Then the same forest presentation is applied
 
   Scenario: Empty feed state
     Given no offers are available

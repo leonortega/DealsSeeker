@@ -83,7 +83,7 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [authScreen, setAuthScreen] = useState<AuthScreen>('login');
   const [activeTab, setActiveTab] = useState<MainTab>('offers');
   const [overlayRoute, setOverlayRoute] = useState<OverlayRoute>(null);
-  const [immersiveOffers, setImmersiveOffers] = useState(true);
+  const [immersiveOffers, setImmersiveOffers] = useState(false);
   const [loadingCount, setLoadingCount] = useState(0);
   const [pendingOperations, setPendingOperations] = useState<string[]>([]);
   const [cachedProfile, setCachedProfile] = useState<UserProfileDto | null>(null);
