@@ -1,4 +1,4 @@
-import { FlatList, Image, LayoutChangeEvent, PanResponder, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { FlatList, Image, LayoutChangeEvent, PanResponder, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { ReactNode, type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
@@ -160,23 +160,6 @@ function ImmersiveOfferPage({
     setSelectedImageIndex(0);
     setDragOffset(0);
   }, [offer.offerId]);
-
-  useEffect(() => {
-    if (!hasMultipleImages || Platform.OS !== 'web') {
-      return;
-    }
-
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowLeft') {
-        showPreviousImage();
-      } else if (event.key === 'ArrowRight') {
-        showNextImage();
-      }
-    };
-
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [hasMultipleImages, selectedImageIndex, carouselWidth, images.length]);
 
   return (
     <View style={styles.page} onLayout={handlePageLayout}>

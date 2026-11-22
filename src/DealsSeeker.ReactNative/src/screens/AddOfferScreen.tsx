@@ -124,7 +124,7 @@ export function AddOfferScreen() {
   const { api, closeOverlay, isPending, openTab, overlayRoute, palette, preferences, t } = useApp();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const columns = Platform.OS === 'web' ? 1 : resolveAddOfferColumns(width);
+  const columns = resolveAddOfferColumns(width);
   const [images, setImages] = useState<DraftImage[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [description, setDescription] = useState('');

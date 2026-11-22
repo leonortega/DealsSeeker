@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react-native';
-import { Platform } from 'react-native';
 import { AddOfferScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
 
 let mockColumns = 1;
@@ -76,12 +75,10 @@ describe('Add Offer tablet composition (ADD.OFFER.TABLET.LAYOUT.001)', () => {
     expect(screen.getAllByText('add.submitCreate')).toHaveLength(1);
   });
 
-  it('keeps the phone-first composition on web even at tablet width', async () => {
-    const replacement = jest.replaceProperty(Platform, 'OS', 'web');
+  it('uses the native column helper at tablet width', async () => {
     mockColumns = 2;
     await render(<AddOfferScreen />);
 
-    expect(screen.queryByTestId('add-offer-tablet-columns')).toBeNull();
-    replacement.restore();
+    expect(screen.getByTestId('add-offer-tablet-columns')).toBeTruthy();
   });
 });

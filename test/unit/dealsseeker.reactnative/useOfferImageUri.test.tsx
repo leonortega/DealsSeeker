@@ -1,5 +1,4 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
-import { Platform } from 'react-native';
 import { useOfferImageUri } from '../../../src/DealsSeeker.ReactNative/src/hooks/useOfferImageUri';
 
 jest.mock('expo-file-system', () => ({
@@ -26,10 +25,9 @@ describe('useOfferImageUri', () => {
     expect(result.current).toBe('https://example.test/offer.png');
   });
 
-  it('materializes a data URI into a cache file on native, or keeps it on web', async () => {
+  it('materializes a data URI into a cache file on native', async () => {
     const { result } = await renderHook(() => useOfferImageUri(dataUri));
-    const expected = Platform.OS === 'web' ? dataUri : 'file://cached-offer-image.png';
-    await waitFor(() => expect(result.current).toBe(expected));
+    await waitFor(() => expect(result.current).toBe('file://cached-offer-image.png'));
   });
 
   it('recovers when the image URL changes', async () => {

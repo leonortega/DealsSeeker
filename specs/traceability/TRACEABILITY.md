@@ -84,3 +84,6 @@
 | `ADD.OFFER.LOCATION.002` | `bdd/add-offer-location.feature` | `contracts/json-schema/offer-location.schema.json`, `contracts/json-schema/geo-point.schema.json` | `examples/add-offer/add-offer-map-pin.json` |
 | `ADD.OFFER.DESCRIPTION.TAGS.001` | `bdd/add-offer-tags.feature` | `contracts/json-schema/add-offer-draft.schema.json` | `examples/add-offer/add-offer-description-tags.json` |
 | `ADD.OFFER.TAGS.SUGGESTIONS.001` | `bdd/add-offer-tag-suggestions.feature` | `contracts/json-schema/add-offer-draft.schema.json` | `examples/add-offer/add-offer-tag-suggestions.json` |
+| `APP.SHELL.002` | `bdd/app-shell-native-behavior.feature` | N/A | N/A |
+| `APP.SHELL.003` | `bdd/app-shell-native-behavior.feature` | N/A | N/A |
+| `APP.SHELL.004` | `bdd/app-shell-native-behavior.feature` | N/A | N/A |

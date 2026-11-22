@@ -82,3 +82,5 @@ Scenario: System Back acts as Cancel
 - `ADD.OFFER.LAYOUT.001`
 - `ADD.OFFER.UX.001`
 - `APP.ACCESSIBILITY.UX.003`
+- `APP.SHELL.003`
+- `APP.SHELL.004`

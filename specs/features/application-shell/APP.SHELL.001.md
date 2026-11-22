@@ -241,3 +241,6 @@ Scenario: Blocking loading state appears during required data waits
 - `APP.LOCATION.FALLBACK.001`
 - `APP.ONBOARD.001`
 - `APP.ADAPTIVE.UX.001`
+- `APP.SHELL.002`
+- `APP.SHELL.003`
+- `APP.SHELL.004`

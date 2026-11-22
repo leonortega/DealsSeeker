@@ -1,6 +1,6 @@
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { createElement, useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { apiConfig, normalizeProvider, resolveDisplayProvider } from '../api/config';
 import { BusinessMarkerDto, GeoPoint } from '../api/types';
 import { useApp } from '../hooks/useApp';
@@ -513,15 +513,9 @@ export function MapPreview({
   const source = useMemo(() => ({ html }), [html]);
 
   const webViewRef = useRef<any>(null);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   function sendPin(point: GeoPoint | null) {
     const message = point ? { type: 'set-pin', lat: point.lat, lng: point.lng } : { type: 'clear-pin' };
-    if (Platform.OS === 'web') {
-      iframeRef.current?.contentWindow?.postMessage(message, '*');
-      return;
-    }
-
     webViewRef.current?.postMessage(JSON.stringify(message));
   }
 
@@ -529,39 +523,6 @@ export function MapPreview({
     sendPin(pin ?? null);
   }, [pin?.lat, pin?.lng]);
 
-  useEffect(() => {
-    if (Platform.OS !== 'web') {
-      return;
-    }
-
-    function handleWindowMessage(event: MessageEvent) {
-      try {
-        const payload = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        if (!payload) {
-          return;
-        }
-
-        if (payload.type === 'map-tapped') {
-          onMapTap?.({ lat: payload.lat, lng: payload.lng });
-          return;
-        }
-
-        if (payload.type !== 'marker-selected') {
-          return;
-        }
-
-        const selectedMarker = businesses.find((marker) => marker.businessId === payload.businessId);
-        if (selectedMarker) {
-          onSelectMarker?.(selectedMarker);
-        }
-      } catch {
-        // Ignore malformed map messages.
-      }
-    }
-
-    window.addEventListener('message', handleWindowMessage);
-    return () => window.removeEventListener('message', handleWindowMessage);
-  }, [businesses, onSelectMarker, onMapTap]);
   function handleMessage(event: WebViewMessageEvent) {
     try {
       const payload = JSON.parse(event.nativeEvent.data) as MapMessage;
@@ -591,28 +552,18 @@ export function MapPreview({
         </Text>
       </View>
 
-      {Platform.OS === 'web' ? (
-        createElement('iframe', {
-          ref: iframeRef,
-          srcDoc: html,
-          style: { border: 0, height: '100%', width: '100%' },
-          title: 'DealsSeeker Map',
-          onLoad: () => sendPin(pin ?? null),
-        })
-      ) : (
-        <WebView
-          cacheEnabled={false}
-          domStorageEnabled
-          javaScriptEnabled
-          mixedContentMode="never"
-          onMessage={handleMessage}
-          onLoad={() => sendPin(pin ?? null)}
-          ref={webViewRef}
-          scrollEnabled={false}
-          source={source}
-          style={styles.map}
-        />
-      )}
+      <WebView
+        cacheEnabled={false}
+        domStorageEnabled
+        javaScriptEnabled
+        mixedContentMode="never"
+        onMessage={handleMessage}
+        onLoad={() => sendPin(pin ?? null)}
+        ref={webViewRef}
+        scrollEnabled={false}
+        source={source}
+        style={styles.map}
+      />
 
       <View style={[styles.footer, { backgroundColor: palette.panel, borderColor: palette.border }]}>
         {showCoverage ? (

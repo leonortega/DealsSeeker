@@ -93,7 +93,7 @@ Outputs feed §4 specs and the refinement commands below.
 
 - Re-run `critique` + `audit` to show score movement.
 - For observable behavior changes: **spec → validate → Approve → implement** (AGENTS.md BDD flow).
-- Verify with the `browser` skill on the web client and simulator/emulator/hardware captures on native (both palettes, phone + tablet, both orientations, 200% text scaling).
+- Verify on device with `npm run test:e2e` (Maestro) and simulator/emulator/hardware captures (both palettes, phone + tablet, both orientations, 200% text scaling).
 - Run `ponytail-review` on the final diff; reconcile structural findings with `design-pattern-review`.
 
 ### Suggested starting scope

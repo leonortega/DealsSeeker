@@ -1,0 +1,25 @@
+appId: com.anonymous.dealsseekerreactnative
+---
+- launchApp
+- tapOn:
+    text: "DealsSeeker"
+    index: 1
+    optional: true
+- tapOn:
+    text: "Continue"
+    optional: true
+- tapOn:
+    point: "88%,47%"
+    optional: true
+- extendedWaitUntil:
+    visible: "Sign in"
+    timeout: 20000
+- tapOn: "Email"
+- inputText: ${EMAIL}
+- tapOn: "Password"
+- inputText: "wrong-password"
+- hideKeyboard
+- waitForAnimationToEnd
+- tapOn:
+    point: "50%,76%"
+- assertVisible: "Login failed."

@@ -6,7 +6,7 @@
 
 adaptive
 
-Mobile-native first: iOS and Android are the primary targets; the web client is secondary. All three ship from one Expo/React Native codebase and share one design language — the user chose mobile-native-first priority rather than per-OS design-language divergence. (`adaptive` is the recorded value because the product spans multiple native mobile platforms; web remains supported.)
+Mobile-only: iOS and Android are the shipped targets, built from one Expo/React Native codebase with one brand-defined design language. OS-level behavior adapts per platform (Back, gestures, insets, modal semantics, lifecycle); the application UI/UX stays identical on both. (`adaptive` is the recorded value because the product spans multiple native mobile platforms.)
 
 ## Users
 
@@ -31,7 +31,7 @@ The differentiating value is discovery + contribution together: hyperlocal disco
 
 ## Operating Context
 
-- Cross-platform client (web, Android, iOS) backed by a single ASP.NET Core minimal API.
+- Mobile client (Android and iOS) backed by a single ASP.NET Core minimal API.
 - Device geolocation supplies the user location; in-app map rendering and external navigation use configurable map provider modules (Google Maps display/redirect, OpenLayers display/redirect with Photon geocoding, and fallbacks).
 - Offers are browsed as a vertical full-screen feed, a map, or a grid/list; the immersive feed overlays business name, distance, description, and tags.
 - Account flows: register/login, sessions persisted across app launches, profile with avatar and owned offers.

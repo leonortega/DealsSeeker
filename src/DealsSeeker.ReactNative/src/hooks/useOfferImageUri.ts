@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
 import { Directory, File, Paths } from 'expo-file-system';
 import { resolveOfferImageUri } from '../utils/images';
 
-const imageCacheDirectory = Platform.OS === 'web' ? null : new Directory(Paths.cache, 'offer-images');
+const imageCacheDirectory = new Directory(Paths.cache, 'offer-images');
 const pendingWrites = new Map<string, Promise<string | null>>();
 
 export function useOfferImageUri(imageUrl?: string | null) {
@@ -47,7 +46,7 @@ export function useOfferImageUri(imageUrl?: string | null) {
 }
 
 function shouldCacheDataUri(uri: string) {
-  return Platform.OS !== 'web' && /^data:image\/[a-z0-9.+-]+;base64,/iu.test(uri);
+  return /^data:image\/[a-z0-9.+-]+;base64,/iu.test(uri);
 }
 
 function getCachedImageUri(dataUri: string) {

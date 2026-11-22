@@ -1,7 +1,7 @@
 # DealsSeeker (.NET 10 Option 1)
 
 Implementation stack:
-- `DealsSeeker.ReactNative`: Expo/React Native mobile and web client.
+- `DealsSeeker.ReactNative`: Expo/React Native mobile client (iOS and Android).
 - `DealsSeeker.Api`: ASP.NET Core 10 Minimal API.
 - `DealsSeeker.Shared`: shared contracts/models.
 

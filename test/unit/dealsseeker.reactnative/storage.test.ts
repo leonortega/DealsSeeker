@@ -1,36 +1,36 @@
-jest.mock('react-native', () => ({ Platform: { OS: 'web' } }));
-jest.mock('expo-secure-store', () => ({
-  getItemAsync: jest.fn(),
-  setItemAsync: jest.fn(),
-  deleteItemAsync: jest.fn(),
-}));
-
 const STORAGE_PATH = '../../../src/DealsSeeker.ReactNative/src/utils/storage';
 
-describe('session and preference storage', () => {
-  let store: Map<string, string>;
+const store = new Map<string, string>();
+const mockSecureStore = {
+  getItemAsync: jest.fn(async (key: string) => store.get(key) ?? null),
+  setItemAsync: jest.fn(async (key: string, value: string) => {
+    store.set(key, value);
+  }),
+  deleteItemAsync: jest.fn(async (key: string) => {
+    store.delete(key);
+  }),
+};
+
+jest.mock('expo-secure-store', () => mockSecureStore);
+
+describe('session and preference storage on native', () => {
   let storage: typeof import('../../../src/DealsSeeker.ReactNative/src/utils/storage');
 
   beforeEach(() => {
     jest.resetModules();
-    store = new Map<string, string>();
-    (globalThis as any).localStorage = {
-      getItem: (key: string) => store.get(key) ?? null,
-      setItem: (key: string, value: string) => {
-        store.set(key, value);
-      },
-      removeItem: (key: string) => {
-        store.delete(key);
-      },
-    };
+    store.clear();
+    mockSecureStore.getItemAsync.mockClear();
+    mockSecureStore.setItemAsync.mockClear();
+    mockSecureStore.deleteItemAsync.mockClear();
     storage = require(STORAGE_PATH);
   });
 
-  it('round-trips a session', async () => {
+  it('round-trips a session through secure storage', async () => {
     const session = { userId: 'usr-1', accessToken: 'tok-1' };
     await storage.saveSession(session);
 
     expect(await storage.loadSession()).toEqual(session);
+    expect(mockSecureStore.setItemAsync).toHaveBeenCalledWith('dealseeker.auth.session', JSON.stringify(session));
   });
 
   it('returns null and clears an unreadable session', async () => {

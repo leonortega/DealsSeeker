@@ -2,7 +2,7 @@
 
 ## Project Overview
 DealsSeeker is a .NET 10 app:
-- `DealsSeeker.ReactNative`: Expo/React Native mobile and web client.
+- `DealsSeeker.ReactNative`: Expo/React Native mobile client (iOS and Android).
 - `DealsSeeker.Api`: ASP.NET Core 10 Minimal API.
 - `DealsSeeker.Shared`: shared contracts/models.
 
@@ -93,7 +93,7 @@ Theme, localization, logging, map provider config, navigation mode (pedestrian/c
 
 ## Implementation Scope
 - Changes SHALL target the API (`DealsSeeker.Api`) and React Native (`DealsSeeker.ReactNative`) projects.
-- The React Native project is the single client for mobile and web; mobile work targets `DealsSeeker.ReactNative`.
+- The React Native project is the mobile-only client (iOS and Android); all client work targets `DealsSeeker.ReactNative`.
 
 ## Skills (Agent Playbook)
 The installed skills listed below are part of the DealsSeeker workflow. Load the
@@ -110,7 +110,7 @@ specs and this file define *what* is done.
 | Behavior-preserving refactor (allowed by the spec-first rule) | `safe-refactor` | Keep feature work out; move one ownership boundary at a time; preserve public interfaces, failure behavior and ordering; keep intermediate states buildable and re-run the same proof. |
 | Before merging (diff review) | `ponytail-review` | One-line findings on the diff: delete/simplify over-engineering; complements correctness review. |
 | Periodic / repo-wide complexity cleanup | `ponytail-audit` | One-shot ranked report of what to delete, simplify, or replace; applies nothing. |
-| Manual verification of the React Native web client or API behavior | `browser` | Open the web client / endpoint, exercise the BDD scenario, check console + network logs, screenshots, and performance/memory where relevant. Hand off for login/2FA/captcha/payment. |
+| Manual verification of API behavior | `browser` | Open the endpoint, exercise the BDD scenario, check console + network logs where relevant. Hand off for login/2FA/captcha/payment. |
 
 Not part of this project's workflow: `opencode` (questions about OpenCode itself)
 and `report` (filing OpenCode issues) — they concern the harness, not DealsSeeker.
@@ -147,7 +147,7 @@ abstractions for hypothetical future needs.
      - Positive and edge scenarios present.
   3. **Approve**: Set the spec `Status` metadata from `Draft` to `Approved` (and keep BDD scenarios aligned) only after validation passes. No implementation may start while status is `Draft`.
   4. **Implement**: Only after approval, implement the code change in the API / React Native projects per Implementation Scope. Follow `tdd-workflow` (tests first, 80%+ coverage), `solid` + `clean-code` for quality, and `ponytail` for the minimal solution. Keep any behavior-preserving refactor under `safe-refactor`.
-  5. **Review & verify**: Run `ponytail-review` on the diff (and `ponytail-audit` for periodic repo-wide cleanup). Verify the BDD scenarios manually with `browser` against the React Native web client / API where applicable, and reconcile any structural findings with `design-pattern-review` before merging.
+  5. **Review & verify**: Run `ponytail-review` on the diff (and `ponytail-audit` for periodic repo-wide cleanup). Verify the BDD scenarios on device with `test:e2e` (Maestro) and the API where applicable, and reconcile any structural findings with `design-pattern-review` before merging.
 - A change is not complete until its spec is `Approved`, its BDD scenarios reflect the implemented behavior, and the skill-driven review/verification above passes. If behavior changes during implementation, update the spec/BDD and re-validate/re-approve before merging.
 
 ## Conventions

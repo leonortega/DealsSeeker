@@ -74,5 +74,6 @@ Scenario: System Back closes the immersive view
 - `OFFERS.FEED.RESPONSIVE.001`
 - `OFFERS.FAVORITES.001`
 - `APP.SHELL.001`
+- `APP.SHELL.004`
 - `OFFERS.COMMENTS.001`
 ```

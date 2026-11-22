@@ -462,6 +462,7 @@ export function OffersScreen() {
 
         <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <TextInput
+            accessibilityLabel={t('offers.searchPlaceholder')}
             onChangeText={(value) => {
               setQuery(value);
               searchDebounced(value, radiusMeters, favoritesOnly);

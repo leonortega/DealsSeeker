@@ -275,3 +275,18 @@
 | Database sink minimum level | Separately configurable | Can be stricter than global minimum |
 | Invalid configured level | Fallback to `Information` | Avoid startup failure |
 | Sink failure handling | Other sinks continue when possible | API should remain available |
+
+## Hybrid Conformity and Shell Navigation Rules (`APP.SHELL.002`, `APP.SHELL.003`, `APP.SHELL.004`)
+
+| Decision Point | Default Rule | Notes |
+|---|---|---|
+| Navigation container | Native stack + tab navigator for stack/tab state, transitions and gestures | No custom global navigator |
+| Visible navigation chrome | Native chrome hidden; branded header and night footer only | UI identical on both platforms |
+| Visual system | `DESIGN.md` authoritative; no HIG/M3 visual adaptation | Brand UI unchanged on iOS and Android |
+| Modal presentation | Native modal behavior; brand-styled content | iOS sheet semantics, Android full-screen |
+| Platform dismissal | Routed through in-app cancel path; discard confirmation when dirty | Preserves `ADD.OFFER.EXIT.001` |
+| System Back | Native lifecycle handlers replace custom global BackHandler | Preserves immersive close and discard |
+| Insets | Safe-area/window/IME insets applied without changing brand visuals | Behavior, not restyle |
+| Reduce Motion | OS animation setting changes transitions only | Brand UI unchanged |
+| Platform scope | Mobile-only (iOS + Android) | Web client and web E2E removed |
+| Accessibility | Behavior verified (font scale, screen reader, 44pt targets) | No platform-specific visual restyle |
