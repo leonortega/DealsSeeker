@@ -78,3 +78,4 @@ Scenario: Immersive metadata stays legible in the light theme
 - `APP.SHELL.001`
 - `OFFERS.COMMENTS.001`
 - `APP.POLISH.UX.001`
+- `APP.ADAPTIVE.UX.001`

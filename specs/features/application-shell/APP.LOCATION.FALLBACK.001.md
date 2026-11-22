@@ -84,3 +84,4 @@ Scenario: Fallback notice does not expose coordinates
 - `APP.ACCESSIBILITY.UX.003`
 - `OFFERS.SEARCH.001`
 - `OFFERS.UX.001`
+- `APP.ONBOARD.001`

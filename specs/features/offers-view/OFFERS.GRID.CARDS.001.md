@@ -63,3 +63,4 @@ Scenario: Card actions stack on a narrow mobile viewport
 - `OFFERS.IMAGE.RENDERING.001`
 - `OFFERS.FAVORITES.001`
 - `APP.ADAPTIVE.UX.002`
+- `APP.ADAPTIVE.UX.001`

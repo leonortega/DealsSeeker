@@ -89,3 +89,4 @@ Scenario: Success is perceivable before navigation
 - `APP.ADAPTIVE.UX.002`
 - `OFFERS.UX.002`
 - `APP.POLISH.UX.001`
+- `ADD.OFFER.UX.001`

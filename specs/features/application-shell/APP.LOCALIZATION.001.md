@@ -71,3 +71,4 @@ Scenario: Missing translation key falls back
 - `OFFERS.FEED.RESPONSIVE.001`
 - `APP.ACCESSIBILITY.UX.002`
 - `APP.LOCATION.FALLBACK.001`
+- `APP.ONBOARD.001`

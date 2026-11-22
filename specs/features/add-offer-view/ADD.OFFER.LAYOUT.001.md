@@ -103,3 +103,4 @@ Scenario: Tag section shows only the removal hint
 - `APP.ACCESSIBILITY.UX.003`
 - `ADD.OFFER.LOCATION.003`
 - `APP.POLISH.UX.001`
+- `ADD.OFFER.UX.001`

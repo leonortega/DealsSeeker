@@ -78,3 +78,4 @@ Scenario: Reduced motion in both themes and landscape
 - `OFFERS.FEED.RESPONSIVE.001`
 - `OFFERS.GRID.CARDS.001`
 - `ADD.OFFER.LOCATION.003`
+- `APP.ADAPTIVE.UX.001`

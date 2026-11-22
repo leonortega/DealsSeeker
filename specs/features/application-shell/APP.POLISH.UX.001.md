@@ -70,3 +70,4 @@ Scenario: Keyboard and cutouts do not hide controls
 - `SUGGESTIONS.SUBMIT.001`
 - `REPORTS.SUBMIT.001`
 - `ADD.OFFER.LAYOUT.001`
+- `ADD.OFFER.UX.001`

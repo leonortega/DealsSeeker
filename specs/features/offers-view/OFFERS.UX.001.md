@@ -80,3 +80,4 @@ Scenario: Immersive feed presents the same recoverable empty state
 - `APP.ACCESSIBILITY.UX.001`
 - `APP.LOCATION.FALLBACK.001`
 - `OFFERS.UX.002`
+- `APP.ONBOARD.001`
