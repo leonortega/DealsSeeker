@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react-native';
+
 import { AccessibilityInfo, StyleSheet } from 'react-native';
 import { ImmersiveOfferFeed } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveOfferFeed';
 import { focusHandle } from '../../../src/DealsSeeker.ReactNative/src/utils/focusReturn';
@@ -58,23 +59,23 @@ describe('primary offer action (OFFERS.UX.002-R8)', () => {
       />
     );
 
-    const directions = screen.getByRole('button', { name: 'offers.action.directions' });
-    const comments = screen.getByRole('button', { name: 'offers.action.comments' });
-    expect(StyleSheet.flatten(directions.props.children[0].props.style).backgroundColor).toBe('#b85c38');
-    expect(StyleSheet.flatten(comments.props.children[0].props.style).backgroundColor).toBe('#fff9f0');
+    const directions = screen.getByTestId('rail-primary-action');
+    const comments = screen.getByTestId('rail-secondary-action');
+    expect(StyleSheet.flatten(directions.props.style).backgroundColor).toBe('#b85c38');
+    expect(StyleSheet.flatten(comments.props.style).backgroundColor).toBe('#fff9f0');
   });
 });
 
 describe('dialog focus return (APP.ACCESSIBILITY.UX.003-R5)', () => {
-  it('sets accessibility focus to a restored handle', () => {
+  it('sets accessibility focus only when a handle is available', () => {
     const spy = jest.spyOn(AccessibilityInfo, 'setAccessibilityFocus').mockImplementation(() => {});
+
     focusHandle(42);
     expect(spy).toHaveBeenCalledWith(42);
-  });
 
-  it('does nothing without a handle', () => {
-    const spy = jest.spyOn(AccessibilityInfo, 'setAccessibilityFocus').mockImplementation(() => {});
+    spy.mockClear();
     focusHandle(null);
     expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
   });
 });

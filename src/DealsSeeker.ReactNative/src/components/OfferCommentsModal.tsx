@@ -1,15 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { type RefObject, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { OfferCommentDto, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { resolveMotionPreferences } from '../utils/motion';
+import { restoreFocus } from '../utils/focusReturn';
 import { avatarEmoji } from '../utils/avatars';
 
 interface OfferCommentsModalProps {
   offer: OfferItemDto | null;
   visible: boolean;
   onClose: () => void;
+  returnFocusRef?: RefObject<unknown>;
 }
 
 function formatCommentDate(value: string) {
@@ -21,9 +23,14 @@ function formatCommentDate(value: string) {
   return parsed.toLocaleString();
 }
 
-export function OfferCommentsModal({ offer, visible, onClose }: OfferCommentsModalProps) {
+export function OfferCommentsModal({ offer, visible, onClose, returnFocusRef }: OfferCommentsModalProps) {
   const { api, palette, t } = useApp();
   const motion = resolveMotionPreferences(useReduceMotion());
+
+  function close() {
+    onClose();
+    restoreFocus(returnFocusRef);
+  }
   const [comments, setComments] = useState<OfferCommentDto[]>([]);
   const [body, setBody] = useState('');
   const [status, setStatus] = useState<string | null>(null);
@@ -120,15 +127,15 @@ export function OfferCommentsModal({ offer, visible, onClose }: OfferCommentsMod
   }
 
   return (
-    <Modal animationType={motion.modalAnimation} transparent visible={visible} onRequestClose={onClose}>
+    <Modal animationType={motion.modalAnimation} transparent visible={visible} onRequestClose={close}>
       <View style={[styles.backdrop, { backgroundColor: palette.overlay }]}>
-        <Pressable accessibilityLabel={t('common.close')} accessibilityRole="button" onPress={onClose} style={styles.scrim} testID="comments-scrim" />
+        <Pressable accessibilityLabel={t('common.close')} accessibilityRole="button" onPress={close} style={styles.scrim} testID="comments-scrim" />
         <View accessibilityViewIsModal style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <View style={styles.header}>
             <Text numberOfLines={2} style={[styles.title, { color: palette.ink }]}>
               {t('comments.title')}
             </Text>
-            <Pressable accessibilityLabel={t('offers.close')} accessibilityRole="button" hitSlop={8} onPress={onClose} style={styles.closeButton}>
+            <Pressable accessibilityLabel={t('offers.close')} accessibilityRole="button" hitSlop={8} onPress={close} style={styles.closeButton}>
               <Text style={[styles.close, { color: palette.ink }]}>{t('offers.close')}</Text>
             </Pressable>
           </View>

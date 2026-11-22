@@ -1,5 +1,7 @@
+import type { RefObject } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { restoreFocus } from '../utils/focusReturn';
 
 export const COVERAGE_DISTANCE_OPTIONS = [500, 1000, 1500, 2500, 5000];
 
@@ -11,6 +13,7 @@ export function ImmersiveSearchOverlay({
   onChangeRadius,
   onSearch,
   onClose,
+  returnFocusRef,
 }: {
   visible: boolean;
   query: string;
@@ -19,12 +22,18 @@ export function ImmersiveSearchOverlay({
   onChangeRadius: (radiusMeters: number) => void;
   onSearch: () => void;
   onClose: () => void;
+  returnFocusRef?: RefObject<unknown>;
 }) {
   const { palette, t } = useApp();
 
+  function close() {
+    onClose();
+    restoreFocus(returnFocusRef);
+  }
+
   return (
-    <Modal animationType="fade" transparent visible={visible} onRequestClose={onClose}>
-      <Pressable style={[styles.backdrop, { backgroundColor: palette.overlay }]} onPress={onClose}>
+    <Modal animationType="fade" transparent visible={visible} onRequestClose={close}>
+      <Pressable style={[styles.backdrop, { backgroundColor: palette.overlay }]} onPress={close}>
         <Pressable
           accessibilityViewIsModal
           style={[styles.sheet, { backgroundColor: palette.panel, borderColor: palette.border }]}
@@ -74,7 +83,7 @@ export function ImmersiveSearchOverlay({
           <View style={styles.actions}>
             <Pressable
               accessibilityRole="button"
-              onPress={onClose}
+              onPress={close}
               style={[styles.actionButton, { backgroundColor: palette.card, borderColor: palette.border }]}
             >
               <Text style={{ color: palette.ink, fontWeight: '700' }}>{t('common.cancel')}</Text>

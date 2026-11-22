@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ElementRef, useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -53,6 +53,7 @@ export function OffersScreen() {
   const [firstRunVisible, setFirstRunVisible] = useState(false);
   const searchRequest = useAbortableRequest();
   const searchSequence = useRef(0);
+  const helpButtonRef = useRef<ElementRef<typeof View> | null>(null);
 
   async function resolveCurrentLocation() {
     let nextLocation = fallbackLocation;
@@ -228,6 +229,7 @@ export function OffersScreen() {
 
   const helpButton = (
     <Pressable
+      ref={helpButtonRef}
       accessibilityLabel={t('common.help')}
       accessibilityRole="button"
       onPress={() => setHelpVisible(true)}
@@ -387,6 +389,7 @@ export function OffersScreen() {
           feedTab={feedTab}
           headerControl={modeSwitch}
           helpControl={helpButton}
+          returnFocusRef={helpButtonRef}
           offers={combinedOffers}
           onComments={openOfferComments}
           onDirections={openOfferDirections}
@@ -411,14 +414,16 @@ export function OffersScreen() {
           onComments={openOfferComments}
           onDirections={openOfferDirections}
           onFavorite={toggleFavorite}
+          returnFocusRef={helpButtonRef}
           visible={detailOffer !== null}
         />
         <OfferCommentsModal
           offer={commentsOffer}
           onClose={() => setCommentsOffer(null)}
+          returnFocusRef={helpButtonRef}
           visible={commentsOffer !== null}
         />
-        <HelpSheet onClose={() => setHelpVisible(false)} visible={helpVisible} />
+        <HelpSheet onClose={() => setHelpVisible(false)} returnFocusRef={helpButtonRef} visible={helpVisible} />
         <FirstRunSheet onDismiss={dismissFirstRun} visible={firstRunVisible} />
       </>
     );
@@ -560,14 +565,16 @@ export function OffersScreen() {
         onComments={openOfferComments}
         onDirections={openOfferDirections}
         onFavorite={toggleFavorite}
-        visible={detailOffer !== null}
+        returnFocusRef={helpButtonRef}
+          visible={detailOffer !== null}
       />
       <OfferCommentsModal
         offer={commentsOffer}
         onClose={() => setCommentsOffer(null)}
-        visible={commentsOffer !== null}
+        returnFocusRef={helpButtonRef}
+          visible={commentsOffer !== null}
       />
-      <HelpSheet onClose={() => setHelpVisible(false)} visible={helpVisible} />
+      <HelpSheet onClose={() => setHelpVisible(false)} returnFocusRef={helpButtonRef} visible={helpVisible} />
     </>
   );
 }

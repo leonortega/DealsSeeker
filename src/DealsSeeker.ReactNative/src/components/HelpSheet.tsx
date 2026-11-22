@@ -1,5 +1,7 @@
+import type { RefObject } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { restoreFocus } from '../utils/focusReturn';
 
 const TOPICS = [
   'help.find',
@@ -9,15 +11,28 @@ const TOPICS = [
   'help.favorites',
 ] as const;
 
-export function HelpSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+export function HelpSheet({
+  visible,
+  onClose,
+  returnFocusRef,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  returnFocusRef?: RefObject<unknown>;
+}) {
   const { palette, t } = useApp();
 
+  function close() {
+    onClose();
+    restoreFocus(returnFocusRef);
+  }
+
   return (
-    <Modal animationType="fade" transparent visible={visible} onRequestClose={onClose}>
+    <Modal animationType="fade" transparent visible={visible} onRequestClose={close}>
       <Pressable
         accessible={false}
         style={[styles.backdrop, { backgroundColor: palette.overlay }]}
-        onPress={onClose}
+        onPress={close}
       >
         <View
           accessibilityViewIsModal
@@ -36,7 +51,7 @@ export function HelpSheet({ visible, onClose }: { visible: boolean; onClose: () 
           <Pressable
             accessibilityLabel={t('common.close')}
             accessibilityRole="button"
-            onPress={onClose}
+            onPress={close}
             style={[styles.close, { backgroundColor: palette.accent }]}
           >
             <Text style={styles.closeLabel}>{t('common.close')}</Text>

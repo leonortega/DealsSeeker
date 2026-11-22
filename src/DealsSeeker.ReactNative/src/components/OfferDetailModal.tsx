@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { type RefObject, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   GestureResponderEvent,
@@ -20,12 +20,14 @@ import { useApp } from '../hooks/useApp';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { resolveMotionPreferences } from '../utils/motion';
+import { restoreFocus } from '../utils/focusReturn';
 import { formatDistanceMeters } from '../utils/format';
 
 interface OfferDetailModalProps {
   visible: boolean;
   offer: OfferItemDto | null;
   onClose: () => void;
+  returnFocusRef?: RefObject<unknown>;
   onFavorite: (offer: OfferItemDto) => void;
   onDirections: (offer: OfferItemDto) => void;
   onComments: (offer: OfferItemDto) => void;
@@ -254,8 +256,13 @@ function OfferGalleryImage({
   );
 }
 
-export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onComments, visible }: OfferDetailModalProps) {
+export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onComments, visible, returnFocusRef }: OfferDetailModalProps) {
   const { palette, preferences, t } = useApp();
+
+  function close() {
+    onClose();
+    restoreFocus(returnFocusRef);
+  }
   const motion = resolveMotionPreferences(useReduceMotion());
   const { width: viewportWidth } = useWindowDimensions();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -329,13 +336,13 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
 
   return (
     <>
-      <Modal animationType={motion.modalAnimation} transparent visible={visible} onRequestClose={onClose}>
+      <Modal animationType={motion.modalAnimation} transparent visible={visible} onRequestClose={close}>
         <View style={[styles.backdrop, { backgroundColor: palette.overlay }]}>
-          <Pressable accessibilityLabel={t('common.close')} accessibilityRole="button" onPress={onClose} style={styles.scrim} testID="offer-detail-scrim" />
+          <Pressable accessibilityLabel={t('common.close')} accessibilityRole="button" onPress={close} style={styles.scrim} testID="offer-detail-scrim" />
           <View accessibilityViewIsModal testID="offer-detail-sheet" style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <View style={styles.header}>
             <Text numberOfLines={2} style={[styles.title, { color: palette.ink }]}>{offer.businessName}</Text>
-            <Pressable accessibilityLabel={t('offers.close')} accessibilityRole="button" hitSlop={8} onPress={onClose} style={styles.closeButton}>
+            <Pressable accessibilityLabel={t('offers.close')} accessibilityRole="button" hitSlop={8} onPress={close} style={styles.closeButton}>
               <Text style={[styles.close, { color: palette.ink }]}>{t('offers.close')}</Text>
             </Pressable>
           </View>
