@@ -11,6 +11,13 @@ Feature: Suggestions submission flow
     And the contact details are included only when provided
     And the app redirects to Offers after a successful response
 
+  Scenario: Submit action works with the keyboard open
+    Given the user is on Suggestions view
+    And the on-screen keyboard is open in the message field
+    When the user taps the submit action
+    Then the suggestion is submitted
+    And the tap is not captured by the keyboard
+
   Scenario: Blank suggestion is rejected
     Given the user is on Suggestions view
     When the user submits the suggestion form with a blank message

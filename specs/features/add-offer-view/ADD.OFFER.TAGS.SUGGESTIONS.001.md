@@ -88,3 +88,4 @@ Scenario: Inline note explains automatic tag addition
 - `ADD.OFFER.DESCRIPTION.TAGS.001`
 - `ADD.OFFER.LAYOUT.001`
 - `APP.LOCALIZATION.001`
+- `ADD.OFFER.TAG.LIMIT.001`

@@ -14,6 +14,11 @@ Feature: User avatar configuration
     When the user opens My Account
     Then the selected avatar shall be shown in the account header
 
+  Scenario: Avatar change is visible immediately
+    Given the user is viewing the account header with an existing avatar
+    When the user selects a different preset avatar and the save succeeds
+    Then the header shows the new avatar without a reload
+
   Scenario: Selected avatar survives a new session
     Given an authenticated user selected an avatar
     When the user signs out and signs in again

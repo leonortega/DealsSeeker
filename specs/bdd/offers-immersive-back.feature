@@ -3,6 +3,13 @@ Feature: Immersive view navigation to the standard offers view
   I want to return from the immersive offers view to the standard offers view
   So that I can resume normal browsing
 
+  Scenario: System Back closes the immersive view
+    Given the user is on the immersive offers view
+    When the user activates the system Back action
+    Then the immersive view closes
+    And the standard offers view is displayed
+    And the app stays in the foreground
+
   Scenario: User returns from immersive view to the standard offers view
     Given the user is on the immersive offers view
     When the user selects the map mode option

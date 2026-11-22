@@ -1,4 +1,6 @@
-﻿function removeDiacritics(value: string) {
+﻿export const maxDraftTags = 10;
+
+function removeDiacritics(value: string) {
   return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').normalize('NFC');
 }
 

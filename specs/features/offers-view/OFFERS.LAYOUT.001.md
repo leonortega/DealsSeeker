@@ -24,6 +24,7 @@ Define required UI blocks for the Offers view.
 - `OFFERS.LAYOUT.001-R4`: The system shall display a coverage radius control directly below the search textbox.
 - `OFFERS.LAYOUT.001-R5`: The system shall display an offers feed area rendered as a grid/list presentation component below the map area.
 - `OFFERS.LAYOUT.001-R6`: On initial load before any user search, the system shall support rendering a promoted offers section per `OFFERS.FEED.PROMOTED.001`.
+- `OFFERS.LAYOUT.001-R7`: Every action control in the standard Offers presentation shall have an unobstructed tap area; the shared create control shall not overlap a search or recovery action.
 
 ## Acceptance Criteria (BDD)
 ```gherkin

@@ -26,8 +26,8 @@ import { useApp } from '../hooks/useApp';
 import { announceStatus } from '../utils/announce';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
 import { extractCompletedWord, extractWords } from '../utils/format';
-import { resolveAddOfferColumns } from '../utils/layout';
-import { getSuggestedTags, normalizeTag } from '../utils/tagLexicon';
+import { keyboardAvoidanceBehavior, resolveAddOfferColumns } from '../utils/layout';
+import { getSuggestedTags, maxDraftTags, normalizeTag } from '../utils/tagLexicon';
 import { primaryButtonText } from '../utils/theme';
 
 interface DraftImage {
@@ -49,10 +49,6 @@ const locationQueryMaxLength = 120;
 const fallbackMapCenter: GeoPoint = { lat: 0, lng: 0 };
 const pinnedAreaRadiusMeters = 500;
 const unpinnedAreaRadiusMeters = 20000;
-
-export function keyboardAvoidanceBehavior(os: string) {
-  return os === 'ios' ? 'padding' : 'height';
-}
 
 function resolveImagePreviewUri(image: OfferImageDto) {
   const candidate = image.dataUrl?.trim();
@@ -133,6 +129,7 @@ export function AddOfferScreen() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [suggestionTags, setSuggestionTags] = useState<string[]>([]);
   const [seedTags, setSeedTags] = useState<string[]>([]);
   const [dismissedTags, setDismissedTags] = useState<string[]>([]);
   const [location, setLocation] = useState<OfferLocationDto | null>(null);
@@ -153,6 +150,7 @@ export function AddOfferScreen() {
   const pinSequence = useRef(0);
   const navigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const discardPromptOpen = useRef(false);
+  const tagLimitNotified = useRef(false);
   const isVisible = overlayRoute?.name === 'add-offer';
   const hasDraftContent =
     images.length > 0 ||
@@ -255,6 +253,7 @@ export function AddOfferScreen() {
           const draftTags = (draft.tags ?? []).map(normalizeTag).filter(Boolean);
           setDescription(draft.description ?? '');
           setTags(draftTags);
+          setSuggestionTags([]);
           setSeedTags(draftTags);
           setDismissedTags([]);
           setImages(
@@ -282,6 +281,7 @@ export function AddOfferScreen() {
       setImages([]);
       setDescription('');
       setTags([]);
+      setSuggestionTags([]);
       setSeedTags([]);
       setDismissedTags([]);
       setLocation(null);
@@ -392,6 +392,18 @@ export function AddOfferScreen() {
     });
   }, [isVisible, seedTags, tags, dismissedTags, preferences.language]);
 
+  useEffect(() => {
+    if (tags.length < maxDraftTags) {
+      tagLimitNotified.current = false;
+      return;
+    }
+
+    if (!tagLimitNotified.current) {
+      tagLimitNotified.current = true;
+      reportStatus(t('add.tagsLimit'));
+    }
+  }, [tags.length, t]);
+
   async function handleMapTap(point: GeoPoint) {
     const sequence = pinSequence.current + 1;
     pinSequence.current = sequence;
@@ -462,11 +474,31 @@ export function AddOfferScreen() {
 
   function addTag(value: string, source: 'description' | 'manual' | 'suggestion' = 'description') {
     const normalized = normalizeTag(value);
-    if (!normalized || (source !== 'manual' && dismissedTags.includes(normalized))) {
+    if (!normalized || (source !== 'manual' && dismissedTags.includes(normalized)) || tags.includes(normalized)) {
       return;
     }
 
-    setTags((current) => (current.includes(normalized) ? current : [...current, normalized]));
+    if (tags.length >= maxDraftTags) {
+      if (source === 'suggestion') {
+        return;
+      }
+
+      const evicted = [...suggestionTags].reverse().find((tag) => tags.includes(tag));
+      if (!evicted) {
+        return;
+      }
+
+      setTags((current) => [...current.filter((tag) => tag !== evicted), normalized]);
+      setSuggestionTags((current) => current.filter((tag) => tag !== evicted));
+    } else {
+      setTags((current) =>
+        current.includes(normalized) || current.length >= maxDraftTags ? current : [...current, normalized]
+      );
+      if (source === 'suggestion') {
+        setSuggestionTags((current) => (current.includes(normalized) ? current : [...current, normalized]));
+      }
+    }
+
     if (source !== 'suggestion') {
       setSeedTags((current) => (current.includes(normalized) ? current : [...current, normalized]));
     }
@@ -477,6 +509,7 @@ export function AddOfferScreen() {
 
   function removeTag(tag: string) {
     setTags((current) => current.filter((item) => item !== tag));
+    setSuggestionTags((current) => current.filter((item) => item !== tag));
     setSeedTags((current) => current.filter((item) => item !== tag));
     setDismissedTags((current) => (current.includes(tag) ? current : [...current, tag]));
   }
@@ -617,7 +650,8 @@ export function AddOfferScreen() {
 
   async function submit() {
     const finalTag = getFinalWordTag();
-    const submittedTags = finalTag && !tags.includes(finalTag) ? [...tags, finalTag] : tags;
+    const submittedTags =
+      finalTag && !tags.includes(finalTag) && tags.length < maxDraftTags ? [...tags, finalTag] : tags;
     if (!validate(submittedTags)) {
       return;
     }
@@ -932,6 +966,7 @@ export function AddOfferScreen() {
               setDescription(value);
               if (!value.trim()) {
                 setTags([]);
+                setSuggestionTags([]);
                 setSeedTags([]);
                 setDismissedTags([]);
                 return;
@@ -979,11 +1014,13 @@ export function AddOfferScreen() {
           <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.tags')}</Text>
           <Text style={{ color: palette.inkMuted }}>{t('add.tagsHint')}</Text>
           <Text style={{ color: palette.inkMuted }}>{t('add.tagsAutoHint')}</Text>
+          <Text style={{ color: palette.inkMuted }}>{t('add.tagsLimitHint')}</Text>
           <View style={styles.wordGrid}>
             {tags.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('add.noTags')}</Text> : null}
             {tags.map((tag) => (
               <Pressable
                 key={tag}
+                testID="add-tag-chip"
                 style={[styles.wordChip, { backgroundColor: palette.accentMuted, borderColor: palette.border }]}
                 onPress={() => removeTag(tag)}
               >

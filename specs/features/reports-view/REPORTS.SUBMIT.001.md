@@ -25,6 +25,7 @@ Allow an authenticated user to submit a generic report from the Reports section,
 - `REPORTS.SUBMIT.001-R6`: The report payload shall submit message, optional offerId, authenticated userId, and report date/time.
 - `REPORTS.SUBMIT.001-R7`: After a successful report submission response, the system shall redirect the user to `Offers`.
 - `REPORTS.SUBMIT.001-R8`: Unauthenticated access to Reports shall redirect to `Login`.
+- `REPORTS.SUBMIT.001-R9`: The submit action shall remain visible and operable while the on-screen keyboard is open.
 
 ## Acceptance Criteria (BDD)
 ```gherkin

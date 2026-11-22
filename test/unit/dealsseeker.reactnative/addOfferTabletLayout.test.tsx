@@ -6,6 +6,7 @@ let mockColumns = 1;
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/utils/layout', () => ({
   resolveAddOfferColumns: () => mockColumns,
+  keyboardAvoidanceBehavior: () => 'padding',
 }));
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({

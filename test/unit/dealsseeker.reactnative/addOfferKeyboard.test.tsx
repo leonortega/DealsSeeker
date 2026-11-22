@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react-native';
 import { Platform, StyleSheet } from 'react-native';
-import { AddOfferScreen, keyboardAvoidanceBehavior } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
+import { AddOfferScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
+import { keyboardAvoidanceBehavior } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
 
 let mockOverlayRoute: { name: string; offerId?: string } | null = { name: 'add-offer' };
 const mockGetMyOfferDraft = jest.fn();

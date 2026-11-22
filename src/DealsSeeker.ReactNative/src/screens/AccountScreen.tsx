@@ -25,6 +25,16 @@ export function AccountScreen() {
     announceStatus(message);
   }
 
+  async function selectAvatar(nextAvatarId: string) {
+    const saved = await saveAvatar(nextAvatarId);
+    if (!saved) {
+      reportStatus(t('account.avatarSaveFailed'), 'error');
+      return;
+    }
+
+    setProfile((current) => (current ? { ...current, avatarId: nextAvatarId } : current));
+  }
+
   useEffect(() => {
     if (activeTab !== 'account') {
       return;
@@ -126,7 +136,7 @@ export function AccountScreen() {
 
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <Text style={[styles.panelTitle, { color: palette.ink }]}>{t('settings.avatar')}</Text>
-        <AvatarPicker selectedAvatarId={avatarId} onSelect={(nextAvatarId) => void saveAvatar(nextAvatarId)} />
+        <AvatarPicker selectedAvatarId={avatarId} onSelect={(nextAvatarId) => void selectAvatar(nextAvatarId)} />
       </View>
 
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>

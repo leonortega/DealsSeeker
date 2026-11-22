@@ -98,6 +98,24 @@ describe('AccountScreen', () => {
     expect(screen.getByText('Main Street Cafe')).toBeTruthy();
   });
 
+  it('shows a newly saved avatar immediately', async () => {
+    mockGetMyProfile.mockResolvedValue({
+      displayName: 'Tester',
+      email: 'tester@example.com',
+      avatarId: 'smile',
+    });
+    mockSaveAvatar.mockResolvedValue({ success: true });
+
+    await render(<AccountScreen />);
+    await screen.findByText('Tester');
+    expect(screen.getAllByText('🙂')).toHaveLength(2);
+
+    await fireEvent.press(screen.getByLabelText('settings.avatar cat'));
+
+    await waitFor(() => expect(screen.getAllByText('🐱')).toHaveLength(2));
+    expect(mockSaveAvatar).toHaveBeenCalledWith('cat');
+  });
+
   it('toggles theme, language and navigation mode', async () => {
     await render(<AccountScreen />);
     await fireEvent.press(screen.getByText('nav.lightTheme'));

@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
   },
   action: {
     alignItems: 'center',
+    alignSelf: 'flex-start',
     borderRadius: 28,
     minHeight: 44,
     justifyContent: 'center',

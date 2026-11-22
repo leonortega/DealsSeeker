@@ -1,3 +1,7 @@
+export function keyboardAvoidanceBehavior(os: string) {
+  return os === 'ios' ? 'padding' : 'height';
+}
+
 export function resolveAddOfferColumns(width: number) {
   return width >= 720 ? 2 : 1;
 }

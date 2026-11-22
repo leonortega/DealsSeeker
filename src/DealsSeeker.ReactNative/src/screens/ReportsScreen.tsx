@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { announceStatus } from '../utils/announce';
+import { keyboardAvoidanceBehavior } from '../utils/layout';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
 
 export function ReportsScreen() {
@@ -65,7 +66,12 @@ export function ReportsScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
+    <KeyboardAvoidingView
+      behavior={keyboardAvoidanceBehavior(Platform.OS)}
+      style={styles.keyboardView}
+      testID="reports-keyboard-view"
+    >
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
       <StandardHeader />
       {reportDraft ? (
         <View style={[styles.preview, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
@@ -122,11 +128,15 @@ export function ReportsScreen() {
           </Text>
         ) : null}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  keyboardView: {
+    flex: 1,
+  },
   content: {
     gap: 14,
     paddingBottom: 24,

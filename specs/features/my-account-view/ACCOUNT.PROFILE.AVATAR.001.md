@@ -24,6 +24,7 @@ Allow authenticated users to choose a preset avatar that identifies them in comm
 - `ACCOUNT.PROFILE.AVATAR.001-R5`: The user profile shall expose the currently selected avatar.
 - `ACCOUNT.PROFILE.AVATAR.001-R6`: The account header shall show the selected avatar of the authenticated user.
 - `ACCOUNT.PROFILE.AVATAR.001-R7`: The system shall show a recoverable error state when the avatar choice cannot be saved, keeping the previously saved avatar.
+- `ACCOUNT.PROFILE.AVATAR.001-R8`: After a successful avatar change, the account header shall show the new avatar immediately without requiring a reload or sign-in.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -37,6 +38,11 @@ Scenario: Selected avatar is shown with the user profile
   Given an authenticated user selected an avatar
   When the user opens My Account
   Then the selected avatar shall be shown in the account header
+
+Scenario: Avatar change is visible immediately
+  Given the user is viewing the account header with an existing avatar
+  When the user selects a different preset avatar and the save succeeds
+  Then the header shows the new avatar without a reload
 
 Scenario: Selected avatar survives a new session
   Given an authenticated user selected an avatar

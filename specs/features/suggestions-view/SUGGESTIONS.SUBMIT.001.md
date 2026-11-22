@@ -23,6 +23,7 @@ Allow a user to submit product suggestions with a required message and optional 
 - `SUGGESTIONS.SUBMIT.001-R4`: The system shall submit the suggestion message and optional contact details when the form is valid.
 - `SUGGESTIONS.SUBMIT.001-R5`: After a successful suggestion submission response, the system shall redirect the user to `Offers`.
 - `SUGGESTIONS.SUBMIT.001-R6`: When suggestion submission fails, the system shall keep the user in `Suggestions` and show a recoverable failure state.
+- `SUGGESTIONS.SUBMIT.001-R7`: The submit action shall remain visible and operable while the on-screen keyboard is open.
 
 ## Acceptance Criteria (BDD)
 ```gherkin

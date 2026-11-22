@@ -19,6 +19,12 @@ Feature: Offers layout and navigation to Add Offer
     When the Offers view is rendered
     Then a promoted offers section is visible above standard offers
 
+  Scenario: Recovery actions have an unobstructed tap area
+    Given the standard Offers view shows a recovery action such as Clear filters
+    When the user taps the action
+    Then the action is activated
+    And the shared create control does not cover its tap area
+
   Scenario: Create action opens Add Offer view
     Given the user is authenticated
     And the user is in Offers view

@@ -11,6 +11,13 @@ Feature: Reports generic submission flow
     And the report payload includes message, authenticated userId, and report date/time
     And the app redirects to Offers after a successful response
 
+  Scenario: Submit action works with the keyboard open
+    Given the user is on Reports view
+    And the on-screen keyboard is open in the message field
+    When the user taps the submit action
+    Then the report is submitted
+    And the tap is not captured by the keyboard
+
   Scenario: Unauthenticated user opens Reports
     Given the user is not authenticated
     When the user opens Reports

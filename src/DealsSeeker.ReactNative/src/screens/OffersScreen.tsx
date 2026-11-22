@@ -1,5 +1,5 @@
 import { type ElementRef, useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { BackHandler, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
@@ -54,6 +54,19 @@ export function OffersScreen() {
   const searchRequest = useAbortableRequest();
   const searchSequence = useRef(0);
   const helpButtonRef = useRef<ElementRef<typeof View> | null>(null);
+
+  useEffect(() => {
+    if (!immersiveOffers || activeTab !== 'offers') {
+      return;
+    }
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      closeImmersiveOffers();
+      return true;
+    });
+
+    return () => subscription.remove();
+  }, [activeTab, closeImmersiveOffers, immersiveOffers]);
 
   async function resolveCurrentLocation() {
     let nextLocation = fallbackLocation;

@@ -23,6 +23,7 @@ Define how the user returns from the immersive offers view to the standard offer
 - `OFFERS.IMMERSIVE.001-R4`: Closing the immersive view shall preserve the current search query, radius, and location context.
 - `OFFERS.IMMERSIVE.001-R5`: No destination view shall display a back control, including Account, Suggestions, Reports, Favorites and Add Offer.
 - `OFFERS.IMMERSIVE.001-R6`: Navigation out of a destination opened from the immersive view shall be performed through the shared bottom footer.
+- `OFFERS.IMMERSIVE.001-R7`: On platforms with a system Back action, activating Back while the immersive view is open shall close it and return to the standard offers view without leaving the app.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -48,6 +49,13 @@ Scenario: Destinations opened from immersive view have no back control
   When the user opens a destination from the footer
   Then no back control is available in that destination
   And the shared bottom footer remains visible
+
+Scenario: System Back closes the immersive view
+  Given the user is on the immersive offers view
+  When the user activates the system Back action
+  Then the immersive view closes
+  And the standard offers view is displayed
+  And the app stays in the foreground
 ```
 
 ## Example Inputs/Outputs
