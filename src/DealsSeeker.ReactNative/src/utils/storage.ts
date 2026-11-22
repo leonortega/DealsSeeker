@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Language, NavigationMode, ThemeMode, UserPreferences } from '../api/types';
 
 const SESSION_KEY = 'dealseeker.auth.session';
+const FIRST_RUN_KEY = 'dealseeker.onboarding.completed';
 export const DEFAULT_PREFERENCES: UserPreferences = {
   themeMode: 'system',
   language: 'en',
@@ -60,6 +61,14 @@ export async function saveSession(value: unknown) {
 
 export async function clearSession() {
   await deleteValue(SESSION_KEY);
+}
+
+export async function loadFirstRunCompleted() {
+  return (await readValue(FIRST_RUN_KEY)) === 'true';
+}
+
+export async function saveFirstRunCompleted() {
+  await writeValue(FIRST_RUN_KEY, 'true');
 }
 
 function normalizeThemeMode(value?: string | null): ThemeMode {

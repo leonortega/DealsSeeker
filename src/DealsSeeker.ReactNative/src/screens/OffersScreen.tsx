@@ -10,6 +10,7 @@ import { MapPreview } from '../components/MapPreview';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetailModal } from '../components/OfferDetailModal';
 import { OfferCommentsModal } from '../components/OfferCommentsModal';
+import { FirstRunSheet } from '../components/FirstRunSheet';
 import { HelpSheet } from '../components/HelpSheet';
 import { NavIcon } from '../components/NavIcon';
 import { OffersStatePanel } from '../components/OffersStatePanel';
@@ -22,6 +23,8 @@ import { partitionOffers } from '../utils/format';
 import { openDirections } from '../utils/maps';
 import { resolveOffersViewState } from '../utils/offersState';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
+import { resolveOffersGridColumns } from '../utils/layout';
+import { loadFirstRunCompleted, saveFirstRunCompleted } from '../utils/storage';
 
 const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
@@ -47,6 +50,7 @@ export function OffersScreen() {
   const [helpVisible, setHelpVisible] = useState(false);
   const [locationFallback, setLocationFallback] = useState(false);
   const [locationNoticeDismissed, setLocationNoticeDismissed] = useState(false);
+  const [firstRunVisible, setFirstRunVisible] = useState(false);
   const searchRequest = useAbortableRequest();
   const searchSequence = useRef(0);
 
@@ -162,6 +166,14 @@ export function OffersScreen() {
       return;
     }
 
+    void loadFirstRunCompleted().then((completed) => setFirstRunVisible(!completed));
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== 'offers') {
+      return;
+    }
+
     void (async () => {
       const location = await resolveCurrentLocation();
       try {
@@ -251,6 +263,11 @@ export function OffersScreen() {
     </View>
   );
 
+  function dismissFirstRun() {
+    setFirstRunVisible(false);
+    void saveFirstRunCompleted();
+  }
+
   function clearFilters() {
     setQuery('');
     setFavoritesOnly(false);
@@ -287,7 +304,7 @@ export function OffersScreen() {
   }
 
   const sections = partitionOffers(results.offers, query);
-  const gridColumns = viewportWidth >= 1080 ? 3 : viewportWidth >= 720 ? 2 : 1;
+  const gridColumns = resolveOffersGridColumns(viewportWidth);
   const cardWidth = Math.max(
     220,
     (Math.max(320, viewportWidth - 32) - (gridColumns - 1) * 12) / gridColumns
@@ -402,6 +419,7 @@ export function OffersScreen() {
           visible={commentsOffer !== null}
         />
         <HelpSheet onClose={() => setHelpVisible(false)} visible={helpVisible} />
+        <FirstRunSheet onDismiss={dismissFirstRun} visible={firstRunVisible} />
       </>
     );
   }
