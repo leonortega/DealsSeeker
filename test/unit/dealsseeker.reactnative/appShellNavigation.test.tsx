@@ -16,6 +16,15 @@ jest.mock('@react-navigation/native', () => ({
     navigate: jest.fn(),
     goBack: jest.fn(),
   }),
+  useNavigationState: (selector: (state: { routes: Array<{ name: string }>; index: number }) => string) =>
+    selector({ routes: [{ name: 'offers' }], index: 0 }),
+}));
+
+jest.mock('@react-navigation/bottom-tabs', () => ({
+  createBottomTabNavigator: () => ({
+    Navigator: ({ children }: { children: React.ReactNode }) => children,
+    Screen: ({ component: Component }: { component: () => React.ReactNode }) => <Component />,
+  }),
 }));
 
 jest.mock('@react-navigation/native-stack', () => ({

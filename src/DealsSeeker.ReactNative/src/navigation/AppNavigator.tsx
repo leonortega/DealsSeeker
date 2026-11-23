@@ -1,20 +1,27 @@
 import { useEffect, useRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  useNavigation,
+  useNavigationContainerRef,
+  useNavigationState,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useNavigation } from '@react-navigation/native';
-import { AppFooterBar, type FooterItem } from '../components/AppFooterBar';
+import { createBottomTabNavigator, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { AppFooterBar } from '../components/AppFooterBar';
 import { CreateOfferFab } from '../components/CreateOfferFab';
 import { LoadingOverlay } from '../components/LoadingOverlay';
-import { NavIcon, type NavIconName } from '../components/NavIcon';
+import { NavIcon } from '../components/NavIcon';
 import { useApp } from '../hooks/useApp';
+import type { MainTab } from '../api/types';
 import { AccountScreen } from '../screens/AccountScreen';
 import { AddOfferScreen } from '../screens/AddOfferScreen';
 import { FavoritesScreen } from '../screens/FavoritesScreen';
 import { OffersScreen } from '../screens/OffersScreen';
 import { ReportsScreen } from '../screens/ReportsScreen';
 import { SuggestionsScreen } from '../screens/SuggestionsScreen';
-import { modalScreenOptions, stackScreenOptions } from './shellOptions';
+import { modalScreenOptions, stackScreenOptions, tabScreenOptions } from './shellOptions';
+import { MAIN_TAB_DESTINATIONS, resolveTabFromRoute } from './tabs';
 
 export type RootStackParamList = {
   Main: undefined;
@@ -22,10 +29,43 @@ export type RootStackParamList = {
   Favorites: undefined;
 };
 
+type MainTabParamList = Record<MainTab, undefined>;
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tabs = createBottomTabNavigator<MainTabParamList>();
+
+function BrandedTabBar({ navigation }: BottomTabBarProps) {
+  const { activeTab, openTab, t } = useApp();
+  const routeName = useNavigationState((state) => String(state.routes[state.index]?.name ?? ''));
+  const selectedTab = resolveTabFromRoute(routeName);
+
+  useEffect(() => {
+    if (selectedTab && selectedTab !== activeTab) {
+      openTab(selectedTab);
+    }
+  }, [activeTab, openTab, selectedTab]);
+
+  return (
+    <AppFooterBar
+      items={MAIN_TAB_DESTINATIONS.map((destination) => {
+        const active = activeTab === destination.name;
+        return {
+          key: destination.name,
+          icon: <NavIcon color={active ? '#f08f62' : '#c6d0c9'} name={destination.icon} />,
+          label: t(destination.labelKey),
+          onPress: () => {
+            openTab(destination.name);
+            navigation.navigate(destination.name);
+          },
+          active,
+        };
+      })}
+    />
+  );
+}
 
 function MainView() {
-  const { activeTab, closeImmersiveOffers, immersiveOffers, openAddOffer, openTab, palette, t } = useApp();
+  const { activeTab, closeImmersiveOffers, immersiveOffers, openAddOffer, palette, t } = useApp();
   const navigation = useNavigation();
   const immersiveFeedVisible = immersiveOffers && activeTab === 'offers';
 
@@ -40,53 +80,46 @@ function MainView() {
     return unsubscribe;
   }, [closeImmersiveOffers, immersiveFeedVisible, navigation]);
 
-  function footerItem(key: string, icon: NavIconName, label: string, tab: 'account' | 'suggestions' | 'reports' | 'offers'): FooterItem {
-    const active = activeTab === tab;
-    return {
-      key,
-      icon: <NavIcon color={active ? '#f08f62' : '#c6d0c9'} name={icon} />,
-      label,
-      onPress: () => openTab(tab),
-      active,
-    };
-  }
-
   return (
     <View style={[styles.root, { backgroundColor: palette.background }]}>
       <View style={[styles.content, immersiveFeedVisible && styles.immersiveContent]}>
-        <OffersScreen />
-        <SuggestionsScreen />
-        <ReportsScreen />
-        <AccountScreen />
+        <Tabs.Navigator tabBar={BrandedTabBar} screenOptions={tabScreenOptions()}>
+          <Tabs.Screen name="account" component={AccountScreen} />
+          <Tabs.Screen name="suggestions" component={SuggestionsScreen} />
+          <Tabs.Screen name="reports" component={ReportsScreen} />
+          <Tabs.Screen name="offers" component={OffersScreen} />
+        </Tabs.Navigator>
       </View>
-      <AppFooterBar
-        items={[
-          footerItem('account', 'account', t('nav.account'), 'account'),
-          footerItem('suggestions', 'suggestions', t('nav.suggestions'), 'suggestions'),
-          footerItem('reports', 'reports', t('nav.reports'), 'reports'),
-          footerItem('offers', 'offers', t('nav.offers'), 'offers'),
-        ]}
-      />
       <CreateOfferFab label={t('nav.createOffer')} onPress={openAddOffer} palette={palette} />
       <LoadingOverlay />
     </View>
   );
 }
 
-function DismissSync({ onDismiss }: { onDismiss: () => void }) {
+function DismissSync({
+  onDismiss,
+  canDismiss = () => true,
+}: {
+  onDismiss: () => void;
+  canDismiss?: () => boolean;
+}) {
   const navigation = useNavigation();
   const handled = useRef(false);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', () => {
+    const unsubscribe = navigation.addListener('beforeRemove', (event) => {
       if (handled.current) {
+        return;
+      }
+      if (!canDismiss()) {
+        event.preventDefault();
         return;
       }
       handled.current = true;
       onDismiss();
     });
     return unsubscribe;
-  }, [navigation, onDismiss]);
+  }, [canDismiss, navigation, onDismiss]);
 
   return null;
 }
@@ -95,6 +128,7 @@ export function AppNavigator() {
   const { closeOverlay, overlayRoute } = useApp();
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
   const lastOverlay = useRef<string | null>(null);
+  const dismissGuard = useRef<() => boolean>(() => true);
 
   useEffect(() => {
     if (!navigationRef.isReady()) {
@@ -130,8 +164,12 @@ export function AppNavigator() {
         <Stack.Screen name="AddOffer" options={modalScreenOptions(Platform.OS)}>
           {() => (
             <>
-              <DismissSync onDismiss={syncDismiss} />
-              <AddOfferScreen />
+              <DismissSync onDismiss={syncDismiss} canDismiss={() => dismissGuard.current()} />
+              <AddOfferScreen
+                onDismissGuard={(guard) => {
+                  dismissGuard.current = guard;
+                }}
+              />
             </>
           )}
         </Stack.Screen>

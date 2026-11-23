@@ -75,6 +75,29 @@ describe('Add Offer system Back (ADD.OFFER.EXIT.001-R8)', () => {
     expect(mockCloseOverlay).toHaveBeenCalledTimes(1);
   });
 
+  it('registers a platform-dismiss guard that blocks discarding a dirty draft', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    let guard: (() => boolean) | undefined;
+    const registerGuard = jest.fn((next: () => boolean) => {
+      guard = next;
+    });
+
+    await render(<AddOfferScreen onDismissGuard={registerGuard} />);
+    await screen.findByText('add.currentLocationUnavailable');
+    await fireEvent.changeText(screen.getByPlaceholderText('add.descriptionPlaceholder'), 'fresh coffee');
+
+    expect(guard).toBeDefined();
+    let allowed = true;
+    await act(async () => {
+      allowed = guard?.() ?? true;
+    });
+
+    expect(allowed).toBe(false);
+    expect(alertSpy).toHaveBeenCalledWith('add.discardTitle', 'add.discardBody', expect.any(Array));
+    expect(mockCloseOverlay).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
+  });
+
   it('treats Back as Cancel and confirms before discarding a draft with content', async () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     await render(<AddOfferScreen />);

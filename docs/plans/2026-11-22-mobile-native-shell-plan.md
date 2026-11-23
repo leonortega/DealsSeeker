@@ -1,7 +1,7 @@
 # Mobile-native shell & navigation plan
 
 - **Date**: 2026-11-22
-- **Status**: Phases 0 and 1 complete; Phase 2 implemented (native stack/modals and Back listeners) but device verification is blocked by a Windows native-build path limit (`ninja` MAX_PATH in new-architecture codegen). Device suite remains at 12/13 from the pre-migration build; the remaining two scenarios are tracked test-coverage gaps.
+- **Status**: Phases 0–2 complete; Phase 3 in progress. Phase 2 added native stack/modals, native Back listeners, and (after critique) native tabs with the branded footer as custom tabBar plus a modal dismiss guard. Device verification remains blocked by a Windows native-build path limit (`ninja` MAX_PATH in new-architecture codegen); device suite is still 12/13 from the pre-migration build.
 - **Inputs**: the hybrid-navigation analysis, the mobile-only and hybrid-conformity clarifications, the Impeccable context (`PRODUCT.md`, `DESIGN.md`, native refs), the design-pattern-review lens, and the device-test evidence from `test/e2e/MOBILE_DEVICE_TEST_PLAN.md`.
 - **Rule**: this repo is spec-first. No production change in §8–§10 starts before the specs in §7 are Approved.
 
@@ -100,8 +100,8 @@ Keep the existing brand glyphs / a single stroke-consistent set (Lucide) everywh
 |---|---|---|
 | 0 | Evidence & specs | Complete |
 | 1 | Mobile-only cleanup | Complete |
-| 2 | Native navigation behavior | In progress |
-| 3 | Design-system hardening | After Phase 2 stable |
+| 2 | Native navigation behavior | Complete (code level) |
+| 3 | Design-system hardening | In progress |
 | 4 | Optional OS capabilities | Each needs its own spec |
 
 ## 6. Scope guard

@@ -120,7 +120,7 @@ function dedupeLocationSearchResults(results: LocationSearchResult[]) {
   });
 }
 
-export function AddOfferScreen() {
+export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: () => boolean) => void } = {}) {
   const { api, closeOverlay, isPending, openTab, overlayRoute, palette, preferences, t } = useApp();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -150,6 +150,7 @@ export function AddOfferScreen() {
   const pinSequence = useRef(0);
   const navigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const discardPromptOpen = useRef(false);
+  const dismissApproved = useRef(false);
   const tagLimitNotified = useRef(false);
   const isVisible = overlayRoute?.name === 'add-offer';
   const hasDraftContent =
@@ -180,6 +181,26 @@ export function AddOfferScreen() {
 
     return () => subscription.remove();
   }, [isVisible, hasDraftContent, t]);
+
+  useEffect(() => {
+    if (isVisible) {
+      dismissApproved.current = false;
+    }
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (!isVisible || !onDismissGuard) {
+      return;
+    }
+
+    onDismissGuard(() => {
+      if (dismissApproved.current || !hasDraftContent) {
+        return true;
+      }
+      handleCancel();
+      return false;
+    });
+  }, [hasDraftContent, isVisible, onDismissGuard, t]);
 
   function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
     setStatus(message);
@@ -214,6 +235,7 @@ export function AddOfferScreen() {
         style: 'destructive',
         onPress: () => {
           discardPromptOpen.current = false;
+          dismissApproved.current = true;
           closeOverlay();
         },
       },

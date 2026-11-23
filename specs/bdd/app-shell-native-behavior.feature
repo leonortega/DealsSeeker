@@ -27,6 +27,14 @@ Feature: Native navigation behavior with brand chrome
     Then navigation shall avoid large animated movement
     And the branded UI shall render identically to the default motion setting
 
+  Scenario: Native tab state with branded footer
+    Given the authenticated user is on the main shell
+    When the user switches between sections using the branded footer
+    Then the native tab navigator shall own the selected destination state
+    And the night footer shall be the only visible tab bar
+    And selecting a footer destination shall restore that destination's view state
+    And system Back shall follow the native tab back stack
+
   Scenario: Brand UI is identical across platforms
     Given the same view state on iOS and Android
     When the branded shell is rendered on both platforms

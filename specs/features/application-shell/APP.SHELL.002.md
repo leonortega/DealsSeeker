@@ -27,6 +27,7 @@ Define that navigation structure and system interaction are delegated to native 
 - `APP.SHELL.002-R7`: The system shall apply safe-area and window insets so the branded header and footer clear system bars, cutouts and gesture areas on both platforms without altering their visual design.
 - `APP.SHELL.002-R8`: When the OS Reduce Motion / Remove animations setting is enabled, transition behavior shall change while the brand UI shall remain unchanged.
 - `APP.SHELL.002-R9`: The visible UI shall be identical on iOS and Android; no iOS Human Interface Guidelines or Material 3 visual adaptation shall be applied to the application's own components, typography, colors, iconography or layout.
+- `APP.SHELL.002-R10`: The main sections shall be hosted by a native tab navigator that owns tab state and tab switching behavior; the branded night footer shall be supplied as a custom tab bar and shall remain the only visible tab surface.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -53,6 +54,14 @@ Scenario: Reduce Motion changes transitions only
   When the user navigates between destinations
   Then navigation shall avoid large animated movement
   And the branded UI shall render identically to the default motion setting
+
+Scenario: Native tab state with branded footer
+  Given the authenticated user is on the main shell
+  When the user switches between sections using the branded footer
+  Then the native tab navigator shall own the selected destination state
+  And the night footer shall be the only visible tab bar
+  And selecting a footer destination shall restore that destination's view state
+  And system Back shall follow the native tab back stack
 
 Scenario: Brand UI is identical across platforms
   Given the same view state on iOS and Android

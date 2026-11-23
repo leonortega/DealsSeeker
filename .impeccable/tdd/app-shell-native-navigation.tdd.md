@@ -12,7 +12,9 @@
 ## RED / GREEN
 - RED: `npm test -- appShellNavigationOptions.test.ts` → `Cannot find module '../../../src/DealsSeeker.ReactNative/src/navigation/shellOptions'` (1 suite failed, 0 tests run). This is compile-time RED for the missing navigation-options module.
 - GREEN (options): `src/navigation/shellOptions.ts` added; same command → 1 suite passed, 3 tests passed.
-- GREEN (integration): `npm test` → 53 suites / 305 tests passing; `npm run typecheck` clean. Added `appShellNavigation.test.tsx` to cover immersive Back via the native stack's `beforeRemove` listener (replaces the old `BackHandler` unit test in `offersFindings.test.tsx`).
+- GREEN (integration): `npm test` → 54 suites / 309 tests passing; `npm run typecheck` clean. Added `appShellNavigation.test.tsx` (immersive Back via native `beforeRemove`) and `appShellNativeTabs.test.ts` (tab destinations).
+- Phase 3 RED: `addOfferBack.test.tsx` added a platform-dismiss guard reproducer; test failed because `AddOfferScreen` did not accept `onDismissGuard`. `appShellNativeTabs.test.ts` failed with `Cannot find module .../navigation/tabs`.
+- Phase 3 GREEN: modal `beforeRemove` guard vetoes dismissal when the draft is dirty (iOS swipe-down cannot bypass the discard confirmation); native bottom-tabs navigator owns tab state with the branded footer as custom `tabBar`. `APP.SHELL.002-R10` added and Approved with BDD.
 
 ## What the tests guarantee
 | # | Guarantee | Test | Type | Result |
@@ -30,4 +32,4 @@
 - Native tabs are not yet used: the branded footer is retained as the only tab surface, so tab state still lives in `AppContext`. Further work needed for `APP.SHELL.002-R1` tab-state conformance.
 - Platform dismissal with unsaved Add Offer edits still needs verification against `APP.SHELL.003-R4`.
 - **Device verification blocked by the environment**: installing `react-native-screens` requires rebuilding the Expo dev client. Every rebuild fails in `:app:buildCMakeDebug[x86_64]` with `ninja: ... Filename longer than 260 characters` for the `react-native-safe-area-context` codegen object. Attempts that did NOT help: Windows `LongPathsEnabled=1`, an 8.3 short working path, a `C:\ds` junction, moving `node_modules` to `C:\dsnm`, a Gradle clean, and `newArchEnabled=false` (ignored since RN 0.82). All temporary changes were reverted. The SDK's `ninja.exe` is not long-path aware; a newer CMake/Ninja or a physically shorter repository path would be needed.
-- Native tabs are not yet used — tab state stays in `AppContext` and the branded footer remains the only tab surface. `APP.SHELL.002-R1` tab-state conformance is therefore only partially met and needs a follow-up decision (brand footer vs. native tab bar).
+- Native tabs are now used (`@react-navigation/bottom-tabs`) with the branded footer as the custom `tabBar`; visual identity stays identical. `APP.SHELL.002-R1/R10` met at code level, still awaiting device verification.
