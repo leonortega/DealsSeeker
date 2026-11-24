@@ -86,6 +86,23 @@ describe('touch target and label floors', () => {
     mockSearchOffers.mockResolvedValue({ offers: [], businesses: [] });
   });
 
+  it('keeps the night footer palette fixed rather than theme-driven', async () => {
+    await render(
+      <AppFooterBar items={[{ ...footerItems[0], active: true }, footerItems[1]]} />
+    );
+
+    const wrapper = hostElements().find(
+      (node) => node.type === 'View' && styleOf(node).flexDirection === 'row'
+    );
+    expect(styleOf(wrapper as never)).toMatchObject({
+      backgroundColor: '#22332f',
+      borderColor: '#476258',
+      borderRadius: 28,
+    });
+    expect(styleOf(screen.getByRole('button', { name: 'Account' })).backgroundColor).toBe('#5e3a2a');
+    expect(styleOf(screen.getByText('👤')).color).toBe('#f08f62');
+  });
+
   it('gives every footer tab a 44-unit touch target', async () => {
     await render(<AppFooterBar items={footerItems} />);
 
