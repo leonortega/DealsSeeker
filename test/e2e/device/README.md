@@ -16,7 +16,11 @@ This suite replaces the web-only Playwright suite as the automated E2E path for 
 npm run test:e2e:device
 ```
 
-The runner registers one user and seeds one offer via the API, pins the emulator location, then runs **all flows in a single Maestro session** (`maestro test -e EMAIL=... -e NEW_EMAIL=... flow1.yaml flow2.yaml ...`). Each flow resets its own state with `launchApp: clearState: true`, so the driver starts once instead of once per flow. `E2E_FLOWS=flow1.yaml,flow2.yaml` runs a subset.
+The runner registers one user and seeds one offer via the API, pins the emulator location, then runs **one Maestro invocation** with:
+- the 3 auth flows, each self-contained with `launchApp: clearState: true` (they need logged-out state);
+- a generated parent `suite.yaml` that logs in **once** and `runFlow`s the other 11 flows as subflows.
+
+Each subflow starts with a reset (Offers → Feed → View all → portrait), so a flow ending in a modal or Map mode cannot poison the next one. This cuts the suite from ~10 min to ~5 min at the cost of order dependence within the shared session. `E2E_FLOWS=flow1.yaml,flow2.yaml` runs a subset.
 
 ## Flows and web-test parity
 

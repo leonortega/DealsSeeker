@@ -36,3 +36,5 @@ appId: com.anonymous.dealsseekerreactnative
 - hideKeyboard
 - back
 - assertVisible: "Discard this offer?"
+- tapOn: "Discard"
+- assertVisible: "Feed"

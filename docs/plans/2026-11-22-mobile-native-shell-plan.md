@@ -1,7 +1,7 @@
 # Mobile-native shell & navigation plan
 
 - **Date**: 2026-11-22
-- **Status**: Phases 0–2 complete; Phase 3 in progress. Device verification is unblocked via user-level CMake 3.31.6 (Ninja 1.12.1). Two device-found bugs were fixed and verified (hook call in custom tab bar, startup tab). The optimized single-session Maestro suite passes 13/14 flows; `offers-comment.yaml` is the one tracked environment gap.
+- **Status**: Phases 0–2 complete; Phase 3 in progress. Device verification is unblocked via user-level CMake 3.31.6 (Ninja 1.12.1). Two device-found bugs were fixed and verified. Maestro now shares one login across 11 flows (3 auth flows isolated), cutting the suite from ~10 min to ~5 min; result remains 13/14, with `offers-comment.yaml` the tracked environment gap.
 - **Inputs**: the hybrid-navigation analysis, the mobile-only and hybrid-conformity clarifications, the Impeccable context (`PRODUCT.md`, `DESIGN.md`, native refs), the design-pattern-review lens, and the device-test evidence from `test/e2e/MOBILE_DEVICE_TEST_PLAN.md`.
 - **Rule**: this repo is spec-first. No production change in §8–§10 starts before the specs in §7 are Approved.
 

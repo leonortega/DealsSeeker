@@ -30,3 +30,5 @@ appId: com.anonymous.dealsseekerreactnative
 - assertVisible: "Create"
 - tapOn: "Create"
 - assertVisible: "Add Offer"
+- tapOn: "Cancel"
+- assertVisible: "Feed"
