@@ -19,12 +19,14 @@ Feature: Native navigation behavior with brand chrome
     Given the app runs on a device with system bars, a cutout or gesture areas
     When a standard view is rendered
     Then the branded header and footer shall not be overlapped by system UI
+    And the authenticated shell shall apply the platform-reported top safe-area inset
     And their brand styling shall remain unchanged
 
   Scenario: Reduce Motion changes transitions only
     Given the OS Reduce Motion or Remove animations setting is enabled
     When the user navigates between destinations
-    Then navigation shall avoid large animated movement
+    Then native stack and modal transition animations shall be minimized
+    And navigation shall avoid large animated movement
     And the branded UI shall render identically to the default motion setting
 
   Scenario: Native tab state with branded footer

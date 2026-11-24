@@ -21,4 +21,23 @@ describe('native shell navigation options', () => {
       gestureEnabled: true,
     });
   });
+
+  it('minimizes native stack transitions when Reduce Motion is enabled', () => {
+    expect(stackScreenOptions(true)).toEqual({ headerShown: false, animation: 'fade' });
+  });
+
+  it('minimizes native modal transitions when Reduce Motion is enabled', () => {
+    expect(modalScreenOptions('ios', true)).toEqual({
+      headerShown: false,
+      presentation: 'formSheet',
+      gestureEnabled: true,
+      animation: 'fade',
+    });
+    expect(modalScreenOptions('android', true)).toEqual({
+      headerShown: false,
+      presentation: 'modal',
+      gestureEnabled: true,
+      animation: 'fade',
+    });
+  });
 });

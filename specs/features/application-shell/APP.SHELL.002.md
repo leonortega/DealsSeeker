@@ -47,12 +47,14 @@ Scenario: System insets clear the brand chrome
   Given the app runs on a device with system bars, a cutout or gesture areas
   When a standard view is rendered
   Then the branded header and footer shall not be overlapped by system UI
+  And the authenticated shell shall apply the platform-reported top safe-area inset
   And their brand styling shall remain unchanged
 
 Scenario: Reduce Motion changes transitions only
   Given the OS Reduce Motion or Remove animations setting is enabled
   When the user navigates between destinations
-  Then navigation shall avoid large animated movement
+  Then native stack and modal transition animations shall be minimized
+  And navigation shall avoid large animated movement
   And the branded UI shall render identically to the default motion setting
 
 Scenario: Native tab state with branded footer
@@ -74,7 +76,9 @@ Scenario: Brand UI is identical across platforms
 - Example input: Switch from Offers to Suggestions and back with a query `coffee` and radius `1000 m`.
 - Expected output: Native tab state is used; Offers returns with `coffee` and `1000 m`; brand chrome unchanged.
 - Example input: OS Reduce Motion enabled.
-- Expected output: Transition minimized; brand UI unchanged.
+- Expected output: Native stack and modal transitions use a minimized animation; brand UI unchanged.
+- Example input: Authenticated shell rendered on a device that reports a non-zero top inset.
+- Expected output: The branded header clears the top system area; brand styling unchanged.
 
 ## Edge Cases
 - A destination is opened while a transition is still in progress; navigation state shall remain deterministic.
