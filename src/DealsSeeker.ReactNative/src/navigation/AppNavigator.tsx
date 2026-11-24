@@ -1,11 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import {
-  NavigationContainer,
-  useNavigation,
-  useNavigationContainerRef,
-  useNavigationState,
-} from '@react-navigation/native';
+import { NavigationContainer, useNavigation, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { AppFooterBar } from '../components/AppFooterBar';
@@ -34,10 +29,9 @@ type MainTabParamList = Record<MainTab, undefined>;
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 
-function BrandedTabBar({ navigation }: BottomTabBarProps) {
+function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
   const { activeTab, openTab, t } = useApp();
-  const routeName = useNavigationState((state) => String(state.routes[state.index]?.name ?? ''));
-  const selectedTab = resolveTabFromRoute(routeName);
+  const selectedTab = resolveTabFromRoute(String(state.routes[state.index]?.name ?? ''));
 
   useEffect(() => {
     if (selectedTab && selectedTab !== activeTab) {
@@ -83,7 +77,11 @@ function MainView() {
   return (
     <View style={[styles.root, { backgroundColor: palette.background }]}>
       <View style={[styles.content, immersiveFeedVisible && styles.immersiveContent]}>
-        <Tabs.Navigator tabBar={BrandedTabBar} screenOptions={tabScreenOptions()}>
+        <Tabs.Navigator
+          initialRouteName="offers"
+          tabBar={(props) => <BrandedTabBar {...props} />}
+          screenOptions={tabScreenOptions()}
+        >
           <Tabs.Screen name="account" component={AccountScreen} />
           <Tabs.Screen name="suggestions" component={SuggestionsScreen} />
           <Tabs.Screen name="reports" component={ReportsScreen} />

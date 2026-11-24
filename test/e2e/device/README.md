@@ -16,7 +16,7 @@ This suite replaces the web-only Playwright suite as the automated E2E path for 
 npm run test:e2e:device
 ```
 
-The runner registers a fresh user via the API, passes credentials to each flow with `maestro test -e EMAIL=... -e NEW_EMAIL=...`, and reports a per-flow pass/fail summary.
+The runner registers one user and seeds one offer via the API, pins the emulator location, then runs **all flows in a single Maestro session** (`maestro test -e EMAIL=... -e NEW_EMAIL=... flow1.yaml flow2.yaml ...`). Each flow resets its own state with `launchApp: clearState: true`, so the driver starts once instead of once per flow. `E2E_FLOWS=flow1.yaml,flow2.yaml` runs a subset.
 
 ## Flows and web-test parity
 
@@ -40,7 +40,7 @@ The runner registers a fresh user via the API, passes credentials to each flow w
 
 ## Known gaps
 
-- **Current run: 12/13 flows pass.** A diagnostic proxy confirmed the app sends the correct search requests and the API returns offers; `ux-no-results.yaml` was fixed by scrolling the state panel into view. `offers-comment.yaml` remains failing: this emulator's offer feed never renders offer cards (no `Comments` control appears) even when the API returns offers, including for a pre-existing user. The flow is kept failing, not skipped, until that environment issue is fixed.
+- **Current run: 13/14 flows pass** after the native-navigation migration (single Maestro session). `offers-comment.yaml` remains failing: the emulator's feed does not render an offer card with a `Comments` control, even with seeded offers. The flow is kept failing, not skipped.
 - Network fault injection for the failed-search test needs either an API test flag or a proxy; until then that single scenario stays on the web suite.
 - Landscape is covered by `setOrientation: LANDSCAPE_LEFT`, which also restores portrait.
 - TalkBack/VoiceOver remain manual checks.

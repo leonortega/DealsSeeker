@@ -89,55 +89,38 @@ async function main() {
     process.exit(2);
   }
 
-  let failed = 0;
-  for (const flow of flows) {
-    const stamp = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
-    const email = `e2e-${stamp}@example.com`;
-    const newEmail = `e2e-new-${stamp}@example.com`;
+  const stamp = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
+  const email = `e2e-${stamp}@example.com`;
+  const newEmail = `e2e-new-${stamp}@example.com`;
 
-    try {
-      await register(email, `E2E ${flow}`);
-    } catch (error) {
-      console.error(`SETUP FAIL ${flow}: ${error.message}`);
-      failed += 1;
-      continue;
-    }
-
-    console.log(`\n=== ${flow} ===`);
-    // The feed filters by radius; pin the emulator to the same area as seeded offers.
-    spawnSync(adbPath, ['-s', DEVICE_SERIAL, 'shell', 'geo', 'fix', '-74.006', '40.7128'], { stdio: 'ignore' });
-    if (flow.startsWith('offers-') || flow.startsWith('ux-')) {
-      try {
-        await seedOffer(email);
-      } catch (error) {
-        console.error(`SEED FAIL ${flow}: ${error.message}`);
-        failed += 1;
-        continue;
-      }
-    }
-
-    const cleared = spawnSync(adbPath, ['-s', DEVICE_SERIAL, 'shell', 'pm', 'clear', APP_ID], { stdio: 'ignore' });
-    if (cleared.status !== 0) {
-      console.error(`Could not clear app data on ${DEVICE_SERIAL}`);
-      failed += 1;
-      continue;
-    }
-
-    const result = spawnSync(
-      'maestro',
-      ['test', '-e', `EMAIL=${email}`, '-e', `NEW_EMAIL=${newEmail}`, path.join(flowsDir, flow)],
-      { stdio: 'inherit', shell: process.platform === 'win32' }
-    );
-    if (result.status !== 0) {
-      console.error(`FAIL ${flow}`);
-      failed += 1;
-    } else {
-      console.log(`PASS ${flow}`);
-    }
+  try {
+    await register(email, 'E2E suite');
+    await seedOffer(email);
+  } catch (error) {
+    console.error(`SETUP FAIL: ${error.message}`);
+    process.exit(1);
   }
 
-  console.log(`\nDevice E2E: ${flows.length - failed}/${flows.length} flows passed.`);
-  process.exit(failed === 0 ? 0 : 1);
+  // The feed filters by radius; pin the emulator to the seeded offers' area.
+  spawnSync(adbPath, ['-s', DEVICE_SERIAL, 'shell', 'geo', 'fix', '-74.006', '40.7128'], { stdio: 'ignore' });
+
+  // One Maestro session for the whole suite: each flow resets its own app state
+  // with `launchApp: clearState: true`, so no driver restart between flows.
+  const result = spawnSync(
+    'maestro',
+    [
+      'test',
+      '-e',
+      `EMAIL=${email}`,
+      '-e',
+      `NEW_EMAIL=${newEmail}`,
+      ...flows.map((flow) => path.join(flowsDir, flow)),
+    ],
+    { stdio: 'inherit', shell: process.platform === 'win32' }
+  );
+
+  console.log(`\nDevice E2E: ${result.status === 0 ? 'PASS' : 'FAIL'} (${flows.length} flows, single session).`);
+  process.exit(result.status === 0 ? 0 : 1);
 }
 
 main().catch((error) => {

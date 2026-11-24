@@ -1,6 +1,7 @@
 appId: com.anonymous.dealsseekerreactnative
 ---
-- launchApp
+- launchApp:
+    clearState: true
 - tapOn:
     text: "DealsSeeker"
     index: 1

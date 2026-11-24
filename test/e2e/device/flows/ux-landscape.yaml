@@ -1,7 +1,8 @@
 appId: com.anonymous.dealsseekerreactnative
 ---
 - setOrientation: PORTRAIT
-- launchApp
+- launchApp:
+    clearState: true
 - tapOn:
     text: "DealsSeeker"
     index: 1

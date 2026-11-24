@@ -20,9 +20,14 @@ jest.mock('@react-navigation/native', () => ({
     selector({ routes: [{ name: 'offers' }], index: 0 }),
 }));
 
+let tabNavigatorProps: { initialRouteName?: string } = {};
+
 jest.mock('@react-navigation/bottom-tabs', () => ({
   createBottomTabNavigator: () => ({
-    Navigator: ({ children }: { children: React.ReactNode }) => children,
+    Navigator: (props: { children: React.ReactNode; initialRouteName?: string }) => {
+      tabNavigatorProps = props;
+      return props.children;
+    },
     Screen: ({ component: Component }: { component: () => React.ReactNode }) => <Component />,
   }),
 }));
@@ -83,7 +88,13 @@ const { AppNavigator } = require('../../../src/DealsSeeker.ReactNative/src/navig
 describe('native shell Back handling', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    tabNavigatorProps = {};
     Object.keys(listeners).forEach((key) => delete listeners[key]);
+  });
+
+  it('starts on the Offers feed', async () => {
+    await render(<AppNavigator />);
+    expect(tabNavigatorProps.initialRouteName).toBe('offers');
   });
 
   it('closes the immersive feed on system Back instead of leaving the app', async () => {

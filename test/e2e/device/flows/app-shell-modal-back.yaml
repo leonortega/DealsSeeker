@@ -1,6 +1,7 @@
 appId: com.anonymous.dealsseekerreactnative
 ---
-- launchApp
+- launchApp:
+    clearState: true
 - tapOn:
     text: "DealsSeeker"
     index: 1
@@ -28,7 +29,9 @@ appId: com.anonymous.dealsseekerreactnative
 - assertVisible: "Feed"
 - tapOn: "Create"
 - assertVisible: "Add Offer"
-- tapOn: "add.description"
+- swipe: { direction: UP }
+- swipe: { direction: UP }
+- tapOn: "Describe the offer"
 - inputText: "unsaved draft"
 - hideKeyboard
 - back
