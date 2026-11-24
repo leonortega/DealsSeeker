@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
 import { announceStatus } from '../utils/announce';
 import { authFormStyles } from '../utils/authFormStyles';
 import { validateEmail, validateStrongPassword } from '../utils/format';
+import { keyboardAvoidanceBehavior } from '../utils/layout';
 
 export function RegisterScreen() {
   const { api, palette, setSession, showLogin, t } = useApp();
@@ -68,7 +69,7 @@ export function RegisterScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior="padding"
+      behavior={keyboardAvoidanceBehavior(Platform.OS)}
       style={[authFormStyles.root, { backgroundColor: palette.background }]}
     >
       <View style={[authFormStyles.formCard, { backgroundColor: palette.card, borderColor: palette.border }]}>

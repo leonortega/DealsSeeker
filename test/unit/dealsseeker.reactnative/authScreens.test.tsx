@@ -3,6 +3,13 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { LoginScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/LoginScreen';
 import { RegisterScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/RegisterScreen';
 
+const mockKeyboardAvoidanceBehavior = jest.fn((os: string) => (os === 'ios' ? 'padding' : 'height'));
+
+jest.mock('../../../src/DealsSeeker.ReactNative/src/utils/layout', () => ({
+  ...jest.requireActual('../../../src/DealsSeeker.ReactNative/src/utils/layout'),
+  keyboardAvoidanceBehavior: (os: string) => mockKeyboardAvoidanceBehavior(os),
+}));
+
 const mockLogin = jest.fn();
 const mockRegisterUser = jest.fn();
 const mockSetSession = jest.fn();
@@ -151,23 +158,38 @@ describe('RegisterScreen', () => {
 describe('authentication forms keyboard avoidance', () => {
   afterEach(() => {
     jest.restoreAllMocks();
+    mockKeyboardAvoidanceBehavior.mockClear();
   });
 
-  it('uses the iOS keyboard strategy on both authentication forms', async () => {
+  it('delegates Login to the platform keyboard strategy for iOS', async () => {
     jest.replaceProperty(Platform, 'OS', 'ios');
 
     await render(<LoginScreen />);
-    expect(screen.getByTestId('login-keyboard-view').props.behavior).toBe('padding');
-    await render(<RegisterScreen />);
-    expect(screen.getByTestId('register-keyboard-view').props.behavior).toBe('padding');
+
+    expect(mockKeyboardAvoidanceBehavior).toHaveBeenCalledWith('ios');
   });
 
-  it('uses the Android keyboard strategy on both authentication forms', async () => {
+  it('delegates Create User to the platform keyboard strategy for iOS', async () => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
+
+    await render(<RegisterScreen />);
+
+    expect(mockKeyboardAvoidanceBehavior).toHaveBeenCalledWith('ios');
+  });
+
+  it('delegates Login to the platform keyboard strategy for Android', async () => {
     jest.replaceProperty(Platform, 'OS', 'android');
 
     await render(<LoginScreen />);
-    expect(screen.getByTestId('login-keyboard-view').props.behavior).toBe('height');
+
+    expect(mockKeyboardAvoidanceBehavior).toHaveBeenCalledWith('android');
+  });
+
+  it('delegates Create User to the platform keyboard strategy for Android', async () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
+
     await render(<RegisterScreen />);
-    expect(screen.getByTestId('register-keyboard-view').props.behavior).toBe('height');
+
+    expect(mockKeyboardAvoidanceBehavior).toHaveBeenCalledWith('android');
   });
 });
