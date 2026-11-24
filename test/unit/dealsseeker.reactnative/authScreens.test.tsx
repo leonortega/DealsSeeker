@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { LoginScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/LoginScreen';
 import { RegisterScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/RegisterScreen';
@@ -144,5 +145,29 @@ describe('RegisterScreen', () => {
     await render(<RegisterScreen />);
     await fireEvent.press(screen.getByText('auth.loginLink'));
     expect(mockShowLogin).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('authentication forms keyboard avoidance', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('uses the iOS keyboard strategy on both authentication forms', async () => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
+
+    await render(<LoginScreen />);
+    expect(screen.getByTestId('login-keyboard-view').props.behavior).toBe('padding');
+    await render(<RegisterScreen />);
+    expect(screen.getByTestId('register-keyboard-view').props.behavior).toBe('padding');
+  });
+
+  it('uses the Android keyboard strategy on both authentication forms', async () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
+
+    await render(<LoginScreen />);
+    expect(screen.getByTestId('login-keyboard-view').props.behavior).toBe('height');
+    await render(<RegisterScreen />);
+    expect(screen.getByTestId('register-keyboard-view').props.behavior).toBe('height');
   });
 });

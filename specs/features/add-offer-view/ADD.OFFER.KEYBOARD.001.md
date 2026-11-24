@@ -61,3 +61,4 @@ Scenario: Keyboard-safe layout in edit mode
 ## Related Specs
 - `ADD.OFFER.LAYOUT.001`
 - `ADD.OFFER.UX.001`
+- `ACCOUNT.AUTH.KEYBOARD.001`
