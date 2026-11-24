@@ -10,12 +10,13 @@ type OverlayRoute = { name: string } | null;
 
 function Probe({ tab, overlay }: { tab: 'offers' | 'reports'; overlay?: OverlayRoute }) {
   const containerRef = useRef<View>(null);
-  useDestinationFocus(containerRef, tab, overlay ?? null, (key) => `t:${key}`);
+  useDestinationFocus(containerRef, tab, overlay ?? null, (key) => `t:${key}`, () => 123);
   return <View ref={containerRef} />;
 }
 
 describe('destination focus', () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     jest.spyOn(AccessibilityInfo, 'announceForAccessibility').mockImplementation(() => undefined);
     jest.spyOn(AccessibilityInfo, 'setAccessibilityFocus').mockImplementation(() => undefined);
   });
@@ -52,6 +53,7 @@ describe('destination focus', () => {
 
   it('does not repeat an announcement for the same destination', async () => {
     const view = await render(<Probe tab="offers" />);
+    jest.clearAllMocks();
 
     await act(async () => {
       view.rerender(<Probe tab="offers" />);

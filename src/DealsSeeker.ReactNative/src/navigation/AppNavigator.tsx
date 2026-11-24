@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ComponentRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, useNavigation, useNavigationContainerRef } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import { LoadingOverlay } from '../components/LoadingOverlay';
 import { NavIcon } from '../components/NavIcon';
 import { useApp } from '../hooks/useApp';
 import { useReduceMotion } from '../hooks/useReduceMotion';
+import { useDestinationFocus } from '../hooks/useDestinationFocus';
 import type { MainTab } from '../api/types';
 import { AccountScreen } from '../screens/AccountScreen';
 import { AddOfferScreen } from '../screens/AddOfferScreen';
@@ -67,9 +68,11 @@ function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 function MainView() {
-  const { activeTab, closeImmersiveOffers, immersiveOffers, openAddOffer, palette, t } = useApp();
+  const { activeTab, closeImmersiveOffers, immersiveOffers, openAddOffer, overlayRoute, palette, t } = useApp();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const containerRef = useRef<ComponentRef<typeof View>>(null);
+  useDestinationFocus(containerRef, activeTab, overlayRoute, t);
   const immersiveFeedVisible = immersiveOffers && activeTab === 'offers';
 
   useEffect(() => {
@@ -85,6 +88,7 @@ function MainView() {
 
   return (
     <View
+      ref={containerRef}
       testID="app-shell-root"
       style={[styles.root, { backgroundColor: palette.background, paddingTop: insets.top }]}
     >
