@@ -1,7 +1,7 @@
 # Mobile-native shell & navigation plan
 
 - **Date**: 2026-11-22
-- **Status**: Phases 0–2 complete; Phase 3 in progress. Device verification unblocked via user-level CMake 3.31.6. Happy-path flows added for suggestions, reports, account settings, votes and offer-report prefill; four of five passed on device, and report prefill was verified manually. Native-tab two-way sync bug fixed with RED/GREEN. Remaining gaps: `offers-comment` and `add-offer-submit` (photo/location requirement), plus Maestro driver instability that now requires an emulator reboot to clear.
+- **Status**: Phases 0–2 complete; Phase 3 in progress. Platform-behavior parity advanced: authenticated shell now applies the reported top inset and Reduce Motion minimizes native stack/modal transitions (`APP.SHELL.002-R7/R8`); auth forms now use the shared platform keyboard strategy (`ACCOUNT.AUTH.KEYBOARD.001`). Drafted but not yet approved: `APP.LIFECYCLE.001` (foreground/background state preservation) and `APP.ACCESSIBILITY.UX.004` (screen-reader focus on destination changes). E2E work is paused by user instruction — no new flows or runs. Remaining tracked gaps: `offers-comment`, `add-offer-submit` (photo/location requirement), Maestro driver instability, and the repo-wide 80% coverage target.
 - **Inputs**: the hybrid-navigation analysis, the mobile-only and hybrid-conformity clarifications, the Impeccable context (`PRODUCT.md`, `DESIGN.md`, native refs), the design-pattern-review lens, and the device-test evidence from `test/e2e/MOBILE_DEVICE_TEST_PLAN.md`.
 - **Rule**: this repo is spec-first. No production change in §8–§10 starts before the specs in §7 are Approved.
 

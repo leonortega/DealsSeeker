@@ -82,3 +82,4 @@ Scenario: Favorite failure does not display the search-failure state
 - `APP.THEME.001`
 - `APP.ACCESSIBILITY.UX.003`
 - `APP.LOCATION.FALLBACK.001`
+- `APP.LIFECYCLE.001`

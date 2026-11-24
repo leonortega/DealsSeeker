@@ -85,3 +85,4 @@ Scenario: Localized labels keep their semantics
 - `OFFERS.FAVORITES.001`
 - `OFFERS.LIST.ACTIONS.001`
 - `OFFERS.DETAIL.ACTIONS.001`
+- `APP.ACCESSIBILITY.UX.004`

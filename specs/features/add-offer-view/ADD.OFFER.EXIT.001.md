@@ -84,3 +84,4 @@ Scenario: System Back acts as Cancel
 - `APP.ACCESSIBILITY.UX.003`
 - `APP.SHELL.003`
 - `APP.SHELL.004`
+- `APP.LIFECYCLE.001`

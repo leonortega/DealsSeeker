@@ -85,3 +85,5 @@ Scenario: Back during an in-progress save
 - `APP.SHELL.003`
 - `ADD.OFFER.EXIT.001`
 - `OFFERS.IMMERSIVE.001`
+- `APP.LIFECYCLE.001`
+- `APP.ACCESSIBILITY.UX.004`
