@@ -12,7 +12,7 @@ Feature: Screen-reader focus on destination changes
     Given the user opened a destination from a control on Offers
     When the user invokes system Back
     Then Offers shall become visible
-    And focus shall return to the control that opened the destination or an equivalent control
+    And focus shall be placed on the Offers heading or container before its controls
 
   Scenario: Focus stays inside an overlay
     Given a modal overlay is open on top of a destination

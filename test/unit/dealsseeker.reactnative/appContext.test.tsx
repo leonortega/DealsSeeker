@@ -1,3 +1,4 @@
+import { AppState } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import { AppProvider } from '../../../src/DealsSeeker.ReactNative/src/context/AppContext';
 import { useApp } from '../../../src/DealsSeeker.ReactNative/src/hooks/useApp';
@@ -31,6 +32,8 @@ jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageCode: 'en' }],
 }));
 
+let mockAppStateHandler: ((state: string) => void) | null = null;
+
 let context: ReturnType<typeof useApp> | null = null;
 
 function Probe() {
@@ -57,6 +60,11 @@ describe('AppProvider', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, handler) => {
+      mockAppStateHandler = handler as (state: string) => void;
+      return { remove: jest.fn() } as never;
+    });
+    mockAppStateHandler = null;
     context = null;
     mockLoadSession.mockResolvedValue(null);
     mockLoadPreferences.mockResolvedValue(mockDefaultPreferences);
@@ -97,6 +105,54 @@ describe('AppProvider', () => {
 
     expect(context?.isAuthenticated).toBe(false);
     expect(mockClearSession).toHaveBeenCalled();
+  });
+
+  it('revalidates the session when the app returns to the foreground', async () => {
+    mockLoadSession.mockResolvedValue(session);
+    mockApi.getMyProfile.mockResolvedValue({ userId: 'u1', avatarId: 'avatar-2' });
+    await renderProvider();
+    mockApi.getMyProfile.mockClear();
+
+    await act(async () => {
+      mockAppStateHandler?.('active');
+      await Promise.resolve();
+    });
+
+    expect(mockApi.getMyProfile).toHaveBeenCalledTimes(1);
+    expect(context?.isAuthenticated).toBe(true);
+  });
+
+  it('returns to login with a message when the foreground session is no longer valid', async () => {
+    mockLoadSession.mockResolvedValue(session);
+    mockApi.getMyProfile.mockResolvedValue({ userId: 'u1', avatarId: 'avatar-2' });
+    await renderProvider();
+    mockApi.getMyProfile.mockClear();
+    mockApi.getMyProfile.mockResolvedValue(null);
+
+    await act(async () => {
+      mockAppStateHandler?.('active');
+      await Promise.resolve();
+    });
+
+    expect(context?.isAuthenticated).toBe(false);
+    expect(context?.sessionNotice).toBe('account.sessionExpired');
+    expect(mockClearSession).toHaveBeenCalled();
+  });
+
+  it('keeps the session when the foreground check cannot reach the API', async () => {
+    mockLoadSession.mockResolvedValue(session);
+    mockApi.getMyProfile.mockResolvedValue({ userId: 'u1', avatarId: 'avatar-2' });
+    await renderProvider();
+    mockApi.getMyProfile.mockClear();
+    mockApi.getMyProfile.mockRejectedValue(new Error('offline'));
+
+    await act(async () => {
+      mockAppStateHandler?.('active');
+      await Promise.resolve();
+    });
+
+    expect(context?.isAuthenticated).toBe(true);
+    expect(mockClearSession).not.toHaveBeenCalled();
   });
 
   it('switching tabs clears any open overlay', async () => {

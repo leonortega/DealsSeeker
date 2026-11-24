@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Application Lifecycle Behavior
 - **Version**: `v1.0`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: Medium
 
@@ -26,7 +26,6 @@ Define how the application preserves user work and navigation state when it move
 - `APP.LIFECYCLE.001-R6`: If the user's session is no longer valid on return, the system shall move to authentication with a clear message and shall not present a stale protected view.
 - `APP.LIFECYCLE.001-R7`: Lifecycle handling shall not duplicate the navigation state or back stack owned by the native navigation behavior.
 - `APP.LIFECYCLE.001-R8`: Lifecycle transitions shall not alter the brand UI, and no platform-specific visual adaptation shall be introduced.
-- `APP.LIFECYCLE.001-R9`: A view recreated after a low-memory event shall restore the same destination and the same state guaranteed by R1 and R2.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -55,11 +54,6 @@ Scenario: In-flight request across a lifecycle transition
   When the application is backgrounded and returned before the request resolves
   Then the request shall be handled exactly once
   And the result shall not be applied twice
-
-Scenario: View recreated after a low-memory event
-  Given the application is backgrounded and its current view is reclaimed
-  When the application returns to the foreground
-  Then the same destination and view state shall be restored
 ```
 
 ## Example Inputs/Outputs
@@ -78,6 +72,7 @@ Scenario: View recreated after a low-memory event
 ## Non-Functional Constraints
 - Lifecycle handling shall use the operating system's standard lifecycle signals.
 - No new dependency shall be added solely for lifecycle state preservation.
+- Full restoration after a low-memory process restart is out of scope here; it needs durable storage of view state and is deferred to a separate capability spec.
 
 ## Related Specs
 - `APP.SHELL.001`

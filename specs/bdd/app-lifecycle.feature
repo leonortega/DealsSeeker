@@ -27,8 +27,3 @@ Feature: Application lifecycle behavior
     When the application is backgrounded and returned before the request resolves
     Then the request shall be handled exactly once
     And the result shall not be applied twice
-
-  Scenario: View recreated after a low-memory event
-    Given the application is backgrounded and its current view is reclaimed
-    When the application returns to the foreground
-    Then the same destination and view state shall be restored

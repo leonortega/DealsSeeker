@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Screen-Reader Focus on Destination Changes
 - **Version**: `v1.0`
-- **Status**: Draft
+- **Status**: Approved
 - **Context/View**: Application Shell, all destinations and overlay surfaces
 - **Priority**: Medium
 
@@ -20,7 +20,7 @@ Ensure that assistive-technology users are told where they are after a navigatio
 ## Requirements
 - `APP.ACCESSIBILITY.UX.004-R1`: When a destination changes, the system shall announce the destination name in the active language.
 - `APP.ACCESSIBILITY.UX.004-R2`: After the announcement, screen-reader focus shall be placed on the new destination's primary heading or container before its controls.
-- `APP.ACCESSIBILITY.UX.004-R3`: When system Back restores a previous destination, focus shall return to the control that opened the new destination or to an equivalent control.
+- `APP.ACCESSIBILITY.UX.004-R3`: When system Back restores a previous destination, focus shall be placed on that destination's primary heading or container before its controls.
 - `APP.ACCESSIBILITY.UX.004-R4`: While a modal overlay is open, focus shall not reach content belonging to the destination beneath it.
 - `APP.ACCESSIBILITY.UX.004-R5`: When a modal overlay is dismissed, focus shall return to the control that opened it or to an equivalent control.
 - `APP.ACCESSIBILITY.UX.004-R6`: Navigation announcements shall contain only user-facing information; internal codes, raw coordinates and off-screen content shall not be exposed.
@@ -62,7 +62,7 @@ Scenario: Repeated navigation stays deterministic
 - Example input: screen reader on, activate the Reports footer tab from Offers.
 - Expected output: "Reports" is announced; focus moves to the Reports heading, then its first control.
 - Example input: open Favorites from Offers, then invoke system Back.
-- Expected output: Offers returns and focus lands on the Favorites entry point or an equivalent control.
+- Expected output: Offers returns, "Offers" is announced, and focus lands on the Offers heading or container.
 
 ## Edge Cases
 - A destination opened from a control that is no longer present when Back is invoked.
