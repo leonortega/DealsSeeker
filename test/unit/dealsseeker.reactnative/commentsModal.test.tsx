@@ -50,6 +50,7 @@ describe('OfferCommentsModal', () => {
   it('loads and displays comments for the offer', async () => {
     await renderModal();
     expect(await screen.findByText('Great deal!')).toBeTruthy();
+    expect(screen.getByTestId('native-bottom-sheet')).toBeTruthy();
     expect(mockGetOfferComments).toHaveBeenCalledWith('o1');
     expect(screen.getByText('Main Street Cafe')).toBeTruthy();
   });

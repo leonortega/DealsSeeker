@@ -21,6 +21,7 @@ import { useReduceMotion } from '../hooks/useReduceMotion';
 import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { resolveMotionPreferences } from '../utils/motion';
 import { restoreFocus } from '../utils/focusReturn';
+import { NativeBottomSheet } from './NativeBottomSheet';
 import { formatDistanceMeters } from '../utils/format';
 
 interface OfferDetailModalProps {
@@ -337,9 +338,7 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
 
   return (
     <>
-      <Modal animationType={motion.modalAnimation} transparent visible={visible} onRequestClose={close}>
-        <View style={[styles.backdrop, { backgroundColor: palette.overlay }]}>
-          <Pressable accessibilityLabel={t('common.close')} accessibilityRole="button" onPress={close} style={styles.scrim} testID="offer-detail-scrim" />
+      <NativeBottomSheet visible={visible} onClose={close}>
           <View accessibilityViewIsModal testID="offer-detail-sheet" style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <View style={styles.header}>
             <Text numberOfLines={2} style={[styles.title, { color: palette.ink }]}>{offer.businessName}</Text>
@@ -425,8 +424,7 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
             </Pressable>
           </View>
         </View>
-        </View>
-      </Modal>
+      </NativeBottomSheet>
 
       <Modal animationType="fade" transparent visible={fullscreenVisible} onRequestClose={() => setFullscreenVisible(false)}>
         <View style={[styles.fullscreenBackdrop, { backgroundColor: palette.overlay }]}> 

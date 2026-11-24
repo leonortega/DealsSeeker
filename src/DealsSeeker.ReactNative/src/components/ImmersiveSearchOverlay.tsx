@@ -1,7 +1,8 @@
 import type { RefObject } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
 import { restoreFocus } from '../utils/focusReturn';
+import { NativeBottomSheet } from './NativeBottomSheet';
 
 export const COVERAGE_DISTANCE_OPTIONS = [500, 1000, 1500, 2500, 5000];
 
@@ -32,12 +33,10 @@ export function ImmersiveSearchOverlay({
   }
 
   return (
-    <Modal animationType="fade" transparent visible={visible} onRequestClose={close}>
-      <Pressable style={[styles.backdrop, { backgroundColor: palette.overlay }]} onPress={close}>
-        <Pressable
+    <NativeBottomSheet visible={visible} onClose={close}>
+        <View
           accessibilityViewIsModal
           style={[styles.sheet, { backgroundColor: palette.panel, borderColor: palette.border }]}
-          onPress={() => {}}
         >
           <Text style={[styles.title, { color: palette.ink }]}>{t('offers.searchOffers')}</Text>
 
@@ -96,9 +95,8 @@ export function ImmersiveSearchOverlay({
               <Text style={{ color: '#ffffff', fontWeight: '800' }}>{t('common.search')}</Text>
             </Pressable>
           </View>
-        </Pressable>
-      </Pressable>
-    </Modal>
+        </View>
+    </NativeBottomSheet>
   );
 }
 

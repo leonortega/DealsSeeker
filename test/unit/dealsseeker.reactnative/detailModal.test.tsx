@@ -70,15 +70,16 @@ describe('OfferDetailModal', () => {
   it('shows the offer name, description, distance and tags', async () => {
     await renderModal();
     expect(screen.getAllByText('Main Street Cafe').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('native-bottom-sheet')).toBeTruthy();
     expect(screen.getByText('Coffee and snacks')).toBeTruthy();
     expect(screen.getByText('offers.distance: 500 m')).toBeTruthy();
     expect(screen.getByText('coffee')).toBeTruthy();
     expect(screen.getByText('snacks')).toBeTruthy();
   });
 
-  it('closes when the scrim is tapped', async () => {
-    await renderModal();
-    await fireEvent.press(screen.getByRole('button', { name: 'common.close', includeHiddenElements: true }));
+  it('closes when the sheet is dismissed', async () => {
+    const view = await renderModal();
+    await fireEvent(view.getByTestId('native-bottom-sheet'), 'close');
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 

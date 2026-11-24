@@ -1,10 +1,9 @@
 import { type RefObject, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { OfferCommentDto, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
-import { useReduceMotion } from '../hooks/useReduceMotion';
-import { resolveMotionPreferences } from '../utils/motion';
 import { restoreFocus } from '../utils/focusReturn';
+import { NativeBottomSheet } from './NativeBottomSheet';
 import { avatarEmoji } from '../utils/avatars';
 
 interface OfferCommentsModalProps {
@@ -25,7 +24,6 @@ function formatCommentDate(value: string) {
 
 export function OfferCommentsModal({ offer, visible, onClose, returnFocusRef }: OfferCommentsModalProps) {
   const { api, palette, t } = useApp();
-  const motion = resolveMotionPreferences(useReduceMotion());
 
   function close() {
     onClose();
@@ -127,9 +125,7 @@ export function OfferCommentsModal({ offer, visible, onClose, returnFocusRef }: 
   }
 
   return (
-    <Modal animationType={motion.modalAnimation} transparent visible={visible} onRequestClose={close}>
-      <View style={[styles.backdrop, { backgroundColor: palette.overlay }]}>
-        <Pressable accessibilityLabel={t('common.close')} accessibilityRole="button" onPress={close} style={styles.scrim} testID="comments-scrim" />
+    <NativeBottomSheet visible={visible} onClose={close}>
         <View accessibilityViewIsModal style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <View style={styles.header}>
             <Text numberOfLines={2} style={[styles.title, { color: palette.ink }]}>
@@ -196,8 +192,7 @@ export function OfferCommentsModal({ offer, visible, onClose, returnFocusRef }: 
             <Text style={styles.publishLabel}>{t('comments.publish')}</Text>
           </Pressable>
         </View>
-      </View>
-    </Modal>
+    </NativeBottomSheet>
   );
 }
 
