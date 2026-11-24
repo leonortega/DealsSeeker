@@ -21,11 +21,11 @@ Ensure that assistive-technology users are told where they are after a navigatio
 - `APP.ACCESSIBILITY.UX.004-R1`: When a destination changes, the system shall announce the destination name in the active language.
 - `APP.ACCESSIBILITY.UX.004-R2`: After the announcement, screen-reader focus shall be placed on the new destination's primary heading or container before its controls.
 - `APP.ACCESSIBILITY.UX.004-R3`: When system Back restores a previous destination, focus shall be placed on that destination's primary heading or container before its controls.
-- `APP.ACCESSIBILITY.UX.004-R4`: While a modal overlay is open, focus shall not reach content belonging to the destination beneath it.
-- `APP.ACCESSIBILITY.UX.004-R5`: When a modal overlay is dismissed, focus shall return to the control that opened it or to an equivalent control.
-- `APP.ACCESSIBILITY.UX.004-R6`: Navigation announcements shall contain only user-facing information; internal codes, raw coordinates and off-screen content shall not be exposed.
-- `APP.ACCESSIBILITY.UX.004-R7`: These requirements shall hold in both themes, in every supported language and at large text sizes.
-- `APP.ACCESSIBILITY.UX.004-R8`: Focus handling shall not change the visual appearance, ordering or behavior of any control.
+- `APP.ACCESSIBILITY.UX.004-R4`: Navigation announcements shall contain only user-facing information; internal codes, raw coordinates and off-screen content shall not be exposed.
+- `APP.ACCESSIBILITY.UX.004-R5`: These requirements shall hold in both themes, in every supported language and at large text sizes.
+- `APP.ACCESSIBILITY.UX.004-R6`: Focus handling shall not change the visual appearance, ordering or behavior of any control.
+
+Dialog focus confinement and return are specified by `APP.ACCESSIBILITY.UX.003`; this spec covers destination changes only.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -40,16 +40,6 @@ Scenario: System Back restores focus
   When the user invokes system Back
   Then Offers shall become visible
   And focus shall return to the control that opened the destination or an equivalent control
-
-Scenario: Focus stays inside an overlay
-  Given a modal overlay is open on top of a destination
-  When the screen reader traverses from the first to the last element
-  Then focus shall not reach content belonging to the destination beneath
-
-Scenario: Dismissing an overlay returns focus
-  Given a modal overlay was opened from a labelled control
-  When the overlay is dismissed
-  Then focus shall return to that control or an equivalent control
 
 Scenario: Repeated navigation stays deterministic
   Given the user activates the already-selected footer destination

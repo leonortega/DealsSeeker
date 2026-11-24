@@ -1,5 +1,5 @@
 import { PropsWithChildren, createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import { AppState, useColorScheme } from 'react-native';
 import * as Localization from 'expo-localization';
 import { RequestOptions, createDealsSeekerApi } from '../api/client';
 import { apiConfig } from '../api/config';
@@ -37,6 +37,7 @@ interface AppContextValue {
   activeTab: MainTab;
   bootstrapped: boolean;
   session: AuthSessionDto | null;
+  sessionNotice: string | null;
   isAuthenticated: boolean;
   preferences: UserPreferences;
   palette: ReturnType<typeof resolveTheme>;
@@ -76,6 +77,7 @@ export function AppProvider({ children }: PropsWithChildren) {
   const systemScheme = useColorScheme();
   const [bootstrapped, setBootstrapped] = useState(false);
   const [session, setSessionState] = useState<AuthSessionDto | null>(null);
+  const [sessionNotice, setSessionNotice] = useState<string | null>(null);
   const [preferences, setPreferences] = useState<UserPreferences>({
     ...DEFAULT_PREFERENCES,
     language: resolveDeviceLanguage(),
@@ -102,6 +104,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     setOverlayRoute(null);
     setActiveTab('offers');
     setAuthScreen('login');
+    setSessionNotice('account.sessionExpired');
   }, []);
 
   /**
@@ -143,6 +146,31 @@ export function AppProvider({ children }: PropsWithChildren) {
       }),
     [session?.accessToken, handleUnauthorized]
   );
+
+  useEffect(() => {
+    if (!bootstrapped || !session?.accessToken) {
+      return;
+    }
+
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState !== 'active') {
+        return;
+      }
+
+      void (async () => {
+        try {
+          const profile = await apiBase.getMyProfile();
+          if (!profile) {
+            await handleUnauthorized();
+          }
+        } catch {
+          // A transient failure must not discard a valid session.
+        }
+      })();
+    });
+
+    return () => subscription.remove();
+  }, [apiBase, bootstrapped, handleUnauthorized, session?.accessToken]);
 
   const api: ReturnType<typeof createDealsSeekerApi> = useMemo(
     () => ({
@@ -257,6 +285,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     await saveSession(nextSession);
     const nextPreferences = await loadPreferences(resolveDeviceLanguage(), nextSession.userId);
     setSessionState(nextSession);
+    setSessionNotice(null);
     setPreferences(nextPreferences);
     try {
       const profileApi = createDealsSeekerApi({
@@ -280,6 +309,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     } finally {
       await clearSession();
       setSessionState(null);
+      setSessionNotice(null);
       setCachedProfile(null);
       setOverlayRoute(null);
       setActiveTab('offers');
@@ -326,6 +356,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     activeTab,
     bootstrapped,
     session,
+    sessionNotice,
     isAuthenticated: Boolean(session?.accessToken),
     preferences,
     palette: resolveTheme(preferences.themeMode, systemScheme === 'light' ? 'light' : systemScheme === 'dark' ? 'dark' : null),

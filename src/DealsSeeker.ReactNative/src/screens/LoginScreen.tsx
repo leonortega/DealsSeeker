@@ -6,10 +6,11 @@ import { authFormStyles } from '../utils/authFormStyles';
 import { keyboardAvoidanceBehavior } from '../utils/layout';
 
 export function LoginScreen() {
-  const { api, palette, setSession, showRegister, t } = useApp();
+  const { api, palette, sessionNotice, setSession, showRegister, t } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<string | null>(null);
+  const displayedStatus = status ?? (sessionNotice ? t(sessionNotice) : null);
 
   async function submit() {
     setStatus(null);
@@ -78,9 +79,9 @@ export function LoginScreen() {
         <Pressable accessibilityLabel={t('auth.createAccountLink')} accessibilityRole="link" onPress={showRegister}>
           <Text style={[authFormStyles.link, { color: palette.accent }]}>{t('auth.createAccountLink')}</Text>
         </Pressable>
-        {status ? (
+        {displayedStatus ? (
           <Text accessibilityLiveRegion="polite" style={[authFormStyles.status, { color: palette.danger }]}>
-            {status}
+            {displayedStatus}
           </Text>
         ) : null}
       </View>
