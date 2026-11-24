@@ -20,3 +20,10 @@ Feature: Device class and orientation
     When the Offers view is displayed
     Then the compact layout is used
     And controls remain reachable
+
+  Scenario: Wide footer stays compact and centered
+    Given the device is in landscape orientation
+    When the shared footer is rendered
+    Then it shall not stretch across the full screen width
+    And it shall be horizontally centered
+    And discovery controls outside the footer shall remain visible

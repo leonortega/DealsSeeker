@@ -119,6 +119,16 @@ describe('touch target and label floors', () => {
     expect(StyleSheet.flatten(scroll.props.contentContainerStyle).paddingBottom).toBeGreaterThanOrEqual(88);
   });
 
+  it('keeps the footer compact and centered on wide screens', async () => {
+    await render(<AppFooterBar items={footerItems} />);
+
+    const wrapper = hostElements().find(
+      (node) => node.type === 'View' && styleOf(node).flexDirection === 'row'
+    );
+    expect(styleOf(wrapper as never).maxWidth).toBeGreaterThan(0);
+    expect(styleOf(wrapper as never).alignSelf).toBe('center');
+  });
+
   it('gives every footer tab a 44-unit touch target', async () => {
     await render(<AppFooterBar items={footerItems} />);
 

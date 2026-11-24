@@ -45,6 +45,7 @@ export function AppFooterBar({ items }: { items: FooterItem[] }) {
 const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
+    alignSelf: 'center',
     backgroundColor: footerSurface,
     borderColor: footerBorder,
     borderRadius: 28,
@@ -53,6 +54,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 10,
     marginHorizontal: 16,
+    maxWidth: 420,
     paddingHorizontal: 4,
     paddingVertical: 8,
   },

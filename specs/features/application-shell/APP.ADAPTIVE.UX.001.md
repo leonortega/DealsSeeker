@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Device class and orientation
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers View (standard and immersive presentations)
 - **Priority**: Medium
@@ -22,6 +22,7 @@ Keep discovery usable across phone, tablet, landscape, and narrow window sizes w
 - `APP.ADAPTIVE.UX.001-R3`: In landscape orientation, primary discovery and action controls shall not be clipped or overlapped.
 - `APP.ADAPTIVE.UX.001-R4`: In a narrow window on a larger screen, the compact layout shall be used.
 - `APP.ADAPTIVE.UX.001-R5`: All layouts shall hold in both themes and at large text sizes.
+- `APP.ADAPTIVE.UX.001-R6`: On wide screens the shared footer shall keep a compact, centered width instead of stretching edge to edge, so discovery controls are not overlapped by the footer.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -42,6 +43,13 @@ Scenario: A narrow window uses the compact layout
   When the Offers view is displayed
   Then the compact layout is used
   And controls remain reachable
+
+Scenario: Wide footer stays compact and centered
+  Given the device is in landscape orientation
+  When the shared footer is rendered
+  Then it shall not stretch across the full screen width
+  And it shall be horizontally centered
+  And discovery controls outside the footer shall remain visible
 ```
 
 ## Example Inputs/Outputs
