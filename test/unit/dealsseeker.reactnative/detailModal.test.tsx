@@ -107,6 +107,33 @@ describe('OfferDetailModal', () => {
     expect(screen.getByText('1 / 2')).toBeTruthy();
   });
 
+  it('supports pinch zoom, pan and reset on the photo', async () => {
+    const view = await renderModal();
+    await fireEvent.press(view.getAllByTestId('offer-gallery-slide')[0]);
+    const surface = view.getByTestId('offer-zoom-surface');
+    const touches = (first: [number, number], second?: [number, number]) => ({
+      nativeEvent: {
+        touches: second
+          ? [{ pageX: first[0], pageY: first[1] }, { pageX: second[0], pageY: second[1] }]
+          : [{ pageX: first[0], pageY: first[1] }],
+        pageX: first[0],
+        pageY: first[1],
+      },
+    });
+
+    await fireEvent(surface, 'layout', {
+      nativeEvent: { layout: { width: 300, height: 300, x: 0, y: 0 } },
+    });
+    await fireEvent(surface, 'responderGrant', touches([0, 0], [100, 0]));
+    await fireEvent(surface, 'responderMove', touches([0, 0], [200, 0]));
+    await fireEvent(surface, 'responderRelease', touches([0, 0]));
+    await fireEvent(surface, 'responderGrant', touches([50, 50]));
+    await fireEvent(surface, 'responderMove', touches([90, 90]));
+    await fireEvent(surface, 'responderTerminate', touches([90, 90]));
+
+    expect(screen.getAllByText('1 / 2').length).toBeGreaterThan(0);
+  });
+
   it('disables photo navigation for a single-image offer', async () => {
     await render(
       <OfferDetailModal

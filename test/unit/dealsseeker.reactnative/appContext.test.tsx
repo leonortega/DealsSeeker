@@ -9,10 +9,26 @@ const mockLoadPreferences = jest.fn();
 const mockSavePreferences = jest.fn();
 const mockClearSession = jest.fn();
 const mockApi = {
-  getMyProfile: jest.fn(),
+  registerUser: jest.fn(),
+  login: jest.fn(),
   logout: jest.fn(),
-  searchOffers: jest.fn(),
+  getMyProfile: jest.fn(),
+  getMyOffers: jest.fn(),
+  getMyOfferDraft: jest.fn(),
   setMyAvatar: jest.fn(),
+  getOfferComments: jest.fn(),
+  createOfferComment: jest.fn(),
+  searchOffers: jest.fn(),
+  voteOfferAvailability: jest.fn(),
+  reportOffer: jest.fn(),
+  setOfferFavorite: jest.fn(),
+  createOffer: jest.fn(),
+  updateOffer: jest.fn(),
+  deleteOffer: jest.fn(),
+  searchLocations: jest.fn(),
+  reverseLocation: jest.fn(),
+  submitSuggestion: jest.fn(),
+  submitReport: jest.fn(),
 } as Record<string, jest.Mock>;
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/api/client', () => ({
@@ -222,6 +238,37 @@ describe('AppProvider', () => {
 
     await act(async () => { resolveSearch?.(); await pending; });
     expect(context?.isPending('offers-search')).toBe(false);
+  });
+
+  it('delegates every wrapped API operation to the client', async () => {
+    await renderProvider();
+    Object.values(mockApi).forEach((fn) => fn.mockResolvedValue({} as never));
+
+    await act(async () => {
+      await context?.api.registerUser({} as never);
+      await context?.api.login({} as never);
+      await context?.api.getMyOffers();
+      await context?.api.getMyOfferDraft('off-1');
+      await context?.api.getOfferComments('off-1', 10);
+      await context?.api.createOfferComment('off-1', {} as never);
+      await context?.api.voteOfferAvailability('off-1', {} as never);
+      await context?.api.reportOffer('off-1', {} as never);
+      await context?.api.setOfferFavorite('off-1', {} as never);
+      await context?.api.createOffer({} as never);
+      await context?.api.updateOffer('off-1', {} as never);
+      await context?.api.deleteOffer('off-1');
+      await context?.api.searchLocations('coffee');
+      await context?.api.reverseLocation(1, 2);
+      await context?.api.submitSuggestion({} as never);
+      await context?.api.submitReport({} as never);
+      await context?.setLanguage('es');
+      await context?.setNavigationMode('car');
+    });
+
+    expect(mockApi.getMyOffers).toHaveBeenCalledTimes(1);
+    expect(mockApi.deleteOffer).toHaveBeenCalledWith('off-1', undefined);
+    expect(mockApi.submitReport).toHaveBeenCalledTimes(1);
+    expect(mockSavePreferences).toHaveBeenCalledWith(expect.objectContaining({ language: 'es' }), undefined);
   });
 
   it('logs out and resets navigation state', async () => {

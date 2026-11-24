@@ -190,6 +190,7 @@ function ZoomableImage({
   if (canRenderImage && !imageFailed) {
     return (
       <View
+        testID="offer-zoom-surface"
         style={styles.zoomSurface}
         onLayout={(event: LayoutChangeEvent) => {
           boundsRef.current = event.nativeEvent.layout;
@@ -368,6 +369,7 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
                 pagingEnabled
                 renderItem={({ item: imageUrl }: { item: string }) => (
                   <Pressable
+                    testID="offer-gallery-slide"
                     onPress={() => setFullscreenVisible(true)}
                     style={[styles.gallerySlide, { width: carouselWidth }]}
                   >

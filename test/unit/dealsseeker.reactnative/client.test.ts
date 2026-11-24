@@ -144,6 +144,42 @@ describe('API client', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('routes every remaining endpoint through the shared request pipeline', async () => {
+    const { api } = loadApi();
+    const fetchMock = jest.spyOn(global, 'fetch').mockImplementation(async () =>
+      jsonResponse({ success: true, offers: [], comments: [] })
+    );
+    const body = {} as never;
+
+    await api.registerUser(body);
+    await api.getMyOffers();
+    await api.getMyOfferDraft('off-1');
+    await api.setMyAvatar(body);
+    await api.voteOfferAvailability('off-1', body);
+    await api.reportOffer('off-1', body);
+    await api.setOfferFavorite('off-1', body);
+    await api.createOfferComment('off-1', body);
+    await api.createOffer(body);
+    await api.updateOffer('off-1', body);
+    await api.deleteOffer('off-1');
+    await api.submitReport(body);
+
+    expect(fetchMock.mock.calls.map((call) => call[0])).toEqual([
+      'http://api.test/api/auth/register',
+      'http://api.test/api/account/offers',
+      'http://api.test/api/account/offers/off-1',
+      'http://api.test/api/account/me/avatar',
+      'http://api.test/api/offers/off-1/availability',
+      'http://api.test/api/offers/off-1/report',
+      'http://api.test/api/offers/off-1/favorite',
+      'http://api.test/api/offers/off-1/comments',
+      'http://api.test/api/offers',
+      'http://api.test/api/offers/off-1',
+      'http://api.test/api/offers/off-1',
+      'http://api.test/api/reports',
+    ]);
+  });
+
   it('encodes query parameters and offer identifiers', async () => {
     const { api } = loadApi();
     const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(jsonResponse([]));
