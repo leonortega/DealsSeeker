@@ -1,15 +1,20 @@
-export function stackScreenOptions() {
-  return { headerShown: false } as const;
+function motionOptions(reduceMotion: boolean) {
+  return reduceMotion ? { animation: 'fade' as const } : {};
+}
+
+export function stackScreenOptions(reduceMotion = false) {
+  return { headerShown: false as const, ...motionOptions(reduceMotion) };
 }
 
 export function tabScreenOptions() {
   return { headerShown: false } as const;
 }
 
-export function modalScreenOptions(os: string) {
+export function modalScreenOptions(os: string, reduceMotion = false) {
   return {
-    headerShown: false,
-    presentation: os === 'ios' ? 'formSheet' : 'modal',
+    headerShown: false as const,
+    presentation: os === 'ios' ? ('formSheet' as const) : ('modal' as const),
     gestureEnabled: true,
-  } as const;
+    ...motionOptions(reduceMotion),
+  };
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, useNavigation, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -8,6 +9,7 @@ import { CreateOfferFab } from '../components/CreateOfferFab';
 import { LoadingOverlay } from '../components/LoadingOverlay';
 import { NavIcon } from '../components/NavIcon';
 import { useApp } from '../hooks/useApp';
+import { useReduceMotion } from '../hooks/useReduceMotion';
 import type { MainTab } from '../api/types';
 import { AccountScreen } from '../screens/AccountScreen';
 import { AddOfferScreen } from '../screens/AddOfferScreen';
@@ -66,6 +68,7 @@ function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
 
 function MainView() {
   const { activeTab, closeImmersiveOffers, immersiveOffers, openAddOffer, palette, t } = useApp();
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const immersiveFeedVisible = immersiveOffers && activeTab === 'offers';
 
@@ -81,7 +84,10 @@ function MainView() {
   }, [closeImmersiveOffers, immersiveFeedVisible, navigation]);
 
   return (
-    <View style={[styles.root, { backgroundColor: palette.background }]}>
+    <View
+      testID="app-shell-root"
+      style={[styles.root, { backgroundColor: palette.background, paddingTop: insets.top }]}
+    >
       <View style={[styles.content, immersiveFeedVisible && styles.immersiveContent]}>
         <Tabs.Navigator
           initialRouteName="offers"
@@ -130,6 +136,7 @@ function DismissSync({
 
 export function AppNavigator() {
   const { closeOverlay, overlayRoute } = useApp();
+  const reduceMotion = useReduceMotion();
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
   const lastOverlay = useRef<string | null>(null);
   const dismissGuard = useRef<() => boolean>(() => true);
@@ -163,9 +170,9 @@ export function AppNavigator() {
 
   return (
     <NavigationContainer ref={navigationRef}>
-      <Stack.Navigator screenOptions={stackScreenOptions()}>
+      <Stack.Navigator screenOptions={stackScreenOptions(reduceMotion)}>
         <Stack.Screen name="Main" component={MainView} />
-        <Stack.Screen name="AddOffer" options={modalScreenOptions(Platform.OS)}>
+        <Stack.Screen name="AddOffer" options={modalScreenOptions(Platform.OS, reduceMotion)}>
           {() => (
             <>
               <DismissSync onDismiss={syncDismiss} canDismiss={() => dismissGuard.current()} />
@@ -177,7 +184,7 @@ export function AppNavigator() {
             </>
           )}
         </Stack.Screen>
-        <Stack.Screen name="Favorites" options={stackScreenOptions()}>
+        <Stack.Screen name="Favorites" options={stackScreenOptions(reduceMotion)}>
           {() => (
             <>
               <DismissSync onDismiss={syncDismiss} />
