@@ -75,6 +75,7 @@ export function OfferCard({
         accessibilityRole="button"
         style={[styles.visual, { backgroundColor: palette.accentMuted }]}
         onPress={() => onOpenDetail(offer)}
+        onLongPress={() => onOpenDetail(offer)}
       >
         {canRenderImage && !imageFailed ? (
           <Image

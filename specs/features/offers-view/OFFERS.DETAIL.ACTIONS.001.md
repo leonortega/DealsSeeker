@@ -60,3 +60,4 @@ Scenario: User opens directions from offer detail
 - `OFFERS.COMMENTS.001`
 - `APP.ACCESSIBILITY.UX.002`
 - `APP.ACCESSIBILITY.UX.003`
+- `APP.CONTEXT_MENU.001`

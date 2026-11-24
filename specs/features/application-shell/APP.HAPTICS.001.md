@@ -85,3 +85,4 @@ Scenario: Platform without haptic support
 - `OFFERS.LIST.ACTIONS.001`
 - `SUGGESTIONS.SUBMIT.001`
 - `REPORTS.SUBMIT.001`
+- `APP.CONTEXT_MENU.001`

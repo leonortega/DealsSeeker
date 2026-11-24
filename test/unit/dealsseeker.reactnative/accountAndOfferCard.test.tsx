@@ -172,6 +172,22 @@ describe('OfferCard', () => {
     );
   }
 
+  it('opens the existing offer actions on long press', async () => {
+    await renderCard();
+
+    await fireEvent(screen.getByLabelText('offers.openDetail'), 'longPress');
+
+    expect(callbacks.onOpenDetail).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps short press as the open-detail behavior', async () => {
+    await renderCard();
+
+    await fireEvent.press(screen.getByLabelText('offers.openDetail'));
+
+    expect(callbacks.onOpenDetail).toHaveBeenCalledTimes(1);
+  });
+
   it('shows the business name, promotion badge, tags and distance', async () => {
     await renderCard();
     expect(screen.getByText('Main Street Cafe')).toBeTruthy();
