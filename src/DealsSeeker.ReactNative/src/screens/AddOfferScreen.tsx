@@ -1055,6 +1055,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
         <Pressable
           accessibilityLabel={editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
           accessibilityRole="button"
+          testID="add-submit-button"
           style={[styles.submitButton, { backgroundColor: palette.accent }]}
           onPress={() => void submit()}
         >

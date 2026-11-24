@@ -27,13 +27,13 @@ appId: com.anonymous.dealsseekerreactnative
     text: "Got it"
     optional: true
 - assertVisible: "Feed"
-- tapOn: "Map"
 - tapOn: { text: "Use my location", optional: true }
 - waitForAnimationToEnd
-- swipe: { direction: UP }
-- swipe: { direction: UP }
-- swipe: { direction: UP }
-- tapOn: { text: "Comments", optional: true }
+- scrollUntilVisible:
+    element:
+      id: "offer-comments-button"
+    direction: DOWN
+- tapOn: { id: "offer-comments-button" }
 - assertVisible: "Publish"
 - inputText: "E2E device comment"
 - tapOn: "Publish"

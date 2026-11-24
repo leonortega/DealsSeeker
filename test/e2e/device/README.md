@@ -44,7 +44,8 @@ Each subflow starts with a reset (Offers → Feed → View all → portrait), so
 
 ## Known gaps
 
-- **Current run: 13/14 flows pass** after the native-navigation migration (single Maestro session). `offers-comment.yaml` remains failing: the emulator's feed does not render an offer card with a `Comments` control, even with seeded offers. The flow is kept failing, not skipped.
+- **Coverage now includes**: auth, Offers search/favorites/vote/report-prefill, mode switch, query persistence, no-results, help, FAB, landscape, modal back/discard, suggestions submit, reports submit, account settings (theme/nav/avatar).
+- **Tracked gaps**: `offers-comment.yaml` (comment modal not opening reliably in the emulator) and `add-offer-submit.yaml` (the app requires a photo + confirmed location, which the emulator image picker cannot supply). Offer-report prefill was verified manually through the device accessibility tools when Maestro's driver became stuck.
 - Network fault injection for the failed-search test needs either an API test flag or a proxy; until then that single scenario stays on the web suite.
 - Landscape is covered by `setOrientation: LANDSCAPE_LEFT`, which also restores portrait.
 - TalkBack/VoiceOver remain manual checks.

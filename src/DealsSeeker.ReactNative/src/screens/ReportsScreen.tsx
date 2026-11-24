@@ -117,6 +117,7 @@ export function ReportsScreen() {
         <Pressable
           accessibilityLabel={t('reports.submit')}
           accessibilityRole="button"
+          testID="report-submit-button"
           style={[styles.button, { backgroundColor: palette.danger }]}
           onPress={() => void submit()}
         >

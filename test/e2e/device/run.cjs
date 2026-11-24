@@ -27,6 +27,12 @@ const sharedFlows = [
   'offers-search.yaml',
   'offers-favorite.yaml',
   'offers-comment.yaml',
+  'offer-vote.yaml',
+  'offer-report-prefill.yaml',
+  'add-offer-submit.yaml',
+  'suggestions-submit.yaml',
+  'reports-submit.yaml',
+  'account-settings.yaml',
   'ux-mode-switch.yaml',
   'ux-persistence.yaml',
   'ux-query-persistence.yaml',
@@ -42,15 +48,12 @@ const PARENT_PREAMBLE = `appId: ${APP_ID}
 ---
 - launchApp:
     clearState: true
-- tapOn:
-    text: "DealsSeeker"
-    index: 1
-    optional: true
+- tapOn: { text: "Fetch development servers", optional: true }
+- waitForAnimationToEnd
+- tapOn: { text: "DealsSeeker", index: 1, optional: true }
+- tapOn: { point: "88%,47%", optional: true }
 - tapOn:
     text: "Continue"
-    optional: true
-- tapOn:
-    point: "88%,47%"
     optional: true
 - extendedWaitUntil:
     visible: "Sign in"
@@ -165,6 +168,8 @@ async function main() {
     process.exit(1);
   }
 
+  // The emulator and app are expected to be running already. Only pin the
+  // location so seeded offers fall inside the default search radius.
   spawnSync(adbPath, ['-s', DEVICE_SERIAL, 'shell', 'geo', 'fix', '-74.006', '40.7128'], { stdio: 'ignore' });
 
   let generated;

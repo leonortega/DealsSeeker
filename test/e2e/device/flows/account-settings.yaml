@@ -1,0 +1,36 @@
+appId: com.anonymous.dealsseekerreactnative
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    text: "DealsSeeker"
+    index: 1
+    optional: true
+- tapOn:
+    text: "Continue"
+    optional: true
+- tapOn:
+    point: "88%,47%"
+    optional: true
+- extendedWaitUntil:
+    visible: "Sign in"
+    timeout: 20000
+- tapOn: "Email"
+- inputText: ${EMAIL}
+- tapOn: "Password"
+- inputText: "password1"
+- hideKeyboard
+- waitForAnimationToEnd
+- tapOn:
+    point: "50%,76%"
+- tapOn:
+    text: "Got it"
+    optional: true
+- assertVisible: "Feed"
+- tapOn: "My Account"
+- tapOn: { text: "Dark theme", optional: true }
+- tapOn: { text: "Light theme", optional: true }
+- tapOn: { text: "Car", optional: true }
+- tapOn: { text: "Pedestrian", optional: true }
+- tapOn: { text: "Avatar cat", optional: true }
+- assertVisible: "My Account"

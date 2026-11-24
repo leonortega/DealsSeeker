@@ -32,12 +32,18 @@ const Tabs = createBottomTabNavigator<MainTabParamList>();
 function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
   const { activeTab, openTab, t } = useApp();
   const selectedTab = resolveTabFromRoute(String(state.routes[state.index]?.name ?? ''));
+  const lastNavTab = useRef<MainTab | null>(selectedTab);
 
   useEffect(() => {
-    if (selectedTab && selectedTab !== activeTab) {
+    if (selectedTab && selectedTab !== lastNavTab.current) {
+      lastNavTab.current = selectedTab;
       openTab(selectedTab);
+      return;
     }
-  }, [activeTab, openTab, selectedTab]);
+    if (activeTab && activeTab !== selectedTab) {
+      navigation.navigate(activeTab);
+    }
+  }, [activeTab, navigation, openTab, selectedTab]);
 
   return (
     <AppFooterBar

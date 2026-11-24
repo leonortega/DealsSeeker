@@ -1,11 +1,16 @@
 import { act, render } from '@testing-library/react-native';
 
+
+
 const listeners: Record<string, Array<(event: { preventDefault: () => void }) => void>> = {};
 const mockCloseImmersiveOffers = jest.fn();
+const mockNavigate = jest.fn();
+let mockActiveTab = 'offers';
 
 jest.mock('@react-navigation/native', () => ({
   NavigationContainer: ({ children }: { children: React.ReactNode }) => children,
   useNavigation: () => ({
+    navigate: mockNavigate,
     addListener: (event: string, handler: (event: { preventDefault: () => void }) => void) => {
       listeners[event] = [...(listeners[event] ?? []), handler];
       return () => undefined;
@@ -24,9 +29,24 @@ let tabNavigatorProps: { initialRouteName?: string } = {};
 
 jest.mock('@react-navigation/bottom-tabs', () => ({
   createBottomTabNavigator: () => ({
-    Navigator: (props: { children: React.ReactNode; initialRouteName?: string }) => {
+    Navigator: (props: {
+      children: React.ReactNode;
+      initialRouteName?: string;
+      tabBar?: (args: {
+        state: { routes: Array<{ name: string }>; index: number };
+        navigation: { navigate: typeof mockNavigate };
+      }) => React.ReactNode;
+    }) => {
       tabNavigatorProps = props;
-      return props.children;
+      return (
+        <>
+          {props.children}
+          {props.tabBar?.({
+            state: { routes: [{ name: 'offers' }], index: 0 },
+            navigation: { navigate: mockNavigate },
+          })}
+        </>
+      );
     },
     Screen: ({ component: Component }: { component: () => React.ReactNode }) => <Component />,
   }),
@@ -52,7 +72,7 @@ jest.mock('@react-navigation/native-stack', () => ({
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
-    activeTab: 'offers',
+    activeTab: mockActiveTab,
     closeImmersiveOffers: mockCloseImmersiveOffers,
     closeOverlay: jest.fn(),
     immersiveOffers: true,
@@ -88,8 +108,19 @@ const { AppNavigator } = require('../../../src/DealsSeeker.ReactNative/src/navig
 describe('native shell Back handling', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockActiveTab = 'offers';
     tabNavigatorProps = {};
     Object.keys(listeners).forEach((key) => delete listeners[key]);
+  });
+
+  it('follows an external tab change such as offer prefill', async () => {
+    const view = await render(<AppNavigator />);
+    mockActiveTab = 'reports';
+    await act(async () => {
+      view.rerender(<AppNavigator />);
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith('reports');
   });
 
   it('starts on the Offers feed', async () => {

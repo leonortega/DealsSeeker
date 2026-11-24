@@ -191,6 +191,7 @@ function ImmersiveOfferPage({
         <Pressable
           accessibilityLabel={t('offers.action.comments')}
           accessibilityRole="button"
+          testID="offer-comments-button"
           style={styles.railAction}
           onPress={() => onComments(offer)}
         >
@@ -226,6 +227,7 @@ function ImmersiveOfferPage({
         <Pressable
           accessibilityLabel={t('offers.action.report')}
           accessibilityRole="button"
+          testID="offer-report-button"
           style={styles.railAction}
           onPress={() => onReport(offer)}
         >
@@ -237,6 +239,7 @@ function ImmersiveOfferPage({
         <Pressable
           accessibilityLabel={t('offers.action.available')}
           accessibilityRole="button"
+          testID="offer-available-button"
           accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
           disabled={offer.hasCurrentUserVoted}
           style={[styles.railAction, offer.hasCurrentUserVoted && styles.disabled]}

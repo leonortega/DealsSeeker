@@ -1,7 +1,7 @@
 # Mobile-native shell & navigation plan
 
 - **Date**: 2026-11-22
-- **Status**: Phases 0–2 complete; Phase 3 in progress. Device verification is unblocked via user-level CMake 3.31.6 (Ninja 1.12.1). Two device-found bugs were fixed and verified. Maestro now shares one login across 11 flows (3 auth flows isolated), cutting the suite from ~10 min to ~5 min; result remains 13/14, with `offers-comment.yaml` the tracked environment gap.
+- **Status**: Phases 0–2 complete; Phase 3 in progress. Device verification unblocked via user-level CMake 3.31.6. Happy-path flows added for suggestions, reports, account settings, votes and offer-report prefill; four of five passed on device, and report prefill was verified manually. Native-tab two-way sync bug fixed with RED/GREEN. Remaining gaps: `offers-comment` and `add-offer-submit` (photo/location requirement), plus Maestro driver instability that now requires an emulator reboot to clear.
 - **Inputs**: the hybrid-navigation analysis, the mobile-only and hybrid-conformity clarifications, the Impeccable context (`PRODUCT.md`, `DESIGN.md`, native refs), the design-pattern-review lens, and the device-test evidence from `test/e2e/MOBILE_DEVICE_TEST_PLAN.md`.
 - **Rule**: this repo is spec-first. No production change in §8–§10 starts before the specs in §7 are Approved.
 
