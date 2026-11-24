@@ -13,7 +13,6 @@ export function ReportsScreen() {
   const { activeTab, clearReportDraft, openTab, palette, reportDraft, session, api, t } = useApp();
   const insets = useSafeAreaInsets();
   const [message, setMessage] = useState('');
-  const [offerId, setOfferId] = useState('');
   const [reportedAtUtc, setReportedAtUtc] = useState(new Date().toISOString());
   const [status, setStatus] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<StatusTone>('neutral');
@@ -28,13 +27,11 @@ export function ReportsScreen() {
   useEffect(() => {
     if (!reportDraft) {
       setMessage('');
-      setOfferId('');
       setReportedAtUtc(new Date().toISOString());
       return;
     }
 
     setMessage(reportDraft.initialMessage);
-    setOfferId(reportDraft.offer.offerId);
     setReportedAtUtc(reportDraft.reportedAtUtc);
   }, [reportDraft]);
 
@@ -50,7 +47,7 @@ export function ReportsScreen() {
 
     const result = await api.submitReport({
       message: message.trim(),
-      offerId: offerId.trim() || null,
+      offerId: reportDraft?.offer.offerId ?? null,
       userId: session?.userId ?? null,
       reportedAtUtc,
     });
@@ -61,7 +58,6 @@ export function ReportsScreen() {
     }
 
     setMessage('');
-    setOfferId('');
     setReportedAtUtc(new Date().toISOString());
     clearReportDraft();
     reportStatus(t('reports.success'));
@@ -89,18 +85,6 @@ export function ReportsScreen() {
         <View style={styles.header}>
           <Text style={[styles.title, { color: palette.ink }]}>{t('reports.title')}</Text>
         </View>
-        <Text style={[styles.label, { color: palette.inkMuted }]}>{t('reports.userId')}</Text>
-        <View style={[styles.readonly, { backgroundColor: palette.panel, borderColor: palette.border }]}>
-          <Text style={{ color: palette.ink }}>{session?.userId ?? ''}</Text>
-        </View>
-        <Text style={[styles.label, { color: palette.inkMuted }]}>{t('reports.offerId')}</Text>
-        <TextInput
-          accessibilityLabel={t('reports.offerId')}
-          editable={!reportDraft}
-          onChangeText={setOfferId}
-          style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
-          value={offerId}
-        />
         <Text style={[styles.label, { color: palette.inkMuted }]}>{t('reports.message')}</Text>
         <TextInput
           accessibilityLabel={t('reports.message')}
@@ -188,12 +172,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   readonly: {
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-  },
-  input: {
     borderRadius: 16,
     borderWidth: 1,
     paddingHorizontal: 14,

@@ -64,11 +64,12 @@ describe('secondary surface accessibility (APP.ACCESSIBILITY.UX.002/003)', () =>
     );
   });
 
-  it('associates the report offer-id label with its field', async () => {
+  it('labels the report message field without exposing internal identifiers', async () => {
     mockActiveTab = 'reports';
     mockGetFavorites.mockResolvedValue([]);
     await render(<ReportsScreen />);
-    expect(screen.getByLabelText('reports.offerId')).toBeTruthy();
+    expect(screen.getByLabelText('reports.message')).toBeTruthy();
+    expect(screen.queryByLabelText('reports.offerId')).toBeNull();
   });
 
   it('announces the help sheet as a modal with a labelled close control', async () => {

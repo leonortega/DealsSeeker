@@ -241,4 +241,24 @@ describe('ReportsScreen', () => {
     expect(await screen.findByText('reports.failed')).toBeTruthy();
     expect(mockSuccessFeedback).not.toHaveBeenCalled();
   });
+
+  it('does not expose raw identifiers in the report form', async () => {
+    await render(<ReportsScreen />);
+
+    expect(screen.queryByText('reports.userId')).toBeNull();
+    expect(screen.queryByText('reports.offerId')).toBeNull();
+    expect(screen.queryByLabelText('reports.offerId')).toBeNull();
+  });
+
+  it('still attaches the authenticated user id without showing it', async () => {
+    await render(<ReportsScreen />);
+    await fireEvent.changeText(screen.getByPlaceholderText('reports.message'), 'Closed down');
+    await fireEvent.press(screen.getByText('reports.submit'));
+
+    await waitFor(() =>
+      expect(mockSubmitReport).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Closed down', userId: 'u1' })
+      )
+    );
+  });
 });

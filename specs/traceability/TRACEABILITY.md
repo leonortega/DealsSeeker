@@ -78,6 +78,7 @@
 | `OFFERS.LIST.ITEM.001` | `bdd/offers-list-item.feature` | N/A | `examples/offers-view/offers-list-item.render.json` |
 | `OFFERS.LIST.ACTIONS.001` | `bdd/offers-list-item.feature`, `bdd/reports-offer-prefill.feature` | `contracts/json-schema/offer-search-response.schema.json`, `contracts/json-schema/offer-availability-vote-request.schema.json`, `contracts/json-schema/report-offer-request.schema.json`, `contracts/json-schema/command-result.schema.json` | `examples/offers-actions/vote-availability.input.json`, `examples/offers-actions/vote-availability.output.json`, `examples/offers-actions/report-offer.input.json`, `examples/offers-actions/report-offer.output.json` |
 | `REPORTS.OFFER.PREFILL.001` | `bdd/reports-offer-prefill.feature` | `contracts/json-schema/report-request.schema.json`, `contracts/json-schema/offer-item.schema.json` | `examples/reports/report-prefill.input.json` |
+| `REPORTS.FORM.002` | `bdd/reports-contributor-fields.feature` | N/A | N/A |
 | `OFFERS.NAV.ADD.001` | `bdd/offers-layout-and-navigation.feature` | N/A | `examples/offers-view/offers-nav-add.tap.json` |
 | `OFFERS.NAV.ADD.002` | `bdd/create-action-overlay-visibility.feature` | N/A | N/A |
 | `ADD.OFFER.LAYOUT.001` | `bdd/add-offer-layout.feature` | `contracts/json-schema/add-offer-draft.schema.json` | `examples/add-offer/add-offer-layout.render.json` |

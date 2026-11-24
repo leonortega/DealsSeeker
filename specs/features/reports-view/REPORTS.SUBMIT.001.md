@@ -63,6 +63,7 @@ Scenario: Reports supports legacy Complaints entry point
 ## Related Specs
 - `APP.SHELL.001`
 - `REPORTS.OFFER.PREFILL.001`
+- `REPORTS.FORM.002`
 - `ACCOUNT.PROFILE.001`
 - `APP.ACCESSIBILITY.UX.003`
 - `APP.POLISH.UX.001`
