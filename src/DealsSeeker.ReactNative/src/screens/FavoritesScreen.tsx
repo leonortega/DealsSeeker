@@ -77,7 +77,7 @@ export function FavoritesScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}>
       <StandardHeader />
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <View style={styles.header}>

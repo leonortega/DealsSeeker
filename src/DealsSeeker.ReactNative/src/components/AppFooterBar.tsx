@@ -33,7 +33,11 @@ export function AppFooterBar({ items }: { items: FooterItem[] }) {
           style={[styles.tab, item.active && styles.tabActive]}
         >
           <Text style={[styles.icon, item.active ? styles.iconActive : styles.iconInactive]}>{item.icon}</Text>
-          <Text style={[styles.label, item.active && styles.labelActive]} numberOfLines={2}>
+          <Text
+            maxFontSizeMultiplier={1}
+            numberOfLines={1}
+            style={[styles.label, item.active && styles.labelActive]}
+          >
             {item.label}
           </Text>
         </Pressable>
@@ -53,7 +57,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 10,
     marginHorizontal: 16,
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
     paddingVertical: 8,
   },
   tab: {
@@ -84,6 +88,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontSize: 11,
     fontWeight: '700',
+    letterSpacing: -0.4,
     lineHeight: 14,
     textAlign: 'center',
   },

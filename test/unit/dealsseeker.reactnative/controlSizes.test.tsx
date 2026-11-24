@@ -114,8 +114,8 @@ describe('touch target and label floors', () => {
   it('reserves scroll space for the floating action below the search controls', async () => {
     await render(<OffersScreen />);
 
-    const scroll = hostElements().find((node) => node.type === 'ScrollView');
-    expect(styleOf(scroll as never).paddingBottom).toBeGreaterThanOrEqual(88);
+    const scroll = screen.getByTestId('offers-scroll');
+    expect(StyleSheet.flatten(scroll.props.contentContainerStyle).paddingBottom).toBeGreaterThanOrEqual(88);
   });
 
   it('gives every footer tab a 44-unit touch target', async () => {

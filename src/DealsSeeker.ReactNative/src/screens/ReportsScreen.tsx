@@ -73,7 +73,7 @@ export function ReportsScreen() {
       style={styles.keyboardView}
       testID="reports-keyboard-view"
     >
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}>
       <StandardHeader />
       {reportDraft ? (
         <View style={[styles.preview, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>

@@ -14,7 +14,7 @@ colors:
   clay-blush: "#e9c9b8"
   field-success: "#2f6e46"
   brick-danger: "#8d2f2f"
-  soft-shadow: "rgba(31, 49, 40, 0.14)"
+  soft-shadow: "rgba(31, 49, 40, 0.18)"
   day-scrim: "rgba(22, 30, 28, 0.52)"
   night-paper: "#17201d"
   night-raised: "#22302b"
@@ -114,7 +114,7 @@ DealsSeeker reads like a well-kept local trail map: warm paper ground, deep fore
 
 The typography follows the same cartographer's logic. Georgia acts as the landmark: it appears on the product name, screen titles, offer names, and the rare brand moment, never on the operational text that does the work. Everything else — descriptions, distances, tags, buttons, micro-labels — stays on the system sans, tight and unpretentious. Surfaces are generously rounded but never soft enough to lose structure; a single low shadow lifts offer cards off the page, and everything else is held in place by 1px borders and tonal steps.
 
-The system ships one mobile-native language to iOS, Android, and web from a single codebase. Two complete palettes cover light and dark: a daylight paper-and-forest scheme and a forest-night scheme for low-light browsing. The immersive photo feed is the deliberate exception — it is always laid on a fixed forest backdrop (`#1b2f28`), with the app name and logo present, so the imagery carries the moment and the interface recedes. No standalone logo file or documented voice guide exists in the project; the wordmark is set in Georgia and the mark is a rounded square.
+The system ships one mobile-native language to iOS and Android from a single codebase. Two complete palettes cover light and dark: a daylight paper-and-forest scheme and a forest-night scheme for low-light browsing. The immersive photo feed is the deliberate exception — it is always laid on a fixed forest backdrop (`#1b2f28`), with the app name and logo present, so the imagery carries the moment and the interface recedes. No standalone logo file or documented voice guide exists in the project; the wordmark is set in Georgia and the mark is a rounded square.
 
 **Key Characteristics:**
 - Warm paper and forest green carry the structure; terracotta is the only wayfinding accent.
@@ -180,7 +180,7 @@ Mobile-first and full-bleed: the primary surface is a vertical, edge-to-edge off
 
 The bottom navigation floats above the content with 16px side margins and a 10px bottom inset, so it reads as a distinct rounded instrument rather than a system bar. In the immersive feed, overlay copy reserves 70–110px of right-side clearance so the action rail never crowds the business name or description.
 
-Values are expressed in density-independent units (dp/sp) in the native code and map to CSS px on web. No separate desktop grid is defined: the same phone-first composition ships to every target rather than stretching the feed into a wide layout.
+Values are expressed in density-independent units (dp/sp) in the native code and map to CSS px on web. No separate desktop grid is defined: the same phone-first composition ships to both platforms rather than stretching the feed into a wide layout.
 
 ## Elevation & Depth
 
@@ -208,7 +208,7 @@ Soft, generous rounding with a clear hierarchy. Full pills (`999px`) are for any
 - **Shape:** 18px radius for compact actions, 28px for primary CTAs.
 - **Primary:** Kiln Terracotta fill, white 16px/800 centered label, ~15px vertical padding.
 - **Secondary / Ghost:** Card Cream fill, Forest Ink label, 1px sand border, 14px padding.
-- **States:** Disabled is `opacity: 0.45`. No authored hover or focus treatment exists in the native implementation; when adding one for web, use the terracotta accent rather than a browser-default ring.
+- **States:** Disabled is `opacity: 0.45`. No authored hover or focus treatment exists in the native implementation; when adding one, use the terracotta accent rather than a browser-default ring.
 
 ### Chips & Badges
 - **Style:** Full pill, 10px horizontal / 6px vertical padding, 11px/700 label.
@@ -248,5 +248,5 @@ Soft, generous rounding with a clear hierarchy. Full pills (`999px`) are for any
 - **Don't** set body copy or metadata in Georgia; it is for landmarks only.
 - **Don't** invent a third accent color. Sage is secondary, clay is tertiary, and success/danger are status-only.
 - **Don't** stack shadows or use hard-offset shadows; the system is flat at rest with one ambient lift.
-- **Don't** add a hover-only affordance or a wide desktop reflow — native touch is the primary target and web shares the phone-first composition.
+- **Don't** add a hover-only affordance or a wide desktop reflow — native touch is the primary target and both platforms share the phone-first composition.
 - **Don't** hardcode a new surface color when a palette role already exists; the hardcoded footer is the one deliberate exception.
