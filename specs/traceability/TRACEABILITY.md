@@ -92,3 +92,5 @@
 | `APP.ACCESSIBILITY.UX.004` | `bdd/app-navigation-focus.feature` | N/A | N/A |
 | `APP.HAPTICS.001` | `bdd/app-haptics.feature` | N/A | N/A |
 | `APP.CONTEXT_MENU.001` | `bdd/offer-long-press-actions.feature` | N/A | N/A |
+| `APP.BOTTOM_SHEET.001` | `bdd/app-bottom-sheet.feature` | N/A | N/A |
+| `APP.NATIVE_MAP.001` | `bdd/native-map.feature` | N/A | N/A |

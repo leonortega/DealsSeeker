@@ -82,3 +82,4 @@ Scenario: No foreign close control appears in the brand UI
 - `ADD.OFFER.UX.001`
 - `APP.LIFECYCLE.001`
 - `APP.ACCESSIBILITY.UX.004`
+- `APP.BOTTOM_SHEET.001`

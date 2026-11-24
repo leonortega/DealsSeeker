@@ -6,7 +6,7 @@ import { isRequestAborted } from '../api/client';
 import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '../api/types';
 import { ImmersiveOfferFeed } from '../components/ImmersiveOfferFeed';
 import { ImmersiveFeedTab } from '../components/ImmersiveFeedTabs';
-import { MapPreview } from '../components/MapPreview';
+import { NativeMapPreview } from '../components/NativeMapPreview';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetailModal } from '../components/OfferDetailModal';
 import { OfferCommentsModal } from '../components/OfferCommentsModal';
@@ -505,7 +505,7 @@ export function OffersScreen() {
 
         {renderStatePanel()}
 
-        <MapPreview
+        <NativeMapPreview
           businesses={results.businesses}
           center={userLocation}
           height={300}

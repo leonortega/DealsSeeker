@@ -76,3 +76,4 @@ Scenario: Help follows theme and localization
 - `APP.ACCESSIBILITY.UX.001`
 - `OFFERS.MODE.SWITCH.001`
 - `APP.ACCESSIBILITY.UX.003`
+- `APP.BOTTOM_SHEET.001`

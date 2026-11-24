@@ -1,6 +1,7 @@
 import type { RefObject } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { NativeBottomSheet } from './NativeBottomSheet';
 import { restoreFocus } from '../utils/focusReturn';
 
 const TOPICS = [
@@ -28,12 +29,7 @@ export function HelpSheet({
   }
 
   return (
-    <Modal animationType="fade" transparent visible={visible} onRequestClose={close}>
-      <Pressable
-        accessible={false}
-        style={[styles.backdrop, { backgroundColor: palette.overlay }]}
-        onPress={close}
-      >
+    <NativeBottomSheet visible={visible} onClose={close}>
         <View
           accessibilityViewIsModal
           testID="help-sheet"
@@ -57,8 +53,7 @@ export function HelpSheet({
             <Text style={styles.closeLabel}>{t('common.close')}</Text>
           </Pressable>
         </View>
-      </Pressable>
-    </Modal>
+    </NativeBottomSheet>
   );
 }
 

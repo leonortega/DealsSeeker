@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LoadingOverlay } from './src/components/LoadingOverlay';
 import { AppProvider } from './src/context/AppContext';
@@ -31,11 +32,13 @@ function AppRoot() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <AppProvider>
-        <AppRoot />
-      </AppProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider>
+        <AppProvider>
+          <AppRoot />
+        </AppProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

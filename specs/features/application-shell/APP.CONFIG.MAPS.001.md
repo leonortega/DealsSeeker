@@ -71,3 +71,4 @@ Scenario: Provider failure uses fallback behavior
 - `APP.LOCATION.PROVIDER.RESILIENCE.001`
 - `ADD.OFFER.LOCATION.003`
 - `APP.POLISH.UX.001`
+- `APP.NATIVE_MAP.001`

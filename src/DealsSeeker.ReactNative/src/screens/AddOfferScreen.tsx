@@ -19,7 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
 import { apiConfig } from '../api/config';
 import { GeoPoint, OfferImageDto, OfferLocationDto } from '../api/types';
-import { MapPreview } from '../components/MapPreview';
+import { NativeMapPreview } from '../components/NativeMapPreview';
 import { StandardHeader } from '../components/StandardHeader';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
@@ -904,7 +904,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
           ))}
           <Text style={{ color: palette.inkMuted }}>{t('add.mapPinHint')}</Text>
           {location || mapCenter ? (
-            <MapPreview
+            <NativeMapPreview
               businesses={
                 location
                   ? [
