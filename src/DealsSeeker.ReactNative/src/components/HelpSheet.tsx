@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   sheet: {
     borderRadius: 24,
     borderWidth: 1,
-    maxHeight: '80%',
+    flex: 1,
     padding: 20,
     width: '100%',
   },
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   list: {
-    flexGrow: 0,
+    flex: 1,
   },
   topic: {
     gap: 4,

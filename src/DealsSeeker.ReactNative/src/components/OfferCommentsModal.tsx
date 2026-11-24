@@ -212,8 +212,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     borderWidth: 1,
+    flex: 1,
     gap: 12,
-    maxHeight: '86%',
     padding: 20,
   },
   header: {
@@ -255,8 +255,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   list: {
-    flexGrow: 0,
-    maxHeight: 320,
+    flex: 1,
   },
   listContent: {
     gap: 10,

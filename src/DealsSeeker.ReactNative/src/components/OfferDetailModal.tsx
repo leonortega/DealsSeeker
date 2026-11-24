@@ -487,8 +487,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     borderWidth: 1,
+    flex: 1,
     gap: 14,
-    maxHeight: '88%',
     padding: 20,
   },
   fullscreenSheet: {
