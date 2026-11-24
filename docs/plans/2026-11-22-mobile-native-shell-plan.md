@@ -100,9 +100,9 @@ Keep the existing brand glyphs / a single stroke-consistent set (Lucide) everywh
 |---|---|---|
 | 0 | Evidence & specs | Complete |
 | 1 | Mobile-only cleanup | Complete |
-| 2 | Native navigation behavior | Complete (code level) |
-| 3 | Design-system hardening | In progress |
-| 4 | Optional OS capabilities | Each needs its own spec |
+| 2 | Native navigation behavior | **CLOSED** (2026-11-24) |
+| 3 | Design-system hardening | **CLOSED** (2026-11-24) |
+| 4 | Optional OS capabilities | Not started — each needs its own spec |
 
 ## 6. Scope guard
 
