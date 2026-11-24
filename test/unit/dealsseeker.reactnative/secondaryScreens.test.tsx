@@ -130,6 +130,25 @@ describe('SuggestionsScreen', () => {
     jest.useRealTimers();
   });
 
+  it('cancels the pending Offers redirect when the user leaves before it fires', async () => {
+    jest.useFakeTimers();
+    const view = await render(<SuggestionsScreen />);
+    await fireEvent.changeText(screen.getByPlaceholderText('suggestions.message'), 'More deals please');
+    await fireEvent.press(screen.getByText('suggestions.submit'));
+    await waitFor(() => expect(mockSubmitSuggestion).toHaveBeenCalled());
+
+    mockActiveTab = 'reports';
+    await act(async () => {
+      view.rerender(<SuggestionsScreen />);
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(mockOpenTab).not.toHaveBeenCalled();
+    jest.useRealTimers();
+  });
+
   it('reports a failed submission without leaving the view', async () => {
     mockSubmitSuggestion.mockResolvedValue({ success: false });
     await render(<SuggestionsScreen />);
@@ -181,6 +200,25 @@ describe('ReportsScreen', () => {
       jest.advanceTimersByTime(1000);
     });
     expect(mockOpenTab).toHaveBeenCalledWith('offers');
+    jest.useRealTimers();
+  });
+
+  it('cancels the pending Offers redirect when the user leaves before it fires', async () => {
+    jest.useFakeTimers();
+    const view = await render(<ReportsScreen />);
+    await fireEvent.changeText(screen.getByPlaceholderText('reports.message'), 'Closed down');
+    await fireEvent.press(screen.getByText('reports.submit'));
+    await waitFor(() => expect(mockSubmitReport).toHaveBeenCalled());
+
+    mockActiveTab = 'account';
+    await act(async () => {
+      view.rerender(<ReportsScreen />);
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(mockOpenTab).not.toHaveBeenCalled();
     jest.useRealTimers();
   });
 

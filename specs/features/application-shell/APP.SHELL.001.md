@@ -80,7 +80,14 @@ Scenario: Suggestions and Reports success submissions redirect to Offers
   Given the authenticated user is in Suggestions or Reports view
   When the user submits the form
   And the submit response is successful with no errors
-  Then the system shall redirect the user to Offers view
+  Then the success confirmation shall remain perceivable before the redirect
+  And the system shall redirect the user to Offers view
+
+Scenario: User leaves before the delayed success redirect
+  Given a successful submission has produced a confirmation and a pending delayed redirect
+  When the user navigates to another destination before that redirect occurs
+  Then the pending redirect shall be cancelled
+  And the user's chosen destination shall remain visible
 
 Scenario: No view button is displayed in the header or hero
   Given the authenticated user is on the Offers view without an open overlay

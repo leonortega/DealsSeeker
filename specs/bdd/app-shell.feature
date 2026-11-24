@@ -30,7 +30,14 @@ Feature: Application shell and session-aware landing
     And the user is in Suggestions or Reports view
     When the user submits with valid data
     And the response is successful with no errors
-    Then the app redirects to Offers view
+    Then the success confirmation is perceivable before the redirect
+    And the app redirects to Offers view
+
+  Scenario: User leaves before the delayed success redirect
+    Given a successful submission has produced a confirmation and a pending delayed redirect
+    When the user navigates to another destination before that redirect occurs
+    Then the pending redirect is cancelled
+    And the user's chosen destination remains visible
 
   Scenario: No duplicate presentation control in the header or hero
     Given the user is authenticated
