@@ -40,3 +40,11 @@ Feature: Native bottom-sheet behavior for overlays
     When the user views its controls
     Then no separate Close button is rendered
     And the native handle and swipe dismissal remain available
+
+  Scenario: Sheet content is not covered by presenting-view chrome
+    Given the immersive offers feed is displayed
+    And a status banner is visible
+    When an overlay sheet opens
+    Then the feed's top bar and tabs do not appear above the sheet
+    And the status banner does not appear above the sheet
+    And all sheet content remains readable

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Native Bottom-Sheet Behavior for Overlays
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Application Shell, Offers overlays
 - **Priority**: Low
@@ -27,6 +27,7 @@ Give the application's modal overlays native bottom-sheet interaction — drag, 
 - `APP.BOTTOM_SHEET.001-R7`: If a device or platform cannot provide sheet behavior, the overlay shall still open and close through its existing controls.
 - `APP.BOTTOM_SHEET.001-R8`: A sheet that is not visible shall not open the on-screen keyboard or take focus from the current surface.
 - `APP.BOTTOM_SHEET.001-R9`: An overlay sheet shall not render a separate Close button that duplicates the native handle and swipe dismissal; dismissal shall remain available through the native affordance and to assistive technology.
+- `APP.BOTTOM_SHEET.001-R10`: While a sheet is open, its surface and backdrop shall render above all presenting-view chrome, including headers, presentation switches, filters and transient status banners.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -68,6 +69,14 @@ Scenario: Overlays do not duplicate the native dismissal affordance
   When the user views its controls
   Then no separate Close button shall be rendered
   And the native handle and swipe dismissal shall remain available
+
+Scenario: Sheet content is not covered by presenting-view chrome
+  Given the immersive offers feed is displayed
+  And a status banner is visible
+  When an overlay sheet opens
+  Then the feed's top bar and tabs shall not appear above the sheet
+  And the status banner shall not appear above the sheet
+  And all sheet content shall remain readable
 ```
 
 ## Example Inputs/Outputs

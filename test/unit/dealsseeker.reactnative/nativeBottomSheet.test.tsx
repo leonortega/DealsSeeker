@@ -40,6 +40,7 @@ describe('NativeBottomSheet', () => {
     const sheet = screen.getByTestId('native-bottom-sheet');
     expect(sheet.props.snapPoints).toEqual(['65%', '90%']);
     expect(sheet.props.enablePanDownToClose).toBe(true);
+    expect(StyleSheet.flatten(sheet.props.containerStyle).zIndex).toBeGreaterThan(5);
     expect(screen.getByText('Sheet content')).toBeTruthy();
   });
 

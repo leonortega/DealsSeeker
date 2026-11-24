@@ -39,6 +39,9 @@ export function NativeBottomSheet({
         <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.52} />
       )}
       backgroundStyle={{ backgroundColor: palette.card }}
+      // Immersive feed chrome uses zIndex 2 and status banners use zIndex 5;
+      // the sheet must sit above both so its content stays readable.
+      containerStyle={{ zIndex: 1000 }}
       handleIndicatorStyle={{ backgroundColor: palette.border }}
     >
       <BottomSheetView>{children}</BottomSheetView>

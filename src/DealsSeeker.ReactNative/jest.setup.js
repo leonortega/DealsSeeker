@@ -24,7 +24,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
   const { View } = require('react-native');
   return {
     __esModule: true,
-    default: React.forwardRef(({ children, index, snapPoints, enablePanDownToClose, backgroundStyle, onClose }, ref) => {
+    default: React.forwardRef(({ children, index, snapPoints, enablePanDownToClose, backgroundStyle, containerStyle, onClose }, ref) => {
       React.useImperativeHandle(ref, () => ({ expand() {}, close() {}, snapToIndex() {} }));
       if (index === -1) {
         return null;
@@ -36,6 +36,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
           snapPoints,
           enablePanDownToClose,
           backgroundStyle,
+          containerStyle,
           onClose,
         },
         children
