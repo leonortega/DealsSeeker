@@ -5,6 +5,7 @@ import { OfferItemDto } from '../api/types';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
 import { announceStatus } from '../utils/announce';
+import { selectionFeedback } from '../utils/haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { openDirections } from '../utils/maps';
 import { shorten } from '../utils/format';
@@ -74,6 +75,7 @@ export function FavoritesScreen() {
     }
 
     setOffers((current) => current.filter((item) => item.offerId !== offer.offerId));
+    selectionFeedback();
   }
 
   return (

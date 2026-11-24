@@ -20,6 +20,7 @@ import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { partitionOffers } from '../utils/format';
+import { selectionFeedback, successFeedback } from '../utils/haptics';
 import { openDirections } from '../utils/maps';
 import { resolveOffersViewState } from '../utils/offersState';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
@@ -327,6 +328,7 @@ export function OffersScreen() {
 
     await search();
     setActionStatus(t('offers.favoriteUpdated'));
+    selectionFeedback();
   }
 
   async function vote(offer: OfferItemDto, voteType: OfferAvailabilityVoteType) {
@@ -344,6 +346,7 @@ export function OffersScreen() {
     }
 
     setActionStatus(t('offers.feedbackRegistered'));
+    successFeedback();
     await search();
   }
 

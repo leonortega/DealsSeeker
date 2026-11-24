@@ -5,6 +5,7 @@ import { useApp } from '../hooks/useApp';
 import { useDelayedOffersRedirect } from '../hooks/useDelayedOffersRedirect';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { announceStatus } from '../utils/announce';
+import { successFeedback } from '../utils/haptics';
 import { keyboardAvoidanceBehavior } from '../utils/layout';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
 
@@ -64,6 +65,7 @@ export function ReportsScreen() {
     setReportedAtUtc(new Date().toISOString());
     clearReportDraft();
     reportStatus(t('reports.success'));
+    successFeedback();
     redirectAfterSuccess();
   }
 
