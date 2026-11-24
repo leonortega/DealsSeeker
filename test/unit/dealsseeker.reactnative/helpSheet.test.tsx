@@ -3,6 +3,8 @@ import { HelpSheet } from '../../../src/DealsSeeker.ReactNative/src/components/H
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
+    openSheet: jest.fn(),
+    closeSheet: jest.fn(),
     palette: {
       accent: '#b85c38',
       border: '#d7c9b5',

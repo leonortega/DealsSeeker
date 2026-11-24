@@ -68,7 +68,7 @@ function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 function MainView() {
-  const { activeTab, closeImmersiveOffers, immersiveOffers, openAddOffer, overlayRoute, palette, t } = useApp();
+  const { activeTab, closeImmersiveOffers, immersiveOffers, openAddOffer, overlayRoute, palette, sheetCount, t } = useApp();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const containerRef = useRef<ComponentRef<typeof View>>(null);
@@ -104,7 +104,12 @@ function MainView() {
           <Tabs.Screen name="offers" component={OffersScreen} />
         </Tabs.Navigator>
       </View>
-      <CreateOfferFab label={t('nav.createOffer')} onPress={openAddOffer} palette={palette} />
+      <CreateOfferFab
+        label={t('nav.createOffer')}
+        onPress={openAddOffer}
+        palette={palette}
+        visible={sheetCount === 0}
+      />
       <LoadingOverlay />
     </View>
   );

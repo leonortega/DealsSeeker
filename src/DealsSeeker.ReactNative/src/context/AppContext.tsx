@@ -43,6 +43,9 @@ interface AppContextValue {
   palette: ReturnType<typeof resolveTheme>;
   reportDraft: OfferReportDraft | null;
   loadingCount: number;
+  sheetCount: number;
+  openSheet: () => void;
+  closeSheet: () => void;
   pendingOperations: string[];
   isPending: (operationKey: string) => boolean;
   api: ReturnType<typeof createDealsSeekerApi>;
@@ -85,7 +88,11 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [authScreen, setAuthScreen] = useState<AuthScreen>('login');
   const [activeTab, setActiveTab] = useState<MainTab>('offers');
   const [overlayRoute, setOverlayRoute] = useState<OverlayRoute>(null);
-  const [immersiveOffers, setImmersiveOffers] = useState(false);
+  // Approved default per OFFERS.MODE.SWITCH.001-R4 and OFFERS.FEED.IMMERSIVE.001-R43.
+  const [immersiveOffers, setImmersiveOffers] = useState(true);
+  const [sheetCount, setSheetCount] = useState(0);
+  const openSheet = useCallback(() => setSheetCount((count) => count + 1), []);
+  const closeSheet = useCallback(() => setSheetCount((count) => Math.max(0, count - 1)), []);
   const [loadingCount, setLoadingCount] = useState(0);
   const [pendingOperations, setPendingOperations] = useState<string[]>([]);
   const [cachedProfile, setCachedProfile] = useState<UserProfileDto | null>(null);
@@ -362,6 +369,9 @@ export function AppProvider({ children }: PropsWithChildren) {
     palette: resolveTheme(preferences.themeMode, systemScheme === 'light' ? 'light' : systemScheme === 'dark' ? 'dark' : null),
     reportDraft,
     loadingCount,
+    sheetCount,
+    openSheet,
+    closeSheet,
     pendingOperations,
     isPending,
     api,

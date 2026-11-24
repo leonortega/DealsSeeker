@@ -18,6 +18,8 @@ jest.mock('react-native-webview', () => {
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
+    openSheet: jest.fn(),
+    closeSheet: jest.fn(),
     api: { login: jest.fn() },
     palette: {
       accent: '#b85c38',

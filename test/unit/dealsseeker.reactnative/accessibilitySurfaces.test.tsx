@@ -17,6 +17,8 @@ const mockOpenTab = jest.fn();
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
+    openSheet: jest.fn(),
+    closeSheet: jest.fn(),
     api: {
       registerUser: mockRegisterUser,
       login: mockLogin,

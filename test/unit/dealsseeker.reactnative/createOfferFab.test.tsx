@@ -15,6 +15,12 @@ describe('CreateOfferFab', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
+  it('is not rendered while an overlay sheet is open', async () => {
+    await render(<CreateOfferFab label="Create" onPress={jest.fn()} palette={palette} visible={false} />);
+
+    expect(screen.queryByRole('button', { name: 'Create' })).toBeNull();
+  });
+
   it('sits centered above the footer instead of over the action rail', async () => {
     await render(<CreateOfferFab label="Create" onPress={jest.fn()} palette={palette} />);
 

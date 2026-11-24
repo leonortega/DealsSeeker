@@ -16,6 +16,8 @@ const mockCloseHelp = jest.fn();
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
+    openSheet: jest.fn(),
+    closeSheet: jest.fn(),
     activeTab: mockActiveTab,
     api: {
       submitSuggestion: mockSubmitSuggestion,

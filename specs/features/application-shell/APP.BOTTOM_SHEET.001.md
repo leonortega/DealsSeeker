@@ -76,3 +76,4 @@ Scenario: Platform without sheet support
 - `OFFERS.DETAIL.ACTIONS.001`
 - `OFFERS.COMMENTS.001`
 - `APP.HELP.001`
+- `OFFERS.NAV.ADD.002`

@@ -1,14 +1,35 @@
 import { StyleSheet, Text } from 'react-native';
-import { render, screen } from '@testing-library/react-native';
+import { act, render, screen } from '@testing-library/react-native';
 import { NativeBottomSheet } from '../../../src/DealsSeeker.ReactNative/src/components/NativeBottomSheet';
+
+const mockOpenSheet = jest.fn();
+const mockCloseSheet = jest.fn();
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
     palette: { border: '#476258', card: '#293a35' },
+    openSheet: mockOpenSheet,
+    closeSheet: mockCloseSheet,
   }),
 }));
 
 describe('NativeBottomSheet', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('registers an open sheet and releases it on unmount', async () => {
+    const { unmount } = await render(
+      <NativeBottomSheet visible onClose={jest.fn()}>
+        <Text>Sheet content</Text>
+      </NativeBottomSheet>
+    );
+
+    expect(mockOpenSheet).toHaveBeenCalledTimes(1);
+    await act(async () => unmount());
+    expect(mockCloseSheet).toHaveBeenCalledTimes(1);
+  });
+
   it('uses native sheet behavior with two snap points and swipe dismissal', async () => {
     await render(
       <NativeBottomSheet visible onClose={jest.fn()}>

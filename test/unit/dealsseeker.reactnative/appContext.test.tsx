@@ -100,7 +100,7 @@ describe('AppProvider', () => {
     expect(context?.isAuthenticated).toBe(false);
     expect(context?.authScreen).toBe('login');
     expect(context?.activeTab).toBe('offers');
-    expect(context?.immersiveOffers).toBe(false);
+    expect(context?.immersiveOffers).toBe(true);
   });
 
   it('restores a valid stored session and its profile avatar', async () => {
@@ -198,6 +198,25 @@ describe('AppProvider', () => {
 
     await act(() => context?.closeImmersiveOffers());
     expect(context?.immersiveOffers).toBe(false);
+  });
+
+  it('tracks nested overlay sheets so the create action can stay hidden', async () => {
+    await renderProvider();
+
+    expect(context?.sheetCount).toBe(0);
+
+    await act(() => context?.openSheet());
+    await act(() => context?.openSheet());
+    expect(context?.sheetCount).toBe(2);
+
+    await act(() => context?.closeSheet());
+    expect(context?.sheetCount).toBe(1);
+
+    await act(() => context?.closeSheet());
+    expect(context?.sheetCount).toBe(0);
+
+    await act(() => context?.closeSheet());
+    expect(context?.sheetCount).toBe(0);
   });
 
   it('persists preference changes and updates the palette', async () => {

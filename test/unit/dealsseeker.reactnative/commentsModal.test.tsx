@@ -7,6 +7,8 @@ const mockOnClose = jest.fn();
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
+    openSheet: jest.fn(),
+    closeSheet: jest.fn(),
     api: { getOfferComments: mockGetOfferComments, createOfferComment: mockCreateOfferComment },
     palette: {
       accent: '#b85c38',

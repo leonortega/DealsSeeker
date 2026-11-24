@@ -54,4 +54,5 @@ Scenario: Create is not a navigation destination
 ## Related Specs
 - `ADD.OFFER.LAYOUT.001`
 - `OFFERS.FEED.IMMERSIVE.001`
+- `OFFERS.NAV.ADD.002`
 

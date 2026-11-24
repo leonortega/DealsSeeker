@@ -16,16 +16,17 @@ export function NativeBottomSheet({
   onClose: () => void;
   children: ReactNode;
 }) {
-  const { palette } = useApp();
+  const { palette, openSheet, closeSheet } = useApp();
   const sheetRef = useRef<BottomSheetMethods>(null);
 
   useEffect(() => {
     if (visible) {
       sheetRef.current?.expand();
-    } else {
-      sheetRef.current?.close();
+      openSheet();
+      return () => closeSheet();
     }
-  }, [visible]);
+    sheetRef.current?.close();
+  }, [visible, openSheet, closeSheet]);
 
   return (
     <BottomSheet

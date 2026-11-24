@@ -2,7 +2,21 @@ import { Pressable, StyleSheet } from 'react-native';
 import type { Palette } from '../utils/theme';
 import { NavIcon } from './NavIcon';
 
-export function CreateOfferFab({ label, onPress, palette }: { label: string; onPress: () => void; palette: Palette }) {
+export function CreateOfferFab({
+  label,
+  onPress,
+  palette,
+  visible = true,
+}: {
+  label: string;
+  onPress: () => void;
+  palette: Palette;
+  visible?: boolean;
+}) {
+  if (!visible) {
+    return null;
+  }
+
   return (
     <Pressable
       accessibilityLabel={label}
