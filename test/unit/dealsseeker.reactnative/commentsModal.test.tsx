@@ -113,10 +113,9 @@ describe('OfferCommentsModal', () => {
     expect(await screen.findByText('comments.loadFailed')).toBeTruthy();
   });
 
-  it('closes from the header control', async () => {
+  it('does not duplicate the native dismissal with a close button', async () => {
     await renderModal();
     await screen.findByText('Great deal!');
-    await fireEvent.press(screen.getByText('offers.close'));
-    expect(mockOnClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'offers.close' })).toBeNull();
   });
 });

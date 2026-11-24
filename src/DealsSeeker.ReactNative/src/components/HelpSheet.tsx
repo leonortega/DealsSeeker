@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
 import { NativeBottomSheet } from './NativeBottomSheet';
 import { restoreFocus } from '../utils/focusReturn';
@@ -44,14 +44,6 @@ export function HelpSheet({
               </View>
             ))}
           </ScrollView>
-          <Pressable
-            accessibilityLabel={t('common.close')}
-            accessibilityRole="button"
-            onPress={close}
-            style={[styles.close, { backgroundColor: palette.accent }]}
-          >
-            <Text style={styles.closeLabel}>{t('common.close')}</Text>
-          </Pressable>
         </View>
     </NativeBottomSheet>
   );
@@ -91,18 +83,5 @@ const styles = StyleSheet.create({
   topicBody: {
     fontSize: 14,
     lineHeight: 20,
-  },
-  close: {
-    alignItems: 'center',
-    borderRadius: 999,
-    minHeight: 44,
-    justifyContent: 'center',
-    marginTop: 8,
-    paddingHorizontal: 20,
-  },
-  closeLabel: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '800',
   },
 });

@@ -11,6 +11,7 @@ export function RegisterScreen() {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
   function reportStatus(message: string | null) {
@@ -97,10 +98,21 @@ export function RegisterScreen() {
           onChangeText={setPassword}
           placeholder={t('auth.password')}
           placeholderTextColor={palette.inkMuted}
-          secureTextEntry
+          secureTextEntry={!showPassword}
           style={[authFormStyles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
           value={password}
         />
+        <Pressable
+          accessibilityLabel={t(showPassword ? 'auth.hidePassword' : 'auth.showPassword')}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: showPassword }}
+          onPress={() => setShowPassword((shown) => !shown)}
+          style={styles.visibilityToggle}
+        >
+          <Text style={[authFormStyles.link, { color: palette.accent }]}>
+            {t(showPassword ? 'auth.hidePassword' : 'auth.showPassword')}
+          </Text>
+        </Pressable>
         <Pressable
           accessibilityLabel={t('auth.registerButton')}
           accessibilityRole="button"
@@ -127,5 +139,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Georgia',
     fontSize: 24,
     fontWeight: '700',
+  },
+  visibilityToggle: {
+    alignSelf: 'flex-start',
+    justifyContent: 'center',
+    minHeight: 44,
   },
 });

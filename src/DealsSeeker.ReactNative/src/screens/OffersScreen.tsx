@@ -54,6 +54,7 @@ export function OffersScreen() {
   const [firstRunVisible, setFirstRunVisible] = useState(false);
   const searchRequest = useAbortableRequest();
   const searchSequence = useRef(0);
+  const lastLocationAttemptFailed = useRef(false);
   const helpButtonRef = useRef<ElementRef<typeof View> | null>(null);
 
   async function resolveCurrentLocation() {
@@ -80,6 +81,7 @@ export function OffersScreen() {
 
     setUserLocation(nextLocation);
     setLocationFallback(usingFallback);
+    lastLocationAttemptFailed.current = usingFallback;
     setLocationNoticeDismissed(false);
 
     try {
@@ -101,6 +103,10 @@ export function OffersScreen() {
 
   async function retryLocation() {
     const location = await resolveCurrentLocation();
+
+    if (lastLocationAttemptFailed.current) {
+      setActionStatus(t('offers.locationRetryFailed'), 'error');
+    }
 
     try {
       const response = await api.searchOffers({

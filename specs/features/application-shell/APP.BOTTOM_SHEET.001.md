@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Native Bottom-Sheet Behavior for Overlays
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell, Offers overlays
 - **Priority**: Low
@@ -21,10 +21,12 @@ Give the application's modal overlays native bottom-sheet interaction — drag, 
 - `APP.BOTTOM_SHEET.001-R1`: Overlay surfaces shall use native bottom-sheet interaction behavior.
 - `APP.BOTTOM_SHEET.001-R2`: A bottom sheet shall expose at least one resting snap point and a dismiss gesture.
 - `APP.BOTTOM_SHEET.001-R3`: Sheet content shall keep the existing brand palette, typography, shapes and copy; no platform-native visual adaptation shall be applied.
-- `APP.BOTTOM_SHEET.001-R4`: Swipe-down dismissal shall follow the same dismissal rules as the overlay's existing close action.
+- `APP.BOTTOM_SHEET.001-R4`: Swipe-down dismissal shall follow the same dismissal rules as the overlay's dismissal path.
 - `APP.BOTTOM_SHEET.001-R5`: Where an overlay has a discard guard, a swipe-down shall not bypass it.
 - `APP.BOTTOM_SHEET.001-R6`: Sheet behavior shall not change validation, submission or navigation outcomes.
 - `APP.BOTTOM_SHEET.001-R7`: If a device or platform cannot provide sheet behavior, the overlay shall still open and close through its existing controls.
+- `APP.BOTTOM_SHEET.001-R8`: A sheet that is not visible shall not open the on-screen keyboard or take focus from the current surface.
+- `APP.BOTTOM_SHEET.001-R9`: An overlay sheet shall not render a separate Close button that duplicates the native handle and swipe dismissal; dismissal shall remain available through the native affordance and to assistive technology.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -54,6 +56,18 @@ Scenario: Platform without sheet support
   Given the platform cannot provide native sheet behavior
   When an overlay is opened
   Then its existing close control shall still work
+
+Scenario: A hidden sheet does not open the keyboard
+  Given an overlay sheet is mounted but not visible
+  When the presenting surface is opened or switched
+  Then no on-screen keyboard shall appear
+  And focus shall remain on the presenting surface
+
+Scenario: Overlays do not duplicate the native dismissal affordance
+  Given an overlay sheet is open
+  When the user views its controls
+  Then no separate Close button shall be rendered
+  And the native handle and swipe dismissal shall remain available
 ```
 
 ## Example Inputs/Outputs

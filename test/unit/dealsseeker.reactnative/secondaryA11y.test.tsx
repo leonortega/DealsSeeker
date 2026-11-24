@@ -72,9 +72,11 @@ describe('secondary surface accessibility (APP.ACCESSIBILITY.UX.002/003)', () =>
     expect(screen.queryByLabelText('reports.offerId')).toBeNull();
   });
 
-  it('announces the help sheet as a modal with a labelled close control', async () => {
+  it('announces the help sheet as a modal with native dismissal', async () => {
     await render(<HelpSheet onClose={mockCloseHelp} visible />);
-    expect(screen.getByRole('button', { name: 'common.close' })).toBeTruthy();
+    expect(screen.getByTestId('help-sheet').props.accessibilityViewIsModal).toBe(true);
+    expect(screen.queryByRole('button', { name: 'common.close' })).toBeNull();
+    expect(screen.getByTestId('native-bottom-sheet').props.onClose).toBeDefined();
   });
 
   it('shows a failed submission as an error status', async () => {

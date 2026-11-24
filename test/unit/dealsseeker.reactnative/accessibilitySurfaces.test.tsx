@@ -131,6 +131,22 @@ describe('accessible contribution and auth surfaces (APP.ACCESSIBILITY.UX.002)',
     expect(screen.getByRole('button', { name: 'common.search' })).toBeTruthy();
   });
 
+  it('does not auto-focus the search input when the sheet is hidden', async () => {
+    await render(
+      <ImmersiveSearchOverlay
+        visible
+        query=""
+        radiusMeters={1500}
+        onChangeQuery={jest.fn()}
+        onChangeRadius={jest.fn()}
+        onSearch={jest.fn()}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(screen.getByLabelText('offers.searchPlaceholder').props.autoFocus).toBeUndefined();
+  });
+
   it('keeps immersive feed tabs at the 44-unit touch floor', async () => {
     await render(<ImmersiveFeedTabs activeTab="viewAll" onChangeTab={jest.fn()} />);
     const tabs = screen.getAllByRole('tab');
@@ -152,6 +168,6 @@ describe('focused dialogs (APP.ACCESSIBILITY.UX.003)', () => {
       />
     );
     expect(screen.getByTestId('offer-detail-sheet').props.accessibilityViewIsModal).toBe(true);
-    expect(screen.getByRole('button', { name: 'offers.close' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'offers.close' })).toBeNull();
   });
 });

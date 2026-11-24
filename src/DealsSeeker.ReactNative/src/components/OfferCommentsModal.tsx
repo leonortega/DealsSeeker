@@ -131,9 +131,6 @@ export function OfferCommentsModal({ offer, visible, onClose, returnFocusRef }: 
             <Text numberOfLines={2} style={[styles.title, { color: palette.ink }]}>
               {t('comments.title')}
             </Text>
-            <Pressable accessibilityLabel={t('offers.close')} accessibilityRole="button" hitSlop={8} onPress={close} style={styles.closeButton}>
-              <Text style={[styles.close, { color: palette.ink }]}>{t('offers.close')}</Text>
-            </Pressable>
           </View>
 
           <Text style={[styles.offerName, { color: palette.inkMuted }]}>{offer.businessName}</Text>
@@ -227,18 +224,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     marginRight: 12,
-  },
-  closeButton: {
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    justifyContent: 'center',
-    minHeight: 44,
-    minWidth: 44,
-    paddingVertical: 4,
-  },
-  close: {
-    fontSize: 14,
-    fontWeight: '700',
   },
   offerName: {
     fontSize: 14,

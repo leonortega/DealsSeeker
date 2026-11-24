@@ -28,3 +28,15 @@ Feature: Native bottom-sheet behavior for overlays
     Given the platform cannot provide native sheet behavior
     When an overlay is opened
     Then its existing close control still works
+
+  Scenario: A hidden sheet does not open the keyboard
+    Given an overlay sheet is mounted but not visible
+    When the presenting surface is opened or switched
+    Then no on-screen keyboard appears
+    And focus remains on the presenting surface
+
+  Scenario: Overlays do not duplicate the native dismissal affordance
+    Given an overlay sheet is open
+    When the user views its controls
+    Then no separate Close button is rendered
+    And the native handle and swipe dismissal remain available

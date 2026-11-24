@@ -42,7 +42,6 @@ export function ImmersiveSearchOverlay({
 
           <TextInput
             accessibilityLabel={t('offers.searchPlaceholder')}
-            autoFocus
             onChangeText={onChangeQuery}
             onSubmitEditing={onSearch}
             placeholder={t('offers.searchPlaceholder')}

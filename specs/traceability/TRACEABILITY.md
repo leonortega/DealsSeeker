@@ -50,6 +50,7 @@
 | `APP.POLISH.UX.001` | `bdd/app-polish-ux.feature` | N/A | N/A |
 | `ADD.OFFER.LOCATION.003` | `bdd/add-offer-accessible-map-pin.feature` | `contracts/json-schema/offer-location.schema.json`, `contracts/json-schema/geo-point.schema.json` | `examples/add-offer/add-offer-map-pin.json` |
 | `ACCOUNT.AUTH.LOGIN.001` | `bdd/account-management.feature` | `contracts/json-schema/login-request.schema.json`, `contracts/json-schema/auth-session.schema.json` | `examples/account-management/login-user.input.json`, `examples/account-management/login-user.output.json` |
+| `ACCOUNT.AUTH.INPUT.001` | `bdd/auth-input-affordances.feature` | N/A | N/A |
 | `ACCOUNT.AUTH.REGISTER.001` | `bdd/account-management.feature` | `contracts/json-schema/register-user-request.schema.json`, `contracts/json-schema/command-result.schema.json` | `examples/account-management/register-user.input.json`, `examples/account-management/register-user.output.json` |
 | `ACCOUNT.AUTH.KEYBOARD.001` | `bdd/account-auth-keyboard.feature` | N/A | N/A |
 | `ACCOUNT.PROFILE.001` | `bdd/account-management.feature` | `contracts/json-schema/user-profile.schema.json`, `contracts/json-schema/account-offers-response.schema.json`, `contracts/json-schema/offer-item.schema.json`, `contracts/json-schema/add-offer-draft.schema.json`, `contracts/json-schema/command-result.schema.json` | `examples/account-management/my-profile.output.json`, `examples/account-management/my-owned-offers.output.json`, `examples/account-management/owned-offer-draft.output.json`, `examples/account-management/logout.output.json` |

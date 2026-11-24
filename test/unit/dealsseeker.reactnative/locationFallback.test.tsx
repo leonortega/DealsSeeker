@@ -89,6 +89,19 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
     expect(screen.getByText(/Central Station/)).toBeTruthy();
   });
 
+  it('reports a failed retry without removing the notice or results', async () => {
+    await render(<OffersScreen />);
+    await screen.findByText('offers.locationFallbackNotice');
+
+    mockRequestPermission.mockResolvedValue({ granted: true });
+    mockGetCurrentPosition.mockRejectedValue(new Error('no fix'));
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.useMyLocation' }));
+
+    expect(await screen.findByText('offers.locationRetryFailed')).toBeTruthy();
+    expect(screen.getByText('offers.locationFallbackNotice')).toBeTruthy();
+    expect(mockSearchOffers).toHaveBeenCalled();
+  });
+
   it('keeps browsing when the notice is dismissed', async () => {
     mockSearchOffers.mockResolvedValue({
       offers: [{ offerId: 'o1' }],

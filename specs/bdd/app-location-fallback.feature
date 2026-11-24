@@ -18,6 +18,14 @@ Feature: Honest fallback-location disclosure and recovery
     Then the notice is no longer displayed
     And the area label describes the resolved location
 
+  Scenario: Retrying location reports a failure without changing results
+    Given the approximate-area notice is displayed
+    When the user selects the retry action
+    And device location cannot be obtained
+    Then a plain-language failure status is shown
+    And the notice and its actions remain available
+    And the displayed offers remain browsable
+
   Scenario: Dismissing the notice keeps the results
     Given the approximate-area notice is displayed
     When the user dismisses the notice

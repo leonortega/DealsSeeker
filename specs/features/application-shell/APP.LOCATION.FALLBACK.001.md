@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Honest fallback-location disclosure and recovery
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application shell, Offers View (standard and immersive presentations)
 - **Priority**: High
@@ -27,6 +27,7 @@ Never present a fallback location as the user's current area; disclose it, allow
 - `APP.LOCATION.FALLBACK.001-R7`: The notice shall be announced to assistive technology.
 - `APP.LOCATION.FALLBACK.001-R8`: Raw coordinate values shall not appear in the notice or the area label.
 - `APP.LOCATION.FALLBACK.001-R9`: The notice shall be localizable and shall hold in both themes.
+- `APP.LOCATION.FALLBACK.001-R10`: If a retry does not obtain a position, the system shall show a plain-language failure status while keeping the notice, its actions, and the displayed offers available.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -44,6 +45,14 @@ Scenario: Retrying location removes the notice on success
   And device location is obtained
   Then the notice is no longer displayed
   And the area label describes the resolved location
+
+Scenario: Retrying location reports a failure without changing results
+  Given the approximate-area notice is displayed
+  When the user selects the retry action
+  And device location cannot be obtained
+  Then a plain-language failure status shall be shown
+  And the notice and its actions shall remain available
+  And the displayed offers shall remain browsable
 
 Scenario: Dismissing the notice keeps the results
   Given the approximate-area notice is displayed

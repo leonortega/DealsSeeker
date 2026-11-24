@@ -46,6 +46,19 @@ describe('LoginScreen', () => {
     mockSetSession.mockResolvedValue(undefined);
   });
 
+  it('uses the email keyboard and can reveal the masked password', async () => {
+    await render(<LoginScreen />);
+
+    expect(screen.getByPlaceholderText('auth.email').props.keyboardType).toBe('email-address');
+    expect(screen.getByPlaceholderText('auth.password').props.secureTextEntry).toBe(true);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'auth.showPassword' }));
+    expect(screen.getByPlaceholderText('auth.password').props.secureTextEntry).toBe(false);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'auth.hidePassword' }));
+    expect(screen.getByPlaceholderText('auth.password').props.secureTextEntry).toBe(true);
+  });
+
   it('logs in with a trimmed email and establishes the session', async () => {
     await render(<LoginScreen />);
 
@@ -97,6 +110,19 @@ describe('RegisterScreen', () => {
     await fireEvent.changeText(screen.getByPlaceholderText('auth.email'), 'user@example.com');
     await fireEvent.changeText(screen.getByPlaceholderText('auth.password'), 'password1');
   }
+
+  it('uses the email keyboard and can reveal the masked password', async () => {
+    await render(<RegisterScreen />);
+
+    expect(screen.getByPlaceholderText('auth.email').props.keyboardType).toBe('email-address');
+    expect(screen.getByPlaceholderText('auth.password').props.secureTextEntry).toBe(true);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'auth.showPassword' }));
+    expect(screen.getByPlaceholderText('auth.password').props.secureTextEntry).toBe(false);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'auth.hidePassword' }));
+    expect(screen.getByPlaceholderText('auth.password').props.secureTextEntry).toBe(true);
+  });
 
   it('rejects an empty display name', async () => {
     await render(<RegisterScreen />);

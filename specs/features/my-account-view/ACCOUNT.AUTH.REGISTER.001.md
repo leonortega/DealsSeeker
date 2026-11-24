@@ -67,6 +67,7 @@ Scenario: Weak password is rejected
 
 ## Related Specs
 - `ACCOUNT.AUTH.LOGIN.001`
+- `ACCOUNT.AUTH.INPUT.001`
 - `APP.SHELL.001`
 - `ACCOUNT.PROFILE.001`
 - `APP.ACCESSIBILITY.UX.002`

@@ -342,9 +342,6 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
           <View accessibilityViewIsModal testID="offer-detail-sheet" style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <View style={styles.header}>
             <Text numberOfLines={2} style={[styles.title, { color: palette.ink }]}>{offer.businessName}</Text>
-            <Pressable accessibilityLabel={t('offers.close')} accessibilityRole="button" hitSlop={8} onPress={close} style={styles.closeButton}>
-              <Text style={[styles.close, { color: palette.ink }]}>{t('offers.close')}</Text>
-            </Pressable>
           </View>
 
           <View style={[styles.gallery, { backgroundColor: palette.accentMuted }]}>

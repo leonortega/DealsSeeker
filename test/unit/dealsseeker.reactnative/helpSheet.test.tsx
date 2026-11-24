@@ -35,12 +35,12 @@ describe('HelpSheet', () => {
     expect(screen.getByText('help.favorites.title')).toBeTruthy();
   });
 
-  it('closes via the labelled close control', async () => {
+  it('relies on native dismissal instead of a redundant close button', async () => {
     const onClose = jest.fn();
     await render(<HelpSheet onClose={onClose} visible />);
 
-    await fireEvent.press(screen.getByRole('button', { name: 'common.close' }));
-
+    expect(screen.queryByRole('button', { name: 'common.close' })).toBeNull();
+    await fireEvent(screen.getByTestId('native-bottom-sheet'), 'close');
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
