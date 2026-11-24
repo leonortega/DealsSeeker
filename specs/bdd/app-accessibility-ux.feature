@@ -30,6 +30,18 @@ Feature: Accessible control sizes on touch surfaces
     Then it does not overlap any other tappable control
     And every action behind it remains independently tappable
 
+  Scenario: Footer labels stay on one line at large text size
+    Given the standard application footer is displayed
+    When a large text size is active
+    Then each default destination label occupies a single line
+    And its size remains at least 11 units
+
+  Scenario: Floating action does not cover controls at large text size
+    Given the Offers view is displayed with a large text size
+    When the user scrolls to the bottom of the content
+    Then the create-offer floating action does not cover the search action
+    And every control beneath it remains independently tappable
+
   Scenario: Header controls stay visible on a narrow phone
     Given the screen width is the narrowest supported phone width
     When the Offers header or the immersive top bar is rendered

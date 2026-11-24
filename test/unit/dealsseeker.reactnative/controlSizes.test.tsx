@@ -103,6 +103,21 @@ describe('touch target and label floors', () => {
     expect(styleOf(screen.getByText('👤')).color).toBe('#f08f62');
   });
 
+  it('keeps default footer labels on a single line', async () => {
+    await render(<AppFooterBar items={footerItems} />);
+
+    const label = screen.getByText('Suggestions');
+    expect(label.props.numberOfLines).toBe(1);
+    expect(styleOf(label).fontSize).toBeGreaterThanOrEqual(11);
+  });
+
+  it('reserves scroll space for the floating action below the search controls', async () => {
+    await render(<OffersScreen />);
+
+    const scroll = hostElements().find((node) => node.type === 'ScrollView');
+    expect(styleOf(scroll as never).paddingBottom).toBeGreaterThanOrEqual(88);
+  });
+
   it('gives every footer tab a 44-unit touch target', async () => {
     await render(<AppFooterBar items={footerItems} />);
 

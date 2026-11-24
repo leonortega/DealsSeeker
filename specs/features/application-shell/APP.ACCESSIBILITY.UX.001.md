@@ -24,6 +24,8 @@ Keep interactive controls and their labels at sizes that can be reliably tapped 
 - `APP.ACCESSIBILITY.UX.001-R4`: These size floors shall hold in both the light and dark themes without changing the control's behavior.
 - `APP.ACCESSIBILITY.UX.001-R5`: A floating action shall not overlap any other tappable control in either presentation.
 - `APP.ACCESSIBILITY.UX.001-R6`: At narrow phone widths, every control in the Offers header and the immersive top bar shall remain visible and non-overlapping.
+- `APP.ACCESSIBILITY.UX.001-R7`: The default footer destination labels shall remain on a single line at both the default text size and a large text size, without reducing below the size floor in R2.
+- `APP.ACCESSIBILITY.UX.001-R8`: When the text size is large, the floating action shall still not overlap any other tappable control, and the view shall reserve enough scrollable space to reach controls beneath it.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -47,6 +49,18 @@ Scenario: Metadata labels stay legible at default text size
   Given any control caption or metadata label is rendered
   When the default text size is active
   Then the label size is at least 11 units
+
+Scenario: Footer labels stay on one line at large text size
+  Given the standard application footer is displayed
+  When a large text size is active
+  Then each default destination label shall occupy a single line
+  And its size shall remain at least 11 units
+
+Scenario: Floating action does not cover controls at large text size
+  Given the Offers view is displayed with a large text size
+  When the user scrolls to the bottom of the content
+  Then the create-offer floating action shall not cover the search action
+  And every control beneath it shall remain independently tappable
 ```
 
 ## Example Inputs/Outputs
@@ -55,7 +69,7 @@ Scenario: Metadata labels stay legible at default text size
 
 ## Edge Cases
 - Five footer destinations on the narrowest supported phone width.
-- Localized labels longer than the English text wrapping inside a 44-unit target.
+- Localized labels longer than the default English text may wrap inside the 44-unit target; the default labels themselves stay on one line.
 - Dark theme active while all floors apply.
 
 ## Non-Functional Constraints
