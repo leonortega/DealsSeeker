@@ -91,7 +91,7 @@ param(
 
     [string]$AvdName = 'DealsSeekerApi',
 
-    [string]$Resolution = '720x1280',
+    [string]$Resolution = '1080x1920',
 
     [switch]$Wait
 )
