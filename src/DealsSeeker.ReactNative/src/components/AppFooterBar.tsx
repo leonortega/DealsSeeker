@@ -33,11 +33,7 @@ export function AppFooterBar({ items }: { items: FooterItem[] }) {
           style={[styles.tab, item.active && styles.tabActive]}
         >
           <Text style={[styles.icon, item.active ? styles.iconActive : styles.iconInactive]}>{item.icon}</Text>
-          <Text
-            maxFontSizeMultiplier={1}
-            numberOfLines={1}
-            style={[styles.label, item.active && styles.labelActive]}
-          >
+          <Text style={[styles.label, item.active && styles.labelActive]}>
             {item.label}
           </Text>
         </Pressable>

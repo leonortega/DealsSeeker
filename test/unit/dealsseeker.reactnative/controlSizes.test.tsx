@@ -103,11 +103,12 @@ describe('touch target and label floors', () => {
     expect(styleOf(screen.getByText('👤')).color).toBe('#f08f62');
   });
 
-  it('keeps default footer labels on a single line', async () => {
+  it('lets footer labels wrap and follow the system text size', async () => {
     await render(<AppFooterBar items={footerItems} />);
 
     const label = screen.getByText('Suggestions');
-    expect(label.props.numberOfLines).toBe(1);
+    expect(label.props.numberOfLines).toBeUndefined();
+    expect(label.props.maxFontSizeMultiplier).toBeUndefined();
     expect(styleOf(label).fontSize).toBeGreaterThanOrEqual(11);
   });
 
