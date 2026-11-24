@@ -12,6 +12,13 @@ const mockSearchOffers = jest.fn();
 const mockSetOfferFavorite = jest.fn();
 const mockSubmitSuggestion = jest.fn();
 const mockSubmitReport = jest.fn();
+const mockSelectionFeedback = jest.fn();
+const mockSuccessFeedback = jest.fn();
+
+jest.mock('../../../src/DealsSeeker.ReactNative/src/utils/haptics', () => ({
+  selectionFeedback: (...args: unknown[]) => mockSelectionFeedback(...args),
+  successFeedback: (...args: unknown[]) => mockSuccessFeedback(...args),
+}));
 
 jest.mock('expo-location', () => ({
   LocationAccuracy: { Balanced: 3 },
@@ -122,6 +129,7 @@ describe('SuggestionsScreen', () => {
       expect(mockSubmitSuggestion).toHaveBeenCalledWith({ message: 'More deals please', contact: null })
     );
     expect(await screen.findByText('suggestions.success')).toBeTruthy();
+    expect(mockSuccessFeedback).toHaveBeenCalledTimes(1);
     expect(mockOpenTab).not.toHaveBeenCalled();
     await act(async () => {
       jest.advanceTimersByTime(1000);
@@ -156,6 +164,7 @@ describe('SuggestionsScreen', () => {
 
     expect(await screen.findByText('suggestions.failed')).toBeTruthy();
     expect(mockOpenTab).not.toHaveBeenCalled();
+    expect(mockSuccessFeedback).not.toHaveBeenCalled();
   });
 });
 
@@ -195,6 +204,7 @@ describe('ReportsScreen', () => {
     await waitFor(() => expect(mockSubmitReport).toHaveBeenCalled());
     expect(mockClearReportDraft).toHaveBeenCalled();
     expect(await screen.findByText('reports.success')).toBeTruthy();
+    expect(mockSuccessFeedback).toHaveBeenCalledTimes(1);
     expect(mockOpenTab).not.toHaveBeenCalled();
     await act(async () => {
       jest.advanceTimersByTime(1000);
@@ -229,5 +239,6 @@ describe('ReportsScreen', () => {
     await fireEvent.press(screen.getByText('reports.submit'));
 
     expect(await screen.findByText('reports.failed')).toBeTruthy();
+    expect(mockSuccessFeedback).not.toHaveBeenCalled();
   });
 });

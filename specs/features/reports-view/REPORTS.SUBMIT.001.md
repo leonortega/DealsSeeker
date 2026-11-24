@@ -66,3 +66,4 @@ Scenario: Reports supports legacy Complaints entry point
 - `ACCOUNT.PROFILE.001`
 - `APP.ACCESSIBILITY.UX.003`
 - `APP.POLISH.UX.001`
+- `APP.HAPTICS.001`

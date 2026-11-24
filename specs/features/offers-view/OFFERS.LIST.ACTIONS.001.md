@@ -85,3 +85,4 @@ Scenario: Report action opens Reports view with offer context
 - `OFFERS.COMMENTS.001`
 - `APP.ACCESSIBILITY.UX.002`
 - `OFFERS.UX.002`
+- `APP.HAPTICS.001`

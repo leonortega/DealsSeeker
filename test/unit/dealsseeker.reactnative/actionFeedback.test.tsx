@@ -4,6 +4,13 @@ import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/O
 const mockVote = jest.fn();
 const mockSetFavorite = jest.fn();
 const mockSearchOffers = jest.fn();
+const mockSelectionFeedback = jest.fn();
+const mockSuccessFeedback = jest.fn();
+
+jest.mock('../../../src/DealsSeeker.ReactNative/src/utils/haptics', () => ({
+  selectionFeedback: (...args: unknown[]) => mockSelectionFeedback(...args),
+  successFeedback: (...args: unknown[]) => mockSuccessFeedback(...args),
+}));
 
 jest.mock('expo-location', () => ({
   LocationAccuracy: { Balanced: 3 },
@@ -100,6 +107,7 @@ describe('immersive action feedback (OFFERS.UX.002)', () => {
     await render(<OffersScreen />);
     await fireEvent.press(screen.getByRole('button', { name: 'vote' }));
     expect(await screen.findByText('offers.feedbackRegistered')).toBeTruthy();
+    expect(mockSuccessFeedback).toHaveBeenCalledTimes(1);
   });
 
   it('shows a failure message when a vote is rejected', async () => {
@@ -107,6 +115,17 @@ describe('immersive action feedback (OFFERS.UX.002)', () => {
     await render(<OffersScreen />);
     await fireEvent.press(screen.getByRole('button', { name: 'vote' }));
     expect(await screen.findByText('offers.voteFailed')).toBeTruthy();
+    expect(mockSuccessFeedback).not.toHaveBeenCalled();
+  });
+
+  it('confirms a successful favorite toggle and stays silent on failure', async () => {
+    await render(<OffersScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'favorite' }));
+    expect(mockSelectionFeedback).toHaveBeenCalledTimes(1);
+
+    mockSetFavorite.mockResolvedValue({ success: false });
+    await fireEvent.press(screen.getByRole('button', { name: 'favorite' }));
+    expect(mockSelectionFeedback).toHaveBeenCalledTimes(1);
   });
 
   it('replaces earlier feedback with the latest outcome', async () => {

@@ -81,3 +81,4 @@ Scenario: Unauthenticated user opens My Favorites
 - `OFFERS.IMMERSIVE.001`
 - `APP.ACCESSIBILITY.UX.002`
 - `OFFERS.UX.002`
+- `APP.HAPTICS.001`

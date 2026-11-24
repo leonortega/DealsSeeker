@@ -58,3 +58,4 @@ Scenario: Blank suggestion is rejected
 - `APP.SHELL.001`
 - `APP.ACCESSIBILITY.UX.003`
 - `APP.POLISH.UX.001`
+- `APP.HAPTICS.001`

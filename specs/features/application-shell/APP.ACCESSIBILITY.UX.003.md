@@ -91,3 +91,4 @@ Scenario: Success is perceivable before navigation
 - `APP.POLISH.UX.001`
 - `ADD.OFFER.UX.001`
 - `APP.ACCESSIBILITY.UX.004`
+- `APP.HAPTICS.001`
