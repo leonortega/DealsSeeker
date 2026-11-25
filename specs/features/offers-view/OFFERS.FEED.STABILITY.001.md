@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive Feed Position Stability
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers View (immersive presentation)
 - **Priority**: High
@@ -23,6 +23,8 @@ Keep the immersive feed on the offer the user is viewing when an action refreshe
 - `OFFERS.FEED.STABILITY.001-R3`: If the active offer is no longer present, the feed shall remain at the closest valid position without a jarring reset.
 - `OFFERS.FEED.STABILITY.001-R4`: Preserving the position shall not change action outcomes or result ordering.
 - `OFFERS.FEED.STABILITY.001-R5`: The behavior shall hold at every supported text size and in both themes.
+- `OFFERS.FEED.STABILITY.001-R6`: Favorite and vote actions shall apply their outcome to the locally displayed result set without a full result refresh, so no intermediate scroll shift occurs.
+- `OFFERS.FEED.STABILITY.001-R7`: When a favorites-only filter is active and the offer is unfavorited, the system shall remove it from the displayed results.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -43,6 +45,17 @@ Scenario: Active offer removed from results
   Given the immersive feed is on an offer
   When a refresh removes that offer from the result set
   Then the feed shall display a valid offer without jumping to the top
+
+Scenario: Action does not trigger an intermediate shift
+  Given the immersive feed is on the second offer
+  When the user favorites or votes on that offer
+  Then the system shall update the displayed offer without a full search refresh
+  And the feed shall not move at any point during the action
+
+Scenario: Unfavoriting under the favorites filter removes the offer
+  Given the favorites-only filter is active
+  When the user unfavorites the displayed offer
+  Then that offer shall no longer be displayed
 ```
 
 ## Example Inputs/Outputs

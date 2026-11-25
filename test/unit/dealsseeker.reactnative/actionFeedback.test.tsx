@@ -103,6 +103,17 @@ describe('immersive action feedback (OFFERS.UX.002)', () => {
     mockSetFavorite.mockResolvedValue({ success: true });
   });
 
+  it('applies favorite and vote outcomes without re-running the search', async () => {
+    await render(<OffersScreen />);
+    await waitFor(() => expect(mockSearchOffers).toHaveBeenCalledTimes(1));
+
+    await fireEvent.press(screen.getByRole('button', { name: 'favorite' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'vote' }));
+
+    await waitFor(() => expect(mockSuccessFeedback).toHaveBeenCalledTimes(1));
+    expect(mockSearchOffers).toHaveBeenCalledTimes(1);
+  });
+
   it('shows a confirmation when a vote succeeds', async () => {
     await render(<OffersScreen />);
     await fireEvent.press(screen.getByRole('button', { name: 'vote' }));

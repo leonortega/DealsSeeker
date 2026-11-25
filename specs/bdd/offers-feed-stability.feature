@@ -20,3 +20,14 @@ Feature: Immersive feed position stability
     Given the immersive feed is on an offer
     When a refresh removes that offer from the result set
     Then the feed displays a valid offer without jumping to the top
+
+  Scenario: Action does not trigger an intermediate shift
+    Given the immersive feed is on the second offer
+    When the user favorites or votes on that offer
+    Then the system updates the displayed offer without a full search refresh
+    And the feed does not move at any point during the action
+
+  Scenario: Unfavoriting under the favorites filter removes the offer
+    Given the favorites-only filter is active
+    When the user unfavorites the displayed offer
+    Then that offer is no longer displayed

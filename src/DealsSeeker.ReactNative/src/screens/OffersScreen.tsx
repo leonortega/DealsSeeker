@@ -326,13 +326,29 @@ export function OffersScreen() {
 
   async function toggleFavorite(offer: OfferItemDto) {
     setActionStatus(null);
-    const result = await api.setOfferFavorite(offer.offerId, { isFavorite: !offer.isFavorite });
+    const nextFavorite = !offer.isFavorite;
+    const result = await api.setOfferFavorite(offer.offerId, { isFavorite: nextFavorite });
     if (!result.success) {
       setActionStatus(t('offers.favoriteFailed'), 'error');
       return;
     }
 
-    await search();
+    setResults((previous) => ({
+      ...previous,
+      offers:
+        favoritesOnly && !nextFavorite
+          ? previous.offers.filter((item) => item.offerId !== offer.offerId)
+          : previous.offers.map((item) =>
+              item.offerId === offer.offerId ? { ...item, isFavorite: nextFavorite } : item
+            ),
+    }));
+    setDetailOffer((current) =>
+      current?.offerId === offer.offerId ? { ...current, isFavorite: nextFavorite } : current
+    );
+    setCommentsOffer((current) =>
+      current?.offerId === offer.offerId ? { ...current, isFavorite: nextFavorite } : current
+    );
+
     setActionStatus(t('offers.favoriteUpdated'));
     selectionFeedback();
   }
@@ -347,13 +363,24 @@ export function OffersScreen() {
           : t('offers.voteFailed'),
         'error'
       );
-      await search();
       return;
     }
 
+    const applyVote = (item: OfferItemDto): OfferItemDto =>
+      item.offerId === offer.offerId
+        ? {
+            ...item,
+            hasCurrentUserVoted: true,
+            positiveAvailabilityCount: item.positiveAvailabilityCount + (voteType === 1 ? 1 : 0),
+            negativeAvailabilityCount: item.negativeAvailabilityCount + (voteType === 2 ? 1 : 0),
+          }
+        : item;
+    setResults((previous) => ({ ...previous, offers: previous.offers.map(applyVote) }));
+    setDetailOffer((current) => (current ? applyVote(current) : current));
+    setCommentsOffer((current) => (current ? applyVote(current) : current));
+
     setActionStatus(t('offers.feedbackRegistered'));
     successFeedback();
-    await search();
   }
 
   async function openOfferDirections(offer: OfferItemDto) {
