@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import MapView, { Circle, Marker } from 'react-native-maps';
 import { BusinessMarkerDto, GeoPoint } from '../api/types';
 import { useApp } from '../hooks/useApp';
@@ -32,7 +32,15 @@ export function NativeMapPreview({
   showCoverage,
   height,
 }: NativeMapPreviewProps) {
-  const { palette } = useApp();
+  const { palette, t } = useApp();
+
+  if (!MapView) {
+    return (
+      <View testID="native-map-unavailable" accessibilityRole="alert" style={styles.container}>
+        <Text style={{ color: palette.ink }}>{t('offers.mapUnavailable')}</Text>
+      </View>
+    );
+  }
 
   return (
     <View testID="native-map" style={[styles.container, height ? { height } : null]}>
