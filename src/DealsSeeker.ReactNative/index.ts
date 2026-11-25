@@ -5,6 +5,6 @@ import App from './App';
 // @gorhom/bottom-sheet passes web-only dependency arrays to Reanimated hooks.
 // On native those arrays are intentionally ignored, so keep errors but drop the
 // warning noise. Remove this once the library stops passing them.
-configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
+configureReanimatedLogger({ level: ReanimatedLogLevel.error, strict: false });
 
 registerRootComponent(App);
