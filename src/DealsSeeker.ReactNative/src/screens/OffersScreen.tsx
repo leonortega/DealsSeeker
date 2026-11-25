@@ -14,6 +14,7 @@ import { OfferDetailModal } from '../components/OfferDetailModal';
 import { OfferCommentsModal } from '../components/OfferCommentsModal';
 import { OfferReportSheet } from '../components/OfferReportSheet';
 import { FirstRunSheet } from '../components/FirstRunSheet';
+import { LoadingOverlay } from '../components/LoadingOverlay';
 import { HelpSheet } from '../components/HelpSheet';
 import { NavIcon } from '../components/NavIcon';
 import { OffersStatePanel } from '../components/OffersStatePanel';
@@ -56,6 +57,7 @@ export function OffersScreen() {
   const [locationFallback, setLocationFallback] = useState(false);
   const [locationNoticeDismissed, setLocationNoticeDismissed] = useState(false);
   const [firstRunVisible, setFirstRunVisible] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const searchRequest = useAbortableRequest();
   const searchSequence = useRef(0);
   const lastLocationAttemptFailed = useRef(false);
@@ -190,8 +192,8 @@ export function OffersScreen() {
     }
 
     void (async () => {
-      const location = await resolveCurrentLocation();
       try {
+        const location = await resolveCurrentLocation();
         const response = await api.searchOffers({
           query,
           userLocation: location,
@@ -203,10 +205,11 @@ export function OffersScreen() {
         setActionStatus(null);
         setSearchFailed(false);
       } catch (error) {
-        if (isRequestAborted(error)) {
-          return;
+        if (!isRequestAborted(error)) {
+          setSearchFailed(true);
         }
-        setSearchFailed(true);
+      } finally {
+        setInitialLoading(false);
       }
     })();
   }, [activeTab, preferences.language]);
@@ -474,6 +477,7 @@ export function OffersScreen() {
           visible={reportDraft !== null}
         />
         <FirstRunSheet onDismiss={dismissFirstRun} visible={firstRunVisible} />
+        <LoadingOverlay visible={initialLoading} />
       </View>
     );
   }
@@ -648,6 +652,7 @@ export function OffersScreen() {
         returnFocusRef={helpButtonRef}
         visible={reportDraft !== null}
       />
+      <LoadingOverlay visible={initialLoading} />
     </View>
   );
 }

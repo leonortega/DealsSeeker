@@ -102,6 +102,14 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 4/4 in that suite; 64 suites / 378 tests overall; `typecheck` clean.
 - Splash now shows only the stacked lockup and the black CTA text.
 
+## Follow-up: immediate startup loading state
+
+- **Spec**: `APP.SHELL.001` v2.2, R30 (Approved); BDD scenario added to `app-shell.feature`.
+- **RED**: `npm test -- --runInBand presentationMode` — 1 test failed: no `app.loading` while the initial search was pending.
+- **GREEN**: 11/11 in that suite; 64 suites / 380 tests overall; `typecheck` clean.
+- `LoadingOverlay` now accepts an optional `visible` override; `OffersScreen` starts with a local `initialLoading` flag and clears it in a `finally`, so the blocking spinner is visible from the first rendered frame through location resolution and the initial search. It is rendered in both the map and feed presentations.
+- Device observation confirmed the remaining white gap before JS startup is the Expo dev-client bundle download / native splash, not an in-app empty state.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
