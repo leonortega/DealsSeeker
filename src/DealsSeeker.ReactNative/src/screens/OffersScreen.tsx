@@ -495,6 +495,8 @@ export function OffersScreen() {
       <ScrollView
         testID="offers-scroll"
         contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom, paddingHorizontal: 16, paddingTop: 68 }]}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
         style={{ backgroundColor: palette.background }}
       >
         {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
@@ -665,7 +667,6 @@ const styles = StyleSheet.create({
   },
   screenRoot: {
     flex: 1,
-    marginHorizontal: -16,
   },
   topBar: {
     left: 0,

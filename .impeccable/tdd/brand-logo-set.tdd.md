@@ -81,6 +81,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 8/8 in that suite; 64 suites / 377 tests overall; `typecheck` clean.
 - Final structure: `screenRoot` carries the -16 edge compensation, `topBar` stays inside it (no margin), scroll content re-adds 16px horizontal padding and uses 68px top padding. Control coordinates stay at the feed positions while the bar no longer overhangs its parent.
 
+## Follow-up: no scrollbars, unclipped tiles
+
+- **Spec**: `APP.POLISH.UX.001` v1.5, R12 (Approved) — standard Offers view has no scroll indicators; `APP.BRAND.001` R10/R12 already require unclipped controls.
+- **RED**: `npm test -- --runInBand presentationMode` — 1 test failed: scroll indicators were not disabled.
+- **GREEN**: 9/9 in that suite; 64 suites / 378 tests overall; `typecheck` and `test:arch` clean.
+- The clip came from the shell's 16px-padded content wrapper cutting the overhanging bar. The Offers tab now runs edge-to-edge at the shell level (`offersContent`), and the scroll view re-adds its 16px inset. A device screenshot confirmed both the logo tile and help button render as full circles; control positions are unchanged.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.

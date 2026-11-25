@@ -101,7 +101,13 @@ function MainView() {
       testID="app-shell-root"
       style={[styles.root, { backgroundColor: palette.background, paddingTop: insets.top }]}
     >
-      <View style={[styles.content, immersiveFeedVisible && styles.immersiveContent]}>
+      <View
+        style={[
+          styles.content,
+          activeTab === 'offers' && styles.offersContent,
+          immersiveFeedVisible && styles.immersiveContent,
+        ]}
+      >
         <Tabs.Navigator
           initialRouteName="offers"
           tabBar={(props) => <BrandedTabBar {...props} />}
@@ -219,5 +225,8 @@ const styles = StyleSheet.create({
   immersiveContent: {
     paddingHorizontal: 0,
     paddingTop: 0,
+  },
+  offersContent: {
+    paddingHorizontal: 0,
   },
 });
