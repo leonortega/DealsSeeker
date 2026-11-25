@@ -60,4 +60,5 @@ Feature: Brand logo set and placement
     When the splash is rendered
     Then the stacked lockup is displayed as the brand identity
     And no separate application-title text is displayed
+    And no application-subtitle line is displayed
     And the remaining splash copy uses black lettering

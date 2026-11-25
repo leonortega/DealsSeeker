@@ -55,11 +55,11 @@ describe('LoadingOverlay', () => {
 });
 
 describe('SplashScreen', () => {
-  it('shows the stacked lockup with black copy and no separate title', async () => {
+  it('shows the stacked lockup with black copy and no title or subtitle', async () => {
     await render(<SplashScreen />);
     expect(screen.getByTestId('brand-mark')).toBeTruthy();
     expect(screen.queryByText('app.title')).toBeNull();
-    expect(StyleSheet.flatten(screen.getByText('app.subtitle').props.style).color).toBe('#000000');
+    expect(screen.queryByText('app.subtitle')).toBeNull();
     expect(StyleSheet.flatten(screen.getByText('splash.cta').props.style).color).toBe('#000000');
   });
 });
