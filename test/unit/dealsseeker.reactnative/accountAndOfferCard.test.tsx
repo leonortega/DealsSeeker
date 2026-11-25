@@ -92,6 +92,7 @@ describe('AccountScreen', () => {
     await render(<AccountScreen />);
 
     expect(screen.getAllByText('›')).toHaveLength(2);
+    expect(screen.queryByText('app.title')).toBeNull();
   });
 
   it('bounds the email to two lines so no fragment is stranded', async () => {

@@ -2,13 +2,16 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v2.0`
+- **Version**: `v2.1`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
 
 ## Navigation restructure (v2.0)
-Requirements R3 and R15 are superseded by `OFFERS.MODE.SWITCH.001`: the startup default is the `Feed` presentation selected in the Offers header, and presentation switching is no longer a bottom-footer button. R1's section list remains authoritative for the shared bottom navigation; Add Offer is reached from a single floating action button per `OFFERS.NAV.ADD.001`.
+Requirement R3 is superseded by `OFFERS.MODE.SWITCH.001`: the startup default is the `Feed` presentation selected in the Offers controls, and presentation switching is no longer a bottom-footer button. R1's section list remains authoritative for the shared bottom navigation; Add Offer is reached from a single floating action button per `OFFERS.NAV.ADD.001`.
+
+## Header removal (v2.1)
+The global application header is no longer rendered in any standard view. Requirements R15, R16, R20 and R29 are retired in favor of `APP.SHELL.005`; their BDD scenarios and header-specific edge cases are removed from this spec. The shared bottom footer remains the sole navigation surface as before.
 
 ## Purpose
 Define global app sections and startup landing behavior based on session state.
@@ -36,12 +39,9 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R12`: When any active view is waiting for required data (for example, location resolution or search execution), the system shall display a blocking animated loading state.
 - `APP.SHELL.001-R13`: While the blocking loading state is visible, user interaction with the underlying view shall be prevented.
 - `APP.SHELL.001-R14`: The blocking loading state shall be dismissed automatically when all pending required operations complete.
-- `APP.SHELL.001-R15`: The standard application header and the Offers hero area shall not display a presentation-switch button; presentation shall be chosen through the Offers header mode control defined in `OFFERS.MODE.SWITCH.001`.
-- `APP.SHELL.001-R16`: The standard application header shall be positioned below the device system status area, so that system indicators (battery, signal, and similar) do not overlap the header content.
 - `APP.SHELL.001-R17`: On Android, the system back gesture or back button shall navigate to the previously visited view within the application when one exists, instead of closing the application.
 - `APP.SHELL.001-R18`: When no previously visited view exists within the application, the Android system back gesture or back button shall leave the application using the platform default behavior.
 - `APP.SHELL.001-R19`: Back navigation shall preserve view context that the destination view restores on entry, including the offers search query and radius when returning to the offers feed.
-- `APP.SHELL.001-R20`: The standard application header shall not display a menu button or a hamburger icon toggle; navigation shall be provided through the bottom footer navigation and the My Account view.
 - `APP.SHELL.001-R21`: All views shall present the same bottom footer navigation with My Account (👤), Suggestions, Create, Offers (💲) and a view button in that order. At most one footer option shall be highlighted at a time, and the view button shall never be highlighted. Opening an overlay shall highlight only the option that opened it.
 - `APP.SHELL.001-R22`: The view button shall use ⭐ with the label `New view` when the standard view is selected and 🗺️ with the label `Map mode` when the immersive view is selected; selecting it shall change the selected view mode and shall display the offers view in the newly selected mode, even when the user was on another view such as Suggestions. The view button shall never be highlighted.
 - `APP.SHELL.001-R25`: The selected view mode shall persist while the user visits other views, including Add Offer. The Offers footer option shall return to the offers view using the previously selected mode. The mode shall change only when the user selects the view button.
@@ -50,7 +50,6 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R26`: On a mobile viewport, the shared footer shall span the full width of the screen and shall contain all five options, including the view button, entirely within its bounds.
 - `APP.SHELL.001-R27`: The footer options shall be evenly distributed across the available width and shall shrink as needed so that every option, including the view button, remains inside the footer.
 - `APP.SHELL.001-R28`: On a mobile viewport, each footer option label shall wrap to at most two centered lines beneath its icon instead of being truncated with an ellipsis.
-- `APP.SHELL.001-R29`: In the standard view, the application header shall scroll together with the view content and shall not remain pinned to the top while the user scrolls.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -90,19 +89,11 @@ Scenario: User leaves before the delayed success redirect
   Then the pending redirect shall be cancelled
   And the user's chosen destination shall remain visible
 
-Scenario: No view button is displayed in the header or hero
+Scenario: No view button is displayed in the Offers hero
   Given the authenticated user is on the Offers view without an open overlay
-  When the standard header and the Offers hero area are rendered
-  Then no new-view button shall be displayed in the header
-  And no new-view button shall be displayed in the hero area
+  When the Offers hero area is rendered
+  Then no new-view button shall be displayed in the hero area
   And the view button shall only be available in the shared bottom footer
-
-Scenario: Standard header clears the device status area
-  Given the authenticated user is on any view that renders the standard application header
-  And the app is running on a mobile device
-  When the header is rendered
-  Then the header shall be positioned below the device system status area
-  And the app title and user badge shall not overlap the system indicators
 
 Scenario: Android back returns to the previously visited view
   Given the authenticated user has moved from one view to another within the application
@@ -123,13 +114,6 @@ Scenario: Android back returns from a destination opened in the immersive feed
   And the user invokes the system back gesture or back button
   Then the immersive offers feed shall become visible again
   And the application shall remain open
-
-Scenario: Standard header has no menu button
-  Given the authenticated user is on any standard view
-  When the standard application header is rendered
-  Then no Menu button shall be displayed
-  And no hamburger icon toggle shall be displayed
-  And navigation shall remain available through the bottom footer navigation
 
 Scenario: All views share the same footer
   Given the authenticated user is on a standard view
@@ -166,12 +150,6 @@ Scenario: Mobile footer labels wrap to two centered lines
   Then the long label shall wrap to at most two lines
   And every label shall be centered beneath its icon
   And no label shall be truncated with an ellipsis
-
-Scenario: Standard header scrolls with the view content
-  Given the authenticated user is in the standard view
-  When the user scrolls the active view
-  Then the application header shall scroll together with the view content
-  And the header shall not remain pinned to the top of the screen
 
 Scenario: Selected view mode persists across other views
   Given the authenticated user has selected the immersive view mode
@@ -221,11 +199,9 @@ Scenario: Blocking loading state appears during required data waits
 - Persisted session token is invalid or expired at startup; first view shall be `Login`.
 - Multiple concurrent required requests shall keep the blocking loading state visible until all complete.
 - If a request fails, the blocking loading state shall still be dismissed and the error state shall remain interactive.
-- On devices without a reported safe-area inset, the header shall still clear the status area using a minimum offset.
 - Repeated back invocations shall walk back through visited views and shall not close the application while a previous in-app view remains.
 - Back invoked while a view is briefly replacing its content shall still resolve to the previous visited view rather than closing the application.
 - A very long localized footer label shall still fit within two lines and inside the footer bounds without an ellipsis.
-- When standard view content is shorter than the viewport, the header shall remain at its natural top position rather than shifting.
 
 ## Non-Functional Constraints
 - First visible shell and startup view should render without blocking on network responses.
@@ -233,6 +209,7 @@ Scenario: Blocking loading state appears during required data waits
 - Blocking loading animation should be lightweight and consistent across light/dark themes.
 
 ## Related Specs
+- `APP.SHELL.005`
 - `APP.API.CONNECTIVITY.001`
 - `APP.CONFIG.MAPS.001`
 - `APP.LOCALIZATION.001`

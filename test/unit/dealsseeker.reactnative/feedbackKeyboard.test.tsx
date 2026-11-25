@@ -31,8 +31,6 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   }),
 }));
 
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/StandardHeader', () => ({ StandardHeader: () => null }));
-
 describe('feedback forms keyboard access', () => {
   beforeEach(() => {
     mockActiveTab = 'suggestions';

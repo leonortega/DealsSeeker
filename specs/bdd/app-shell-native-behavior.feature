@@ -7,20 +7,20 @@ Feature: Native navigation behavior with brand chrome
     Given the authenticated user is on a standard view
     When the user switches between footer destinations
     Then native navigation state and transitions shall handle the switch
-    And the branded header and the night footer shall be the only visible navigation surfaces
-    And no platform-native header or tab bar shall be visible
+    And the night footer shall be the only visible navigation surface
+    And no platform-native header, tab bar or global application header shall be visible
 
   Scenario: Destination state survives a native tab switch
     Given the user has an active offers search query and radius
     When the user switches to another destination and back to Offers
     Then the search query and radius shall be restored
 
-  Scenario: System insets clear the brand chrome
+  Scenario: System insets clear the branded footer
     Given the app runs on a device with system bars, a cutout or gesture areas
     When a standard view is rendered
-    Then the branded header and footer shall not be overlapped by system UI
-    And the authenticated shell shall apply the platform-reported top safe-area inset
-    And their brand styling shall remain unchanged
+    Then the branded footer shall not be overlapped by system UI
+    And the authenticated shell shall apply the platform-reported safe-area insets
+    And its brand styling shall remain unchanged
 
   Scenario: Reduce Motion changes transitions only
     Given the OS Reduce Motion or Remove animations setting is enabled
@@ -65,7 +65,7 @@ Feature: Native navigation behavior with brand chrome
     Given the authenticated user opens Favorites
     When the user closes Favorites with system back
     Then native pop behavior shall return to the previous view
-    And brand chrome shall remain visible
+    And brand-styled content shall remain visible
 
   Scenario: No foreign close control appears in the brand UI
     Given an overlay destination is open

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Native Navigation Behavior with Brand Chrome
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -19,36 +19,36 @@ Define that navigation structure and system interaction are delegated to native 
 
 ## Requirements
 - `APP.SHELL.002-R1`: The system shall use platform-native navigation containers for stack state, transitions, tab state and system gesture handling.
-- `APP.SHELL.002-R2`: Native navigation chrome shall be hidden; the branded application header and branded footer shall remain the only visible navigation surfaces.
+- `APP.SHELL.002-R2`: Native navigation chrome shall be hidden; the branded footer shall remain the only visible navigation surface, and no global application header shall be rendered as defined by `APP.SHELL.005`.
 - `APP.SHELL.002-R3`: The visible destinations, their order and their labels shall remain as defined in `APP.SHELL.001`; this spec shall not introduce a new visible destination.
 - `APP.SHELL.002-R4`: The Create action shall remain a single floating action button and shall not become a tab destination.
 - `APP.SHELL.002-R5`: Feed/Map presentation switching shall remain inside the Offers view as defined by `OFFERS.MODE.SWITCH.001`.
 - `APP.SHELL.002-R6`: Switching between destinations shall preserve the destination's view state (including offers search query and radius) as required by `APP.SHELL.001-R19`.
-- `APP.SHELL.002-R7`: The system shall apply safe-area and window insets so the branded header and footer clear system bars, cutouts and gesture areas on both platforms without altering their visual design.
+- `APP.SHELL.002-R7`: The system shall apply safe-area and window insets so the branded footer clears system bars, cutouts and gesture areas on both platforms without altering its visual design.
 - `APP.SHELL.002-R8`: When the OS Reduce Motion / Remove animations setting is enabled, transition behavior shall change while the brand UI shall remain unchanged.
 - `APP.SHELL.002-R9`: The visible UI shall be identical on iOS and Android; no iOS Human Interface Guidelines or Material 3 visual adaptation shall be applied to the application's own components, typography, colors, iconography or layout.
 - `APP.SHELL.002-R10`: The main sections shall be hosted by a native tab navigator that owns tab state and tab switching behavior; the branded night footer shall be supplied as a custom tab bar and shall remain the only visible tab surface.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
-Scenario: Native navigation runs beneath the brand chrome
+Scenario: Native navigation runs beneath the branded footer
   Given the authenticated user is on a standard view
   When the user switches between footer destinations
   Then native navigation state and transitions shall handle the switch
-  And the branded header and the night footer shall be the only visible navigation surfaces
-  And no platform-native header or tab bar shall be visible
+  And the night footer shall be the only visible navigation surface
+  And no platform-native header, tab bar or global application header shall be visible
 
 Scenario: Destination state survives a native tab switch
   Given the user has an active offers search query and radius
   When the user switches to another destination and back to Offers
   Then the search query and radius shall be restored
 
-Scenario: System insets clear the brand chrome
+Scenario: System insets clear the branded footer
   Given the app runs on a device with system bars, a cutout or gesture areas
   When a standard view is rendered
-  Then the branded header and footer shall not be overlapped by system UI
-  And the authenticated shell shall apply the platform-reported top safe-area inset
-  And their brand styling shall remain unchanged
+  Then the branded footer shall not be overlapped by system UI
+  And the authenticated shell shall apply the platform-reported safe-area insets
+  And its brand styling shall remain unchanged
 
 Scenario: Reduce Motion changes transitions only
   Given the OS Reduce Motion or Remove animations setting is enabled
@@ -78,11 +78,11 @@ Scenario: Brand UI is identical across platforms
 - Example input: OS Reduce Motion enabled.
 - Expected output: Native stack and modal transitions use a minimized animation; brand UI unchanged.
 - Example input: Authenticated shell rendered on a device that reports a non-zero top inset.
-- Expected output: The branded header clears the top system area; brand styling unchanged.
+- Expected output: The branded footer clears the bottom system area; brand styling unchanged.
 
 ## Edge Cases
 - A destination is opened while a transition is still in progress; navigation state shall remain deterministic.
-- The device has no reported safe-area inset; the brand chrome shall still clear system UI using a minimum offset.
+- The device has no reported safe-area inset; the brand footer shall still clear system UI using a minimum offset.
 - A very long localized label shall wrap as defined in `APP.SHELL.001-R28`, with no platform-specific restyle.
 - A tablet-width viewport shall keep the brand footer and the Add Offer two-column composition; no navigation rail or drawer shall be introduced.
 
@@ -92,6 +92,7 @@ Scenario: Brand UI is identical across platforms
 
 ## Related Specs
 - `APP.SHELL.001`
+- `APP.SHELL.005`
 - `APP.SHELL.003`
 - `APP.SHELL.004`
 - `APP.ADAPTIVE.UX.001`

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: User Avatar Configuration
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: My Account View / Settings
 - **Priority**: Medium
@@ -22,9 +22,9 @@ Allow authenticated users to choose a preset avatar that identifies them in comm
 - `ACCOUNT.PROFILE.AVATAR.001-R3`: The avatar choice shall be persisted after the user signs out and signs in again.
 - `ACCOUNT.PROFILE.AVATAR.001-R4`: The system shall reject an avatar selection that is not part of the preset avatar set.
 - `ACCOUNT.PROFILE.AVATAR.001-R5`: The user profile shall expose the currently selected avatar.
-- `ACCOUNT.PROFILE.AVATAR.001-R6`: The account header shall show the selected avatar of the authenticated user.
+- `ACCOUNT.PROFILE.AVATAR.001-R6`: The account profile hero shall show the selected avatar of the authenticated user.
 - `ACCOUNT.PROFILE.AVATAR.001-R7`: The system shall show a recoverable error state when the avatar choice cannot be saved, keeping the previously saved avatar.
-- `ACCOUNT.PROFILE.AVATAR.001-R8`: After a successful avatar change, the account header shall show the new avatar immediately without requiring a reload or sign-in.
+- `ACCOUNT.PROFILE.AVATAR.001-R8`: After a successful avatar change, the account profile hero shall show the new avatar immediately without requiring a reload or sign-in.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -37,10 +37,10 @@ Scenario: User selects an avatar in settings
 Scenario: Selected avatar is shown with the user profile
   Given an authenticated user selected an avatar
   When the user opens My Account
-  Then the selected avatar shall be shown in the account header
+  Then the selected avatar shall be shown in the account profile hero
 
 Scenario: Avatar change is visible immediately
-  Given the user is viewing the account header with an existing avatar
+  Given the user is viewing the account profile hero with an existing avatar
   When the user selects a different preset avatar and the save succeeds
   Then the header shows the new avatar without a reload
 
@@ -64,7 +64,7 @@ Scenario: Avatar selection fails
 
 ## Example Inputs/Outputs
 - Example input: select the `fox` avatar in the settings section.
-- Expected output: the user profile exposes `avatarId` = `fox` and the avatar is shown in the account header and in that user's comments.
+- Expected output: the user profile exposes `avatarId` = `fox` and the avatar is shown in the account profile hero and in that user's comments.
 - Example input: submit an avatar id outside the preset set.
 - Expected output: the request is rejected and the previous avatar remains selected.
 
@@ -77,6 +77,7 @@ Scenario: Avatar selection fails
 - The avatar choice shall not affect offer visibility or ranking.
 
 ## Related Specs
+- `APP.SHELL.005`
 - `OFFERS.COMMENTS.001`
 - `ACCOUNT.PROFILE.001`
 - `APP.SHELL.001`

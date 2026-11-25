@@ -43,7 +43,6 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferCard', () => ({ OfferCard: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferDetailModal', () => ({ OfferDetailModal: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferCommentsModal', () => ({ OfferCommentsModal: () => null }));
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/StandardHeader', () => ({ StandardHeader: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/ImmersiveOfferFeed', () => ({ ImmersiveOfferFeed: () => null }));
 
 const palette = {

@@ -50,9 +50,6 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferDetailModal'
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferCommentsModal', () => ({
   OfferCommentsModal: () => null,
 }));
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/StandardHeader', () => ({
-  StandardHeader: () => null,
-}));
 
 function styleOf(node: { props: { style?: unknown } }) {
   return StyleSheet.flatten(node.props.style) ?? {};

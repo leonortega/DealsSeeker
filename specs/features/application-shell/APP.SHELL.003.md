@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Native Modal Behavior for Overlay Destinations
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -23,7 +23,7 @@ Define that overlay destinations use platform-native modal behavior while their 
 - `APP.SHELL.003-R3`: Platform-initiated dismissal (system back, edge swipe or swipe-down gesture, as available on the platform) shall be routed through the same cancel path as the in-app Cancel action.
 - `APP.SHELL.003-R4`: When the Add Offer draft has unsaved edits, platform-initiated dismissal shall show the existing discard confirmation and shall not discard data silently.
 - `APP.SHELL.003-R5`: Cancelling a modal shall return the user to the underlying view with its state preserved; this includes the offers search query and radius.
-- `APP.SHELL.003-R6`: The Favorites destination shall use native stack push/pop behavior with brand chrome, not modal behavior.
+- `APP.SHELL.003-R6`: The Favorites destination shall use native stack push/pop behavior with brand-styled content, not modal behavior.
 - `APP.SHELL.003-R7`: No platform-native close control shall be added inside the brand UI beyond what the operating system itself provides.
 
 ## Acceptance Criteria (BDD)
@@ -50,7 +50,8 @@ Scenario: Favorites uses native stack behavior
   Given the authenticated user opens Favorites
   When the user closes Favorites with system back
   Then native pop behavior shall return to the previous view
-  And brand chrome shall remain visible
+  And brand-styled content shall remain visible
+  And no global application header shall be displayed
 
 Scenario: No foreign close control appears in the brand UI
   Given an overlay destination is open
@@ -76,6 +77,7 @@ Scenario: No foreign close control appears in the brand UI
 
 ## Related Specs
 - `APP.SHELL.001`
+- `APP.SHELL.005`
 - `APP.SHELL.002`
 - `APP.SHELL.004`
 - `ADD.OFFER.EXIT.001`

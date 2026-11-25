@@ -90,9 +90,6 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferDetailModal'
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferCommentsModal', () => ({
   OfferCommentsModal: () => null,
 }));
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/StandardHeader', () => ({
-  StandardHeader: () => null,
-}));
 
 describe('immersive action feedback (OFFERS.UX.002)', () => {
   beforeEach(() => {

@@ -103,7 +103,7 @@
 |---|---|---|
 | Initial theme source | Device/OS preference | Light or dark |
 | Manual override precedence | Override wins over OS theme | Until user resets to system |
-| Quick theme control location | My Account view | No menu button in the standard header |
+| Quick theme control location | My Account view | No menu button or global header in standard views |
 | Theme apply timing from My Account | Immediate runtime apply | No app restart required |
 | Reset behavior | Return to system-follow mode | Uses current OS preference |
 | Theme coverage | Both themes fully implemented | Applies across all app views |
@@ -114,7 +114,7 @@
 |---|---|---|
 | Default language value | Device/system locale | Applied at startup when no override |
 | Manual language override | Available in app settings | Persists for user account |
-| Quick language control location | My Account view | No menu button in the standard header |
+| Quick language control location | My Account view | No menu button or global header in standard views |
 | Language apply timing from My Account | Immediate runtime apply | UI text and language dictionaries refresh in current view |
 | UI string source | Externalized resource files | No hardcoded UI text |
 | Search dictionaries | Load by selected language | Used by smart search and tag suggestions |
@@ -250,7 +250,7 @@
 | Left panel option order | Map mode, Favorites, Account, Suggestions, Reports, Create | Create is always last |
 | Add Offer from immersive feed | Close immersive mode and open Add Offer | Add Offer renders with standard padding |
 | Destination opened from immersive feed | Shows a back control returning to the immersive feed | Only while immersive mode is enabled |
-| Left panel application-menu option | Not displayed | Menu is reachable from the standard header |
+| Immersive application-menu option | Not displayed | Preferences live in Account; no global header exists |
 
 ## Immersive Feed Responsive Rules (`OFFERS.FEED.RESPONSIVE.001`)
 
@@ -284,7 +284,7 @@
 | Decision Point | Default Rule | Notes |
 |---|---|---|
 | Navigation container | Native stack + tab navigator for stack/tab state, transitions and gestures | No custom global navigator |
-| Visible navigation chrome | Native chrome hidden; branded header and night footer only | UI identical on both platforms |
+| Visible navigation chrome | Native chrome hidden; night footer only, no global header | UI identical on both platforms |
 | Visual system | `DESIGN.md` authoritative; no HIG/M3 visual adaptation | Brand UI unchanged on iOS and Android |
 | Modal presentation | Native modal behavior; brand-styled content | iOS sheet semantics, Android full-screen |
 | Platform dismissal | Routed through in-app cancel path; discard confirmation when dirty | Preserves `ADD.OFFER.EXIT.001` |

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive View Navigation
-- **Version**: `v1.3`
+- **Version**: `v1.4`
 - **Status**: Approved
 - **Context/View**: Offers View (Immersive)
 - **Priority**: High
@@ -19,7 +19,7 @@ Define how the user returns from the immersive offers view to the standard offer
 ## Requirements
 - `OFFERS.IMMERSIVE.001-R1`: The immersive offers view shall not display a back control in its left panel.
 - `OFFERS.IMMERSIVE.001-R2`: Selecting the map mode option shall close the immersive offers view and return the user to the standard offers view.
-- `OFFERS.IMMERSIVE.001-R3`: Returning to the standard offers view shall restore the standard application header and bottom navigation.
+- `OFFERS.IMMERSIVE.001-R3`: Returning to the standard offers view shall restore the bottom navigation; no global application header shall be displayed.
 - `OFFERS.IMMERSIVE.001-R4`: Closing the immersive view shall preserve the current search query, radius, and location context.
 - `OFFERS.IMMERSIVE.001-R5`: No destination view shall display a back control, including Account, Suggestions, Reports, Favorites and Add Offer.
 - `OFFERS.IMMERSIVE.001-R6`: Navigation out of a destination opened from the immersive view shall be performed through the shared bottom footer.
@@ -32,7 +32,7 @@ Scenario: User returns from immersive view to the standard offers view
   When the user selects the map mode option
   Then the immersive offers view closes
   And the standard offers view is displayed
-  And the standard application header and bottom navigation are restored
+  And the bottom navigation is restored with no global application header
 
 Scenario: No back control is shown in the immersive left panel
   Given the user is on the immersive offers view
@@ -60,7 +60,7 @@ Scenario: System Back closes the immersive view
 
 ## Example Inputs/Outputs
 - Example input: User selects map mode in immersive view.
-- Expected output: Standard offers view is displayed with header and bottom navigation restored.
+- Expected output: Standard offers view is displayed with bottom navigation restored and no global application header.
 
 ## Edge Cases
 - The standard offers view remains available even when no offers are loaded.
@@ -70,6 +70,7 @@ Scenario: System Back closes the immersive view
 - Navigation shall be immediate and not lose user context.
 
 ## Related Specs
+- `APP.SHELL.005`
 - `OFFERS.FEED.IMMERSIVE.001`
 - `OFFERS.FEED.RESPONSIVE.001`
 - `OFFERS.FAVORITES.001`

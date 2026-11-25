@@ -15,7 +15,7 @@ Feature: Application shell and session-aware landing
     And there is an active authenticated session
     When the user starts the application
     Then Offers is the first visible view
-    And the Feed presentation is selected in the Offers header mode control
+    And the Feed presentation is selected in the Offers controls
 
   Scenario: App starts at Login when persisted session is expired
     Given the DealsSeeker mobile application is launchable
@@ -39,19 +39,11 @@ Feature: Application shell and session-aware landing
     Then the pending redirect is cancelled
     And the user's chosen destination remains visible
 
-  Scenario: No duplicate presentation control in the header or hero
+  Scenario: No duplicate presentation control in the Offers hero
     Given the user is authenticated
     And the user is on the Offers view without an open overlay
-    When the standard header and the Offers hero area are rendered
-    Then no presentation control is duplicated in the header outside the mode control
-    And no presentation control is displayed in the hero area
-
-  Scenario: Standard header clears the device status area
-    Given the user is authenticated
-    And the app is running on a mobile device
-    When the standard application header is rendered
-    Then the header is positioned below the device system status area
-    And the app title and user badge do not overlap the system indicators
+    When the Offers hero area is rendered
+    Then no presentation control is displayed in the hero area
 
   Scenario: Android back returns to the previously visited view
     Given the user is authenticated
@@ -76,14 +68,6 @@ Feature: Application shell and session-aware landing
     And the user invokes the system back gesture or back button
     Then the immersive offers feed is visible again
     And the application remains open
-
-  Scenario: Standard header has no menu button
-    Given the user is authenticated
-    And the user is on any standard view
-    When the standard application header is rendered
-    Then no Menu button is displayed
-    And no hamburger icon toggle is displayed
-    And navigation remains available through the bottom footer navigation
 
   Scenario: All views share the same footer
     Given the user is authenticated
@@ -124,16 +108,9 @@ Feature: Application shell and session-aware landing
     And every label is centered beneath its icon
     And no label is truncated with an ellipsis
 
-  Scenario: Standard header scrolls with the view content
-    Given the user is authenticated
-    And the user is in the standard view
-    When the user scrolls the active view
-    Then the application header scrolls together with the view content
-    And the header does not remain pinned to the top of the screen
-
   Scenario: Selected presentation persists across other views
     Given the user is authenticated
-    And the user has selected the Map presentation in the Offers header
+    And the user has selected the Map presentation in the Offers controls
     When the user opens Suggestions and returns to Offers
     Then the Map presentation is still selected
     And the mode remains for the current session

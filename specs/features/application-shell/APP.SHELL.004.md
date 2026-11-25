@@ -81,6 +81,7 @@ Scenario: Back during an in-progress save
 
 ## Related Specs
 - `APP.SHELL.001`
+- `APP.SHELL.005`
 - `APP.SHELL.002`
 - `APP.SHELL.003`
 - `ADD.OFFER.EXIT.001`

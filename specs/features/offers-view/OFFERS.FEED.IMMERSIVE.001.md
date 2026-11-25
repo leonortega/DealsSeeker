@@ -2,13 +2,16 @@
 
 ## Metadata
 - **Title**: Immersive Vertical Full-Screen Main Page Feed
-- **Version**: `v2.0`
+- **Version**: `v2.1`
 - **Status**: Approved
 - **Context/View**: Offers View (Main Page)
 - **Priority**: High
 
 ## Navigation restructure (v2.0)
-The following navigation-related requirements are superseded by `OFFERS.MODE.SWITCH.001`, `APP.SHELL.001` and `OFFERS.NAV.ADD.001`: R4–R7, R16–R35, R42–R45 and R53. The immersive feed no longer has a static left navigation panel or a footer mode button; both presentations share one bottom navigation, presentation is chosen in the Offers header mode control, and Add Offer is opened from a single floating action button. All non-navigation requirements (feed paging, photo carousel, overlays, theme, privacy, states) remain in force.
+The following navigation-related requirements are superseded by `OFFERS.MODE.SWITCH.001`, `APP.SHELL.001` and `OFFERS.NAV.ADD.001`: R4–R7, R16–R35, R42–R45 and R53. The immersive feed no longer has a static left navigation panel or a footer mode button; both presentations share one bottom navigation, presentation is chosen in the Offers controls, and Add Offer is opened from a single floating action button. All non-navigation requirements (feed paging, photo carousel, overlays, theme, privacy, states) remain in force.
+
+## Header removal (v2.1)
+No global application header is rendered in any standard view, per `APP.SHELL.005`. The immersive top bar and its controls are unchanged.
 
 ## Purpose
 Define a new main-page browsing experience that presents offers as a vertical, full-screen, one-offer-per-viewport immersive feed, with application identity and discovery controls on the left, offer actions on the right, and offer text/tags in the lower-left description area.
@@ -26,7 +29,7 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R3`: Each feed page shall use the offer image as the full-bleed primary visual background.
 - `OFFERS.FEED.IMMERSIVE.001-R4`: The left side of the screen shall display application identity (name and logo) and discovery controls.
 - `OFFERS.FEED.IMMERSIVE.001-R5`: The left side of the screen shall provide search options and entry points for the main navigation destinations (account, suggestions, reports).
-- `OFFERS.FEED.IMMERSIVE.001-R6`: The system shall keep application menu options available with their existing behavior and entry points in the standard application header.
+- `OFFERS.FEED.IMMERSIVE.001-R6`: The system shall keep application preferences and settings options available in the Account destination as defined by `APP.SHELL.001-R8`.
 - `OFFERS.FEED.IMMERSIVE.001-R7`: The system shall keep the main navigation destinations reachable with their existing behavior, either through the standard bottom navigation or through the left panel options of the immersive feed.
 - `OFFERS.FEED.IMMERSIVE.001-R8`: Each feed page shall expose offer action controls in a vertical side rail on the right, including favorite, directions, availability voting (positive and negative), and report, preserving their existing behavior and state semantics. The open detail control shall not be exposed.
 - `OFFERS.FEED.IMMERSIVE.001-R9`: Each feed page shall display business name, distance, description, and tags as an overlay in the lower-left area, analogous to a video description area.
@@ -39,9 +42,9 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R13`: When no offers are available, the system shall render an empty-state message instead of feed pages.
 - `OFFERS.FEED.IMMERSIVE.001-R14`: The view shall not expose raw `lat` or `lng` values to users.
 - `OFFERS.FEED.IMMERSIVE.001-R15`: The feed shall remain scrollable and responsive on small mobile screens.
-- `OFFERS.FEED.IMMERSIVE.001-R16`: The immersive feed shall be opened from the shared bottom footer view button labeled `New view` / `Nueva vista` with a ⭐ glyph; no new-view button shall be rendered in the standard header or the Offers hero area.
+- `OFFERS.FEED.IMMERSIVE.001-R16`: The immersive feed shall be opened from the shared bottom footer view button labeled `New view` / `Nueva vista` with a ⭐ glyph; no new-view button shall be rendered in the Offers hero area.
 - `OFFERS.FEED.IMMERSIVE.001-R17`: The immersive feed shall provide a map entry point; selecting it shall open the standard offers view, which displays the map for the current offers/location context.
-- `OFFERS.FEED.IMMERSIVE.001-R18`: In the immersive feed, the standard application header and bottom navigation bars shall not be rendered as separate bars.
+- `OFFERS.FEED.IMMERSIVE.001-R18`: In the immersive feed, the immersive top bar shall be the only top bar; no standard application header shall be rendered.
 - `OFFERS.FEED.IMMERSIVE.001-R19`: The left section shall consolidate the entry points previously exposed by the header and bottom navigation, including search and the main navigation destinations.
 - `OFFERS.FEED.IMMERSIVE.001-R20`: Main navigation destinations previously in the bottom bar shall be reachable directly through left panel options.
 - `OFFERS.FEED.IMMERSIVE.001-R21`: Preference and settings options shall remain available in the Account destination.
@@ -198,7 +201,7 @@ Scenario: User can try the immersive feed from the shared footer
   Given the user is on the standard Offers view
   When the user selects the ⭐ New view button in the footer
   Then the immersive feed view shall open
-  And no new-view button shall be displayed in the standard header or the Offers hero area
+  And no new-view button shall be displayed in the Offers hero area
 
 Scenario: Immersive view uses the classic application styling
   Given the user is on the immersive offers view
@@ -215,11 +218,12 @@ Scenario: Immersive view follows the active theme
   When the active theme changes to light
   Then its surfaces and text shall update to the light theme colors of the standard application UI
 
-Scenario: Header and footer are consolidated on the left
+Scenario: Footer entry points are consolidated in the immersive controls
   Given the user is on the immersive feed
   When the view loads
-  Then the standard header and bottom navigation bars shall not be rendered separately
-  And their entry points shall be available in the left section
+  Then no global application header shall be rendered
+  And the immersive top bar shall be the only top bar
+  And the navigation entry points shall be available in the immersive controls
   And bottom navigation destinations shall be reachable directly through left panel options
   And preference options shall remain available in the Account destination
 
@@ -284,6 +288,7 @@ Scenario: Empty feed state
 - Layout shall remain usable on small mobile screens.
 
 ## Related Specs
+- `APP.SHELL.005`
 - `OFFERS.LAYOUT.001`
 - `OFFERS.FEED.RESPONSIVE.001`
 - `OFFERS.SEARCH.001`

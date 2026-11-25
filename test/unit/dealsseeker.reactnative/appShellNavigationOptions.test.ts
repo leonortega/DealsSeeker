@@ -1,7 +1,7 @@
 import { modalScreenOptions, stackScreenOptions, tabScreenOptions } from '../../../src/DealsSeeker.ReactNative/src/navigation/shellOptions';
 
 describe('native shell navigation options', () => {
-  it('hides native chrome on all stack screens so the brand header is the only one', () => {
+  it('hides native chrome on all stack screens so no platform header is shown', () => {
     expect(stackScreenOptions()).toEqual({ headerShown: false });
   });
 

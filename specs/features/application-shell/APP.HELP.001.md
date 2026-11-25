@@ -71,6 +71,7 @@ Scenario: Help follows theme and localization
 
 ## Related Specs
 - `APP.SHELL.001`
+- `APP.SHELL.005`
 - `APP.THEME.001`
 - `APP.LOCALIZATION.001`
 - `APP.ACCESSIBILITY.UX.001`

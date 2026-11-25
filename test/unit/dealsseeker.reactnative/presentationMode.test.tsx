@@ -46,10 +46,6 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferDetailModal'
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferCommentsModal', () => ({
   OfferCommentsModal: () => null,
 }));
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/StandardHeader', () => ({
-  StandardHeader: () => null,
-}));
-
 describe('presentation mode switch', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -61,6 +57,7 @@ describe('presentation mode switch', () => {
 
     expect(screen.getByRole('tab', { name: 'offers.mode.feed' })).toBeTruthy();
     expect(screen.getByRole('tab', { name: 'offers.mode.map' })).toBeTruthy();
+    expect(screen.queryByText('app.title')).toBeNull();
   });
 
   it('marks Map selected in the standard view and switches to Feed', async () => {

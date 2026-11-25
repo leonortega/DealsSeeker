@@ -59,6 +59,7 @@ describe('AddOfferScreen', () => {
   it('shows the add-offer form with its required sections', async () => {
     await render(<AddOfferScreen />);
     expect(screen.getByText('add.title')).toBeTruthy();
+    expect(screen.queryByText('app.title')).toBeNull();
     expect(screen.getByText('add.description')).toBeTruthy();
     expect(screen.getByText('add.location')).toBeTruthy();
   });

@@ -15,7 +15,7 @@ Feature: Immersive view navigation to the standard offers view
     When the user selects the map mode option
     Then the immersive offers view closes
     And the standard offers view is displayed
-    And the standard application header and bottom navigation are restored
+    And the bottom navigation is restored with no global application header
 
   Scenario: No back control is shown in the immersive left panel
     Given the user is on the immersive offers view

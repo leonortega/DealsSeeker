@@ -85,6 +85,7 @@ describe('FavoritesScreen', () => {
     await render(<FavoritesScreen />);
 
     expect(await screen.findByText('Main Street Cafe')).toBeTruthy();
+    expect(screen.queryByText('app.title')).toBeNull();
     expect(mockSearchOffers).toHaveBeenCalledWith(
       expect.objectContaining({ favoritesOnly: true, query: '', radiusMeters: 5000 })
     );
@@ -125,6 +126,7 @@ describe('SuggestionsScreen', () => {
   it('submits a trimmed suggestion, shows success, then returns to Offers', async () => {
     jest.useFakeTimers();
     await render(<SuggestionsScreen />);
+    expect(screen.queryByText('app.title')).toBeNull();
     await fireEvent.changeText(screen.getByPlaceholderText('suggestions.message'), '  More deals please  ');
     await fireEvent.changeText(screen.getByPlaceholderText('suggestions.contact'), ' ');
     await fireEvent.press(screen.getByText('suggestions.submit'));

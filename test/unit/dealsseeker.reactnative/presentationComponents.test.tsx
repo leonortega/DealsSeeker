@@ -1,19 +1,16 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { AvatarPicker } from '../../../src/DealsSeeker.ReactNative/src/components/AvatarPicker';
 import { LoadingOverlay } from '../../../src/DealsSeeker.ReactNative/src/components/LoadingOverlay';
-import { StandardHeader } from '../../../src/DealsSeeker.ReactNative/src/components/StandardHeader';
 import { SplashScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/SplashScreen';
 import { AVATAR_OPTIONS } from '../../../src/DealsSeeker.ReactNative/src/utils/avatars';
 
-let mockActiveTab = 'offers';
-let mockOverlayRoute: { name: string } | null = null;
 let mockLoadingCount = 0;
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
-    activeTab: mockActiveTab,
+    activeTab: 'offers',
     loadingCount: mockLoadingCount,
-    overlayRoute: mockOverlayRoute,
+    overlayRoute: null,
     palette: {
       accent: '#b85c38',
       accentMuted: '#e9c9b8',
@@ -29,31 +26,6 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     t: (key: string) => key,
   }),
 }));
-
-describe('StandardHeader', () => {
-  beforeEach(() => {
-    mockActiveTab = 'offers';
-    mockOverlayRoute = null;
-  });
-
-  it.each([
-    ['offers', null, 'nav.offers'],
-    ['account', null, 'nav.account'],
-    ['suggestions', null, 'nav.suggestions'],
-    ['offers', { name: 'favorites' }, 'nav.favorites'],
-    ['offers', { name: 'add-offer' }, 'nav.addOffer'],
-  ])('shows the label for tab %s and overlay %p', async (tab, overlay, expected) => {
-    mockActiveTab = tab;
-    mockOverlayRoute = overlay;
-    await render(<StandardHeader />);
-    expect(screen.getByText(expected)).toBeTruthy();
-  });
-
-  it('always shows the application title', async () => {
-    await render(<StandardHeader />);
-    expect(screen.getByText('app.title')).toBeTruthy();
-  });
-});
 
 describe('AvatarPicker', () => {
   it('marks the selected avatar and reports a new selection', async () => {
