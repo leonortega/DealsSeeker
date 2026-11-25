@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 
 let mockImmersiveOffers = false;
+const mockSearchOffers = jest.fn();
 const mockOpenImmersiveOffers = jest.fn();
 const mockCloseImmersiveOffers = jest.fn();
 
@@ -17,13 +18,14 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     activeTab: 'offers',
     api: {
       reverseLocation: jest.fn().mockResolvedValue(null),
-      searchOffers: jest.fn().mockResolvedValue({ offers: [], businesses: [] }),
+      searchOffers: mockSearchOffers,
       setOfferFavorite: jest.fn(),
       voteOfferAvailability: jest.fn(),
     },
     closeImmersiveOffers: mockCloseImmersiveOffers,
     immersiveOffers: mockImmersiveOffers,
     isPending: () => false,
+    loadingCount: 0,
     openAddOffer: jest.fn(),
     openImmersiveOffers: mockOpenImmersiveOffers,
     palette: {
@@ -51,6 +53,21 @@ describe('presentation mode switch', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockImmersiveOffers = false;
+    mockSearchOffers.mockResolvedValue({ offers: [], businesses: [] });
+  });
+
+  it('shows blocking loading immediately while the initial search is pending', async () => {
+    mockSearchOffers.mockReturnValue(new Promise(() => {}));
+
+    await render(<OffersScreen />);
+
+    expect(screen.getByText('app.loading')).toBeTruthy();
+  });
+
+  it('removes blocking loading once the initial search completes', async () => {
+    await render(<OffersScreen />);
+
+    await waitFor(() => expect(screen.queryByText('app.loading')).toBeNull());
   });
 
   it('offers Feed and Map options in the Offers view', async () => {

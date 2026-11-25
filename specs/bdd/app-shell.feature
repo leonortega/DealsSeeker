@@ -142,3 +142,9 @@ Feature: Application shell and session-aware landing
     Then an animated loading overlay is visible
     And interaction with the underlying view is blocked
     And when loading finishes the overlay disappears
+
+  Scenario: Startup shows loading before offers or the no-offers message
+    Given the authenticated user has just left the splash screen
+    When the Offers view performs its initial location resolution and search
+    Then the blocking loading state is visible immediately
+    And when it completes the offers are displayed or the no-offers message is shown
