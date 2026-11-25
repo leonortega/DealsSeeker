@@ -6,16 +6,13 @@ export function SplashScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: palette.background }]}>
-      <View style={[styles.mark, { backgroundColor: palette.accentMuted, borderColor: palette.border }]}>
-        <Image
-          source={require('../../assets/brand/logo-icon.png')}
-          style={styles.markImage}
-          testID="brand-mark"
-        />
-      </View>
-      <Text style={[styles.title, { color: palette.ink }]}>{t('app.title')}</Text>
-      <Text style={[styles.subtitle, { color: palette.inkMuted }]}>{t('app.subtitle')}</Text>
-      <Text style={[styles.cta, { color: palette.accentText }]}>{t('splash.cta')}</Text>
+      <Image
+        source={require('../../assets/brand/logo-stacked.png')}
+        style={styles.brandLogo}
+        testID="brand-mark"
+      />
+      <Text style={[styles.subtitle, { color: '#000000' }]}>{t('app.subtitle')}</Text>
+      <Text style={[styles.cta, { color: '#000000' }]}>{t('splash.cta')}</Text>
     </View>
   );
 }
@@ -27,24 +24,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
-  mark: {
-    alignItems: 'center',
-    borderRadius: 36,
-    borderWidth: 1,
-    height: 112,
-    justifyContent: 'center',
+  brandLogo: {
+    height: 152,
     marginBottom: 18,
-    width: 112,
-  },
-  markImage: {
-    height: 72,
     resizeMode: 'contain',
-    width: 72,
-  },
-  title: {
-    fontFamily: 'Georgia',
-    fontSize: 34,
-    fontWeight: '700',
+    width: 240,
   },
   subtitle: {
     fontSize: 16,

@@ -88,6 +88,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 9/9 in that suite; 64 suites / 378 tests overall; `typecheck` and `test:arch` clean.
 - The clip came from the shell's 16px-padded content wrapper cutting the overhanging bar. The Offers tab now runs edge-to-edge at the shell level (`offersContent`), and the scroll view re-adds its 16px inset. A device screenshot confirmed both the logo tile and help button render as full circles; control positions are unchanged.
 
+## Follow-up: stacked splash lockup with black copy
+
+- **Spec**: `APP.BRAND.001` v1.7, R13 (Approved); BDD scenario added.
+- **RED**: `npm test -- --runInBand presentationComponents` — 1 test failed: separate `app.title` text was still rendered and splash copy was themed, not black.
+- **GREEN**: 4/4 in that suite; 64 suites / 378 tests overall; `typecheck` clean.
+- The in-app splash now renders `logo-stacked.png` (symbol + wordmark) instead of the DS glyph plus a separate title text; subtitle and CTA are fixed black, per request.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
