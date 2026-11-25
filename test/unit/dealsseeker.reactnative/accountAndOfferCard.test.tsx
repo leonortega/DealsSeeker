@@ -4,7 +4,7 @@ import { OfferCard } from '../../../src/DealsSeeker.ReactNative/src/components/O
 import { AccountScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AccountScreen';
 
 let mockActiveTab = 'account';
-let mockPreferences = { language: 'en', navigationMode: 'pedestrian', themeMode: 'light' };
+let mockPreferences = { language: 'en', navigationMode: 'pedestrian', themeMode: 'light', themeWorld: 'tangerine' };
 const mockGetMyProfile = jest.fn();
 const mockGetMyOffers = jest.fn();
 const mockDeleteOffer = jest.fn();
@@ -14,6 +14,7 @@ const mockSaveAvatar = jest.fn();
 const mockSetLanguage = jest.fn();
 const mockSetNavigationMode = jest.fn();
 const mockSetThemeMode = jest.fn();
+const mockSetThemeWorld = jest.fn();
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
@@ -46,6 +47,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     setLanguage: mockSetLanguage,
     setNavigationMode: mockSetNavigationMode,
     setThemeMode: mockSetThemeMode,
+    setThemeWorld: mockSetThemeWorld,
     t: (key: string) => key,
   }),
 }));
@@ -76,7 +78,7 @@ describe('AccountScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockActiveTab = 'account';
-    mockPreferences = { language: 'en', navigationMode: 'pedestrian', themeMode: 'light' };
+    mockPreferences = { language: 'en', navigationMode: 'pedestrian', themeMode: 'light', themeWorld: 'tangerine' };
     mockGetMyProfile.mockResolvedValue({
       displayName: 'Tester',
       email: 'tester@example.com',
@@ -134,6 +136,14 @@ describe('AccountScreen', () => {
 
     await waitFor(() => expect(screen.getAllByText('🐱')).toHaveLength(2));
     expect(mockSaveAvatar).toHaveBeenCalledWith('cat');
+  });
+
+  it('selects a palette world', async () => {
+    await render(<AccountScreen />);
+    expect(screen.getByRole('radio', { name: 'theme.tangerine' }).props.accessibilityState.selected).toBe(true);
+
+    await fireEvent.press(screen.getByText('theme.golden'));
+    expect(mockSetThemeWorld).toHaveBeenCalledWith('golden');
   });
 
   it('selects a theme, language and navigation mode', async () => {

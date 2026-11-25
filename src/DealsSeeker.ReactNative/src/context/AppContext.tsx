@@ -10,6 +10,7 @@ import {
   OfferItemDto,
   OfferReportDraft,
   ThemeMode,
+  ThemeWorld,
   UserPreferences,
   UserProfileDto,
 } from '../api/types';
@@ -61,6 +62,7 @@ interface AppContextValue {
   setReportDraft: (offer: OfferItemDto | null) => void;
   clearReportDraft: () => void;
   setThemeMode: (themeMode: ThemeMode) => Promise<void>;
+  setThemeWorld: (themeWorld: ThemeWorld) => Promise<void>;
   setLanguage: (language: Language) => Promise<void>;
   setNavigationMode: (mode: UserPreferences['navigationMode']) => Promise<void>;
   avatarId: string;
@@ -365,7 +367,11 @@ export function AppProvider({ children }: PropsWithChildren) {
     sessionNotice,
     isAuthenticated: Boolean(session?.accessToken),
     preferences,
-    palette: resolveTheme(preferences.themeMode, systemScheme === 'light' ? 'light' : systemScheme === 'dark' ? 'dark' : null),
+    palette: resolveTheme(
+      preferences.themeMode,
+      systemScheme === 'light' ? 'light' : systemScheme === 'dark' ? 'dark' : null,
+      preferences.themeWorld
+    ),
     reportDraft,
     loadingCount,
     sheetCount,
@@ -394,6 +400,10 @@ export function AppProvider({ children }: PropsWithChildren) {
     clearReportDraft: () => setReportDraftState(null),
     setThemeMode: async (themeMode) => {
       const nextPreferences = { ...preferences, themeMode };
+      await persistPreferences(nextPreferences);
+    },
+    setThemeWorld: async (themeWorld) => {
+      const nextPreferences = { ...preferences, themeWorld };
       await persistPreferences(nextPreferences);
     },
     setLanguage: async (language) => {

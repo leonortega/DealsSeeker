@@ -1,15 +1,16 @@
 import * as SecureStore from 'expo-secure-store';
-import { Language, NavigationMode, ThemeMode, UserPreferences } from '../api/types';
+import { Language, NavigationMode, ThemeMode, ThemeWorld, UserPreferences } from '../api/types';
 
 const SESSION_KEY = 'dealseeker.auth.session';
 const FIRST_RUN_KEY = 'dealseeker.onboarding.completed';
 export const DEFAULT_PREFERENCES: UserPreferences = {
   themeMode: 'system',
+  themeWorld: 'tangerine',
   language: 'en',
   navigationMode: 'pedestrian',
 };
 
-function preferenceKey(kind: 'theme' | 'language' | 'navigation', userId?: string | null) {
+function preferenceKey(kind: 'theme' | 'world' | 'language' | 'navigation', userId?: string | null) {
   const suffix = userId?.trim() ? userId.trim() : 'global';
   return `dealseeker.${kind}.${suffix}`;
 }
@@ -60,6 +61,10 @@ function normalizeThemeMode(value?: string | null): ThemeMode {
   return value === 'light' || value === 'dark' ? value : 'system';
 }
 
+function normalizeThemeWorld(value?: string | null): ThemeWorld {
+  return value === 'golden' || value === 'market' || value === 'tangerine' ? value : 'tangerine';
+}
+
 function normalizeLanguage(value?: string | null): Language {
   return value?.trim().toLowerCase().startsWith('es') ? 'es' : 'en';
 }
@@ -72,14 +77,16 @@ export async function loadPreferences(
   fallbackLanguage: Language,
   userId?: string | null
 ): Promise<UserPreferences> {
-  const [themeMode, language, navigationMode] = await Promise.all([
+  const [themeMode, themeWorld, language, navigationMode] = await Promise.all([
     readValue(preferenceKey('theme', userId)),
+    readValue(preferenceKey('world', userId)),
     readValue(preferenceKey('language', userId)),
     readValue(preferenceKey('navigation', userId)),
   ]);
 
   return {
     themeMode: normalizeThemeMode(themeMode),
+    themeWorld: normalizeThemeWorld(themeWorld),
     language: normalizeLanguage(language ?? fallbackLanguage),
     navigationMode: normalizeNavigationMode(navigationMode),
   };
@@ -88,6 +95,7 @@ export async function loadPreferences(
 export async function savePreferences(preferences: UserPreferences, userId?: string | null) {
   await Promise.all([
     writeValue(preferenceKey('theme', userId), preferences.themeMode),
+    writeValue(preferenceKey('world', userId), preferences.themeWorld),
     writeValue(preferenceKey('language', userId), preferences.language),
     writeValue(preferenceKey('navigation', userId), preferences.navigationMode),
   ]);

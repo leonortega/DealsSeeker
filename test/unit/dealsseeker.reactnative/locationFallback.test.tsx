@@ -33,6 +33,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     openImmersiveOffers: jest.fn(),
     palette: {
       accent: '#b85c38',
+      backdrop: '#121417',
       border: '#d7c9b5',
       card: '#fffdf8',
       danger: '#8d2f2f',

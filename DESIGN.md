@@ -127,7 +127,7 @@ The system ships one mobile-native language to iOS and Android from a single cod
 - Georgia for landmarks, system sans for everything operational.
 - Generous 16–28px radii; chips, badges, and filters are full pills.
 - One soft ambient shadow on raised cards; 1px borders and tonal shifts do the rest.
-- Two full palettes (Clean Warm Light and Cozy High-Contrast Dark); the bottom navigation stays deep slate in both.
+- Three selectable palette worlds, each with a light and dark variant: Golden Hour/Lantern (warm paper and terracotta), Sunshine Market/Night Market (amber and plum), and Tangerine & Mint/Cozy Dark (alabaster and coral). The bottom navigation keeps a dark surface in every world.
 - Compact 700–800 weight micro-labels with wide tracking for metadata and actions.
 
 ## Colors

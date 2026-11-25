@@ -1,5 +1,6 @@
 export type Language = 'en' | 'es';
 export type ThemeMode = 'system' | 'light' | 'dark';
+export type ThemeWorld = 'golden' | 'market' | 'tangerine';
 export type NavigationMode = 'pedestrian' | 'car';
 export type MainTab = 'account' | 'offers' | 'suggestions';
 
@@ -165,6 +166,7 @@ export interface ReportOfferRequest {
 
 export interface UserPreferences {
   themeMode: ThemeMode;
+  themeWorld: ThemeWorld;
   language: Language;
   navigationMode: NavigationMode;
 }

@@ -96,7 +96,7 @@ describe('touch target and label floors', () => {
       (node) => node.type === 'View' && styleOf(node).flexDirection === 'row'
     );
     expect(styleOf(wrapper as never)).toMatchObject({
-      backgroundColor: '#1e2228',
+      backgroundColor: '#121417',
       borderColor: '#71717a',
       borderRadius: 28,
     });

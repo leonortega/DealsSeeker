@@ -49,6 +49,7 @@ function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
 
   return (
     <AppFooterBar
+      palette={palette}
       fullWidth={!(immersiveOffers && activeTab === 'offers')}
       items={MAIN_TAB_DESTINATIONS.map((destination) => {
         const active = activeTab === destination.name;

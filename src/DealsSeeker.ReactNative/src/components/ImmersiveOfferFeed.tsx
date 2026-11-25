@@ -17,7 +17,7 @@ import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
 import { resolveFeedRestoreIndex } from '../utils/feedPosition';
 import { openDirections } from '../utils/maps';
-import { immersiveBackdrop, immersiveInk, immersiveInkMuted } from '../utils/theme';
+import { immersiveInk, immersiveInkMuted } from '../utils/theme';
 import { ImmersiveActionCaption, ImmersiveActionIconGlyph } from './ImmersiveActionGlyphs';
 import { ImmersiveFeedTab, ImmersiveFeedTabs } from './ImmersiveFeedTabs';
 import { ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
@@ -48,6 +48,7 @@ interface ImmersiveOfferFeedProps {
 }
 
 function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string; placeholderSymbol: string }) {
+  const { palette } = useApp();
   const imageUri = useOfferImageUri(imageUrl);
   const canRenderImage = Boolean(imageUri) && !isSvgImageUri(imageUri);
   const [imageFailed, setImageFailed] = useState(false);
@@ -57,14 +58,19 @@ function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string
       <Image
         resizeMode="contain"
         source={{ uri: imageUri ?? undefined }}
-        style={styles.backgroundImage}
+        style={[styles.backgroundImage, { backgroundColor: palette.backdrop }]}
         onError={() => setImageFailed(true)}
       />
     );
   }
 
   return (
-    <View style={[styles.backgroundImage, { alignItems: 'center', justifyContent: 'center' }]}>
+    <View
+      style={[
+        styles.backgroundImage,
+        { alignItems: 'center', backgroundColor: palette.backdrop, justifyContent: 'center' },
+      ]}
+    >
       <Text style={{ color: '#fff', fontSize: 76, opacity: 0.45 }}>{placeholderSymbol}</Text>
     </View>
   );
@@ -173,7 +179,7 @@ function ImmersiveOfferPage({
   }, [offer.offerId]);
 
   return (
-    <View style={styles.page} onLayout={handlePageLayout}>
+    <View style={[styles.page, { backgroundColor: palette.backdrop }]} onLayout={handlePageLayout}>
       {hasMultipleImages ? (
         <View
           {...panResponder.panHandlers}
@@ -396,9 +402,12 @@ export function ImmersiveOfferFeed({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: palette.backdrop }]}>
       <View style={styles.contentRow}>
-        <View onLayout={handleFeedAreaLayout} style={styles.feedArea}>
+        <View
+          onLayout={handleFeedAreaLayout}
+          style={[styles.feedArea, { backgroundColor: palette.backdrop }]}
+        >
           <FlatList
             ref={listRef}
             style={{ flex: 1 }}
@@ -473,7 +482,6 @@ export function ImmersiveOfferFeed({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: immersiveBackdrop,
     flex: 1,
   },
   contentRow: {
@@ -481,7 +489,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   feedArea: {
-    backgroundColor: immersiveBackdrop,
     flex: 1,
     position: 'relative',
   },
@@ -538,12 +545,10 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   page: {
-    backgroundColor: immersiveBackdrop,
     flex: 1,
     position: 'relative',
   },
   backgroundImage: {
-    backgroundColor: immersiveBackdrop,
     bottom: 0,
     left: 0,
     position: 'absolute',

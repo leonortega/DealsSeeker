@@ -1,17 +1,12 @@
 import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { Palette } from '../utils/theme';
+import { resolveFooterColors, resolveTheme } from '../utils/theme';
 
 /**
  * Shared bottom navigation used by both the standard and immersive views.
- * The palette matches the reference footer (dark rounded surface, terracotta active option).
+ * Its night surface is derived from the selected palette world.
  */
-const footerSurface = '#1e2228';
-const footerBorder = '#71717a';
-const footerActive = '#5a2e20';
-const footerAccent = '#ff8a65';
-const footerInk = '#f4f4f6';
-const footerInkMuted = '#a1a1aa';
-
 export interface FooterItem {
   key: string;
   icon: ReactNode;
@@ -24,13 +19,23 @@ export function AppFooterBar({
   items,
   createAction,
   fullWidth = false,
+  palette = resolveTheme('dark', 'dark', 'tangerine'),
 }: {
   items: FooterItem[];
   createAction?: ReactNode;
   fullWidth?: boolean;
+  palette?: Palette;
 }) {
+  const footer = resolveFooterColors(palette);
+
   return (
-    <View style={[styles.wrapper, fullWidth && styles.fullWidth]}>
+    <View
+      style={[
+        styles.wrapper,
+        fullWidth && styles.fullWidth,
+        { backgroundColor: footer.surface, borderColor: footer.border },
+      ]}
+    >
       {items.map((item) => (
         <Pressable
           key={item.key}
@@ -38,10 +43,12 @@ export function AppFooterBar({
           accessibilityRole="button"
           accessibilityState={{ selected: Boolean(item.active) }}
           onPress={item.onPress}
-          style={[styles.tab, item.active && styles.tabActive]}
+          style={[styles.tab, item.active && [styles.tabActive, { backgroundColor: footer.active }]]}
         >
-          <Text style={[styles.icon, item.active ? styles.iconActive : styles.iconInactive]}>{item.icon}</Text>
-          <Text style={[styles.label, item.active && styles.labelActive]}>
+          <Text style={[styles.icon, { color: item.active ? footer.accent : footer.inkMuted }]}>
+            {item.icon}
+          </Text>
+          <Text style={[styles.label, { color: item.active ? footer.ink : footer.inkMuted }]}>
             {item.label}
           </Text>
         </Pressable>
@@ -55,8 +62,6 @@ const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: footerSurface,
-    borderColor: footerBorder,
     borderRadius: 28,
     borderWidth: 1,
     flexDirection: 'row',
@@ -78,29 +83,19 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   tabActive: {
-    backgroundColor: footerActive,
+    borderRadius: 18,
   },
   icon: {
     fontSize: 16,
     fontWeight: '800',
   },
-  iconActive: {
-    color: footerAccent,
-  },
-  iconInactive: {
-    color: footerInkMuted,
-  },
   label: {
-    color: footerInkMuted,
     flexShrink: 1,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: -0.5,
     lineHeight: 14,
     textAlign: 'center',
-  },
-  labelActive: {
-    color: footerInk,
   },
   createSlot: {
     alignItems: 'center',

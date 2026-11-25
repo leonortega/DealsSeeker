@@ -59,6 +59,7 @@ describe('session and preference storage on native', () => {
 
     expect(await storage.loadPreferences('en', 'usr-1')).toEqual({
       themeMode: 'dark',
+      themeWorld: 'tangerine',
       language: 'es',
       navigationMode: 'car',
     });
@@ -66,11 +67,12 @@ describe('session and preference storage on native', () => {
 
   it('saves preferences under a per-user key', async () => {
     await storage.savePreferences(
-      { themeMode: 'light', language: 'es', navigationMode: 'car' },
+      { themeMode: 'light', themeWorld: 'market', language: 'es', navigationMode: 'car' },
       ' usr-1 '
     );
 
     expect(store.get('dealseeker.theme.usr-1')).toBe('light');
+    expect(store.get('dealseeker.world.usr-1')).toBe('market');
     expect(store.get('dealseeker.language.usr-1')).toBe('es');
     expect(store.get('dealseeker.navigation.usr-1')).toBe('car');
   });

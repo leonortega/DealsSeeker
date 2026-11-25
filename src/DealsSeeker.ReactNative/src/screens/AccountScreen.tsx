@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { OfferItemDto, ThemeMode, UserProfileDto } from '../api/types';
+import { OfferItemDto, ThemeMode, ThemeWorld, UserProfileDto } from '../api/types';
 import { AvatarPicker } from '../components/AvatarPicker';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
@@ -17,8 +17,14 @@ const themeOptions: Array<{ mode: ThemeMode; labelKey: string }> = [
   { mode: 'dark', labelKey: 'nav.darkTheme' },
 ];
 
+const themeWorlds: Array<{ world: ThemeWorld; labelKey: string }> = [
+  { world: 'golden', labelKey: 'theme.golden' },
+  { world: 'market', labelKey: 'theme.market' },
+  { world: 'tangerine', labelKey: 'theme.tangerine' },
+];
+
 export function AccountScreen() {
-  const { activeTab, api, avatarId, logout, openAddOffer, palette, preferences, saveAvatar, setLanguage, setNavigationMode, setThemeMode, t } =
+  const { activeTab, api, avatarId, logout, openAddOffer, palette, preferences, saveAvatar, setLanguage, setNavigationMode, setThemeMode, setThemeWorld, t } =
     useApp();
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState<UserProfileDto | null>(null);
@@ -109,6 +115,29 @@ export function AccountScreen() {
 
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <Text style={[styles.panelTitle, { color: palette.ink }]}>{t('account.settings')}</Text>
+        <View style={styles.settingGroup}>
+          <Text style={[styles.settingLabel, { color: palette.inkMuted }]}>{t('settings.world')}</Text>
+          <View style={styles.row}>
+            {themeWorlds.map(({ world, labelKey }) => {
+              const selected = preferences.themeWorld === world;
+              return (
+                <Pressable
+                  key={world}
+                  accessibilityLabel={t(labelKey)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  style={[
+                    styles.choice,
+                    { backgroundColor: selected ? palette.accent : palette.panel, borderColor: palette.border },
+                  ]}
+                  onPress={() => void setThemeWorld(world)}
+                >
+                  <Text style={{ color: selected ? palette.onAccent : palette.ink }}>{t(labelKey)}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
         <View style={styles.settingGroup}>
           <Text style={[styles.settingLabel, { color: palette.inkMuted }]}>{t('settings.theme')}</Text>
           <View style={styles.row}>

@@ -66,5 +66,6 @@ Scenario: Offer controls have safe touch targets
 ## Related Specs
 - `APP.THEME.001`
 - `APP.THEME.004`
+- `APP.THEME.006`
 - `ACCOUNT.PROFILE.001`
 - `APP.ACCESSIBILITY.UX.001`

@@ -31,7 +31,6 @@ import { resolveOffersGridColumns } from '../utils/layout';
 import { loadFirstRunCompleted, saveFirstRunCompleted } from '../utils/storage';
 import { resolveEmulatorLocation } from '../utils/emulatorLocation';
 import { restoreFocus } from '../utils/focusReturn';
-import { immersiveBackdrop } from '../utils/theme';
 
 const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
@@ -408,7 +407,7 @@ export function OffersScreen() {
     const combinedOffers = [...sections.promoted, ...sections.feed];
 
     return (
-      <View style={[styles.immersiveWrapper, { backgroundColor: immersiveBackdrop }]} testID="immersive-content">
+      <View style={[styles.immersiveWrapper, { backgroundColor: palette.backdrop }]} testID="immersive-content">
         {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
         {renderStatePanel()}
         {status ? (
