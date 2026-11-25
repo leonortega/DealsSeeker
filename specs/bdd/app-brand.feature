@@ -32,3 +32,10 @@ Feature: Brand logo set and placement
     When the presentation switch is rendered
     Then the symbol mark is displayed immediately to its left
     And the mark is not part of the switch itself
+
+  Scenario: Map-view controls mirror the feed top bar
+    Given the authenticated user is on the standard Offers (map) view
+    When the top controls are rendered
+    Then the symbol mark sits in a rounded tile at the left
+    And the presentation switch is centered and the help control is at the right
+    And the controls row is pinned at the same top position as the immersive feed top bar

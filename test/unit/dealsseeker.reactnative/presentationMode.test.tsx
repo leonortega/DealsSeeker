@@ -72,6 +72,30 @@ describe('presentation mode switch', () => {
     );
   });
 
+  it('mirrors the immersive top bar treatment for map-view controls', async () => {
+    await render(<OffersScreen />);
+
+    const mark = screen.getByTestId('brand-mark');
+    const controls = mark.parent;
+    expect(StyleSheet.flatten(controls.props.style)).toMatchObject({
+      justifyContent: 'space-between',
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    });
+    expect(StyleSheet.flatten(mark.props.style)).toMatchObject({
+      backgroundColor: '#fff9f0',
+      borderRadius: 999,
+      height: 40,
+      width: 40,
+    });
+    expect(StyleSheet.flatten(controls.parent.props.style)).toMatchObject({
+      left: 0,
+      position: 'absolute',
+      right: 0,
+      top: 0,
+    });
+  });
+
   it('presents the Offers map inside a bordered panel', async () => {
     await render(<OffersScreen />);
 
