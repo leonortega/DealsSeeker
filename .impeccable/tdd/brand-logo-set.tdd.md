@@ -40,6 +40,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - Android adaptive background is the brand sage `#719377` in `app.json`.
 - PNGs were rasterized with headless Chrome at transparent background; no new dependency was added.
 
+## Follow-up: mark beside the map-view presentation switch
+
+- **Spec**: `APP.BRAND.001` v1.1, R8 (Approved); BDD scenario added to `specs/bdd/app-brand.feature`.
+- **RED**: `npm test -- --runInBand presentationMode` — 1 test failed: no `brand-mark` in the standard Offers view.
+- **GREEN**: 5/5 in that suite; 64 suites / 374 tests overall; `typecheck` and `test:arch` clean.
+- The 32px symbol mark is rendered as the first child of the `headerControls` row, immediately before the feed/map switch; the switch itself is unchanged.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.

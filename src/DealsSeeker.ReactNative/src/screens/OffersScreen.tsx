@@ -1,5 +1,5 @@
 import { type ElementRef, useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
@@ -494,6 +494,11 @@ export function OffersScreen() {
           </View>
         </View>
         <View style={styles.headerControls}>
+          <Image
+            source={require('../../assets/brand/logo-icon.png')}
+            style={styles.headerMark}
+            testID="brand-mark"
+          />
           {modeSwitch}
           {helpButton}
         </View>
@@ -659,6 +664,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: 10,
+  },
+  headerMark: {
+    height: 32,
+    resizeMode: 'contain',
+    width: 32,
   },
   helpButton: {
     alignItems: 'center',
