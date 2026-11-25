@@ -65,10 +65,11 @@ describe('presentation mode switch', () => {
     await render(<OffersScreen />);
 
     const mark = screen.getByTestId('brand-mark');
-    const switcher = screen.getByRole('tab', { name: 'offers.mode.feed' }).parent;
-    expect(mark.parent).toBe(switcher.parent);
-    expect(mark.parent.children.indexOf(mark)).toBeLessThan(
-      switcher.parent.children.indexOf(switcher)
+    const modeSlot = screen.getByRole('tab', { name: 'offers.mode.feed' }).parent.parent;
+    const controls = mark.parent;
+    expect(controls).toBe(modeSlot.parent);
+    expect(controls.children.indexOf(mark)).toBeLessThan(
+      controls.children.indexOf(modeSlot)
     );
   });
 
@@ -88,13 +89,30 @@ describe('presentation mode switch', () => {
       height: 40,
       width: 40,
     });
-    expect(StyleSheet.flatten(controls.parent.props.style)).toMatchObject({
+    const topBarStyle = StyleSheet.flatten(controls.parent.props.style);
+    expect(topBarStyle).toMatchObject({
       left: 0,
-      marginHorizontal: -16,
       position: 'absolute',
       right: 0,
       top: 0,
     });
+    expect(topBarStyle.marginHorizontal).toBeUndefined();
+    expect(StyleSheet.flatten(controls.parent.parent.props.style)).toMatchObject({
+      flex: 1,
+      marginHorizontal: -16,
+    });
+  });
+
+  it('reuses the feed header slots with the search control hidden', async () => {
+    await render(<OffersScreen />);
+
+    const modeSlot = screen.getByRole('tab', { name: 'offers.mode.feed' }).parent.parent;
+    expect(StyleSheet.flatten(modeSlot.props.style)).toMatchObject({ maxWidth: 360 });
+
+    const topActions = screen.getByRole('button', { name: 'common.help' }).parent;
+    expect(StyleSheet.flatten(topActions.props.style)).toMatchObject({ flexDirection: 'row', gap: 8 });
+    expect(StyleSheet.flatten(topActions.children[0].props.style)).toMatchObject({ height: 44, width: 44 });
+    expect(screen.queryByRole('button', { name: 'offers.search' })).toBeNull();
   });
 
   it('presents the Offers map inside a bordered panel', async () => {

@@ -40,3 +40,11 @@ Feature: Brand logo set and placement
     And the presentation switch is centered and the help control is at the right
     And the controls row is pinned at the same top position as the immersive feed top bar
     And the row aligns to the same screen edges as the immersive feed top bar
+    And the symbol mark and help control are not clipped by the screen edges
+
+  Scenario: Map-view header reuses the feed header structure without search
+    Given the authenticated user is on the standard Offers (map) view
+    When the top bar is rendered
+    Then it uses the same slots and spacing as the immersive feed top bar
+    And the search slot keeps its footprint
+    And no search control is displayed
