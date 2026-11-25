@@ -16,10 +16,10 @@ public static class CacheKeys
 
     public static string TagLexiconKey(string locale, string normalizedQuery) => $"{TagLexicon}:{locale}:{normalizedQuery}";
 
-    public static string GeocodeKey(string provider, string normalizedQuery) => $"{Geocode}:{provider}:{normalizedQuery}";
+    public static string GeocodeKey(string normalizedQuery) => $"{Geocode}:{normalizedQuery}";
 
-    public static string ReverseGeocodeKey(string provider, double lat, double lng) =>
-        $"{Geocode}:{provider}:reverse:{lat:F4}:{lng:F4}";
+    public static string ReverseGeocodeKey(double lat, double lng) =>
+        $"{Geocode}:reverse:{lat:F4}:{lng:F4}";
 }
 
 /// <summary>The time-to-live values used by the application.</summary>

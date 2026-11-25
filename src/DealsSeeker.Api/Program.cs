@@ -89,9 +89,7 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection(DatabaseOptions.SectionName));
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
 builder.Services.Configure<LoggingPersistenceOptions>(builder.Configuration.GetSection(LoggingPersistenceOptions.SectionName));
-builder.Services.Configure<MapsOptions>(builder.Configuration.GetSection(MapsOptions.SectionName));
-builder.Services.Configure<GoogleMapsOptions>(builder.Configuration.GetSection(GoogleMapsOptions.SectionName));
-builder.Services.Configure<OpenLayersOptions>(builder.Configuration.GetSection(OpenLayersOptions.SectionName));
+builder.Services.Configure<PhotonOptions>(builder.Configuration.GetSection(PhotonOptions.SectionName));
 builder.Services.Configure<MapProviderResilienceOptions>(builder.Configuration.GetSection(MapProviderResilienceOptions.SectionName));
 
 builder.Services.AddMemoryCache();
@@ -118,13 +116,13 @@ builder.Services.AddAuthentication(BearerTokenAuthenticationHandler.SchemeName)
 builder.Services.AddAuthorization();
 
 // ---------------------------------------------------------------------------
-// External map providers: timeout, retry, circuit breaker and outbound rate limiting
+// Photon geocoding: timeout, retry, circuit breaker and cached results
 // ---------------------------------------------------------------------------
 var mapResilience = builder.Configuration.GetSection(MapProviderResilienceOptions.SectionName)
     .Get<MapProviderResilienceOptions>() ?? new MapProviderResilienceOptions();
 
 builder.Services
-    .AddHttpClient<GoogleMapsLocationLookupService>(client =>
+    .AddHttpClient<PhotonLocationLookupService>(client =>
         client.Timeout = TimeSpan.FromSeconds(mapResilience.TimeoutSeconds))
     .AddStandardResilienceHandler(options =>
     {
@@ -138,24 +136,7 @@ builder.Services
         options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(mapResilience.CircuitBreakerSeconds);
     });
 
-builder.Services
-    .AddHttpClient<OpenLayersLocationLookupService>(client =>
-        client.Timeout = TimeSpan.FromSeconds(mapResilience.TimeoutSeconds))
-    .AddStandardResilienceHandler(options =>
-    {
-        options.Retry.MaxRetryAttempts = mapResilience.RetryCount;
-        options.Retry.Delay = TimeSpan.FromMilliseconds(200);
-        options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(mapResilience.TimeoutSeconds);
-        options.TotalRequestTimeout.Timeout =
-            TimeSpan.FromSeconds(mapResilience.TimeoutSeconds * (mapResilience.RetryCount + 1));
-        options.CircuitBreaker.FailureRatio = 0.5;
-        options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
-        options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(mapResilience.CircuitBreakerSeconds);
-    });
-
-builder.Services.AddTransient<ILocationLookupProvider>(serviceProvider => serviceProvider.GetRequiredService<GoogleMapsLocationLookupService>());
-builder.Services.AddTransient<ILocationLookupProvider>(serviceProvider => serviceProvider.GetRequiredService<OpenLayersLocationLookupService>());
-builder.Services.AddScoped<ILocationLookupService, ConfigurableLocationLookupService>();
+builder.Services.AddScoped<ILocationLookupService, PhotonLocationLookupService>();
 
 // ---------------------------------------------------------------------------
 // Request protection, transport efficiency and observability

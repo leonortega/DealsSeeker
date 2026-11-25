@@ -20,8 +20,8 @@ public class CacheKeysTests
         Assert.Equal("promotions:active", CacheKeys.PromotionsKey());
         Assert.Equal("offer:search-document:off-1", CacheKeys.OfferSearchDocumentKey("off-1"));
         Assert.Equal("tag-lexicon:en:coffee", CacheKeys.TagLexiconKey("en", "coffee"));
-        Assert.Equal("geocode:GoogleMaps:central park", CacheKeys.GeocodeKey("GoogleMaps", "central park"));
-        Assert.Equal("geocode:resolved:reverse:40.7128:-74.0060", CacheKeys.ReverseGeocodeKey("resolved", 40.7128, -74.006));
+        Assert.Equal("geocode:central park", CacheKeys.GeocodeKey("central park"));
+        Assert.Equal("geocode:reverse:40.7128:-74.0060", CacheKeys.ReverseGeocodeKey(40.7128, -74.006));
     }
 
     [Fact]

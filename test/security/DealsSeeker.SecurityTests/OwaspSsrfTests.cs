@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using DealsSeeker.Api.Caching;
 using DealsSeeker.Api.Options;
 using DealsSeeker.Api.Services.Locations;
 using DealsSeeker.IntegrationTests;
@@ -11,7 +12,7 @@ namespace DealsSeeker.SecurityTests;
 
 /// <summary>
 /// OWASP Top 10 A10:2021 — Server-Side Request Forgery.
-/// The geocoding providers are the only outbound-HTTP surface: user input must
+/// The Photon geocoder is the only outbound-HTTP surface: user input must
 /// stay an encoded query value and must never be able to choose the host.
 /// </summary>
 public class OwaspSsrfTests(LocationApiFactory factory) : IClassFixture<LocationApiFactory>
@@ -19,34 +20,17 @@ public class OwaspSsrfTests(LocationApiFactory factory) : IClassFixture<Location
     private const string SsrfPayload = "http://169.254.169.254/latest/meta-data/iam/security-credentials";
 
     [Fact]
-    public async Task GoogleProvider_EncodesUserInputAndKeepsConfiguredHost()
-    {
-        var handler = new RecordingHandler("{\"results\":[]}");
-        using var http = new HttpClient(handler);
-        var service = new GoogleMapsLocationLookupService(
-            http,
-            Options.Create(new GoogleMapsOptions { ApiKey = "test-key" }),
-            NullLogger<GoogleMapsLocationLookupService>.Instance);
-
-        await service.SearchAsync(SsrfPayload, CancellationToken.None);
-
-        var uri = Assert.Single(handler.Requests);
-        Assert.Equal("maps.googleapis.com", uri.Host);
-        Assert.Contains(Uri.EscapeDataString(SsrfPayload), uri.Query, StringComparison.Ordinal);
-        Assert.DoesNotContain("169.254.169.254", uri.Host, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task OpenLayersProvider_EncodesUserInputAndKeepsConfiguredHost()
+    public async Task PhotonProvider_EncodesUserInputAndKeepsConfiguredHost()
     {
         var handler = new RecordingHandler("{\"features\":[]}");
         using var http = new HttpClient(handler);
-        var service = new OpenLayersLocationLookupService(
+        var service = new PhotonLocationLookupService(
             http,
-            NullLogger<OpenLayersLocationLookupService>.Instance,
-            Options.Create(new OpenLayersOptions
+            new StubCache(),
+            NullLogger<PhotonLocationLookupService>.Instance,
+            Options.Create(new PhotonOptions
             {
-                GeocodingBaseUrl = "https://photon.komoot.io/api",
+                BaseUrl = "https://photon.komoot.io/api",
                 UserAgent = "OwaspTest/1.0"
             }));
 
@@ -81,6 +65,18 @@ public class OwaspSsrfTests(LocationApiFactory factory) : IClassFixture<Location
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(0, factory.Lookup.SearchCalls);
+    }
+
+    private sealed class StubCache : ICacheService
+    {
+        private readonly Dictionary<string, object> _values = new(StringComparer.Ordinal);
+
+        public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default) =>
+            Task.FromResult(_values.TryGetValue(key, out var value) ? (T?)value : default);
+
+        public void Set<T>(string key, T value, TimeSpan timeToLive) => _values[key] = value!;
+
+        public void Remove(string key) => _values.Remove(key);
     }
 
     private sealed class RecordingHandler(string responseBody) : HttpMessageHandler

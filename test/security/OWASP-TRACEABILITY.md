@@ -15,7 +15,7 @@ instructions and the outstanding findings.
 | **A07 Identification and Authentication Failures** | `AuthenticationSecurityTests.PasswordLength_EnforcesDeclaredBoundaries`, `.Password_RequiresLetterAndDigit`, `.EmailNormalization_AllowsCaseInsensitiveLoginAndBlocksDuplicateRegistration`, `.InvalidCredentials_DoNotDistinguishUnknownUserFromWrongPassword` | Password policy, normalization, no user enumeration. No MFA or credential-stuffing simulation. |
 | **A08 Software and Data Integrity Failures** | — | Not covered. No CI/CD, deserialization or update-integrity surface in scope. |
 | **A09 Security Logging and Monitoring Failures** | `OwaspLoggingAndMonitoringTests.RegistrationEvent_IsLoggedWithoutCredentials`, `.MetricsEndpoint_ExposesRedAndCustomInstruments`, `.HealthEndpoints_ExposeLivenessAndReadiness` | Confirms events reach the log sink without credentials, and that metrics/health probes are exposed. No alerting or log-retention assertion. |
-| **A10 Server-Side Request Forgery** | `OwaspSsrfTests.GoogleProvider_EncodesUserInputAndKeepsConfiguredHost`, `.OpenLayersProvider_EncodesUserInputAndKeepsConfiguredHost`, `.LocationSearch_WithSsrfPayload_DoesNotFailOrCallOtherHosts`, `.LocationSearch_OverlongQuery_IsRejectedBeforeCallingProvider` | A recording handler proves user input stays an encoded query value and the host comes only from configuration. |
+| **A10 Server-Side Request Forgery** | `OwaspSsrfTests.PhotonProvider_EncodesUserInputAndKeepsConfiguredHost`, `.LocationSearch_WithSsrfPayload_DoesNotFailOrCallOtherHosts`, `.LocationSearch_OverlongQuery_IsRejectedBeforeCallingProvider` | A recording handler proves user input stays an encoded query value and the host comes only from configuration. |
 
 ## Deliberately out of scope
 

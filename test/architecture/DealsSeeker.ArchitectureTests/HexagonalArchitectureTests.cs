@@ -31,9 +31,7 @@ public class HexagonalArchitectureTests
         "DealsSeeker.Api.Services.Comments.DapperCommentService",
         "DealsSeeker.Api.Services.Feedback.DapperFeedbackService",
         "DealsSeeker.Api.Services.Feedback.InMemoryFeedbackService",
-        "DealsSeeker.Api.Services.Locations.ConfigurableLocationLookupService",
-        "DealsSeeker.Api.Services.Locations.GoogleMapsLocationLookupService",
-        "DealsSeeker.Api.Services.Locations.OpenLayersLocationLookupService",
+        "DealsSeeker.Api.Services.Locations.PhotonLocationLookupService",
         "DealsSeeker.Api.Caching.MemoryCacheService",
         "DealsSeeker.Api.Security.CurrentUser",
         "DealsSeeker.Api.Security.MemorySessionCache",
@@ -47,7 +45,7 @@ public class HexagonalArchitectureTests
     private static readonly string[] ApplicationPorts =
     [
         "IAuthService", "IOfferService", "ICommentService", "IFeedbackService",
-        "ILocationLookupService", "ILocationLookupProvider", "ICacheService",
+        "ILocationLookupService", "ICacheService",
         "ICurrentUser", "ISessionCache", "IDbConnectionFactory", "IDatabaseMigrationRunner"
     ];
 

@@ -48,7 +48,7 @@ public static class LocationEndpoints
             })
             .RequireRateLimiting("location")
             .WithName("SearchLocations")
-            .WithSummary("ADD.OFFER.LOCATION.001 + APP.CONFIG.MAPS.001: Search business or address using configured map provider module.");
+            .WithSummary("ADD.OFFER.LOCATION.001 + APP.MAP.STACK.001: Search business or address using Photon.");
 
         group.MapGet("/reverse", async (
                 double lat,

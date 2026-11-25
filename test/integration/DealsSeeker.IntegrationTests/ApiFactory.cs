@@ -34,11 +34,7 @@ public class ApiFactory : WebApplicationFactory<Program>
             {
                 ["Database:ConnectionString"] = $"Data Source={DatabasePath}",
                 ["LoggingPersistence:EnableDatabaseSink"] = "false",
-                ["Maps:DisplayProvider"] = "GoogleMaps",
-                ["Maps:DisplayFallbackProvider"] = "OpenLayers",
-                ["Maps:RedirectProvider"] = "GoogleMaps",
-                ["Maps:RedirectFallbackProvider"] = "OpenLayers",
-                ["GoogleMaps:ApiKey"] = "test-key"
+                ["Photon:BaseUrl"] = "https://photon.komoot.io/api"
             });
         });
     }
