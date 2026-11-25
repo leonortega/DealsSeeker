@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Brand Logo Set and Placement
-- **Version**: `v1.5`
+- **Version**: `v1.6`
 - **Status**: Approved
 - **Context/View**: Application Shell (all views), Login, Offers (immersive)
 - **Priority**: Medium
@@ -28,6 +28,7 @@ Use one authored logo set consistently in every app surface and replace placehol
 - `APP.BRAND.001-R9`: The standard Offers top controls shall mirror the immersive feed top bar: the symbol mark in a rounded tile at the left, the presentation switch centered, the help control at the right, and the row pinned at the same top position, so switching presentations keeps the controls visually continuous.
 - `APP.BRAND.001-R10`: The standard Offers controls row shall align to the same screen edges as the immersive feed top bar, independent of the surrounding content padding, and no control shall be clipped by the screen edges.
 - `APP.BRAND.001-R11`: The standard Offers top bar shall use the same structure and spacing as the immersive feed top bar, including the reserved search slot; the search control itself shall not be displayed in the standard Offers view.
+- `APP.BRAND.001-R12`: The standard Offers view title shall be separated from the controls row by a clear gap, and no top-bar control shall be clipped by the screen edges.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -76,6 +77,12 @@ Scenario: Map-view header reuses the feed header structure without search
   Then it uses the same slots and spacing as the immersive feed top bar
   And the search slot keeps its footprint
   And no search control is displayed
+
+Scenario: Map-view title clears the controls row
+  Given the authenticated user is on the standard Offers (map) view
+  When the view content is rendered
+  Then the title starts below the controls row with a clear gap
+  And no top-bar control is clipped by the screen edges
 ```
 
 ## Example Inputs/Outputs

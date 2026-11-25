@@ -103,6 +103,13 @@ describe('presentation mode switch', () => {
     });
   });
 
+  it('gives the title clearance below the map-view controls', async () => {
+    await render(<OffersScreen />);
+
+    const content = screen.getByTestId('offers-scroll').props.contentContainerStyle;
+    expect(StyleSheet.flatten(content).paddingTop).toBe(68);
+  });
+
   it('reuses the feed header slots with the search control hidden', async () => {
     await render(<OffersScreen />);
 

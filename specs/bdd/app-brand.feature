@@ -48,3 +48,9 @@ Feature: Brand logo set and placement
     Then it uses the same slots and spacing as the immersive feed top bar
     And the search slot keeps its footprint
     And no search control is displayed
+
+  Scenario: Map-view title clears the controls row
+    Given the authenticated user is on the standard Offers (map) view
+    When the view content is rendered
+    Then the title starts below the controls row with a clear gap
+    And no top-bar control is clipped by the screen edges
