@@ -1,0 +1,9 @@
+expo.modules.dealsseekerlocation.dealsseeker-location-pngs-0 C:\LeonRepository\DealsSeeker\src\DealsSeeker.ReactNative\modules\dealsseeker-location\android\build\generated\res\pngs\debug
+expo.modules.dealsseekerlocation.dealsseeker-location-updated_navigation_xml-1 C:\LeonRepository\DealsSeeker\src\DealsSeeker.ReactNative\modules\dealsseeker-location\android\build\generated\updated_navigation_xml\debug
+expo.modules.dealsseekerlocation.dealsseeker-location-mergeDebugResources-2 C:\LeonRepository\DealsSeeker\src\DealsSeeker.ReactNative\modules\dealsseeker-location\android\build\intermediates\incremental\debug\mergeDebugResources\merged.dir
+expo.modules.dealsseekerlocation.dealsseeker-location-mergeDebugResources-3 C:\LeonRepository\DealsSeeker\src\DealsSeeker.ReactNative\modules\dealsseeker-location\android\build\intermediates\incremental\debug\mergeDebugResources\stripped.dir
+expo.modules.dealsseekerlocation.dealsseeker-location-debug-4 C:\LeonRepository\DealsSeeker\src\DealsSeeker.ReactNative\modules\dealsseeker-location\android\build\intermediates\merged_res\debug\mergeDebugResources
+expo.modules.dealsseekerlocation.dealsseeker-location-debug-5 C:\LeonRepository\DealsSeeker\src\DealsSeeker.ReactNative\modules\dealsseeker-location\android\build\intermediates\packaged_res\debug\packageDebugResources
+expo.modules.dealsseekerlocation.dealsseeker-location-debug-6 C:\LeonRepository\DealsSeeker\src\DealsSeeker.ReactNative\modules\dealsseeker-location\android\src\debug\res
+expo.modules.dealsseekerlocation.dealsseeker-location-main-7 C:\LeonRepository\DealsSeeker\src\DealsSeeker.ReactNative\modules\dealsseeker-location\android\src\main\res
+gradleHome-0 C:\Users\marce\.gradle

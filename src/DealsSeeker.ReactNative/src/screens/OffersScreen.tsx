@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
+import { getDevicePositionAsync } from '../utils/deviceLocation';
 import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '../api/types';
 import { ImmersiveOfferFeed } from '../components/ImmersiveOfferFeed';
 import { ImmersiveFeedTab } from '../components/ImmersiveFeedTabs';
@@ -74,13 +75,7 @@ export function OffersScreen() {
     try {
       const permission = await Location.requestForegroundPermissionsAsync();
       if (permission.granted) {
-        const position = await Location.getCurrentPositionAsync({
-          accuracy: Location.LocationAccuracy.Balanced,
-        });
-        nextLocation = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
+        nextLocation = await getDevicePositionAsync();
       } else {
         usingFallback = true;
       }

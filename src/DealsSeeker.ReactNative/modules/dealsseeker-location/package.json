@@ -1,0 +1,9 @@
+{
+  "name": "dealsseeker-location",
+  "version": "1.0.0",
+  "description": "Platform location provider access for DealsSeeker on Android.",
+  "main": "src/index.ts",
+  "peerDependencies": {
+    "expo": "*"
+  }
+}

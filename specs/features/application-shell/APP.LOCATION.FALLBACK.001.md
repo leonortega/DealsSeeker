@@ -89,6 +89,7 @@ Scenario: Fallback notice does not expose coordinates
 ## Related Specs
 - `APP.RESILIENCE.UX.001`
 - `APP.LOCATION.DEV.001`
+- `APP.LOCATION.DEVICE.001`
 - `APP.SHELL.001`
 - `APP.LOCALIZATION.001`
 - `APP.ACCESSIBILITY.UX.003`

@@ -61,5 +61,6 @@ Scenario: Override does not change discovery behavior
 
 ## Related Specs
 - `APP.LOCATION.FALLBACK.001`
+- `APP.LOCATION.DEVICE.001`
 - `OFFERS.SEARCH.001`
 - `OFFERS.MAP.001`
