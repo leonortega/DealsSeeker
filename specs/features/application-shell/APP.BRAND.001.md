@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Brand Logo Set and Placement
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell (all views), Login, Offers (immersive)
 - **Priority**: Medium
@@ -24,6 +24,7 @@ Use one authored logo set consistently in every app surface and replace placehol
 - `APP.BRAND.001-R5`: The native startup image shall use the stacked lockup.
 - `APP.BRAND.001-R6`: The monochrome adaptive layer shall be a single-color silhouette of the symbol mark; the reversed knockout lockup shall be used where a filled square icon is required.
 - `APP.BRAND.001-R7`: The logo set shall remain legible in both themes; the symbol mark uses the authored brand color and the inverse lockup is available for light-on-dark placements.
+- `APP.BRAND.001-R8`: In the standard Offers (map) view, the symbol mark shall be displayed immediately to the left of the feed/map presentation switch.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -50,6 +51,12 @@ Scenario: Native startup image uses the stacked lockup
   Given the application is launching
   When the native startup image is rendered
   Then the stacked lockup shall be shown
+
+Scenario: Standard Offers view shows the mark beside the presentation switch
+  Given the authenticated user is on the standard Offers (map) view
+  When the presentation switch is rendered
+  Then the symbol mark shall be displayed immediately to its left
+  And the mark shall not be part of the switch itself
 ```
 
 ## Example Inputs/Outputs

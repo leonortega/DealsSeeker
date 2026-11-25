@@ -26,3 +26,9 @@ Feature: Brand logo set and placement
     Given the application is launching
     When the native startup image is rendered
     Then the stacked lockup is shown
+
+  Scenario: Standard Offers view shows the mark beside the presentation switch
+    Given the authenticated user is on the standard Offers (map) view
+    When the presentation switch is rendered
+    Then the symbol mark is displayed immediately to its left
+    And the mark is not part of the switch itself

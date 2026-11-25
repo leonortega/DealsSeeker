@@ -61,6 +61,17 @@ describe('presentation mode switch', () => {
     expect(screen.queryByText('app.title')).toBeNull();
   });
 
+  it('shows the brand mark to the left of the presentation switch', async () => {
+    await render(<OffersScreen />);
+
+    const mark = screen.getByTestId('brand-mark');
+    const switcher = screen.getByRole('tab', { name: 'offers.mode.feed' }).parent;
+    expect(mark.parent).toBe(switcher.parent);
+    expect(mark.parent.children.indexOf(mark)).toBeLessThan(
+      switcher.parent.children.indexOf(switcher)
+    );
+  });
+
   it('presents the Offers map inside a bordered panel', async () => {
     await render(<OffersScreen />);
 
