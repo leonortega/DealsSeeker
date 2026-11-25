@@ -91,15 +91,14 @@ describe('presentation mode switch', () => {
     expect(screen.queryAllByText('offers.loading')).toHaveLength(0);
   });
 
-  it('keeps the feed progress indicator out of the layout flow', async () => {
+  it('never runs a second inline progress indicator in the feed', async () => {
     mockImmersiveOffers = true;
     mockIsPending = true;
 
     await render(<OffersScreen />);
+    await waitFor(() => expect(screen.queryByText('app.loading')).toBeNull());
 
-    expect(StyleSheet.flatten(screen.getByText('offers.loading').parent.props.style)).toMatchObject({
-      position: 'absolute',
-    });
+    expect(screen.queryByText('offers.loading')).toBeNull();
   });
 
   it('offers Feed and Map options in the Offers view', async () => {

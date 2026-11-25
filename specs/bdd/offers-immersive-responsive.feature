@@ -114,6 +114,12 @@ Feature: Immersive feed responsive presentation
     When the view is rendered
     Then the left side panel displays the application identity icon and the application name
 
+  Scenario: Side action rail does not move while content loads
+    Given the user is on the immersive offers view
+    When offers and their images finish loading
+    Then the side action rail keeps the same position
+    And caption visibility does not change because of a measured feed height
+
   Scenario: Horizontal swipe changes the photo on every viewport size
     Given the user is on the immersive offers view
     And the offer has more than one photo

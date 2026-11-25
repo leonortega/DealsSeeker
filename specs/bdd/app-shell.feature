@@ -153,4 +153,5 @@ Feature: Application shell and session-aware landing
     Given the immersive offers feed is loading
     When a blocking loading state is active
     Then only one loading indicator is visible
-    And showing or hiding a subsequent indicator does not move the feed controls
+    And no second inline progress indicator runs after it
+    And showing or hiding the indicator does not move the feed controls

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive Feed Responsive Presentation
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Offers View (Immersive)
 - **Priority**: High
@@ -50,6 +50,7 @@ Define how the immersive offers feed adapts its presentation to the available vi
 - `OFFERS.FEED.RESPONSIVE.001-R30`: On a narrow viewport, the application header shall display the application identity icon, the feed filter tabs, and the search icon control.
 - `OFFERS.FEED.RESPONSIVE.001-R31`: On a wide viewport, the application identity and application name shall remain in the left side panel.
 - `OFFERS.FEED.RESPONSIVE.001-R32`: All user-facing labels of the search overlay, including its title, search action, radius label and cancel action, shall be rendered from the active language's localization resources and shall never display a raw resource key.
+- `OFFERS.FEED.RESPONSIVE.001-R33`: The side action rail shall keep a stable position while offers and their images load; caption visibility shall be derived from the viewport and text scale, not from a measured content height.
 - `OFFERS.FEED.RESPONSIVE.001-R33`: On a narrow viewport, the bottom footer bar shall span the full width of the screen, shall distribute all five options evenly across that width, and shall keep the view button fully inside the footer, truncating long labels to a single line when needed.
 
 ## Acceptance Criteria (BDD)
