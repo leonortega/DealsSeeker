@@ -117,6 +117,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 64 suites / 381 tests overall; `typecheck` clean.
 - `renderStatePanel` no longer returns the empty card. The Offers controls, map and footer remain; filtered no-results and search-error panels are unchanged.
 
+## Follow-up: single stable feed loading indicator
+
+- **Spec**: `APP.SHELL.001` v2.3, R31 (Approved); BDD scenario added.
+- **RED**: `npm test -- --runInBand presentationMode` — 2 tests failed: two indicators were present at startup (`app.loading` overlay + `offers.loading` banner), and the progress banner was in normal flow.
+- **GREEN**: 64 suites / 383 tests overall; `typecheck` clean.
+- The inline feed progress banner is suppressed while the blocking initial load is active, and is now absolutely positioned above the footer so showing/hiding it never shifts the feed controls.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.

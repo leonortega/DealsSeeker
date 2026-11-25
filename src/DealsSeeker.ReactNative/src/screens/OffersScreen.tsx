@@ -419,7 +419,7 @@ export function OffersScreen() {
             </Text>
           </View>
         ) : null}
-        {isPending('offers-search') ? (
+        {isPending('offers-search') && !initialLoading ? (
           <View style={[styles.progressBanner, { backgroundColor: palette.card, borderColor: palette.border }]}>
             <Text style={[styles.progressLabel, { color: palette.inkMuted }]}>{t('offers.loading')}</Text>
           </View>
@@ -776,12 +776,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   progressBanner: {
-    marginHorizontal: 16,
-    marginTop: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 1,
+    bottom: 176,
+    left: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    position: 'absolute',
+    right: 16,
+    zIndex: 5,
   },
   progressLabel: {
     fontSize: 14,
