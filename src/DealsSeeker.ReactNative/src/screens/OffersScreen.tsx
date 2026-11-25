@@ -317,10 +317,6 @@ export function OffersScreen() {
       return panel(t('offers.noResults'), t('offers.noResultsHint'), t('offers.clearFilters'), clearFilters);
     }
 
-    if (state.kind === 'empty') {
-      return panel(t('offers.emptyTitle'), t('offers.emptyHint'), t('offers.createFirstOffer'), openAddOffer);
-    }
-
     return null;
   }
 

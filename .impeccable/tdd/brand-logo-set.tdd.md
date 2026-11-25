@@ -110,6 +110,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - `LoadingOverlay` now accepts an optional `visible` override; `OffersScreen` starts with a local `initialLoading` flag and clears it in a `finally`, so the blocking spinner is visible from the first rendered frame through location resolution and the initial search. It is rendered in both the map and feed presentations.
 - Device observation confirmed the remaining white gap before JS startup is the Expo dev-client bundle download / native splash, not an in-app empty state.
 
+## Follow-up: no empty-state card
+
+- **Specs**: `OFFERS.UX.001` v1.1 (R3 rewritten, R4 retired), `OFFERS.FEED.IMMERSIVE.001` v2.2 (R13), `OFFERS.LAYOUT.001` edge case; BDD updated in `offers-ux.feature` and `offers-immersive-feed.feature`.
+- **RED**: `npm test -- --runInBand presentationMode` — 1 test failed: `offers.emptyTitle` was rendered on an empty unfiltered result.
+- **GREEN**: 64 suites / 381 tests overall; `typecheck` clean.
+- `renderStatePanel` no longer returns the empty card. The Offers controls, map and footer remain; filtered no-results and search-error panels are unchanged.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
