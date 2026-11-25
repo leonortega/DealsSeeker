@@ -104,6 +104,7 @@ export function NativeMapPreview({
 
 const styles = StyleSheet.create({
   container: {
+    borderRadius: 28,
     flex: 1,
     overflow: 'hidden',
   },

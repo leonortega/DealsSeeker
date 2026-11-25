@@ -553,13 +553,15 @@ export function OffersScreen() {
 
         {renderStatePanel()}
 
-        <NativeMapPreview
-          businesses={results.businesses}
-          center={userLocation}
-          height={300}
-          onSelectMarker={(marker) => void openDirections(marker.location, preferences.navigationMode)}
-          radiusMeters={radiusMeters}
-        />
+        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <NativeMapPreview
+            businesses={results.businesses}
+            center={userLocation}
+            height={300}
+            onSelectMarker={(marker) => void openDirections(marker.location, preferences.navigationMode)}
+            radiusMeters={radiusMeters}
+          />
+        </View>
 
         {sections.promoted.length > 0 ? (
           <View style={styles.section}>
