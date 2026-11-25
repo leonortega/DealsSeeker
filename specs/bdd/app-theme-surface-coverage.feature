@@ -19,3 +19,9 @@ Feature: Full surface coverage in dark theme
     When a card or panel is displayed
     Then it keeps its card, panel or panel-alt color role
     And text keeps its theme ink color
+
+  Scenario: Immersive state panels have a dark backdrop
+    Given the dark theme is active and the immersive feed is displayed
+    When a no-results panel appears above the feed
+    Then the area behind the panel uses the fixed forest presentation
+    And no light navigator surface shows through

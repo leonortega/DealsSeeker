@@ -29,6 +29,7 @@ import { statusColor } from '../utils/statusNotice';
 import { resolveOffersGridColumns } from '../utils/layout';
 import { loadFirstRunCompleted, saveFirstRunCompleted } from '../utils/storage';
 import { resolveEmulatorLocation } from '../utils/emulatorLocation';
+import { immersiveBackdrop } from '../utils/theme';
 
 const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
@@ -403,7 +404,7 @@ export function OffersScreen() {
     const combinedOffers = [...sections.promoted, ...sections.feed];
 
     return (
-      <>
+      <View style={[styles.immersiveWrapper, { backgroundColor: immersiveBackdrop }]} testID="immersive-content">
         {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
         {renderStatePanel()}
         {status ? (
@@ -461,7 +462,7 @@ export function OffersScreen() {
         />
         <HelpSheet onClose={() => setHelpVisible(false)} returnFocusRef={helpButtonRef} visible={helpVisible} />
         <FirstRunSheet onDismiss={dismissFirstRun} visible={firstRunVisible} />
-      </>
+      </View>
     );
   }
 
@@ -624,6 +625,9 @@ const styles = StyleSheet.create({
   content: {
     gap: 16,
     paddingBottom: 24,
+  },
+  immersiveWrapper: {
+    flex: 1,
   },
   heroRow: {
     alignItems: 'center',

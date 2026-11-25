@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 
 const mockRequestPermission = jest.fn();
@@ -127,6 +128,14 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
 
     await waitFor(() => expect(screen.queryByText('offers.locationFallbackNotice')).toBeNull());
     expect(mockSearchOffers).toHaveBeenCalled();
+  });
+
+  it('paints the immersive content area behind state panels', async () => {
+    mockImmersive = true;
+    await render(<OffersScreen />);
+
+    expect(await screen.findByText('offers.emptyTitle')).toBeTruthy();
+    expect(StyleSheet.flatten(screen.getByTestId('immersive-content').props.style).backgroundColor).toBe('#1b2f28');
   });
 
   it('shows the same disclosure in the immersive presentation', async () => {

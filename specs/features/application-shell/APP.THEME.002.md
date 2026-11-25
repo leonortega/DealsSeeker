@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Full Surface Coverage in Dark Theme
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell, all standard views
 - **Priority**: High
@@ -23,6 +23,7 @@ Prevent fixed light backgrounds from showing through the application when the da
 - `APP.THEME.002-R3`: Cards, panels and controls shall keep their own palette roles and shall not be flattened into the background.
 - `APP.THEME.002-R4`: The requirement shall hold in both themes and for both supported languages.
 - `APP.THEME.002-R5`: The shared bottom navigation shall keep its fixed night surface per the Night Footer Rule.
+- `APP.THEME.002-R6`: In the immersive presentation, the full content area behind state panels and status banners shall use the fixed forest presentation background, so no navigator surface shows through in either theme.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -42,6 +43,12 @@ Scenario: Cards keep their own surfaces
   When a card or panel is displayed
   Then it shall keep its card, panel or panel-alt color role
   And text shall keep its theme ink color
+
+Scenario: Immersive state panels have a dark backdrop
+  Given the dark theme is active and the immersive feed is displayed
+  When a no-results panel appears above the feed
+  Then the area behind the panel shall use the fixed forest presentation
+  And no light navigator surface shall show through
 ```
 
 ## Example Inputs/Outputs
