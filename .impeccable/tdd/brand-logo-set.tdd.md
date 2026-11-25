@@ -95,6 +95,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 4/4 in that suite; 64 suites / 378 tests overall; `typecheck` clean.
 - The in-app splash now renders `logo-stacked.png` (symbol + wordmark) instead of the DS glyph plus a separate title text; subtitle and CTA are fixed black, per request.
 
+## Follow-up: splash subtitle removed
+
+- **Spec**: `APP.BRAND.001` v1.8, R13 (Approved) — splash has no application-subtitle line.
+- **RED**: `npm test -- --runInBand presentationComponents` — 1 test failed: `app.subtitle` was still rendered.
+- **GREEN**: 4/4 in that suite; 64 suites / 378 tests overall; `typecheck` clean.
+- Splash now shows only the stacked lockup and the black CTA text.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.

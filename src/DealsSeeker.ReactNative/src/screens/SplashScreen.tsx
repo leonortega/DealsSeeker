@@ -11,7 +11,6 @@ export function SplashScreen() {
         style={styles.brandLogo}
         testID="brand-mark"
       />
-      <Text style={[styles.subtitle, { color: '#000000' }]}>{t('app.subtitle')}</Text>
       <Text style={[styles.cta, { color: '#000000' }]}>{t('splash.cta')}</Text>
     </View>
   );
@@ -29,11 +28,6 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     resizeMode: 'contain',
     width: 240,
-  },
-  subtitle: {
-    fontSize: 16,
-    marginTop: 8,
-    textAlign: 'center',
   },
   cta: {
     fontSize: 12,
