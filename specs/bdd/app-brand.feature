@@ -39,3 +39,4 @@ Feature: Brand logo set and placement
     Then the symbol mark sits in a rounded tile at the left
     And the presentation switch is centered and the help control is at the right
     And the controls row is pinned at the same top position as the immersive feed top bar
+    And the row aligns to the same screen edges as the immersive feed top bar

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Brand Logo Set and Placement
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Application Shell (all views), Login, Offers (immersive)
 - **Priority**: Medium
@@ -26,6 +26,7 @@ Use one authored logo set consistently in every app surface and replace placehol
 - `APP.BRAND.001-R7`: The logo set shall remain legible in both themes; the symbol mark uses the authored brand color and the inverse lockup is available for light-on-dark placements.
 - `APP.BRAND.001-R8`: In the standard Offers (map) view, the symbol mark shall be displayed immediately to the left of the feed/map presentation switch.
 - `APP.BRAND.001-R9`: The standard Offers top controls shall mirror the immersive feed top bar: the symbol mark in a rounded tile at the left, the presentation switch centered, the help control at the right, and the row pinned at the same top position, so switching presentations keeps the controls visually continuous.
+- `APP.BRAND.001-R10`: The standard Offers controls row shall align to the same screen edges as the immersive feed top bar, independent of the surrounding content padding.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -65,6 +66,7 @@ Scenario: Map-view controls mirror the feed top bar
   Then the symbol mark sits in a rounded tile at the left
   And the presentation switch is centered and the help control is at the right
   And the controls row is pinned at the same top position as the immersive feed top bar
+  And the row aligns to the same screen edges as the immersive feed top bar
 ```
 
 ## Example Inputs/Outputs

@@ -90,6 +90,7 @@ describe('presentation mode switch', () => {
     });
     expect(StyleSheet.flatten(controls.parent.props.style)).toMatchObject({
       left: 0,
+      marginHorizontal: -16,
       position: 'absolute',
       right: 0,
       top: 0,
