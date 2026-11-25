@@ -97,10 +97,16 @@ describe('presentation mode switch', () => {
       top: 0,
     });
     expect(topBarStyle.marginHorizontal).toBeUndefined();
-    expect(StyleSheet.flatten(controls.parent.parent.props.style)).toMatchObject({
-      flex: 1,
-      marginHorizontal: -16,
-    });
+    expect(StyleSheet.flatten(controls.parent.parent.props.style)).toMatchObject({ flex: 1 });
+    expect(StyleSheet.flatten(controls.parent.parent.props.style).marginHorizontal).toBeUndefined();
+  });
+
+  it('hides scroll indicators in the standard Offers view', async () => {
+    await render(<OffersScreen />);
+
+    const scroll = screen.getByTestId('offers-scroll');
+    expect(scroll.props.showsVerticalScrollIndicator).toBe(false);
+    expect(scroll.props.showsHorizontalScrollIndicator).toBe(false);
   });
 
   it('gives the title clearance below the map-view controls', async () => {

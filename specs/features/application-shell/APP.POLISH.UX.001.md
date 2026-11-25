@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Design-system conformance and dialog recovery
-- **Version**: `v1.4`
+- **Version**: `v1.5`
 - **Status**: Approved
 - **Context/View**: Application shell, Offers View, My Account, Add Offer, Suggestions, Reports
 - **Priority**: Low
@@ -28,6 +28,7 @@ Close the remaining design-system and recovery gaps without changing the establi
 - `APP.POLISH.UX.001-R9`: Every scrollable surface shall keep its bottommost control clear of display cutouts and system bars.
 - `APP.POLISH.UX.001-R10`: Search inputs and filter controls shall use the fully rounded pill shape from the Pill Rule, while structural panels keep their 12–28px corners.
 - `APP.POLISH.UX.001-R11`: Embedded map surfaces shall be presented within a structurally rounded, 1px-bordered surface using the active palette; the map shall fill that surface edge-to-edge with no padding between the map and its border, and its content shall be clipped to the corner.
+- `APP.POLISH.UX.001-R12`: The standard Offers view shall not display scroll indicators while its content is scrolled.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -64,6 +65,11 @@ Scenario: Embedded map uses the panel corner treatment
   Then it shall sit within a rounded, 1px-bordered surface using the active palette
   And the map shall meet the border with no padding gap
   And the map content shall be clipped to that surface's corners
+
+Scenario: Standard Offers view has no scroll indicators
+  Given the authenticated user is on the standard Offers view
+  When the view content is scrolled
+  Then no vertical or horizontal scroll indicator shall be displayed
 ```
 
 ## Example Inputs/Outputs

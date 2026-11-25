@@ -47,3 +47,8 @@ Feature: Design-system conformance and dialog recovery
     Then it sits within a rounded, 1px-bordered surface using the active palette
     And the map meets the border with no padding gap
     And the map content is clipped to that surface's corners
+
+  Scenario: Standard Offers view has no scroll indicators
+    Given the authenticated user is on the standard Offers view
+    When the view content is scrolled
+    Then no vertical or horizontal scroll indicator is displayed
