@@ -112,6 +112,13 @@ describe('touch target and label floors', () => {
     expect(styleOf(label).fontSize).toBeGreaterThanOrEqual(10);
   });
 
+  it('uses pill corners for the search and filter controls', async () => {
+    await render(<OffersScreen />);
+
+    const input = screen.getByPlaceholderText('offers.searchPlaceholder');
+    expect(styleOf(input).borderRadius).toBe(999);
+  });
+
   it('reserves scroll space for the floating action below the search controls', async () => {
     await render(<OffersScreen />);
 

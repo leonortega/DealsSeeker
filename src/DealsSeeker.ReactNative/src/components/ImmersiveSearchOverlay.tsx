@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   input: {
-    borderRadius: 12,
+    borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,

@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, StyleSheet } from 'react-native';
 import { RegisterScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/RegisterScreen';
 import { AddOfferScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
 import { OfferDetailModal } from '../../../src/DealsSeeker.ReactNative/src/components/OfferDetailModal';
@@ -129,6 +129,23 @@ describe('accessible contribution and auth surfaces (APP.ACCESSIBILITY.UX.002)',
     expect(screen.getByRole('button', { name: /1500 m/ }).props.accessibilityState).toEqual({ selected: true });
     expect(screen.getByRole('button', { name: 'common.cancel' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'common.search' })).toBeTruthy();
+  });
+
+  it('uses a pill corner for the immersive search input', async () => {
+    await render(
+      <ImmersiveSearchOverlay
+        visible
+        query=""
+        radiusMeters={1500}
+        onChangeQuery={jest.fn()}
+        onChangeRadius={jest.fn()}
+        onSearch={jest.fn()}
+        onClose={jest.fn()}
+      />
+    );
+
+    const input = screen.getByLabelText('offers.searchPlaceholder');
+    expect(StyleSheet.flatten(input.props.style).borderRadius).toBe(999);
   });
 
   it('does not auto-focus the search input when the sheet is hidden', async () => {

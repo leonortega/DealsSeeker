@@ -704,7 +704,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   input: {
-    borderRadius: 16,
+    borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 14,
@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   actionButton: {
-    borderRadius: 16,
+    borderRadius: 999,
     flex: 1,
     minHeight: 44,
     paddingHorizontal: 14,

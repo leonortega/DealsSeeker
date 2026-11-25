@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Design-system conformance and dialog recovery
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Application shell, Offers View, My Account, Add Offer, Suggestions, Reports
 - **Priority**: Low
@@ -26,6 +26,7 @@ Close the remaining design-system and recovery gaps without changing the establi
 - `APP.POLISH.UX.001-R7`: Error status messages shall be visually distinguishable from neutral and success messages, while their meaning shall also be conveyed by text.
 - `APP.POLISH.UX.001-R8`: Embedded web documents shall use the application's system sans font stack.
 - `APP.POLISH.UX.001-R9`: Every scrollable surface shall keep its bottommost control clear of display cutouts and system bars.
+- `APP.POLISH.UX.001-R10`: Search inputs and filter controls shall use the fully rounded pill shape from the Pill Rule, while structural panels keep their 12–28px corners.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -49,6 +50,12 @@ Scenario: Keyboard and cutouts do not hide controls
   Given the on-screen keyboard is open or the device has a bottom cutout
   When the user edits the last field of a form
   Then the field and the primary action remain visible
+
+Scenario: Search and filter controls are pills
+  Given the standard or immersive Offers view is displayed
+  When the search input and filter actions are rendered
+  Then they shall use fully rounded corners
+  And the surrounding panel shall keep its structural corner radius
 ```
 
 ## Example Inputs/Outputs

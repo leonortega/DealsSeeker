@@ -34,3 +34,9 @@ Feature: Design-system conformance and dialog recovery
     Given the on-screen keyboard is open or the device has a bottom cutout
     When the user edits the last field of a form
     Then the field and the primary action remain visible
+
+  Scenario: Search and filter controls are pills
+    Given the standard or immersive Offers view is displayed
+    When the search input and filter actions are rendered
+    Then they use fully rounded corners
+    And the surrounding panel keeps its structural corner radius
