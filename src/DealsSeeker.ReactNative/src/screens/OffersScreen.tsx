@@ -1,5 +1,5 @@
 import { type ElementRef, useCallback, useEffect, useRef, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
@@ -8,6 +8,7 @@ import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '.
 import { ImmersiveOfferFeed, NARROW_BREAKPOINT } from '../components/ImmersiveOfferFeed';
 import { ImmersiveFeedTab } from '../components/ImmersiveFeedTabs';
 import { NativeMapPreview } from '../components/NativeMapPreview';
+import { OfferTopBar } from '../components/OfferTopBar';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetailModal } from '../components/OfferDetailModal';
 import { OfferCommentsModal } from '../components/OfferCommentsModal';
@@ -480,24 +481,16 @@ export function OffersScreen() {
   return (
     <View style={styles.screenRoot}>
       <View pointerEvents="box-none" style={styles.topBar}>
-        <View
-          pointerEvents="box-none"
-          style={[styles.headerControls, { backgroundColor: palette.background }]}
-        >
-          <Image
-            source={require('../../assets/brand/logo-icon.png')}
-            style={[styles.headerMark, { backgroundColor: palette.panel }]}
-            testID="brand-mark"
-          />
-          {viewportWidth < NARROW_BREAKPOINT ? null : (
-            <Text style={[styles.topBarTitle, { color: palette.ink }]}>{t('app.title')}</Text>
-          )}
-          <View pointerEvents="box-none" style={styles.modeSlot}>{modeSwitch}</View>
-          <View pointerEvents="box-none" style={styles.topActions}>
-            <View style={styles.searchSlot} />
-            {helpButton}
-          </View>
-        </View>
+        <OfferTopBar
+          headerControl={modeSwitch}
+          helpControl={helpButton}
+          isNarrow={viewportWidth < NARROW_BREAKPOINT}
+          palette={palette}
+          searchLabel={t('offers.search')}
+          surfaceColor={palette.background}
+          title={t('app.title')}
+          titleColor={palette.ink}
+        />
       </View>
       <ScrollView
         testID="offers-scroll"
@@ -680,36 +673,6 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     zIndex: 2,
-  },
-  headerControls: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  headerMark: {
-    borderRadius: 999,
-    height: 40,
-    resizeMode: 'contain',
-    width: 40,
-  },
-  topBarTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  modeSlot: {
-    maxWidth: 360,
-  },
-  topActions: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-  },
-  searchSlot: {
-    height: 44,
-    width: 44,
   },
   helpButton: {
     alignItems: 'center',

@@ -68,6 +68,12 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 7/7 in that suite; 64 suites / 376 tests overall; `typecheck` and `test:arch` clean.
 - The standard Offers top bar now uses the feed's slot structure: mark → optional title → `modeSlot` (switch) → `topActions` (44px reserved search slot + help). The search button is not rendered, but its footprint keeps the switch at the feed's x-position. `NARROW_BREAKPOINT` is exported from `ImmersiveOfferFeed` so both presentations use the same viewport rule.
 
+## Refactor: one shared top-bar component
+
+- **Boundary**: extracted the duplicated top-bar markup from `ImmersiveOfferFeed.tsx` and `OffersScreen.tsx` into `OfferTopBar.tsx`. No behavior change; spec-first is not required because the observable output is unchanged.
+- **Preserved**: slot order (mark → title → switch → actions), the search button in feed and its hidden 44px footprint in map view, viewport rule via shared `NARROW_BREAKPOINT`, accessibility labels, testIDs, and the absolute top position / screen-edge alignment in the standard view.
+- **Proof after refactor**: 64 suites / 376 tests passed; `typecheck` clean; `test:arch` clean (63 files, no dependency violations).
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.

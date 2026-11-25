@@ -21,7 +21,7 @@ import { immersiveInk, immersiveInkMuted } from '../utils/theme';
 import { ImmersiveActionCaption, ImmersiveActionIconGlyph } from './ImmersiveActionGlyphs';
 import { ImmersiveFeedTab, ImmersiveFeedTabs } from './ImmersiveFeedTabs';
 import { ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
-import { NavIcon } from './NavIcon';
+import { OfferTopBar } from './OfferTopBar';
 
 export const NARROW_BREAKPOINT = 768;
 
@@ -443,26 +443,16 @@ export function ImmersiveOfferFeed({
           />
 
           <View pointerEvents="box-none" style={styles.topBar}>
-            <View pointerEvents="box-none" style={styles.topBarContent}>
-              <Image
-                source={require('../../assets/brand/logo-icon.png')}
-                style={[styles.topBarLogo, { backgroundColor: palette.panel }]}
-                testID="brand-mark"
-              />
-              {isNarrow ? null : <Text style={[styles.topBarTitle, { color: immersiveInk }]}>{t('app.title')}</Text>}
-              <View pointerEvents="box-none" style={styles.modeSlot}>{headerControl}</View>
-              <View pointerEvents="box-none" style={styles.topActions}>
-                <Pressable
-                  accessibilityLabel={t('offers.search')}
-                  accessibilityRole="button"
-                  onPress={() => setSearchVisible(true)}
-                  style={[styles.searchIconButton, { backgroundColor: palette.panel, borderColor: palette.border }]}
-                >
-                  <NavIcon color={palette.ink} name="search" size={20} />
-                </Pressable>
-                {helpControl}
-              </View>
-            </View>
+            <OfferTopBar
+              headerControl={headerControl}
+              helpControl={helpControl}
+              isNarrow={isNarrow}
+              onSearch={() => setSearchVisible(true)}
+              palette={palette}
+              searchLabel={t('offers.search')}
+              title={t('app.title')}
+              titleColor={immersiveInk}
+            />
             <View style={styles.tabsRow}>
               <ImmersiveFeedTabs activeTab={feedTab} onChangeTab={onFeedTabChange} />
             </View>
@@ -503,44 +493,10 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 2,
   },
-  topBarContent: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  modeSlot: {
-    maxWidth: 360,
-  },
-  topActions: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-  },
   tabsRow: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingBottom: 4,
-  },
-  topBarTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  topBarLogo: {
-    borderRadius: 999,
-    height: 40,
-    resizeMode: 'contain',
-    width: 40,
-  },
-  searchIconButton: {
-    alignItems: 'center',
-    borderRadius: 999,
-    borderWidth: 1,
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
   },
   searchRow: {
     flexDirection: 'row',
