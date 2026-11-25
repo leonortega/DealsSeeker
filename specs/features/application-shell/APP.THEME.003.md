@@ -64,5 +64,6 @@ Scenario: Contrast floors hold in both themes
 ## Related Specs
 - `APP.THEME.001`
 - `APP.THEME.002`
+- `APP.THEME.004`
 - `APP.POLISH.UX.001`
 - `OFFERS.FEED.PROMOTED.001`

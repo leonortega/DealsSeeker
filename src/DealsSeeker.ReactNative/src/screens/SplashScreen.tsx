@@ -7,11 +7,11 @@ export function SplashScreen() {
   return (
     <View style={[styles.root, { backgroundColor: palette.background }]}>
       <View style={[styles.mark, { backgroundColor: palette.accentMuted, borderColor: palette.border }]}>
-        <Text style={[styles.markText, { color: palette.accent }]}>DS</Text>
+        <Text style={[styles.markText, { color: palette.accentText }]}>DS</Text>
       </View>
       <Text style={[styles.title, { color: palette.ink }]}>{t('app.title')}</Text>
       <Text style={[styles.subtitle, { color: palette.inkMuted }]}>{t('app.subtitle')}</Text>
-      <Text style={[styles.cta, { color: palette.accent }]}>{t('splash.cta')}</Text>
+      <Text style={[styles.cta, { color: palette.accentText }]}>{t('splash.cta')}</Text>
     </View>
   );
 }

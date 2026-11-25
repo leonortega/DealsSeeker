@@ -23,5 +23,5 @@ Feature: Full surface coverage in dark theme
   Scenario: Immersive state panels have a dark backdrop
     Given the dark theme is active and the immersive feed is displayed
     When a no-results panel appears above the feed
-    Then the area behind the panel uses the fixed forest presentation
+    Then the area behind the panel uses the fixed plum presentation
     And no light navigator surface shows through

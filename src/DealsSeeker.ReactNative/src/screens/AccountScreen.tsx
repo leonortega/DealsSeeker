@@ -84,7 +84,7 @@ export function AccountScreen() {
       <View style={[styles.hero, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
         <View style={styles.heroTop}>
           <View style={[styles.avatar, { backgroundColor: palette.accentMuted }]}>
-            <Text style={[styles.avatarText, { color: palette.accent }]}>{avatarEmoji(profile?.avatarId ?? avatarId)}</Text>
+            <Text style={[styles.avatarText, { color: palette.accentText }]}>{avatarEmoji(profile?.avatarId ?? avatarId)}</Text>
           </View>
           <Text style={[styles.heroTitle, { color: palette.ink }]}>{profile?.displayName ?? t('account.title')}</Text>
         </View>
@@ -96,7 +96,7 @@ export function AccountScreen() {
             style={[styles.logout, { backgroundColor: palette.danger }]}
             onPress={() => void logout()}
           >
-            <Text style={[styles.logoutLabel, { color: palette.onAccent }]}>{t('account.logout')}</Text>
+            <Text style={[styles.logoutLabel, { color: palette.onDanger }]}>{t('account.logout')}</Text>
           </Pressable>
         </View>
       </View>
@@ -159,7 +159,7 @@ export function AccountScreen() {
                 style={[styles.smallButton, { backgroundColor: palette.accentMuted }]}
                 onPress={() => openAddOffer(offer.offerId)}
               >
-                <Text style={{ color: palette.accent }}>{t('account.editOffer')}</Text>
+                <Text style={{ color: palette.accentText }}>{t('account.editOffer')}</Text>
               </Pressable>
               <Pressable
                 accessibilityLabel={t('account.removeOffer')}

@@ -63,7 +63,7 @@ export function ImmersiveActionIconGlyph({
   prominent?: boolean;
 }) {
   const { palette } = useApp();
-  const color = prominent ? palette.onAccent : active ? palette.accent : palette.ink;
+  const color = prominent ? palette.onAccent : active ? palette.accentText : palette.ink;
 
   return (
     <Svg

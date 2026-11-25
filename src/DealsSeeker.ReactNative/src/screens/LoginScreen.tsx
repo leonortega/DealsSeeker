@@ -44,7 +44,7 @@ export function LoginScreen() {
       style={[authFormStyles.root, { backgroundColor: palette.background }]}
     >
       <View style={[styles.brandCard, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
-        <Text style={[styles.brandGlyph, { color: palette.accent }]}>DS</Text>
+        <Text style={[styles.brandGlyph, { color: palette.accentText }]}>DS</Text>
         <Text style={[styles.brandTitle, { color: palette.ink }]}>{t('app.title')}</Text>
         <Text style={[styles.brandSubtitle, { color: palette.inkMuted }]}>{t('app.subtitle')}</Text>
       </View>
@@ -77,7 +77,7 @@ export function LoginScreen() {
           onPress={() => setShowPassword((shown) => !shown)}
           style={styles.visibilityToggle}
         >
-          <Text style={[authFormStyles.link, { color: palette.accent }]}>
+          <Text style={[authFormStyles.link, { color: palette.accentText }]}>
             {t(showPassword ? 'auth.hidePassword' : 'auth.showPassword')}
           </Text>
         </Pressable>
@@ -92,7 +92,7 @@ export function LoginScreen() {
           </Text>
         </Pressable>
         <Pressable accessibilityLabel={t('auth.createAccountLink')} accessibilityRole="link" onPress={showRegister}>
-          <Text style={[authFormStyles.link, { color: palette.accent }]}>{t('auth.createAccountLink')}</Text>
+          <Text style={[authFormStyles.link, { color: palette.accentText }]}>{t('auth.createAccountLink')}</Text>
         </Pressable>
         {displayedStatus ? (
           <Text accessibilityLiveRegion="polite" style={[authFormStyles.status, { color: palette.danger }]}>

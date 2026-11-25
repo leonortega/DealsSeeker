@@ -6,7 +6,7 @@ import {
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
-    palette: { accent: '#b85c38', ink: '#1f3128', inkMuted: '#5f6d63' },
+    palette: { accent: '#b85c38', accentText: '#8a5a00', ink: '#1f3128', inkMuted: '#5f6d63' },
   }),
 }));
 
@@ -27,7 +27,7 @@ describe('ImmersiveActionIconGlyph', () => {
   it('uses the accent color for an active action', async () => {
     await render(<ImmersiveActionIconGlyph active kind="favorite" />);
 
-    expect(screen.root.props.stroke).toBe('#b85c38');
+    expect(screen.root.props.stroke).toBe('#8a5a00');
   });
 
   it('uses ink for an inactive action', async () => {

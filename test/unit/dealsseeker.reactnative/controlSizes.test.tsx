@@ -95,12 +95,12 @@ describe('touch target and label floors', () => {
       (node) => node.type === 'View' && styleOf(node).flexDirection === 'row'
     );
     expect(styleOf(wrapper as never)).toMatchObject({
-      backgroundColor: '#22332f',
-      borderColor: '#476258',
+      backgroundColor: '#2a2030',
+      borderColor: '#8c7a93',
       borderRadius: 28,
     });
-    expect(styleOf(screen.getByRole('button', { name: 'Account' })).backgroundColor).toBe('#5e3a2a');
-    expect(styleOf(screen.getByText('👤')).color).toBe('#f08f62');
+    expect(styleOf(screen.getByRole('button', { name: 'Account' })).backgroundColor).toBe('#5a4426');
+    expect(styleOf(screen.getByText('👤')).color).toBe('#ffc15e');
   });
 
   it('lets footer labels wrap and follow the system text size', async () => {

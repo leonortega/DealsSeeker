@@ -12,7 +12,9 @@ export interface Palette {
   inkMuted: string;
   accent: string;
   accentMuted: string;
+  accentText: string;
   onAccent: string;
+  onDanger: string;
   highlight: string;
   onHighlight: string;
   success: string;
@@ -23,44 +25,48 @@ export interface Palette {
 
 const lightPalette: Palette = {
   mode: 'light',
-  background: '#fbf6ec',
-  backgroundRaised: '#f3ead9',
-  panel: '#fffcf5',
-  panelAlt: '#e4f1df',
-  card: '#fffdf9',
+  background: '#fff9ec',
+  backgroundRaised: '#fff1d9',
+  panel: '#fffdf7',
+  panelAlt: '#e7f4e8',
+  card: '#ffffff',
   border: '#9c8461',
-  ink: '#1d3126',
-  inkMuted: '#5b6b5e',
-  accent: '#b0512c',
-  accentMuted: '#fbede3',
-  onAccent: '#ffffff',
-  highlight: '#f0b447',
-  onHighlight: '#1d3126',
+  ink: '#2b1e2e',
+  inkMuted: '#6a5a6c',
+  accent: '#e8a13a',
+  accentMuted: '#fbe3b6',
+  accentText: '#8a5a00',
+  onAccent: '#2b1e2e',
+  onDanger: '#ffffff',
+  highlight: '#f2725e',
+  onHighlight: '#2b1e2e',
   success: '#2e7d52',
-  danger: '#a33a32',
-  shadow: 'rgba(40, 28, 18, 0.16)',
-  overlay: 'rgba(22, 30, 28, 0.52)',
+  danger: '#c93160',
+  shadow: 'rgba(43, 30, 46, 0.16)',
+  overlay: 'rgba(24, 20, 33, 0.52)',
 };
 
 const darkPalette: Palette = {
   mode: 'dark',
-  background: '#121d19',
-  backgroundRaised: '#1b2a24',
-  panel: '#20332b',
-  panelAlt: '#2a4236',
-  card: '#253b32',
-  border: '#6a8a75',
-  ink: '#fbf4e9',
-  inkMuted: '#c8d4c8',
-  accent: '#ff9e6b',
-  accentMuted: '#5c3525',
-  onAccent: '#1d3126',
-  highlight: '#f5c56b',
-  onHighlight: '#1d3126',
+  background: '#181421',
+  backgroundRaised: '#221c2c',
+  panel: '#2a2030',
+  panelAlt: '#25362d',
+  card: '#2e2438',
+  border: '#8c7a93',
+  ink: '#f6e9f0',
+  inkMuted: '#cdbbcf',
+  accent: '#ffc15e',
+  accentMuted: '#5a4426',
+  accentText: '#ffc15e',
+  onAccent: '#2b1e2e',
+  onDanger: '#2b1e2e',
+  highlight: '#ff8b78',
+  onHighlight: '#2b1e2e',
   success: '#86d5a0',
-  danger: '#ff9b8e',
+  danger: '#ff6f9c',
   shadow: 'rgba(0, 0, 0, 0.3)',
-  overlay: 'rgba(4, 7, 6, 0.66)',
+  overlay: 'rgba(12, 8, 18, 0.66)',
 };
 
 /**
@@ -70,7 +76,7 @@ export function primaryButtonText(palette: Palette): string {
   return palette.onAccent;
 }
 
-export const immersiveBackdrop = '#1b2f28';
+export const immersiveBackdrop = '#181421';
 export const immersiveInk = '#f7f1e8';
 export const immersiveInkMuted = '#c6d0c9';
 

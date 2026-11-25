@@ -479,7 +479,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
               onPress={handleRetryLoad}
               style={[styles.button, { backgroundColor: palette.accentMuted }]}
             >
-              <Text style={{ color: palette.accent }}>{t('add.retry')}</Text>
+              <Text style={{ color: palette.accentText }}>{t('add.retry')}</Text>
             </Pressable>
             <Pressable
               accessibilityLabel={t('add.cancel')}
@@ -773,7 +773,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
                   style={[
                     styles.thumbnailWrap,
                     {
-                      borderColor: index === selectedImageIndex ? palette.accent : palette.border,
+                      borderColor: index === selectedImageIndex ? palette.accentText : palette.border,
                     },
                   ]}
                 >
@@ -803,7 +803,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
               style={[styles.button, { backgroundColor: palette.accentMuted }]}
               onPress={() => void pickFromGallery()}
             >
-              <Text style={{ color: palette.accent }}>{t('add.upload')}</Text>
+              <Text style={{ color: palette.accentText }}>{t('add.upload')}</Text>
             </Pressable>
           </View>
           {images.length > 0 ? (
@@ -876,7 +876,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
                 onPress={handleRetrySearch}
                 style={styles.inlineAction}
               >
-                <Text style={{ color: palette.accent }}>{t('add.retry')}</Text>
+                <Text style={{ color: palette.accentText }}>{t('add.retry')}</Text>
               </Pressable>
             </View>
           ) : null}
@@ -1048,7 +1048,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
                 style={[styles.wordChip, { backgroundColor: palette.accentMuted, borderColor: palette.border }]}
                 onPress={() => removeTag(tag)}
               >
-                <Text style={{ color: palette.accent }}>{tag}</Text>
+                <Text style={{ color: palette.accentText }}>{tag}</Text>
               </Pressable>
             ))}
           </View>

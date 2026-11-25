@@ -412,7 +412,7 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
               <Text style={{ color: palette.ink }}>{t('offers.favorite')}</Text>
             </Pressable>
             <Pressable style={[styles.actionButton, { backgroundColor: palette.accentMuted }]} onPress={() => onDirections(offer)}>
-              <Text style={{ color: palette.accent }}>
+              <Text style={{ color: palette.accentText }}>
                 {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
               </Text>
             </Pressable>

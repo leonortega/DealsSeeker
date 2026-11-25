@@ -37,7 +37,7 @@ function HighlightedDescription({ description, query }: { description: string; q
         return (
           <Text
             key={`${part}-${index}`}
-            style={highlighted ? { backgroundColor: palette.accentMuted, color: palette.accent } : undefined}
+            style={highlighted ? { backgroundColor: palette.accentMuted, color: palette.accentText } : undefined}
           >
             {part}
           </Text>
@@ -97,7 +97,7 @@ export function OfferCard({
           ) : null}
           {offer.isReported ? (
             <View style={[styles.badge, { backgroundColor: palette.danger }]}>
-              <Text style={[styles.badgeLabel, { color: palette.onAccent }]}>{t('offers.reported')}</Text>
+              <Text style={[styles.badgeLabel, { color: palette.onDanger }]}>{t('offers.reported')}</Text>
             </View>
           ) : null}
         </View>
@@ -142,7 +142,7 @@ export function OfferCard({
             style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: offer.isFavorite ? palette.accentMuted : palette.panel }]}
             onPress={() => onFavorite(offer)}
           >
-            <Text style={[styles.actionLabel, { color: offer.isFavorite ? palette.accent : palette.ink }]}>
+            <Text style={[styles.actionLabel, { color: offer.isFavorite ? palette.accentText : palette.ink }]}>
               {t('offers.favorite')}
             </Text>
           </Pressable>

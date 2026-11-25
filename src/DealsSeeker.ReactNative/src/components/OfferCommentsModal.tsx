@@ -157,7 +157,7 @@ export function OfferCommentsModal({ offer, visible, onClose, returnFocusRef }: 
                   {loadingMore ? (
                     <ActivityIndicator color={palette.accent} />
                   ) : (
-                    <Text style={[styles.loadMoreLabel, { color: palette.accent }]}>{t('comments.loadMore')}</Text>
+                    <Text style={[styles.loadMoreLabel, { color: palette.accentText }]}>{t('comments.loadMore')}</Text>
                   )}
                 </Pressable>
               ) : undefined

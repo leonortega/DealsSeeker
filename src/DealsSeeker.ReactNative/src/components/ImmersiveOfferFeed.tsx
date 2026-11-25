@@ -317,7 +317,7 @@ function ImmersiveOfferPage({
           ) : null}
           {offer.isReported ? (
             <View style={[styles.badge, { backgroundColor: palette.danger }]}>
-              <Text style={[styles.badgeLabel, { color: palette.onAccent }]}>{t('offers.reported')}</Text>
+              <Text style={[styles.badgeLabel, { color: palette.onDanger }]}>{t('offers.reported')}</Text>
             </View>
           ) : null}
           <Text style={styles.businessName}>{offer.businessName}</Text>

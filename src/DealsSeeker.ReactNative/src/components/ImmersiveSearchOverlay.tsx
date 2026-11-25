@@ -66,7 +66,7 @@ export function ImmersiveSearchOverlay({
                     styles.distanceChip,
                     {
                       backgroundColor: selected ? palette.accent : palette.card,
-                      borderColor: selected ? palette.accent : palette.border,
+                      borderColor: selected ? palette.accentText : palette.border,
                     },
                   ]}
                 >

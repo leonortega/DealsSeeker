@@ -143,7 +143,7 @@ Feature: Immersive vertical full-screen main page feed
   Scenario: Immersive chrome stays readable in the light theme
     Given the light theme is active
     And the immersive offers feed is displayed
-    When the top-bar title, feed tabs and action captions are rendered over the fixed forest backdrop
+    When the top-bar title, feed tabs and action captions are rendered over the fixed plum backdrop
     Then each uses a light foreground color with sufficient contrast
     And no text is rendered in dark ink over that backdrop
 
@@ -165,7 +165,7 @@ Feature: Immersive vertical full-screen main page feed
     Given the immersive offers feed is displayed
     And the light theme is active
     When the safe areas and status bar are rendered
-    Then the safe-area background uses the fixed forest presentation
+    Then the safe-area background uses the fixed plum presentation
     And the status-bar icons stay visible against it
     When the dark theme is active
     Then the same forest presentation is applied

@@ -110,7 +110,7 @@ export function RegisterScreen() {
           onPress={() => setShowPassword((shown) => !shown)}
           style={styles.visibilityToggle}
         >
-          <Text style={[authFormStyles.link, { color: palette.accent }]}>
+          <Text style={[authFormStyles.link, { color: palette.accentText }]}>
             {t(showPassword ? 'auth.hidePassword' : 'auth.showPassword')}
           </Text>
         </Pressable>
@@ -125,7 +125,7 @@ export function RegisterScreen() {
           </Text>
         </Pressable>
         <Pressable accessibilityLabel={t('auth.loginLink')} accessibilityRole="link" onPress={showLogin}>
-          <Text style={[authFormStyles.link, { color: palette.accent }]}>{t('auth.loginLink')}</Text>
+          <Text style={[authFormStyles.link, { color: palette.accentText }]}>{t('auth.loginLink')}</Text>
         </Pressable>
         {status ? (
           <Text accessibilityLiveRegion="polite" style={[authFormStyles.status, { color: palette.danger }]}>

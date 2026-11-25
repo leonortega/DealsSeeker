@@ -532,7 +532,7 @@ export function OffersScreen() {
                   void search(query, option, favoritesOnly);
                 }}
               >
-                <Text style={{ color: option === radiusMeters ? palette.accent : palette.ink }}>{option} m</Text>
+                <Text style={{ color: option === radiusMeters ? palette.onAccent : palette.ink }}>{option} m</Text>
               </Pressable>
             ))}
           </View>
@@ -549,7 +549,7 @@ export function OffersScreen() {
                 void search(query, radiusMeters, next);
               }}
             >
-              <Text style={{ color: favoritesOnly ? palette.accent : palette.ink }}>{t('offers.favoritesOnly')}</Text>
+              <Text style={{ color: favoritesOnly ? palette.onAccent : palette.ink }}>{t('offers.favoritesOnly')}</Text>
             </Pressable>
           </View>
         </View>

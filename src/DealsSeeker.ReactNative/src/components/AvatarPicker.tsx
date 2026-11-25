@@ -24,7 +24,7 @@ export function AvatarPicker({ selectedAvatarId, onSelect }: AvatarPickerProps) 
               styles.option,
               {
                 backgroundColor: active ? palette.accentMuted : palette.card,
-                borderColor: active ? palette.accent : palette.border,
+                borderColor: active ? palette.accentText : palette.border,
               },
             ]}
           >
