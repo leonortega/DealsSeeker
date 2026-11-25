@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Brand Logo Set and Placement
-- **Version**: `v1.6`
+- **Version**: `v1.7`
 - **Status**: Approved
 - **Context/View**: Application Shell (all views), Login, Offers (immersive)
 - **Priority**: Medium
@@ -29,6 +29,7 @@ Use one authored logo set consistently in every app surface and replace placehol
 - `APP.BRAND.001-R10`: The standard Offers controls row shall align to the same screen edges as the immersive feed top bar, independent of the surrounding content padding, and no control shall be clipped by the screen edges.
 - `APP.BRAND.001-R11`: The standard Offers top bar shall use the same structure and spacing as the immersive feed top bar, including the reserved search slot; the search control itself shall not be displayed in the standard Offers view.
 - `APP.BRAND.001-R12`: The standard Offers view title shall be separated from the controls row by a clear gap, and no top-bar control shall be clipped by the screen edges.
+- `APP.BRAND.001-R13`: The in-app splash view shall display the stacked lockup as its brand identity in place of a separate application-title text, and its remaining copy shall use black lettering.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -83,6 +84,13 @@ Scenario: Map-view title clears the controls row
   When the view content is rendered
   Then the title starts below the controls row with a clear gap
   And no top-bar control is clipped by the screen edges
+
+Scenario: Splash uses the stacked lockup with black copy
+  Given the application is showing its in-app splash view
+  When the splash is rendered
+  Then the stacked lockup shall be displayed as the brand identity
+  And no separate application-title text shall be displayed
+  And the remaining splash copy shall use black lettering
 ```
 
 ## Example Inputs/Outputs

@@ -54,3 +54,10 @@ Feature: Brand logo set and placement
     When the view content is rendered
     Then the title starts below the controls row with a clear gap
     And no top-bar control is clipped by the screen edges
+
+  Scenario: Splash uses the stacked lockup with black copy
+    Given the application is showing its in-app splash view
+    When the splash is rendered
+    Then the stacked lockup is displayed as the brand identity
+    And no separate application-title text is displayed
+    And the remaining splash copy uses black lettering
