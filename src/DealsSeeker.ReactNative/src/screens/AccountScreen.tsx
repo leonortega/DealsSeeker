@@ -76,7 +76,11 @@ export function AccountScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}>
+    <ScrollView
+      contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}
+      style={{ backgroundColor: palette.background }}
+      testID="account-scroll"
+    >
       <StandardHeader />
       <View style={[styles.hero, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
         <View style={[styles.avatar, { backgroundColor: palette.accentMuted }]}>

@@ -445,7 +445,11 @@ export function OffersScreen() {
 
   return (
     <>
-      <ScrollView testID="offers-scroll" contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}>
+      <ScrollView
+        testID="offers-scroll"
+        contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}
+        style={{ backgroundColor: palette.background }}
+      >
         {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
         <StandardHeader />
         <View style={styles.heroRow}>

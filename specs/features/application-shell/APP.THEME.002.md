@@ -1,0 +1,62 @@
+# Spec: `APP.THEME.002`
+
+## Metadata
+- **Title**: Full Surface Coverage in Dark Theme
+- **Version**: `v1.0`
+- **Status**: Approved
+- **Context/View**: Application Shell, all standard views
+- **Priority**: High
+
+## Purpose
+Prevent fixed light backgrounds from showing through the application when the dark theme is active.
+
+## Preconditions
+- The active theme is dark, either explicitly or through the system setting.
+- The user is on any standard view with scrollable content.
+
+## Trigger
+- A standard view renders its scrollable content area.
+
+## Requirements
+- `APP.THEME.002-R1`: The scrollable content area of every standard view shall be painted with the active theme's background color.
+- `APP.THEME.002-R2`: Gaps between cards and panels shall use the theme background, not a fixed light surface.
+- `APP.THEME.002-R3`: Cards, panels and controls shall keep their own palette roles and shall not be flattened into the background.
+- `APP.THEME.002-R4`: The requirement shall hold in both themes and for both supported languages.
+- `APP.THEME.002-R5`: The shared bottom navigation shall keep its fixed night surface per the Night Footer Rule.
+
+## Acceptance Criteria (BDD)
+```gherkin
+Scenario: Dark theme has no white content gaps
+  Given the dark theme is active
+  When the user opens My Account, Suggestions, Reports, Favorites, Add Offer or Offers
+  Then the scrollable content area shall use the dark theme background
+  And the gaps between cards shall be dark
+
+Scenario: Theme switch repaints existing surfaces
+  Given the user is on a standard view in the light theme
+  When the user switches to the dark theme
+  Then the content area and card gaps shall update without a restart
+
+Scenario: Cards keep their own surfaces
+  Given the dark theme is active
+  When a card or panel is displayed
+  Then it shall keep its card, panel or panel-alt color role
+  And text shall keep its theme ink color
+```
+
+## Example Inputs/Outputs
+- Example input: dark theme, My Account with several cards.
+- Expected output: dark background between cards; dark cards with light text; night footer unchanged.
+
+## Edge Cases
+- Empty states where no cards are present.
+- Long content that requires scrolling.
+- Sheets over a dark content area.
+
+## Non-Functional Constraints
+- No new color values shall be introduced; existing palette roles shall be reused.
+
+## Related Specs
+- `APP.THEME.001`
+- `APP.SHELL.001`
+- `APP.ADAPTIVE.UX.001`

@@ -22,6 +22,7 @@
 | `APP.LOGGING.001` | `bdd/logging-configuration.feature` | N/A | `examples/application-shell/app-logging.configuration.json` |
 | `APP.CONFIG.MAPS.001` | `bdd/map-provider-configuration.feature` | `contracts/json-schema/location-search-result.schema.json`, `contracts/json-schema/location-search-results-response.schema.json`, `contracts/json-schema/geo-point.schema.json` | `examples/application-shell/app-config-maps.providers.json` |
 | `APP.THEME.001` | `bdd/app-theme.feature` | N/A | `examples/application-shell/app-theme.system-dark.json` |
+| `APP.THEME.002` | `bdd/app-theme-surface-coverage.feature` | N/A | N/A |
 | `APP.LOCALIZATION.001` | `bdd/app-localization.feature` | N/A | `examples/application-shell/app-localization.es-ar.json` |
 | `APP.NAVIGATION.MODE.001` | `bdd/app-navigation-mode.feature` | N/A | `examples/application-shell/app-navigation-mode.car.json` |
 | `APP.RATE.LIMIT.001` | `bdd/app-rate-limit.feature` | `contracts/json-schema/problem-details.schema.json` | `examples/application-shell/app-rate-limit.rejected.json` |

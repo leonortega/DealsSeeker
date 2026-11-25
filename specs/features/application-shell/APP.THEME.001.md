@@ -76,6 +76,7 @@ Scenario: Immersive metadata stays legible in the light theme
 
 ## Related Specs
 - `APP.SHELL.001`
+- `APP.THEME.002`
 - `OFFERS.COMMENTS.001`
 - `APP.POLISH.UX.001`
 - `APP.ADAPTIVE.UX.001`

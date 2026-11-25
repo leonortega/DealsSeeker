@@ -464,7 +464,10 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
 
   if (loadFailed) {
     return (
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}
+        style={{ backgroundColor: palette.background }}
+      >
         <StandardHeader />
         <View style={styles.header}>
           <Text style={[styles.title, { color: palette.ink }]}>{t('add.editTitle')}</Text>
@@ -730,6 +733,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
+        style={{ backgroundColor: palette.background }}
         testID="add-offer-scroll"
       >
         <StandardHeader />

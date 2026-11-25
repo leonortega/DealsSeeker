@@ -29,6 +29,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     palette: {
       accent: '#b85c38',
       accentMuted: '#e9c9b8',
+      background: '#17201d',
       backgroundRaised: '#efe5d8',
       border: '#d7c9b5',
       card: '#fffdf8',
@@ -83,6 +84,13 @@ describe('AccountScreen', () => {
     });
     mockGetMyOffers.mockResolvedValue([offer]);
     mockDeleteOffer.mockResolvedValue({ success: true });
+  });
+
+  it('paints the scrollable content area with the active theme background', async () => {
+    await render(<AccountScreen />);
+
+    const scroll = screen.getByTestId('account-scroll');
+    expect(scroll.props.style.backgroundColor).toBe('#17201d');
   });
 
   it('renders nothing outside the account tab', async () => {
