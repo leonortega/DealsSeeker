@@ -95,6 +95,15 @@ Theme, localization, logging, map provider config, navigation mode (pedestrian/c
 - Changes SHALL target the API (`DealsSeeker.Api`) and React Native (`DealsSeeker.ReactNative`) projects.
 - The React Native project is the mobile-only client (iOS and Android); all client work targets `DealsSeeker.ReactNative`.
 
+## Local Device / Emulator Workflow
+- Before starting the emulator or the app with a script, check whether they are already running. Never start a second emulator, API or Metro instance.
+  - Emulator: `adb devices` (for example `emulator-5554`).
+  - API: check the listen port (`5005` by default).
+  - Metro: `http://localhost:8081/status` or the listen port `8081`.
+- When a clean start is needed (or nothing is running), use `scripts/run-reactnative-android.ps1` rather than ad-hoc commands. It starts the API (`-Target api`), Metro and the app (`-Target app`) and the AVD with the project's expected resolution, host and ports.
+- If only some pieces are missing, start only those; leave already-running ones alone.
+- Re-establish `adb reverse tcp:8081 tcp:8081` and `adb reverse tcp:5005 tcp:5005` after any emulator or adb restart — these mappings are session-local.
+
 ## Skills (Agent Playbook)
 The installed skills listed below are part of the DealsSeeker workflow. Load the
 relevant skill(s) at the point indicated — they define *how* work is done; the
