@@ -553,7 +553,7 @@ export function OffersScreen() {
 
         {renderStatePanel()}
 
-        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border, padding: 0 }]}>
           <NativeMapPreview
             businesses={results.businesses}
             center={userLocation}

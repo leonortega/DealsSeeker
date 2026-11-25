@@ -68,6 +68,7 @@ describe('presentation mode switch', () => {
       borderRadius: 28,
       borderWidth: 1,
       borderColor: '#d7c9b5',
+      padding: 0,
     });
   });
 

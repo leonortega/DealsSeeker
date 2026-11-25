@@ -45,4 +45,5 @@ Feature: Design-system conformance and dialog recovery
     Given an embedded map is rendered in the Offers or Add Offer view
     When the map surface is displayed
     Then it sits within a rounded, 1px-bordered surface using the active palette
+    And the map meets the border with no padding gap
     And the map content is clipped to that surface's corners

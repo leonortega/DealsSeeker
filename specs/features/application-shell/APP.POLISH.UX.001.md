@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Design-system conformance and dialog recovery
-- **Version**: `v1.3`
+- **Version**: `v1.4`
 - **Status**: Approved
 - **Context/View**: Application shell, Offers View, My Account, Add Offer, Suggestions, Reports
 - **Priority**: Low
@@ -27,7 +27,7 @@ Close the remaining design-system and recovery gaps without changing the establi
 - `APP.POLISH.UX.001-R8`: Embedded web documents shall use the application's system sans font stack.
 - `APP.POLISH.UX.001-R9`: Every scrollable surface shall keep its bottommost control clear of display cutouts and system bars.
 - `APP.POLISH.UX.001-R10`: Search inputs and filter controls shall use the fully rounded pill shape from the Pill Rule, while structural panels keep their 12–28px corners.
-- `APP.POLISH.UX.001-R11`: Embedded map surfaces shall be presented within a structurally rounded, 1px-bordered surface using the active palette; the map content shall be clipped to the corner of that surface.
+- `APP.POLISH.UX.001-R11`: Embedded map surfaces shall be presented within a structurally rounded, 1px-bordered surface using the active palette; the map shall fill that surface edge-to-edge with no padding between the map and its border, and its content shall be clipped to the corner.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -62,6 +62,7 @@ Scenario: Embedded map uses the panel corner treatment
   Given an embedded map is rendered in the Offers or Add Offer view
   When the map surface is displayed
   Then it shall sit within a rounded, 1px-bordered surface using the active palette
+  And the map shall meet the border with no padding gap
   And the map content shall be clipped to that surface's corners
 ```
 
