@@ -38,7 +38,7 @@ const radiusOptions = [500, 1000, 1500, 2500, 5000];
 const searchDebounceMs = 300;
 
 export function OffersScreen() {
-  const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, isPending, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, setReportDraft, t } =
+  const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, setReportDraft, t } =
     useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -419,11 +419,6 @@ export function OffersScreen() {
             </Text>
           </View>
         ) : null}
-        {isPending('offers-search') && !initialLoading ? (
-          <View style={[styles.progressBanner, { backgroundColor: palette.card, borderColor: palette.border }]}>
-            <Text style={[styles.progressLabel, { color: palette.inkMuted }]}>{t('offers.loading')}</Text>
-          </View>
-        ) : null}
         <ImmersiveOfferFeed
           feedTab={feedTab}
           headerControl={modeSwitch}
@@ -774,20 +769,6 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: 10,
-  },
-  progressBanner: {
-    borderRadius: 10,
-    borderWidth: 1,
-    bottom: 176,
-    left: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    position: 'absolute',
-    right: 16,
-    zIndex: 5,
-  },
-  progressLabel: {
-    fontSize: 14,
   },
   grid: {
     flexDirection: 'row',

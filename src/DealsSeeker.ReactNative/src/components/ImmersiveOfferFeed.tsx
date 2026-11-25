@@ -429,7 +429,7 @@ export function ImmersiveOfferFeed({
               <View style={{ height: pageHeight }}>
                 <ImmersiveOfferPage
                   offer={item}
-                  showCaptions={shouldShowImmersiveCaptions(isNarrow, fontScale, pageHeight)}
+                  showCaptions={shouldShowImmersiveCaptions(isNarrow, fontScale, height)}
                   showPhotoArrows={!isNarrow}
                   onDirections={onDirections}
                   onFavorite={onFavorite}

@@ -124,6 +124,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 64 suites / 383 tests overall; `typecheck` clean.
 - The inline feed progress banner is suppressed while the blocking initial load is active, and is now absolutely positioned above the footer so showing/hiding it never shifts the feed controls.
 
+## Follow-up: one wait and a stable side rail
+
+- **Specs**: `APP.SHELL.001` v2.4 (R31), `OFFERS.FEED.RESPONSIVE.001` v1.3 (R33); BDD updated in `app-shell.feature` and `offers-immersive-responsive.feature`.
+- **RED**: `npm test -- --runInBand presentationMode` — 1 test failed: `offers.loading` banner appeared after the blocking overlay finished.
+- **GREEN**: 64 suites / 383 tests overall; `typecheck` clean.
+- Removed the inline feed progress banner and its styles; only the blocking `LoadingOverlay` remains. Feed caption visibility (and therefore the side rail offset) now uses viewport height instead of a measured feed height, so the rail does not re-position as content loads.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
