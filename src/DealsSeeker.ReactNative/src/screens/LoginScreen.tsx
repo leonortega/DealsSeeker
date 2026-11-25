@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
 import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
@@ -44,7 +44,11 @@ export function LoginScreen() {
       style={[authFormStyles.root, { backgroundColor: palette.background }]}
     >
       <View style={[styles.brandCard, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
-        <Text style={[styles.brandGlyph, { color: palette.accentText }]}>DS</Text>
+        <Image
+          source={require('../../assets/brand/logo-icon.png')}
+          style={styles.brandMark}
+          testID="brand-mark"
+        />
         <Text style={[styles.brandTitle, { color: palette.ink }]}>{t('app.title')}</Text>
         <Text style={[styles.brandSubtitle, { color: palette.inkMuted }]}>{t('app.subtitle')}</Text>
       </View>
@@ -111,10 +115,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 20,
   },
-  brandGlyph: {
-    fontFamily: 'Georgia',
-    fontSize: 44,
-    fontWeight: '700',
+  brandMark: {
+    height: 64,
+    resizeMode: 'contain',
+    width: 64,
   },
   brandTitle: {
     fontFamily: 'Georgia',

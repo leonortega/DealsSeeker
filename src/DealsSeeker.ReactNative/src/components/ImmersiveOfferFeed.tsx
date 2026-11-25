@@ -444,7 +444,11 @@ export function ImmersiveOfferFeed({
 
           <View pointerEvents="box-none" style={styles.topBar}>
             <View pointerEvents="box-none" style={styles.topBarContent}>
-              <Image source={require('../../assets/icon.png')} style={[styles.topBarLogo, { backgroundColor: palette.panel }]} />
+              <Image
+                source={require('../../assets/brand/logo-icon.png')}
+                style={[styles.topBarLogo, { backgroundColor: palette.panel }]}
+                testID="brand-mark"
+              />
               {isNarrow ? null : <Text style={[styles.topBarTitle, { color: immersiveInk }]}>{t('app.title')}</Text>}
               <View pointerEvents="box-none" style={styles.modeSlot}>{headerControl}</View>
               <View pointerEvents="box-none" style={styles.topActions}>

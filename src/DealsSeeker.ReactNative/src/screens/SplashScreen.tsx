@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
 
 export function SplashScreen() {
@@ -7,7 +7,11 @@ export function SplashScreen() {
   return (
     <View style={[styles.root, { backgroundColor: palette.background }]}>
       <View style={[styles.mark, { backgroundColor: palette.accentMuted, borderColor: palette.border }]}>
-        <Text style={[styles.markText, { color: palette.accentText }]}>DS</Text>
+        <Image
+          source={require('../../assets/brand/logo-icon.png')}
+          style={styles.markImage}
+          testID="brand-mark"
+        />
       </View>
       <Text style={[styles.title, { color: palette.ink }]}>{t('app.title')}</Text>
       <Text style={[styles.subtitle, { color: palette.inkMuted }]}>{t('app.subtitle')}</Text>
@@ -32,10 +36,10 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     width: 112,
   },
-  markText: {
-    fontFamily: 'Georgia',
-    fontSize: 42,
-    fontWeight: '700',
+  markImage: {
+    height: 72,
+    resizeMode: 'contain',
+    width: 72,
   },
   title: {
     fontFamily: 'Georgia',
