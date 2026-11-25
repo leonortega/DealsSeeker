@@ -9,6 +9,7 @@ const mockSearchOffers = jest.fn();
 
 const palette = {
   accent: '#b85c38',
+  accentText: '#8a5a00',
   border: '#d7c9b5',
   card: '#fffdf8',
   ink: '#1f3128',
@@ -117,6 +118,12 @@ describe('touch target and label floors', () => {
 
     const input = screen.getByPlaceholderText('offers.searchPlaceholder');
     expect(styleOf(input).borderRadius).toBe(999);
+  });
+
+  it('keeps the selected radius chip legible against the muted fill', async () => {
+    await render(<OffersScreen />);
+
+    expect(styleOf(screen.getByText('1500 m')).color).toBe('#8a5a00');
   });
 
   it('reserves scroll space for the floating action below the search controls', async () => {

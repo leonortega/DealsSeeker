@@ -20,7 +20,7 @@ Replace the green-and-terracotta palette with a cheerful amber, plum and mint id
 - `APP.THEME.004-R1`: The light theme shall use cream surfaces, deep plum ink and sunny amber as the wayfinding accent; the dark theme shall use plum-charcoal surfaces, warm off-white ink and a brighter lantern-amber accent.
 - `APP.THEME.004-R2`: Mint shall be the secondary surface role and coral the reserved offer highlight; neither shall become a wayfinding accent.
 - `APP.THEME.004-R3`: Text on the accent shall use `onAccent` — deep plum in both themes — and text on danger shall use `onDanger` — white in light and deep plum in dark.
-- `APP.THEME.004-R4`: Selected chips and filters shall use accent fill with `onAccent` text or accent-muted fill with `onAccent` text; accent text on accent-muted shall not be used.
+- `APP.THEME.004-R4`: Selected chips and filters shall use accent fill with `onAccent` text or accent-muted fill with `accentText`; this keeps selected labels at least 4.5:1 against the muted fill in both themes.
 - `APP.THEME.004-R5`: Body text shall keep at least 4.5:1 contrast and control boundaries at least 3:1 in both themes.
 - `APP.THEME.004-R6`: The bottom navigation shall always use the fixed night-plum surface `#2a2030` with a `#8c7a93` hairline, in both themes, with the amber family only on its active tile.
 - `APP.THEME.004-R7`: The immersive presentation shall use the fixed plum backdrop `#181421` in both themes, replacing the previous forest backdrop.
