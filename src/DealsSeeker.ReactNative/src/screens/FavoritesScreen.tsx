@@ -4,6 +4,7 @@ import * as Location from 'expo-location';
 import { OfferItemDto } from '../api/types';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
+import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
 import { selectionFeedback } from '../utils/haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,10 +17,10 @@ export function FavoritesScreen() {
   const { api, overlayRoute, palette, preferences, t } = useApp();
   const insets = useSafeAreaInsets();
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
-  const [status, setStatus] = useState<string | null>(null);
+  const { status, reportStatus: reportNotice } = useStatusNotice();
 
   function reportStatus(message: string | null) {
-    setStatus(message);
+    reportNotice(message);
     announceStatus(message);
   }
 

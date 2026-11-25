@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
+import { useStatusNotice } from '../hooks/useStatusNotice';
 import { useDelayedOffersRedirect } from '../hooks/useDelayedOffersRedirect';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { announceStatus } from '../utils/announce';
@@ -14,13 +15,11 @@ export function ReportsScreen() {
   const insets = useSafeAreaInsets();
   const [message, setMessage] = useState('');
   const [reportedAtUtc, setReportedAtUtc] = useState(new Date().toISOString());
-  const [status, setStatus] = useState<string | null>(null);
-  const [statusTone, setStatusTone] = useState<StatusTone>('neutral');
+  const { status, statusTone, reportStatus: reportNotice } = useStatusNotice();
   const redirectAfterSuccess = useDelayedOffersRedirect(activeTab, 'reports', openTab);
 
   function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
-    setStatus(message);
-    setStatusTone(tone);
+    reportNotice(message, tone);
     announceStatus(message);
   }
 

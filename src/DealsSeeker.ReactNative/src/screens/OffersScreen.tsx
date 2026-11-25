@@ -19,12 +19,13 @@ import { PresentationModeSwitch, type PresentationMode } from '../components/Pre
 import { StandardHeader } from '../components/StandardHeader';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
+import { useStatusNotice } from '../hooks/useStatusNotice';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { partitionOffers } from '../utils/format';
 import { selectionFeedback, successFeedback } from '../utils/haptics';
 import { openDirections } from '../utils/maps';
 import { resolveOffersViewState } from '../utils/offersState';
-import { statusColor, type StatusTone } from '../utils/statusNotice';
+import { statusColor } from '../utils/statusNotice';
 import { resolveOffersGridColumns } from '../utils/layout';
 import { loadFirstRunCompleted, saveFirstRunCompleted } from '../utils/storage';
 import { resolveEmulatorLocation } from '../utils/emulatorLocation';
@@ -47,8 +48,7 @@ export function OffersScreen() {
   const [commentsOffer, setCommentsOffer] = useState<OfferItemDto | null>(null);
   const [userLocation, setUserLocation] = useState(fallbackLocation);
   const [userLocationLabel, setUserLocationLabel] = useState(t('offers.currentLocation'));
-  const [status, setStatus] = useState<string | null>(null);
-  const [statusTone, setStatusTone] = useState<StatusTone>('neutral');
+  const { status, statusTone, reportStatus: setActionStatus } = useStatusNotice();
   const [searchFailed, setSearchFailed] = useState(false);
   const [helpVisible, setHelpVisible] = useState(false);
   const [locationFallback, setLocationFallback] = useState(false);
@@ -198,7 +198,7 @@ export function OffersScreen() {
           favoritesOnly,
         });
         setResults(response);
-        setStatus(null);
+        setActionStatus(null);
         setSearchFailed(false);
       } catch (error) {
         if (isRequestAborted(error)) {
@@ -323,11 +323,6 @@ export function OffersScreen() {
     220,
     (Math.max(320, viewportWidth - 32) - (gridColumns - 1) * 12) / gridColumns
   );
-
-  function setActionStatus(message: string | null, tone: StatusTone = 'neutral') {
-    setStatus(message);
-    setStatusTone(tone);
-  }
 
   async function toggleFavorite(offer: OfferItemDto) {
     setActionStatus(null);

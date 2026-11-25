@@ -23,6 +23,7 @@ import { NativeMapPreview } from '../components/NativeMapPreview';
 import { StandardHeader } from '../components/StandardHeader';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
+import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
 import { extractCompletedWord, extractWords } from '../utils/format';
@@ -138,8 +139,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
   const [locationResults, setLocationResults] = useState<LocationSearchResult[]>([]);
   const [mapCenter, setMapCenter] = useState<GeoPoint | null>(null);
   const [suggestionsSuppressed, setSuggestionsSuppressed] = useState(true);
-  const [status, setStatus] = useState<string | null>(null);
-  const [statusTone, setStatusTone] = useState<StatusTone>('neutral');
+  const { status, statusTone, reportStatus: reportNotice } = useStatusNotice();
   const [loadFailed, setLoadFailed] = useState(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [searchAttempt, setSearchAttempt] = useState(0);
@@ -203,8 +203,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
   }, [hasDraftContent, isVisible, onDismissGuard, t]);
 
   function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
-    setStatus(message);
-    setStatusTone(tone);
+    reportNotice(message, tone);
     announceStatus(message);
   }
 

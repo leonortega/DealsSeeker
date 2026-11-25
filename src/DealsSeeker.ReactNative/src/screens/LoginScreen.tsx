@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
 import { authFormStyles } from '../utils/authFormStyles';
 import { keyboardAvoidanceBehavior } from '../utils/layout';
@@ -10,7 +11,7 @@ export function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
+  const { status, reportStatus: setStatus } = useStatusNotice();
   const displayedStatus = status ?? (sessionNotice ? t(sessionNotice) : null);
 
   async function submit() {

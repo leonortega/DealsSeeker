@@ -4,6 +4,7 @@ import { OfferItemDto, UserProfileDto } from '../api/types';
 import { AvatarPicker } from '../components/AvatarPicker';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
+import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,12 +17,10 @@ export function AccountScreen() {
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState<UserProfileDto | null>(null);
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
-  const [status, setStatus] = useState<string | null>(null);
-  const [statusTone, setStatusTone] = useState<StatusTone>('neutral');
+  const { status, statusTone, reportStatus: reportNotice } = useStatusNotice();
 
   function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
-    setStatus(message);
-    setStatusTone(tone);
+    reportNotice(message, tone);
     announceStatus(message);
   }
 

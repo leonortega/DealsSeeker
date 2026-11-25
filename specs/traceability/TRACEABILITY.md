@@ -35,6 +35,7 @@
 | `APP.HELP.001` | `bdd/app-help.feature` | N/A | N/A |
 | `APP.ACCESSIBILITY.UX.002` | `bdd/app-accessibility-control-semantics.feature` | N/A | N/A |
 | `APP.ACCESSIBILITY.UX.003` | `bdd/app-announced-feedback.feature` | N/A | N/A |
+| `APP.FEEDBACK.001` | `bdd/app-feedback-lifecycle.feature` | N/A | N/A |
 | `APP.LOCATION.FALLBACK.001` | `bdd/app-location-fallback.feature` | N/A | N/A |
 | `APP.LOCATION.DEV.001` | `bdd/app-location-dev-override.feature` | N/A | N/A |
 | `APP.LOCATION.DEVICE.001` | `bdd/app-location-device.feature` | N/A | N/A |

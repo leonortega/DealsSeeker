@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
 import { authFormStyles } from '../utils/authFormStyles';
 import { validateEmail, validateStrongPassword } from '../utils/format';
@@ -12,10 +13,10 @@ export function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
+  const { status, reportStatus: reportNotice } = useStatusNotice();
 
   function reportStatus(message: string | null) {
-    setStatus(message);
+    reportNotice(message);
     announceStatus(message);
   }
 
