@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { FavoritesScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/FavoritesScreen';
-import { ReportsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/ReportsScreen';
+import { OfferReportSheet } from '../../../src/DealsSeeker.ReactNative/src/components/OfferReportSheet';
 import { SuggestionsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/SuggestionsScreen';
 
 let mockActiveTab = 'favorites';
@@ -38,6 +38,8 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     },
     clearReportDraft: mockClearReportDraft,
     closeOverlay: mockCloseOverlay,
+    closeSheet: jest.fn(),
+    openSheet: jest.fn(),
     openTab: mockOpenTab,
     overlayRoute: mockOverlayRoute,
     palette: {
@@ -170,37 +172,42 @@ describe('SuggestionsScreen', () => {
   });
 });
 
-describe('ReportsScreen', () => {
+describe('OfferReportSheet', () => {
+  const draft = {
+    offer: { offerId: 'o9', businessName: 'Draft Cafe', description: 'Draft offer' },
+    userId: 'u1',
+    reportedAtUtc: '2026-01-01T00:00:00.000Z',
+    initialMessage: 'Report draft for o9',
+  };
+  let onClose: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockActiveTab = 'offers';
-    mockOverlayRoute = { name: 'report' };
-    mockReportDraft = null;
+    mockReportDraft = draft;
     mockSubmitReport.mockResolvedValue({ success: true });
+    onClose = jest.fn();
   });
 
-  it('requires a message before submitting', async () => {
-    await render(<ReportsScreen />);
-    await fireEvent.press(screen.getByText('reports.submit'));
-    expect(screen.getByText('reports.messageRequired')).toBeTruthy();
-  });
-
-  it('prefills the form from a report draft and locks the offer id', async () => {
-    mockReportDraft = {
-      offer: { offerId: 'o9', businessName: 'Draft Cafe', description: 'Draft offer' },
-      userId: 'u1',
-      reportedAtUtc: '2026-01-01T00:00:00.000Z',
-      initialMessage: 'Report draft for o9',
-    };
-    await render(<ReportsScreen />);
+  it('shows the offer preview and prefilled message', async () => {
+    await render(<OfferReportSheet draft={mockReportDraft} onClose={onClose} visible />);
 
     expect(screen.getByText('Draft Cafe')).toBeTruthy();
     expect(screen.getByPlaceholderText('reports.message').props.value).toBe('Report draft for o9');
+    expect(screen.getByTestId('native-bottom-sheet')).toBeTruthy();
   });
 
-  it('submits a report, clears the draft, shows success, then returns to Offers', async () => {
+  it('requires a message before submitting', async () => {
+    await render(<OfferReportSheet draft={mockReportDraft} onClose={onClose} visible />);
+    await fireEvent.changeText(screen.getByPlaceholderText('reports.message'), '');
+    await fireEvent.press(screen.getByText('reports.submit'));
+
+    expect(screen.getByText('reports.messageRequired')).toBeTruthy();
+    expect(mockSubmitReport).not.toHaveBeenCalled();
+  });
+
+  it('submits, shows success, then closes and returns to Offers', async () => {
     jest.useFakeTimers();
-    await render(<ReportsScreen />);
+    await render(<OfferReportSheet draft={mockReportDraft} onClose={onClose} visible />);
     await fireEvent.changeText(screen.getByPlaceholderText('reports.message'), 'Closed down');
     await fireEvent.press(screen.getByText('reports.submit'));
 
@@ -208,18 +215,17 @@ describe('ReportsScreen', () => {
     expect(mockClearReportDraft).toHaveBeenCalled();
     expect(await screen.findByText('reports.success')).toBeTruthy();
     expect(mockSuccessFeedback).toHaveBeenCalledTimes(1);
-    expect(mockOpenTab).not.toHaveBeenCalled();
     await act(async () => {
       jest.advanceTimersByTime(1000);
     });
-    expect(mockCloseOverlay).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
     expect(mockOpenTab).toHaveBeenCalledWith('offers');
     jest.useRealTimers();
   });
 
-  it('cancels the pending Offers redirect when the user leaves before it fires', async () => {
+  it('cancels the redirect when the sheet unmounts before the dwell ends', async () => {
     jest.useFakeTimers();
-    const view = await render(<ReportsScreen />);
+    const view = await render(<OfferReportSheet draft={mockReportDraft} onClose={onClose} visible />);
     await fireEvent.changeText(screen.getByPlaceholderText('reports.message'), 'Closed down');
     await fireEvent.press(screen.getByText('reports.submit'));
     await waitFor(() => expect(mockSubmitReport).toHaveBeenCalled());
@@ -235,32 +241,33 @@ describe('ReportsScreen', () => {
     jest.useRealTimers();
   });
 
-  it('reports a failed submission', async () => {
+  it('reports a failed submission without closing', async () => {
     mockSubmitReport.mockResolvedValue({ success: false });
-    await render(<ReportsScreen />);
+    await render(<OfferReportSheet draft={mockReportDraft} onClose={onClose} visible />);
     await fireEvent.changeText(screen.getByPlaceholderText('reports.message'), 'Closed down');
     await fireEvent.press(screen.getByText('reports.submit'));
 
     expect(await screen.findByText('reports.failed')).toBeTruthy();
     expect(mockSuccessFeedback).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('does not expose raw identifiers in the report form', async () => {
-    await render(<ReportsScreen />);
+  it('does not expose raw identifiers', async () => {
+    await render(<OfferReportSheet draft={mockReportDraft} onClose={onClose} visible />);
 
     expect(screen.queryByText('reports.userId')).toBeNull();
     expect(screen.queryByText('reports.offerId')).toBeNull();
     expect(screen.queryByLabelText('reports.offerId')).toBeNull();
   });
 
-  it('still attaches the authenticated user id without showing it', async () => {
-    await render(<ReportsScreen />);
+  it('attaches the authenticated user id without showing it', async () => {
+    await render(<OfferReportSheet draft={mockReportDraft} onClose={onClose} visible />);
     await fireEvent.changeText(screen.getByPlaceholderText('reports.message'), 'Closed down');
     await fireEvent.press(screen.getByText('reports.submit'));
 
     await waitFor(() =>
       expect(mockSubmitReport).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Closed down', userId: 'u1' })
+        expect.objectContaining({ message: 'Closed down', userId: 'u1', offerId: 'o9' })
       )
     );
   });

@@ -63,4 +63,5 @@ Scenario: Submit report with prefilled context
 - `OFFERS.LIST.ACTIONS.001`
 - `ACCOUNT.PROFILE.001`
 - `REPORTS.SUBMIT.001`
+- `REPORTS.SHEET.001`
 - `REPORTS.FORM.002`

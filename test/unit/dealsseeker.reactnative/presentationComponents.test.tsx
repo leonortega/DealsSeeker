@@ -40,7 +40,6 @@ describe('StandardHeader', () => {
     ['offers', null, 'nav.offers'],
     ['account', null, 'nav.account'],
     ['suggestions', null, 'nav.suggestions'],
-    ['offers', { name: 'report' }, 'nav.reports'],
     ['offers', { name: 'favorites' }, 'nav.favorites'],
     ['offers', { name: 'add-offer' }, 'nav.addOffer'],
   ])('shows the label for tab %s and overlay %p', async (tab, overlay, expected) => {

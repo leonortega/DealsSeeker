@@ -11,6 +11,7 @@ import { NativeMapPreview } from '../components/NativeMapPreview';
 import { OfferCard } from '../components/OfferCard';
 import { OfferDetailModal } from '../components/OfferDetailModal';
 import { OfferCommentsModal } from '../components/OfferCommentsModal';
+import { OfferReportSheet } from '../components/OfferReportSheet';
 import { FirstRunSheet } from '../components/FirstRunSheet';
 import { HelpSheet } from '../components/HelpSheet';
 import { NavIcon } from '../components/NavIcon';
@@ -29,6 +30,7 @@ import { statusColor } from '../utils/statusNotice';
 import { resolveOffersGridColumns } from '../utils/layout';
 import { loadFirstRunCompleted, saveFirstRunCompleted } from '../utils/storage';
 import { resolveEmulatorLocation } from '../utils/emulatorLocation';
+import { restoreFocus } from '../utils/focusReturn';
 import { immersiveBackdrop } from '../utils/theme';
 
 const fallbackLocation = { lat: 40.7128, lng: -74.006 };
@@ -36,7 +38,7 @@ const radiusOptions = [500, 1000, 1500, 2500, 5000];
 const searchDebounceMs = 300;
 
 export function OffersScreen() {
-  const { activeTab, api, closeImmersiveOffers, immersiveOffers, isPending, openAddOffer, openImmersiveOffers, palette, preferences, setReportDraft, t } =
+  const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, isPending, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, setReportDraft, t } =
     useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -461,6 +463,15 @@ export function OffersScreen() {
           visible={commentsOffer !== null}
         />
         <HelpSheet onClose={() => setHelpVisible(false)} returnFocusRef={helpButtonRef} visible={helpVisible} />
+        <OfferReportSheet
+          draft={reportDraft}
+          onClose={() => {
+            clearReportDraft();
+            restoreFocus(helpButtonRef);
+          }}
+          returnFocusRef={helpButtonRef}
+          visible={reportDraft !== null}
+        />
         <FirstRunSheet onDismiss={dismissFirstRun} visible={firstRunVisible} />
       </View>
     );
@@ -617,6 +628,15 @@ export function OffersScreen() {
           visible={commentsOffer !== null}
       />
       <HelpSheet onClose={() => setHelpVisible(false)} returnFocusRef={helpButtonRef} visible={helpVisible} />
+      <OfferReportSheet
+        draft={reportDraft}
+        onClose={() => {
+          clearReportDraft();
+          restoreFocus(helpButtonRef);
+        }}
+        returnFocusRef={helpButtonRef}
+        visible={reportDraft !== null}
+      />
     </>
   );
 }

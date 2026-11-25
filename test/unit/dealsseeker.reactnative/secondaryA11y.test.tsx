@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { StyleSheet } from 'react-native';
 import { AccessibilityInfo } from 'react-native';
 import { SuggestionsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/SuggestionsScreen';
-import { ReportsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/ReportsScreen';
+import { OfferReportSheet } from '../../../src/DealsSeeker.ReactNative/src/components/OfferReportSheet';
 import { FavoritesScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/FavoritesScreen';
 import { HelpSheet } from '../../../src/DealsSeeker.ReactNative/src/components/HelpSheet';
 
@@ -27,6 +27,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
       getFavorites: mockGetFavorites,
       setOfferFavorite: mockSetFavorite,
     },
+    clearReportDraft: jest.fn(),
     closeOverlay: mockCloseOverlay,
     openTab: mockOpenTab,
     overlayRoute: mockOverlayRoute,
@@ -68,10 +69,14 @@ describe('secondary surface accessibility (APP.ACCESSIBILITY.UX.002/003)', () =>
     );
   });
 
-  it('labels the report message field without exposing internal identifiers', async () => {
-    mockOverlayRoute = { name: 'report' };
-    mockGetFavorites.mockResolvedValue([]);
-    await render(<ReportsScreen />);
+  it('labels the report sheet input without exposing internal identifiers', async () => {
+    const draft = {
+      offer: { offerId: 'o9', businessName: 'Draft Cafe', description: 'Draft offer' },
+      userId: 'u1',
+      reportedAtUtc: '2026-01-01T00:00:00.000Z',
+      initialMessage: '',
+    };
+    await render(<OfferReportSheet draft={draft} onClose={jest.fn()} visible />);
     expect(screen.getByLabelText('reports.message')).toBeTruthy();
     expect(screen.queryByLabelText('reports.offerId')).toBeNull();
   });

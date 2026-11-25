@@ -29,7 +29,6 @@ type AuthScreen = 'login' | 'register';
 type OverlayRoute =
   | { name: 'add-offer'; offerId?: string }
   | { name: 'favorites' }
-  | { name: 'report' }
   | null;
 
 interface AppContextValue {
@@ -346,8 +345,8 @@ export function AppProvider({ children }: PropsWithChildren) {
     const dateStamp = now.replace('T', ' ').replace(/\.\d{3}Z$/u, ' UTC');
     const initialMessage =
       preferences.language === 'es'
-        ? `Reporte para la oferta ${offer.offerId} abierto en ${dateStamp}.`
-        : `Report draft for offer ${offer.offerId} opened at ${dateStamp}.`;
+        ? `Reporte para esta oferta abierto el ${dateStamp}.`
+        : `Report for this offer opened at ${dateStamp}.`;
 
     setReportDraftState({
       offer,
@@ -355,7 +354,6 @@ export function AppProvider({ children }: PropsWithChildren) {
       reportedAtUtc: now,
       initialMessage,
     });
-    setOverlayRoute({ name: 'report' });
   }
 
   const value: AppContextValue = {

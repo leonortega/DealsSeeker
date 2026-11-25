@@ -61,6 +61,7 @@ Scenario: Unauthenticated user selects Report
 
 ## Related Specs
 - `APP.SHELL.001`
+- `REPORTS.SHEET.001`
 - `REPORTS.OFFER.PREFILL.001`
 - `REPORTS.FORM.002`
 - `ACCOUNT.PROFILE.001`

@@ -26,7 +26,6 @@ describe('destination focus', () => {
   });
 
   it('maps destinations to their localized labels', () => {
-    expect(resolveDestinationKey('offers', { name: 'report' })).toBe('nav.reports');
     expect(resolveDestinationKey('offers', { name: 'favorites' })).toBe('nav.favorites');
     expect(resolveDestinationKey('offers', { name: 'add-offer' })).toBe('nav.addOffer');
   });
@@ -35,14 +34,14 @@ describe('destination focus', () => {
     const view = await render(<Probe tab="offers" />);
 
     await act(async () => {
-      view.rerender(<Probe tab="offers" overlay={{ name: 'report' }} />);
+      view.rerender(<Probe tab="suggestions" />);
     });
 
-    expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith('t:nav.reports');
+    expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith('t:nav.suggestions');
   });
 
   it('announces the restored destination when Back returns to Offers', async () => {
-    const view = await render(<Probe tab="offers" overlay={{ name: 'report' }} />);
+    const view = await render(<Probe tab="suggestions" />);
 
     await act(async () => {
       view.rerender(<Probe tab="offers" />);
@@ -63,7 +62,7 @@ describe('destination focus', () => {
   });
 
   it('moves focus to the destination container', async () => {
-    await render(<Probe tab="offers" overlay={{ name: 'report' }} />);
+    await render(<Probe tab="suggestions" />);
 
     expect(AccessibilityInfo.setAccessibilityFocus).toHaveBeenCalled();
   });

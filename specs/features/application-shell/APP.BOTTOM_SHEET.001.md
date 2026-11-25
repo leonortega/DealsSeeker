@@ -98,5 +98,6 @@ Scenario: Sheet content is not covered by presenting-view chrome
 - `APP.HAPTICS.001`
 - `OFFERS.DETAIL.ACTIONS.001`
 - `OFFERS.COMMENTS.001`
+- `REPORTS.SHEET.001`
 - `APP.HELP.001`
 - `OFFERS.NAV.ADD.002`

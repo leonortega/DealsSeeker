@@ -16,7 +16,6 @@ import { AccountScreen } from '../screens/AccountScreen';
 import { AddOfferScreen } from '../screens/AddOfferScreen';
 import { FavoritesScreen } from '../screens/FavoritesScreen';
 import { OffersScreen } from '../screens/OffersScreen';
-import { ReportsScreen } from '../screens/ReportsScreen';
 import { SuggestionsScreen } from '../screens/SuggestionsScreen';
 import { modalScreenOptions, stackScreenOptions, tabScreenOptions } from './shellOptions';
 import { MAIN_TAB_DESTINATIONS, resolveTabFromRoute } from './tabs';
@@ -25,7 +24,6 @@ export type RootStackParamList = {
   Main: undefined;
   AddOffer: { offerId?: string } | undefined;
   Favorites: undefined;
-  Report: undefined;
 };
 
 type MainTabParamList = Record<MainTab, undefined>;
@@ -170,8 +168,6 @@ export function AppNavigator() {
       });
     } else if (key === 'favorites') {
       navigationRef.navigate('Favorites');
-    } else if (key === 'report') {
-      navigationRef.navigate('Report');
     } else {
       navigationRef.goBack();
     }
@@ -203,14 +199,6 @@ export function AppNavigator() {
             <>
               <DismissSync onDismiss={syncDismiss} />
               <FavoritesScreen />
-            </>
-          )}
-        </Stack.Screen>
-        <Stack.Screen name="Report" options={stackScreenOptions(reduceMotion)}>
-          {() => (
-            <>
-              <DismissSync onDismiss={syncDismiss} />
-              <ReportsScreen />
             </>
           )}
         </Stack.Screen>

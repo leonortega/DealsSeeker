@@ -237,8 +237,9 @@ describe('AppProvider', () => {
 
     await act(() => context?.setReportDraft(offer));
 
-    expect(context?.overlayRoute).toEqual({ name: 'report' });
-    expect(context?.reportDraft?.initialMessage).toContain('o1');
+    expect(context?.overlayRoute).toBeNull();
+    expect(context?.reportDraft?.initialMessage).not.toContain('o1');
+    expect(context?.reportDraft?.initialMessage).toContain('offer');
     await act(() => context?.clearReportDraft());
     expect(context?.reportDraft).toBeNull();
   });

@@ -109,7 +109,6 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/screens/AccountScreen', () =
 jest.mock('../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen', () => ({ AddOfferScreen: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/screens/FavoritesScreen', () => ({ FavoritesScreen: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen', () => ({ OffersScreen: () => null }));
-jest.mock('../../../src/DealsSeeker.ReactNative/src/screens/ReportsScreen', () => ({ ReportsScreen: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/screens/SuggestionsScreen', () => ({ SuggestionsScreen: () => null }));
 
 const { AppNavigator } = require('../../../src/DealsSeeker.ReactNative/src/navigation/AppNavigator');

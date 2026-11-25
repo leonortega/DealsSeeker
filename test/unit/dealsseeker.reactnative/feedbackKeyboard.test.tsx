@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react-native';
 import { SuggestionsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/SuggestionsScreen';
-import { ReportsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/ReportsScreen';
 
 let mockActiveTab = 'suggestions';
 let mockOverlayRoute: { name: string } | null = null;
@@ -46,10 +45,4 @@ describe('feedback forms keyboard access', () => {
     expect(screen.getByTestId('suggestions-keyboard-view')).toBeTruthy();
   });
 
-  it('wraps the report form in a keyboard-avoiding view', async () => {
-    mockOverlayRoute = { name: 'report' };
-    await render(<ReportsScreen />);
-
-    expect(screen.getByTestId('reports-keyboard-view')).toBeTruthy();
-  });
 });
