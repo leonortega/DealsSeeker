@@ -74,6 +74,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **Preserved**: slot order (mark → title → switch → actions), the search button in feed and its hidden 44px footprint in map view, viewport rule via shared `NARROW_BREAKPOINT`, accessibility labels, testIDs, and the absolute top position / screen-edge alignment in the standard view.
 - **Proof after refactor**: 64 suites / 376 tests passed; `typecheck` clean; `test:arch` clean (63 files, no dependency violations).
 
+## Follow-up: title clearance and unclipped controls
+
+- **Spec**: `APP.BRAND.001` v1.6, R12 (Approved); BDD scenario added.
+- **RED**: `npm test -- --runInBand presentationMode` — 2 tests failed: screen root still used the old edge offset and title padding was 56 instead of 68.
+- **GREEN**: 8/8 in that suite; 64 suites / 377 tests overall; `typecheck` clean.
+- Final structure: `screenRoot` carries the -16 edge compensation, `topBar` stays inside it (no margin), scroll content re-adds 16px horizontal padding and uses 68px top padding. Control coordinates stay at the feed positions while the bar no longer overhangs its parent.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.

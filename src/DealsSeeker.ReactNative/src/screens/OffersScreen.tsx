@@ -494,7 +494,7 @@ export function OffersScreen() {
       </View>
       <ScrollView
         testID="offers-scroll"
-        contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom, paddingHorizontal: 16, paddingTop: 56 }]}
+        contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom, paddingHorizontal: 16, paddingTop: 68 }]}
         style={{ backgroundColor: palette.background }}
       >
         {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
