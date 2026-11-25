@@ -478,10 +478,24 @@ export function OffersScreen() {
   }
 
   return (
-    <>
+    <View style={styles.screenRoot}>
+      <View pointerEvents="box-none" style={styles.topBar}>
+        <View
+          pointerEvents="box-none"
+          style={[styles.headerControls, { backgroundColor: palette.background }]}
+        >
+          <Image
+            source={require('../../assets/brand/logo-icon.png')}
+            style={[styles.headerMark, { backgroundColor: palette.panel }]}
+            testID="brand-mark"
+          />
+          {modeSwitch}
+          {helpButton}
+        </View>
+      </View>
       <ScrollView
         testID="offers-scroll"
-        contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}
+        contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom, paddingTop: 56 }]}
         style={{ backgroundColor: palette.background }}
       >
         {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
@@ -493,16 +507,6 @@ export function OffersScreen() {
             </Text>
           </View>
         </View>
-        <View style={styles.headerControls}>
-          <Image
-            source={require('../../assets/brand/logo-icon.png')}
-            style={styles.headerMark}
-            testID="brand-mark"
-          />
-          {modeSwitch}
-          {helpButton}
-        </View>
-
         <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <TextInput
             accessibilityLabel={t('offers.searchPlaceholder')}
@@ -643,7 +647,7 @@ export function OffersScreen() {
         returnFocusRef={helpButtonRef}
         visible={reportDraft !== null}
       />
-    </>
+    </View>
   );
 }
 
@@ -660,15 +664,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 14,
   },
+  screenRoot: {
+    flex: 1,
+  },
+  topBar: {
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    zIndex: 2,
+  },
   headerControls: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: 10,
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   headerMark: {
-    height: 32,
+    borderRadius: 999,
+    height: 40,
     resizeMode: 'contain',
-    width: 32,
+    width: 40,
   },
   helpButton: {
     alignItems: 'center',

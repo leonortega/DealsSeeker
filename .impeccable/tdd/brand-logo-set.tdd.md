@@ -47,6 +47,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 5/5 in that suite; 64 suites / 374 tests overall; `typecheck` and `test:arch` clean.
 - The 32px symbol mark is rendered as the first child of the `headerControls` row, immediately before the feed/map switch; the switch itself is unchanged.
 
+## Follow-up: map-view controls mirror the feed top bar
+
+- **Spec**: `APP.BRAND.001` v1.2, R9 (Approved); BDD scenario added.
+- **RED**: `npm test -- --runInBand presentationMode` — 1 test failed: controls row lacked `space-between`, 12/8 padding, rounded 40px icon tile and absolute top placement.
+- **GREEN**: 6/6 in that suite; 64 suites / 375 tests overall; `typecheck` clean.
+- The standard Offers view now pins a top bar at the same position as the immersive feed, with the rounded symbol tile at the left, presentation switch centered via `space-between`, and help at the right; scroll content gets a 56px top inset so nothing hides under it.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
