@@ -144,6 +144,9 @@
 | Confirm action | Persists selected location in draft | No publish action implied |
 | Edit action | Returns location to editable mode | Re-enables confirm flow |
 | Search interaction | Typeahead suggestions from 3rd character | No dedicated Search button |
+| Search timing | Debounce until a short quiet period after the last character | Only one lookup per settled query |
+| Search result reuse | Cache identical queries for a bounded period | Applies on device and at the API |
+| Reverse-geocode timing | Initial position once, then only on tap end, drag end, or center-pin action | No reverse lookup during a continuous drag |
 | Search selection | Replaces current selected location | Latest user-selected result wins |
 | Textbox after selection | Set to selected suggestion label | Keeps chosen place visible to user |
 | Coordinate visibility in UI | Hidden | Raw `lat`/`lng` never shown to end users in Add Offer location text |
@@ -154,19 +157,19 @@
 | After confirm | Confirm disabled, Edit enabled | Location is locked |
 | After edit | Edit disabled, Confirm enabled | Location can be changed again |
 
-## Map Provider Module Rules (`APP.CONFIG.MAPS.001`, `OFFERS.MAP.001`, `ADD.OFFER.LOCATION.001`)
+## Map and Geocoding Stack Rules (`APP.MAP.STACK.001`, `APP.CONFIG.MAPS.001`, `OFFERS.MAP.001`, `ADD.OFFER.LOCATION.001`)
 
 | Decision Point | Default Rule | Notes |
 |---|---|---|
-| Provider configuration source | Internal app configuration | Not hardcoded in feature behavior |
-| Supported providers | Google Maps API and OpenLayers API | Additional providers may be added later |
-| In-view map renderer provider | Configured independently | Applies to Offers/Add Offer rendered maps |
-| Navigation redirect provider | Configured independently | Applies when user opens directions from offers/markers/detail button |
-| Offers map renderer | Use configured in-view renderer provider | Applies to map display and markers |
-| Add Offer location search | Use configured in-view renderer provider | Applies to business/address text lookup |
-| Offer click redirect | Use configured navigation redirect provider | May differ from in-view renderer; applies to cards, detail actions, and markers |
-| Provider initialization failure | Apply configured fallback behavior | App remains available |
-| Provider switch lifecycle | Effective after config reload/app restart policy | Controlled by app configuration policy |
+| In-view map renderer | Native Google Maps view | Offers and Add Offer use the same surface |
+| Alternate map renderers | Not bundled and not used as fallback | No web-based map page or scripted map library |
+| Address search provider | Photon through the app API | No client-side geocoding service calls |
+| Reverse geocoding provider | Photon through the app API | Same service as forward search |
+| Search result policy | Debounce input and cache identical queries | Bounded cache lifetime on device and API |
+| Offer click redirect | Google Maps | Same provider as the in-view renderer |
+| Provider switches | Not available | No display, geocoding, or redirect provider option |
+| Map initialization failure | Report failure; show no alternate map | App stays available outside the map |
+| Geocoding failure | Report 503 with a standard error object | Distinguished from an empty result |
 
 ## Offers Location Display Rules (`OFFERS.MAP.001`)
 

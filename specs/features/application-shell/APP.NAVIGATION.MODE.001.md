@@ -55,3 +55,4 @@ Scenario: User changes directions mode to car
 ## Related Specs
 - `OFFERS.MAP.001`
 - `OFFERS.DETAIL.ACTIONS.001`
+- `APP.MAP.STACK.001`

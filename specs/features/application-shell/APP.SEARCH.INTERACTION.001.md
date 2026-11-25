@@ -83,3 +83,5 @@ Scenario: Lookup errors are recoverable
 - `OFFERS.SEARCH.001`
 - `OFFERS.SEARCH.SMART.001`
 - `APP.SHELL.001`
+- `APP.LOCATION.QUERY.001`
+- `ADD.OFFER.LOCATION.001`

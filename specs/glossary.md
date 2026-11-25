@@ -3,9 +3,11 @@
 - **Active offer**: An offer currently marked as available by the system state.
 - **Business marker**: A map marker representing a business with at least one active offer.
 - **Coverage radius**: The distance range shown in the Offers view distance indicator.
-- **Map provider module**: A pluggable map API integration selected by internal app configuration.
-- **Map display provider**: Configured provider used to render maps inside app views (Offers/Add Offer).
-- **Map redirect provider**: Configured provider used when opening external navigation after selecting an offer/marker.
+- **Map renderer**: The native Google Maps view used for every in-app map surface; no alternate renderer is bundled.
+- **External directions provider**: Google Maps, opened when the user requests directions from an offer, marker, or detail action.
+- **Photon**: The sole geocoding service used for both address search and reverse geocoding, reached through the app API.
+- **Quiet period (debounce)**: A short wait after the last input before a lookup is issued.
+- **Result cache**: A bounded reuse of a previously obtained lookup result so an identical request does not call the geocoding service again during the reuse period.
 - **Authenticated user**: A user with a valid active session.
 - **Active session**: Persisted authenticated state that identifies a logged-in user across app launches.
 - **Login view**: Entry view shown to unauthenticated users with credential form and link to Create User view.

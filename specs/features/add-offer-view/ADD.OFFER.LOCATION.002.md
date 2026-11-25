@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer Location Pin Selection on the Map
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -12,7 +12,7 @@ Define how the user picks an address by pinning a point directly on the Add Offe
 
 ## Preconditions
 - User is on Add Offer view (create or edit mode).
-- The mini map is rendered with the configured map provider.
+- The mini map is rendered by the native Google Maps view defined by `APP.MAP.STACK.001`.
 
 ## Trigger
 - The user taps a point on the mini map, or the map is opened without a resolved location.
@@ -28,8 +28,9 @@ Define how the user picks an address by pinning a point directly on the Add Offe
 - `ADD.OFFER.LOCATION.002-R8`: Picking a point shall not move the map viewport away from the area the user is exploring.
 - `ADD.OFFER.LOCATION.002-R9`: The mini map shall remain available for pin selection even when no location has been resolved yet.
 - `ADD.OFFER.LOCATION.002-R10`: Pin selection shall be available in both create mode and edit mode.
-- `ADD.OFFER.LOCATION.002-R11`: Pin selection shall work with whichever map provider is resolved from internal configuration.
+- `ADD.OFFER.LOCATION.002-R11`: Pin selection shall work on the native Google Maps view; no alternate map renderer or provider switch shall be used.
 - `ADD.OFFER.LOCATION.002-R12`: The coordinates of a map-picked location shall be persisted with the offer, like any other location source.
+- `ADD.OFFER.LOCATION.002-R13`: When a map drag ends, the system shall resolve the address label for the final map center once, and shall not reverse-geocode during the drag as defined by `APP.LOCATION.QUERY.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -64,6 +65,14 @@ Scenario: Pin selection in edit mode
   When the user taps a point on the mini map
   Then the draft location shall be replaced by the tapped point
   And the location textbox shall show the resolved address label for the tapped point
+
+Scenario: Address resolves when a map drag ends
+  Given the Add Offer mini map is visible
+  When the user drags the map and keeps moving
+  Then no address lookup shall be issued during the drag
+  When the drag ends
+  Then one address lookup shall be issued for the final map center
+  And the pin and location textbox shall show that resolved location
 ```
 
 ## Example Inputs/Outputs
@@ -75,7 +84,7 @@ Scenario: Pin selection in edit mode
 - The address lookup for the tapped point fails or returns no result.
 - The user taps the map while an address lookup for the previous tap is still running.
 - The user taps the map outside the visible map area or on an existing marker.
-- The map provider is unavailable; pin selection shall not break the location section.
+- The native map cannot initialize; the failure is reported and the location section stays usable.
 - The tapped point is picked while the location is already confirmed; confirmation shall be reset.
 
 ## Non-Functional Constraints
@@ -84,7 +93,10 @@ Scenario: Pin selection in edit mode
 
 ## Related Specs
 - `ADD.OFFER.LOCATION.001`
+- `ADD.OFFER.LOCATION.003`
 - `ADD.OFFER.LAYOUT.001`
+- `APP.MAP.STACK.001`
+- `APP.NATIVE_MAP.001`
+- `APP.LOCATION.QUERY.001`
 - `APP.CONFIG.MAPS.001`
 - `APP.LOCATION.PROVIDER.RESILIENCE.001`
-- `ADD.OFFER.LOCATION.003`

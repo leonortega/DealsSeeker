@@ -4,16 +4,10 @@
       "kind": "place-text",
       "query": "central market"
     },
-    "providers": [
-      {
-        "name": "primary",
-        "outcome": "unavailable"
-      },
-      {
-        "name": "fallback",
-        "outcome": "timeout"
-      }
-    ]
+    "provider": {
+      "name": "Photon",
+      "outcome": "unavailable"
+    }
   },
   "expected": {
     "status": 503,
@@ -21,9 +15,9 @@
       "type": "https://dealseeker.local/errors/location-provider-unavailable",
       "title": "Location Provider Unavailable",
       "status": 503,
-      "detail": "All configured location providers failed. The lookup could not be completed.",
+      "detail": "The location provider is unavailable. The lookup could not be completed.",
       "errors": {}
     },
-    "workPerformed": false
+    "alternateProviderAttempted": false
   }
 }

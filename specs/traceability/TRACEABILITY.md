@@ -21,6 +21,8 @@
 | `APP.API.CONNECTIVITY.001` | `bdd/app-api-connectivity.feature` | N/A | N/A |
 | `APP.LOGGING.001` | `bdd/logging-configuration.feature` | N/A | `examples/application-shell/app-logging.configuration.json` |
 | `APP.CONFIG.MAPS.001` | `bdd/map-provider-configuration.feature` | `contracts/json-schema/location-search-result.schema.json`, `contracts/json-schema/location-search-results-response.schema.json`, `contracts/json-schema/geo-point.schema.json` | `examples/application-shell/app-config-maps.providers.json` |
+| `APP.MAP.STACK.001` | `bdd/app-map-stack.feature` | N/A | `examples/application-shell/app-map-stack.render.json` |
+| `APP.LOCATION.QUERY.001` | `bdd/app-location-query.feature` | N/A | `examples/application-shell/app-location-query.debounce.json` |
 | `APP.THEME.001` | `bdd/app-theme.feature` | N/A | `examples/application-shell/app-theme.system-dark.json` |
 | `APP.THEME.002` | `bdd/app-theme-surface-coverage.feature` | N/A | N/A |
 | `APP.THEME.003` | `bdd/app-theme-golden-lantern.feature` | N/A | N/A |

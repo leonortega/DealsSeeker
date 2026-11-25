@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Map Display and Configured Navigation Launch
-- **Version**: `v1.7`
+- **Version**: `v1.8`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -21,11 +21,11 @@ Show user and business locations and support navigation to selected business usi
 - `OFFERS.MAP.001-R1`: The system shall display the user current location on the map when available.
 - `OFFERS.MAP.001-R2`: The system shall display nearby businesses that have active offers as map markers.
 - `OFFERS.MAP.001-R3`: The system shall display a distance indicator bar representing coverage radius.
-- `OFFERS.MAP.001-R4`: Offers map rendering provider shall be resolved from internal configuration.
-- `OFFERS.MAP.001-R5`: The map rendering layer shall support configured provider modules including Google Maps API and OpenLayers API.
+- `OFFERS.MAP.001-R4`: The Offers map shall be rendered by the native Google Maps view defined by `APP.MAP.STACK.001`.
+- `OFFERS.MAP.001-R5`: No alternate map renderer shall be used in the Offers view.
 - `OFFERS.MAP.001-R6`: On business marker selection, the system shall open navigation with the configured travel mode and selected location preloaded.
 - `OFFERS.MAP.001-R7`: On offer item selection for directions, the system shall open navigation with the configured travel mode and selected offer location preloaded.
-- `OFFERS.MAP.001-R8`: Navigation redirect provider shall be resolved from internal configuration independently from map rendering provider.
+- `OFFERS.MAP.001-R8`: Navigation redirect shall open Google Maps with the selected destination and travel mode.
 - `OFFERS.MAP.001-R9`: Navigation launch shall be platform-aware: desktop opens browser directions; mobile opens native map app when available, otherwise browser fallback.
 - `OFFERS.MAP.001-R10`: Offers view location text shown to users shall use human-readable address labels.
 - `OFFERS.MAP.001-R11`: Raw coordinate values (`lat`, `lng`) shall not be displayed to users in Offers view UI text.
@@ -33,42 +33,37 @@ Show user and business locations and support navigation to selected business usi
 - `OFFERS.MAP.001-R13`: If an address label is unavailable, the UI shall show a generic non-coordinate location label.
 - `OFFERS.MAP.001-R14`: The map distance/coverage indicator shall reflect the current selected coverage radius value.
 - `OFFERS.MAP.001-R15`: When coverage radius changes, map marker set shall refresh according to the new radius filter.
-- `OFFERS.MAP.001-R16`: Offer click or marker click navigation redirect shall use the configured navigation redirect provider even when map rendering uses a different provider.
+- `OFFERS.MAP.001-R16`: Offer click and marker click navigation redirect shall open Google Maps, the same provider used for in-app map rendering.
 - `OFFERS.MAP.001-R17`: When coverage radius changes, map zoom shall adjust to visualize the selected radius coverage around the user location.
 - `OFFERS.MAP.001-R18`: Navigation travel mode shall be resolved from user preferences, defaulting to pedestrian when no override exists.
-- `OFFERS.MAP.001-R19`: Signals emitted by the embedded Offers map for marker selection shall be delivered to the hosting view as self-contained serialized messages that the hosting view can validate and ignore safely when they are not addressed to it.
-- `OFFERS.MAP.001-R20`: Receiving a map signal that is not addressed to the Offers view shall not interrupt Offers view operation or surface a runtime error to the user.
+- `OFFERS.MAP.001-R19`: Marker selection from the native map shall be delivered directly to the Offers view without a serialized cross-surface message bridge.
+- `OFFERS.MAP.001-R20`: No map renderer or redirect provider switch shall be selectable from the Offers view.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
 Scenario: User opens directions from selected marker
-  Given the Offers map displays a business marker with active offers
-  And map rendering provider is resolved from internal configuration
-  And navigation redirect provider is resolved from internal configuration
+  Given the Offers map displays a business marker with active offers on the native Google Maps view
   And directions mode is configured as pedestrian
   When the user selects that marker
-  Then navigation shall open
+  Then Google Maps navigation shall open
   And the selected business location shall be preloaded
   And navigation mode shall be set to pedestrian directions
 
 Scenario: User opens directions from selected offer item
   Given the Offers list displays an offer with a location
-  And map rendering provider is resolved from internal configuration
-  And navigation redirect provider is resolved from internal configuration
   And directions mode is configured as car
   When the user selects the offer item for directions
-  Then navigation shall open with the offer location preloaded
+  Then Google Maps navigation shall open with the offer location preloaded
   And desktop clients shall open browser directions
-  And mobile clients shall open native map app in car mode when available
-  And browser fallback shall be used when native app is unavailable
+  And mobile clients shall open the Google Maps app in car mode when available
+  And browser fallback shall be used when the app is unavailable
 
-Scenario: Rendering and redirect providers can be different
-  Given map rendering provider is configured as OpenLayers
-  And navigation redirect provider is configured as Google Maps
+Scenario: The native renderer and redirect use the same provider
+  Given the Offers map is rendered by the native Google Maps view
   And directions mode is configured as pedestrian
   When the user opens directions from an offer
-  Then in-view map shall continue using OpenLayers
-  And navigation redirect shall use Google Maps
+  Then the in-view map shall continue using Google Maps
+  And navigation redirect shall open Google Maps
 
 Scenario: Offers view location text hides coordinates
   Given the Offers view is rendered with current user location and business markers
@@ -84,18 +79,18 @@ Scenario: Coverage radius change refreshes map coverage and markers
   And map markers shall refresh using the new radius filter
   And map zoom shall adjust to show the selected radius coverage
 
-Scenario: Embedded map signals keep the hosting view running
-  Given the Offers map is embedded in the hosting view
-  When the embedded map emits a marker selection signal
-  Then the signal shall be delivered as a self-contained serialized message
-  And the Offers view shall open directions for the selected marker when the signal is addressed to it
+Scenario: Marker selection is delivered directly by the native map
+  Given the Offers map is rendered by the native map view
+  When the user selects a business marker
+  Then the selection shall be delivered directly to the Offers view
+  And directions shall open for that marker
   And the Offers view shall continue operating without a runtime error
 
-Scenario: Unrecognized embedded map signal is ignored
-  Given the Offers map is embedded in the hosting view
-  When the embedded map emits a signal that is not addressed to the Offers view
-  Then the signal shall be ignored
-  And no runtime error shall be surfaced to the user
+Scenario: No alternate renderer or provider switch is shown
+  Given the Offers map presentation is selected
+  When the user inspects the map and navigation controls
+  Then no map renderer option shall be available
+  And no redirect provider option shall be available
 ```
 
 ## Example Inputs/Outputs
@@ -108,13 +103,17 @@ Scenario: Unrecognized embedded map signal is ignored
 - Location permission denied: map still shows business markers when available.
 - Native map app unavailable on mobile: system falls back to browser directions.
 - Address label unavailable: UI shows generic location label without numeric coordinates.
-- Embedded map emits a signal the hosting view does not recognize: signal is ignored and the Offers view keeps working.
+- Native map view is unavailable: the failure is reported and no web-based map is shown.
+- A user tries to change map or redirect provider: no such option is available.
 
 ## Non-Functional Constraints
 - Map updates shall stay consistent with current offer filter state.
 
 ## Related Specs
 - `OFFERS.SEARCH.001`
+- `APP.MAP.STACK.001`
 - `APP.CONFIG.MAPS.001`
+- `APP.NATIVE_MAP.001`
+- `APP.LOCATION.QUERY.001`
 - `OFFERS.DETAIL.ACTIONS.001`
 - `APP.NAVIGATION.MODE.001`

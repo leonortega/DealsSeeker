@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer Location Auto-Populate, Confirm, and Live Suggestions
-- **Version**: `v1.8`
+- **Version**: `v1.9`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -26,13 +26,13 @@ Define location lifecycle during add-offer flow.
 - `ADD.OFFER.LOCATION.001-R7`: When the user selects a suggestion result, the location textbox value shall be set to the selected label.
 - `ADD.OFFER.LOCATION.001-R8`: The Add Offer view shall display a mini map for location preview.
 - `ADD.OFFER.LOCATION.001-R9`: The mini map shall show current selected location as a red point marker.
-- `ADD.OFFER.LOCATION.001-R10`: Location suggestion provider shall be resolved from internal configuration.
-- `ADD.OFFER.LOCATION.001-R11`: Supported provider modules for location lookup shall include Google Maps API and OpenLayers API.
+- `ADD.OFFER.LOCATION.001-R10`: Location suggestions shall be served by Photon through the app API as defined by `APP.MAP.STACK.001`.
+- `ADD.OFFER.LOCATION.001-R11`: No alternate geocoding provider shall be used for location suggestions or reverse geocoding.
 - `ADD.OFFER.LOCATION.001-R12`: `Confirm Location` and `Edit Location` controls shall be displayed below the mini map.
 - `ADD.OFFER.LOCATION.001-R13`: Initial control state shall be `Confirm Location` enabled and `Edit Location` disabled.
 - `ADD.OFFER.LOCATION.001-R14`: After user confirms location, `Confirm Location` shall be disabled and `Edit Location` enabled.
 - `ADD.OFFER.LOCATION.001-R15`: After user enters edit mode, `Edit Location` shall be disabled and `Confirm Location` enabled.
-- `ADD.OFFER.LOCATION.001-R16`: On Add Offer view open, when GPS coordinates are available, the system shall resolve and display the nearest human-readable address label for that location.
+- `ADD.OFFER.LOCATION.001-R16`: On Add Offer view open, when GPS coordinates are available, the system shall make a single reverse-geocode request and display the nearest human-readable address label; further reverse lookups shall wait for a gesture as defined by `APP.LOCATION.QUERY.001`.
 - `ADD.OFFER.LOCATION.001-R17`: Raw coordinate values (`lat`, `lng`) shall not be displayed to users in Add Offer location UI.
 - `ADD.OFFER.LOCATION.001-R18`: Raw coordinate values (`lat`, `lng`) shall remain in draft data and be persisted to backend/database storage.
 - `ADD.OFFER.LOCATION.001-R19`: If reverse-geocoding cannot resolve an address label, the UI shall show a generic location label without exposing numeric coordinates.
@@ -55,9 +55,8 @@ Scenario: Auto-populate location when view opens
 
 Scenario: Typeahead suggestions and replace selected location
   Given a location is currently selected in the draft
-  And location search provider is resolved from internal configuration
   When the user types at least 3 characters for a business or address
-  Then the lookup shall be performed through the configured provider module
+  Then the lookup shall be performed by Photon through the app API after a quiet period
   And suggestion results shall be displayed while typing
   When the user selects a suggestion result
   And the selected result location shall replace the current draft location
@@ -135,9 +134,12 @@ Scenario: Disabled location controls are not operable
 ## Related Specs
 - `ADD.OFFER.IMAGE.001`
 - `ADD.OFFER.LOCATION.002`
+- `ADD.OFFER.LOCATION.003`
 - `ADD.OFFER.LAYOUT.001`
+- `APP.MAP.STACK.001`
+- `APP.LOCATION.QUERY.001`
+- `APP.SEARCH.INTERACTION.001`
 - `APP.CONFIG.MAPS.001`
 - `APP.LOCATION.PROVIDER.RESILIENCE.001`
-- `ADD.OFFER.LOCATION.003`
 - `ADD.OFFER.UX.001`
 - `ADD.OFFER.INPUT.BOUNDS.001`

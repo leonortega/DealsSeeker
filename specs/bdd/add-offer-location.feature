@@ -17,6 +17,18 @@ Feature: Add Offer location suggestions and mini map
     When the user types at least 3 characters in location input
     Then location suggestions are shown in a selectable list
 
+  Scenario: Location search waits for a quiet period
+    Given the user is typing a place name in the location input
+    When characters arrive faster than the quiet period
+    Then no lookup is issued until typing stops
+    And only one lookup is issued for the final text
+
+  Scenario: Repeated identical location searches reuse cached results
+    Given a place search for a query has already returned results
+    When the user searches for the same query again within the cache period
+    Then the previously returned results are shown
+    And no additional Photon call is made
+
   Scenario: Selecting a suggestion updates textbox and mini map
     Given location suggestions are shown for the current input
     When the user selects one suggestion from the list
@@ -84,6 +96,14 @@ Feature: Add Offer location suggestions and mini map
     When the user taps a point on the mini map
     Then the draft location is replaced by the tapped point
     And the location textbox shows the resolved address label for the tapped point
+
+  Scenario: Address resolves when a map drag ends
+    Given the Add Offer mini map is visible
+    When the user drags the map and keeps moving
+    Then no address lookup is issued during the drag
+    When the drag ends
+    Then one address lookup is issued for the final map center
+    And the pin and location textbox show that resolved location
 
   Scenario: Searching and no-results feedback
     Given the user typed at least 3 characters in the location input

@@ -1,71 +1,67 @@
 # Spec: `APP.CONFIG.MAPS.001`
 
 ## Metadata
-- **Title**: Configurable Map Provider Modules
-- **Version**: `v1.1`
+- **Title**: Google Maps Credential Configuration
+- **Version**: `v2.0`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
 
 ## Purpose
-Define internal configuration rules for map provider modules used by the app.
+Define how the single native map stack obtains its Google Maps credential; provider switching is retired by `APP.MAP.STACK.001`.
 
 ## Preconditions
-- The application has access to internal configuration.
+- The application has access to configuration supplied through its environment.
 
 ## Trigger
-- Application startup or map-related service initialization.
+- Application startup or map-dependent feature initialization.
 
 ## Requirements
-- `APP.CONFIG.MAPS.001-R1`: In-app map rendering shall use the platform's native map view; web-based display providers shall not be used for the primary map surface.
-- `APP.CONFIG.MAPS.001-R2`: The native map shall obtain its credentials from configuration supplied through the app's environment.
-- `APP.CONFIG.MAPS.001-R3`: Map provider for external navigation redirect (offer click / marker click) shall still be selected from internal app configuration independently from in-app rendering.
-- `APP.CONFIG.MAPS.001-R4`: The system shall support a `Google Maps` credential for Android native map rendering.
-- `APP.CONFIG.MAPS.001-R5`: The `OpenLayers` web display provider is retired for in-app rendering; it may remain only as a fallback surface as defined by `APP.NATIVE_MAP.001`.
-- `APP.CONFIG.MAPS.001-R6`: Offers/Add Offer map rendering shall use the native map surface with markers and coverage as defined by `APP.NATIVE_MAP.001`.
-- `APP.CONFIG.MAPS.001-R7`: Offer navigation redirect shall use the configured navigation redirect provider from offer cards, detail actions, and any available in-map interaction UI.
-- `APP.CONFIG.MAPS.001-R8`: If the native map is unavailable at runtime, the system shall fail gracefully and use the configured fallback surface without removing navigation access.
+- `APP.CONFIG.MAPS.001-R1`: In-app map rendering shall use the native map view defined by `APP.NATIVE_MAP.001`; web-based display providers shall not be used.
+- `APP.CONFIG.MAPS.001-R2`: The native map shall obtain its Google Maps credential from configuration supplied through the app's environment.
+- `APP.CONFIG.MAPS.001-R3`: External navigation redirect shall open Google Maps from offer cards, detail actions, and markers; no redirect provider switch shall be available.
+- `APP.CONFIG.MAPS.001-R4`: A missing or invalid credential shall be reported as a configuration error and shall not cause an alternate map surface to be shown.
+- `APP.CONFIG.MAPS.001-R5`: Address search and reverse geocoding shall not use the Google Maps credential; those lookups are defined by `APP.MAP.STACK.001`.
+- `APP.CONFIG.MAPS.001-R6`: Offers and Add Offer maps shall use the same native map surface with markers and coverage as defined by `APP.NATIVE_MAP.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
-Scenario: Native map uses configured Google credential and redirect
+Scenario: Native map uses the configured Google credential
   Given the environment supplies a Google Maps credential
-  And internal configuration sets navigation redirect provider to Google Maps
   When the app initializes map-dependent features
   Then Offers and Add Offer maps shall render natively with that credential
-  And offer navigation redirects shall use Google Maps
+  And offer navigation redirects shall open Google Maps
 
-Scenario: Redirect provider remains independently configurable
-  Given the in-app map is native
-  When internal configuration selects a navigation redirect provider
-  Then in-map and offer-card redirects shall use that provider
-  And the native map surface shall not change
+Scenario: No provider switching is available
+  Given the app is fully initialized
+  When map display, geocoding, or redirect configuration is inspected
+  Then no alternative provider selection shall be applied
 
-Scenario: Native map failure uses fallback behavior
-  Given the native map cannot be initialized
+Scenario: Missing credential is a configuration error
+  Given no usable Google Maps credential is supplied
   When a map-dependent feature is requested
-  Then the configured fallback surface shall be used
-  And the app shall not crash
+  Then the failure shall be reported
+  And no fallback map surface shall be rendered
 ```
 
 ## Example Inputs/Outputs
-- Example input: Google credential supplied through the environment, `MapRedirectProvider=GoogleMaps`.
-- Expected output: In-view maps render natively and offer click redirects use Google Maps.
-- Example input: native map unavailable on the device.
-- Expected output: the configured fallback map surface is shown without a crash.
+- Example input: Google Maps credential supplied through the environment.
+- Expected output: Offers and Add Offer maps render natively; offer redirects open Google Maps.
+- Example input: no credential supplied.
+- Expected output: a configuration error is reported; no web map is shown.
 
 ## Edge Cases
-- Unknown provider key in configuration.
-- Provider API key missing or invalid.
-- Provider service temporarily unavailable.
+- Credential present but rejected by Google Maps.
+- Credential removed after a previous successful launch.
+- Map requested while the credential is being validated.
 
 ## Non-Functional Constraints
-- Provider switching through configuration should not require feature-spec changes.
+- The credential shall not be logged or shown to the user.
 
 ## Related Specs
+- `APP.MAP.STACK.001`
+- `APP.NATIVE_MAP.001`
 - `OFFERS.MAP.001`
 - `ADD.OFFER.LOCATION.001`
 - `APP.LOCATION.PROVIDER.RESILIENCE.001`
-- `ADD.OFFER.LOCATION.003`
-- `APP.POLISH.UX.001`
-- `APP.NATIVE_MAP.001`
+- `APP.NAVIGATION.MODE.001`

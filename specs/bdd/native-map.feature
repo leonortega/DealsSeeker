@@ -23,8 +23,8 @@ Feature: Native map surface
     When the map is rendered
     Then map accents continue to use the brand palette roles
 
-  Scenario: Platform without native map support
+  Scenario: No alternate map renderer is bundled
     Given the device cannot render a native map
     When a map surface is requested
-    Then the existing fallback surface is shown
-    And the user can still complete the flow
+    Then the failure is reported
+    And no web-based or alternate map surface is shown

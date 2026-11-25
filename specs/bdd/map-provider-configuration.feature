@@ -1,27 +1,22 @@
-Feature: Map provider modules configured internally
+Feature: Google Maps credential configuration
   As a product owner
-  I want map provider modules to be configurable
-  So that the app can run with different map APIs
+  I want the single native map stack to read one credential
+  So that map display and directions behave identically everywhere
 
-  Scenario: Google Maps providers are configured for render and redirect
-    Given internal configuration sets map rendering provider to Google Maps API
-    And internal configuration sets navigation redirect provider to Google Maps API
+  Scenario: Native map uses the configured Google credential
+    Given the environment supplies a Google Maps credential
     When map-dependent features are initialized
-    Then Offers map rendering uses Google Maps provider
-    And Add Offer map rendering uses Google Maps provider
-    And offer click navigation redirect uses Google Maps provider
+    Then Offers map rendering uses the native Google Maps view
+    And Add Offer map rendering uses the native Google Maps view
+    And offer click navigation redirect opens Google Maps
 
-  Scenario: Mixed providers are configured
-    Given internal configuration sets map rendering provider to OpenLayers API
-    And internal configuration sets navigation redirect provider to Google Maps API
-    When map-dependent features are initialized
-    Then Offers map rendering uses OpenLayers provider
-    And Add Offer map rendering uses OpenLayers provider
-    And offer click navigation redirect uses Google Maps provider
+  Scenario: No provider switching is available
+    Given the app is fully initialized
+    When map display, geocoding, or redirect settings are looked for
+    Then no alternative provider selection is applied
 
-  Scenario: Configured provider fails to initialize
-    Given map rendering or navigation redirect provider is configured
-    And provider initialization fails
+  Scenario: Missing credential is a configuration error
+    Given no usable Google Maps credential is supplied
     When a map-dependent feature is requested
-    Then fallback behavior is applied according to configuration
-    And app availability is preserved
+    Then the failure is reported as a configuration error
+    And no fallback map surface is rendered

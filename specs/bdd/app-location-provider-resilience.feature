@@ -1,32 +1,17 @@
-Feature: Map provider location lookup resilience
+Feature: Photon location lookup resilience
   As a user
-  I want location lookups to keep working when a map provider fails
-  So that I can still find places
+  I want location lookups to report failures honestly
+  So that I can tell an outage from an empty result
 
-  Scenario: Configured provider failure triggers the fallback provider
-    Given a primary map provider and a fallback provider are configured
-    And the primary provider is unavailable, times out, or returns a failure
-    When a location lookup is requested
-    Then the system shall attempt the fallback provider
-
-  Scenario: Fallback provider success is indistinguishable from direct success
-    Given the primary provider fails
-    And the fallback provider returns results
-    When a location lookup is requested
-    Then the system shall respond with HTTP status 200 and the results
-    And the response shall be indistinguishable from a direct provider success
-
-  Scenario: All configured providers failing yields a service unavailable response
-    Given a primary map provider and a fallback provider are configured
-    And both providers fail
+  Scenario: Photon failure yields a service unavailable response
+    Given Photon is unavailable, times out, or returns a failure
     When a location lookup is requested
     Then the system shall respond with HTTP status 503
     And the response body shall use the standard error object shape
-    And the error shall report that the provider is unavailable rather than that there are no results
+    And the error shall report provider unavailability rather than no results
 
-  Scenario: Provider succeeds without matches
-    Given the configured map provider is available
-    And the provider finds no matching location
+  Scenario: Photon succeeds without matches
+    Given Photon is available and finds no matching location
     When a location lookup is requested
     Then the system shall respond with HTTP status 200
     And the result collection shall be empty
@@ -34,12 +19,17 @@ Feature: Map provider location lookup resilience
 
   Scenario: Identical lookup reuses a previously obtained result
     Given a location lookup for a given query has already been resolved
-    When an identical location lookup is requested again within the bounded reuse period
+    When an identical lookup is requested again within the bounded reuse period
     Then the system shall reuse the previously obtained result
-    And no additional provider call shall be generated beyond the caching policy allowance
+    And no additional Photon call shall be generated beyond the caching policy allowance
 
-  Scenario: Missing provider configuration is a configuration error
-    Given no map provider is configured for the location lookup
+  Scenario: Missing Photon configuration is a configuration error
+    Given Photon is not configured for the location lookup
     When a location lookup is requested
     Then the system shall report a configuration error
     And the lookup shall not succeed
+
+  Scenario: No alternate provider is attempted
+    Given Photon fails
+    When a location lookup is requested
+    Then no other geocoding service shall be contacted

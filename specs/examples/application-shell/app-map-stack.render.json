@@ -1,0 +1,13 @@
+{
+  "input": {
+    "surfaces": ["offers-map", "add-offer-mini-map"],
+    "directionsAction": "offer-detail"
+  },
+  "expected": {
+    "renderer": "native-google-maps",
+    "alternateRendererPresent": false,
+    "geocodingService": "photon-via-app-api",
+    "directionsProvider": "GoogleMaps",
+    "providerSwitchAvailable": false
+  }
+}

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Native Map Surface
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers map, Add Offer location map
 - **Priority**: Low
@@ -24,8 +24,8 @@ Render maps with the operating system's native map view instead of an embedded w
 - `APP.NATIVE_MAP.001-R4`: Tap-to-pin shall set the pin at the tapped coordinate when the caller enables it.
 - `APP.NATIVE_MAP.001-R5`: The user marker and the selected pin shall remain visually distinct using the existing palette roles.
 - `APP.NATIVE_MAP.001-R6`: The map shall follow the active theme without changing the brand palette.
-- `APP.NATIVE_MAP.001-R7`: If the platform cannot render a native map, the existing fallback surface shall be used and the flow shall remain completable.
-- `APP.NATIVE_MAP.001-R8`: Provider configuration shall select OS map behavior only; the web-based OpenLayers display provider shall no longer be used.
+- `APP.NATIVE_MAP.001-R7`: The native map shall use Google Maps; no web-based or alternate map renderer shall be bundled or used as a fallback.
+- `APP.NATIVE_MAP.001-R8`: If the native map cannot be initialized, the system shall report the failure without showing an alternate map surface.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -50,11 +50,11 @@ Scenario: Theme follows the app palette
   When the map is rendered
   Then map accents shall continue to use the brand palette roles
 
-Scenario: Platform without native map support
+Scenario: No alternate map renderer is bundled
   Given the device cannot render a native map
   When a map surface is requested
-  Then the existing fallback surface shall be shown
-  And the user shall still be able to complete the flow
+  Then the failure shall be reported
+  And no web-based or alternate map surface shall be shown
 ```
 
 ## Example Inputs/Outputs
@@ -71,7 +71,10 @@ Scenario: Platform without native map support
 - The native map dependency shall provide behavior only; no platform-native visual restyle of the brand UI shall be introduced.
 
 ## Related Specs
+- `APP.MAP.STACK.001`
 - `APP.CONFIG.MAPS.001`
+- `APP.LOCATION.QUERY.001`
 - `OFFERS.MAP.001`
+- `ADD.OFFER.LOCATION.002`
 - `ADD.OFFER.LOCATION.003`
 - `APP.THEME.001`

@@ -46,18 +46,18 @@ Feature: Search offers in Offers view
     And map markers are refreshed
     And map zoom is adjusted to show the selected coverage radius
 
-  Scenario: Embedded map signals keep the hosting view running
-    Given the Offers map is embedded in the hosting view
-    When the embedded map emits a marker selection signal
-    Then the signal is delivered as a self-contained serialized message
-    And the Offers view opens directions for the selected marker when the signal is addressed to it
+  Scenario: Marker selection is delivered directly by the native map
+    Given the Offers map is rendered by the native map view
+    When the user selects a business marker
+    Then the selection is delivered directly to the Offers view
+    And directions open for that marker
     And the Offers view continues operating without a runtime error
 
-  Scenario: Unrecognized embedded map signal is ignored
-    Given the Offers map is embedded in the hosting view
-    When the embedded map emits a signal that is not addressed to the Offers view
-    Then the signal is ignored
-    And no runtime error is surfaced to the user
+  Scenario: No alternate renderer or provider switch is shown
+    Given the Offers map presentation is selected
+    When the user inspects the map and navigation controls
+    Then no map renderer option is available
+    And no redirect provider option is available
 
   Scenario: Required location/search loading blocks Offers interactions
     Given the Offers view is resolving current location or executing search

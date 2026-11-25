@@ -1,0 +1,13 @@
+{
+  "input": {
+    "typedSequence": ["cof", "coff", "coffee"],
+    "quietPeriodMs": 300,
+    "laterRepeatedQuery": "coffee"
+  },
+  "expected": {
+    "lookupIssuedFor": "coffee",
+    "lookupCount": 1,
+    "laterRepeatServedFromCache": true,
+    "supersededResultsShown": false
+  }
+}
