@@ -23,7 +23,7 @@ import { ImmersiveFeedTab, ImmersiveFeedTabs } from './ImmersiveFeedTabs';
 import { ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
 import { NavIcon } from './NavIcon';
 
-const NARROW_BREAKPOINT = 768;
+export const NARROW_BREAKPOINT = 768;
 
 export function shouldShowImmersiveCaptions(isNarrow: boolean, fontScale: number, availableHeight = Infinity) {
   return !isNarrow && fontScale < 1.5 && availableHeight >= 640;

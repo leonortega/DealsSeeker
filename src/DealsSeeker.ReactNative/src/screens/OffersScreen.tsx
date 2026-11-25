@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
 import { getDevicePositionAsync } from '../utils/deviceLocation';
 import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '../api/types';
-import { ImmersiveOfferFeed } from '../components/ImmersiveOfferFeed';
+import { ImmersiveOfferFeed, NARROW_BREAKPOINT } from '../components/ImmersiveOfferFeed';
 import { ImmersiveFeedTab } from '../components/ImmersiveFeedTabs';
 import { NativeMapPreview } from '../components/NativeMapPreview';
 import { OfferCard } from '../components/OfferCard';
@@ -489,13 +489,19 @@ export function OffersScreen() {
             style={[styles.headerMark, { backgroundColor: palette.panel }]}
             testID="brand-mark"
           />
-          {modeSwitch}
-          {helpButton}
+          {viewportWidth < NARROW_BREAKPOINT ? null : (
+            <Text style={[styles.topBarTitle, { color: palette.ink }]}>{t('app.title')}</Text>
+          )}
+          <View pointerEvents="box-none" style={styles.modeSlot}>{modeSwitch}</View>
+          <View pointerEvents="box-none" style={styles.topActions}>
+            <View style={styles.searchSlot} />
+            {helpButton}
+          </View>
         </View>
       </View>
       <ScrollView
         testID="offers-scroll"
-        contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom, paddingTop: 56 }]}
+        contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom, paddingHorizontal: 16, paddingTop: 56 }]}
         style={{ backgroundColor: palette.background }}
       >
         {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
@@ -666,10 +672,10 @@ const styles = StyleSheet.create({
   },
   screenRoot: {
     flex: 1,
+    marginHorizontal: -16,
   },
   topBar: {
     left: 0,
-    marginHorizontal: -16,
     position: 'absolute',
     right: 0,
     top: 0,
@@ -688,6 +694,22 @@ const styles = StyleSheet.create({
     height: 40,
     resizeMode: 'contain',
     width: 40,
+  },
+  topBarTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  modeSlot: {
+    maxWidth: 360,
+  },
+  topActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  searchSlot: {
+    height: 44,
+    width: 44,
   },
   helpButton: {
     alignItems: 'center',

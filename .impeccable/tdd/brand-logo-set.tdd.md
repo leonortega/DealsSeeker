@@ -61,6 +61,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 6/6 in that suite; 64 suites / 375 tests overall; `typecheck` clean.
 - The immersive feed runs edge-to-edge (`paddingHorizontal: 0`), while the standard screen inherits 16px. The pinned controls row now cancels that padding, so the logo, switch and help sit at the same screen coordinates in both presentations.
 
+## Follow-up: shared feed header structure with hidden search
+
+- **Spec**: `APP.BRAND.001` v1.5, R11 (Approved); BDD scenario added.
+- **RED**: `npm test -- --runInBand presentationMode` — 2 tests failed: no `modeSlot` / `topActions` wrappers and no reserved search footprint in the map view.
+- **GREEN**: 7/7 in that suite; 64 suites / 376 tests overall; `typecheck` and `test:arch` clean.
+- The standard Offers top bar now uses the feed's slot structure: mark → optional title → `modeSlot` (switch) → `topActions` (44px reserved search slot + help). The search button is not rendered, but its footprint keeps the switch at the feed's x-position. `NARROW_BREAKPOINT` is exported from `ImmersiveOfferFeed` so both presentations use the same viewport rule.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
