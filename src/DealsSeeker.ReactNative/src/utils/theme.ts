@@ -25,48 +25,48 @@ export interface Palette {
 
 const lightPalette: Palette = {
   mode: 'light',
-  background: '#fff9ec',
-  backgroundRaised: '#fff1d9',
-  panel: '#fffdf7',
-  panelAlt: '#e7f4e8',
+  background: '#faf8f5',
+  backgroundRaised: '#f1ede7',
+  panel: '#ffffff',
+  panelAlt: '#e7f7f1',
   card: '#ffffff',
-  border: '#9c8461',
-  ink: '#2b1e2e',
-  inkMuted: '#6a5a6c',
-  accent: '#e8a13a',
-  accentMuted: '#fbe3b6',
-  accentText: '#8a5a00',
-  onAccent: '#2b1e2e',
+  border: '#8b857e',
+  ink: '#18181b',
+  inkMuted: '#52525b',
+  accent: '#ce4719',
+  accentMuted: '#fbe6df',
+  accentText: '#b83b12',
+  onAccent: '#ffffff',
   onDanger: '#ffffff',
-  highlight: '#f2725e',
-  onHighlight: '#2b1e2e',
-  success: '#2e7d52',
-  danger: '#c93160',
-  shadow: 'rgba(43, 30, 46, 0.16)',
-  overlay: 'rgba(24, 20, 33, 0.52)',
+  highlight: '#0d7a5f',
+  onHighlight: '#ffffff',
+  success: '#0d7a5f',
+  danger: '#b42318',
+  shadow: 'rgba(24, 24, 27, 0.16)',
+  overlay: 'rgba(9, 9, 11, 0.52)',
 };
 
 const darkPalette: Palette = {
   mode: 'dark',
-  background: '#181421',
-  backgroundRaised: '#221c2c',
-  panel: '#2a2030',
-  panelAlt: '#25362d',
-  card: '#2e2438',
-  border: '#8c7a93',
-  ink: '#f6e9f0',
-  inkMuted: '#cdbbcf',
-  accent: '#ffc15e',
-  accentMuted: '#5a4426',
-  accentText: '#ffc15e',
-  onAccent: '#2b1e2e',
-  onDanger: '#2b1e2e',
-  highlight: '#ff8b78',
-  onHighlight: '#2b1e2e',
-  success: '#86d5a0',
-  danger: '#ff6f9c',
+  background: '#121417',
+  backgroundRaised: '#191c21',
+  panel: '#1e2228',
+  panelAlt: '#17332a',
+  card: '#1e2228',
+  border: '#71717a',
+  ink: '#f4f4f6',
+  inkMuted: '#a1a1aa',
+  accent: '#ff8a65',
+  accentMuted: '#5a2e20',
+  accentText: '#ff8a65',
+  onAccent: '#121417',
+  onDanger: '#121417',
+  highlight: '#4ade80',
+  onHighlight: '#121417',
+  success: '#4ade80',
+  danger: '#f87171',
   shadow: 'rgba(0, 0, 0, 0.3)',
-  overlay: 'rgba(12, 8, 18, 0.66)',
+  overlay: 'rgba(0, 0, 0, 0.66)',
 };
 
 /**
@@ -76,7 +76,7 @@ export function primaryButtonText(palette: Palette): string {
   return palette.onAccent;
 }
 
-export const immersiveBackdrop = '#181421';
+export const immersiveBackdrop = '#121417';
 export const immersiveInk = '#f7f1e8';
 export const immersiveInkMuted = '#c6d0c9';
 

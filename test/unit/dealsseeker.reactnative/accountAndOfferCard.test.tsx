@@ -89,7 +89,7 @@ describe('AccountScreen', () => {
   it('shows a change affordance on each settings control', async () => {
     await render(<AccountScreen />);
 
-    expect(screen.getAllByText('›')).toHaveLength(3);
+    expect(screen.getAllByText('›')).toHaveLength(2);
   });
 
   it('bounds the email to two lines so no fragment is stranded', async () => {
@@ -136,9 +136,10 @@ describe('AccountScreen', () => {
     expect(mockSaveAvatar).toHaveBeenCalledWith('cat');
   });
 
-  it('toggles theme, language and navigation mode', async () => {
+  it('selects a theme, language and navigation mode', async () => {
     await render(<AccountScreen />);
-    await fireEvent.press(screen.getByText('nav.lightTheme'));
+    expect(screen.getByRole('radio', { name: 'nav.lightTheme' }).props.accessibilityState.selected).toBe(true);
+    await fireEvent.press(screen.getByText('nav.darkTheme'));
     await fireEvent.press(screen.getByText('EN'));
     await fireEvent.press(screen.getByText('nav.pedestrian'));
     expect(mockSetThemeMode).toHaveBeenCalledWith('dark');

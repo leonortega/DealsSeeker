@@ -6,11 +6,11 @@ const dark = { mode: 'dark', background: '#17201d' } as Palette;
 
 describe('resolveShellChrome', () => {
   it('uses the fixed plum backdrop and light status icons for immersive light theme', () => {
-    expect(resolveShellChrome(true, light)).toEqual({ background: '#181421', statusBarStyle: 'light' });
+    expect(resolveShellChrome(true, light)).toEqual({ background: '#121417', statusBarStyle: 'light' });
   });
 
   it('uses the fixed plum backdrop and light status icons for immersive dark theme', () => {
-    expect(resolveShellChrome(true, dark)).toEqual({ background: '#181421', statusBarStyle: 'light' });
+    expect(resolveShellChrome(true, dark)).toEqual({ background: '#121417', statusBarStyle: 'light' });
   });
 
   it('keeps the standard light background and dark status icons outside immersive', () => {

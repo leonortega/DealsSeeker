@@ -135,7 +135,7 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
     await render(<OffersScreen />);
 
     expect(await screen.findByText('offers.emptyTitle')).toBeTruthy();
-    expect(StyleSheet.flatten(screen.getByTestId('immersive-content').props.style).backgroundColor).toBe('#181421');
+    expect(StyleSheet.flatten(screen.getByTestId('immersive-content').props.style).backgroundColor).toBe('#121417');
   });
 
   it('shows the same disclosure in the immersive presentation', async () => {

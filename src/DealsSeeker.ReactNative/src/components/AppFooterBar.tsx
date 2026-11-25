@@ -5,12 +5,12 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
  * Shared bottom navigation used by both the standard and immersive views.
  * The palette matches the reference footer (dark rounded surface, terracotta active option).
  */
-const footerSurface = '#2a2030';
-const footerBorder = '#8c7a93';
-const footerActive = '#5a4426';
-const footerAccent = '#ffc15e';
-const footerInk = '#f6e9f0';
-const footerInkMuted = '#cdbbcf';
+const footerSurface = '#1e2228';
+const footerBorder = '#71717a';
+const footerActive = '#5a2e20';
+const footerAccent = '#ff8a65';
+const footerInk = '#f4f4f6';
+const footerInkMuted = '#a1a1aa';
 
 export interface FooterItem {
   key: string;

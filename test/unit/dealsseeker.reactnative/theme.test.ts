@@ -22,23 +22,23 @@ describe('theme utilities', () => {
   it('uses golden-hour tokens with light on-accent text', () => {
     const palette = resolveTheme('light', null);
 
-    expect(palette.background).toBe('#fff9ec');
-    expect(palette.accent).toBe('#e8a13a');
-    expect(palette.onAccent).toBe('#2b1e2e');
-    expect(palette.highlight).toBe('#f2725e');
-    expect(palette.onHighlight).toBe('#2b1e2e');
+    expect(palette.background).toBe('#faf8f5');
+    expect(palette.accent).toBe('#ce4719');
+    expect(palette.onAccent).toBe('#ffffff');
+    expect(palette.highlight).toBe('#0d7a5f');
+    expect(palette.onHighlight).toBe('#ffffff');
   });
 
   it('uses lantern tokens with dark on-accent text', () => {
     const palette = resolveTheme('dark', null);
 
-    expect(palette.background).toBe('#181421');
-    expect(palette.accent).toBe('#ffc15e');
-    expect(palette.onAccent).toBe('#2b1e2e');
-    expect(palette.highlight).toBe('#ff8b78');
+    expect(palette.background).toBe('#121417');
+    expect(palette.accent).toBe('#ff8a65');
+    expect(palette.onAccent).toBe('#121417');
+    expect(palette.highlight).toBe('#4ade80');
   });
 
   it('exposes a fixed immersive backdrop', () => {
-    expect(immersiveBackdrop).toBe('#181421');
+    expect(immersiveBackdrop).toBe('#121417');
   });
 });

@@ -738,7 +738,7 @@ const styles = StyleSheet.create({
   radiusChip: {
     borderRadius: 999,
     borderWidth: 1,
-    minHeight: 44,
+    minHeight: 48,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
@@ -749,7 +749,7 @@ const styles = StyleSheet.create({
   actionButton: {
     borderRadius: 999,
     flex: 1,
-    minHeight: 44,
+    minHeight: 48,
     paddingHorizontal: 14,
     paddingVertical: 14,
   },

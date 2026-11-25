@@ -64,5 +64,6 @@ Scenario: Contrast floors hold
 ## Related Specs
 - `APP.THEME.001`
 - `APP.THEME.003`
+- `APP.THEME.005`
 - `APP.SHELL.001`
 - `OFFERS.FEED.IMMERSIVE.001`

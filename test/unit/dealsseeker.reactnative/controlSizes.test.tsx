@@ -96,12 +96,12 @@ describe('touch target and label floors', () => {
       (node) => node.type === 'View' && styleOf(node).flexDirection === 'row'
     );
     expect(styleOf(wrapper as never)).toMatchObject({
-      backgroundColor: '#2a2030',
-      borderColor: '#8c7a93',
+      backgroundColor: '#1e2228',
+      borderColor: '#71717a',
       borderRadius: 28,
     });
-    expect(styleOf(screen.getByRole('button', { name: 'Account' })).backgroundColor).toBe('#5a4426');
-    expect(styleOf(screen.getByText('👤')).color).toBe('#ffc15e');
+    expect(styleOf(screen.getByRole('button', { name: 'Account' })).backgroundColor).toBe('#5a2e20');
+    expect(styleOf(screen.getByText('👤')).color).toBe('#ff8a65');
   });
 
   it('lets footer labels wrap and follow the system text size', async () => {
@@ -175,11 +175,11 @@ describe('touch target and label floors', () => {
     expect(styleOf(screen.getByText('Account')).fontSize).toBeGreaterThanOrEqual(10);
   });
 
-  it('gives coverage radius chips a 44-unit touch target', async () => {
+  it('gives coverage radius chips a 48-unit touch target', async () => {
     await render(<OffersScreen />);
 
     const chip = await screen.findByRole('button', { name: '500 m' });
-    expect(styleOf(chip).minHeight).toBeGreaterThanOrEqual(44);
+    expect(styleOf(chip).minHeight).toBeGreaterThanOrEqual(48);
   });
 
   it('gives the immersive search control a 44-unit touch target', async () => {

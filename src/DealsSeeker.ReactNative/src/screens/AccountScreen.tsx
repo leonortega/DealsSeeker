@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { OfferItemDto, UserProfileDto } from '../api/types';
+import { OfferItemDto, ThemeMode, UserProfileDto } from '../api/types';
 import { AvatarPicker } from '../components/AvatarPicker';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
@@ -10,6 +10,12 @@ import { statusColor, type StatusTone } from '../utils/statusNotice';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { avatarEmoji } from '../utils/avatars';
 import { shorten } from '../utils/format';
+
+const themeOptions: Array<{ mode: ThemeMode; labelKey: string }> = [
+  { mode: 'system', labelKey: 'nav.systemTheme' },
+  { mode: 'light', labelKey: 'nav.lightTheme' },
+  { mode: 'dark', labelKey: 'nav.darkTheme' },
+];
 
 export function AccountScreen() {
   const { activeTab, api, avatarId, logout, openAddOffer, palette, preferences, saveAvatar, setLanguage, setNavigationMode, setThemeMode, t } =
@@ -103,19 +109,30 @@ export function AccountScreen() {
 
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <Text style={[styles.panelTitle, { color: palette.ink }]}>{t('account.settings')}</Text>
+        <View style={styles.settingGroup}>
+          <Text style={[styles.settingLabel, { color: palette.inkMuted }]}>{t('settings.theme')}</Text>
+          <View style={styles.row}>
+            {themeOptions.map(({ mode, labelKey }) => {
+              const selected = preferences.themeMode === mode;
+              return (
+                <Pressable
+                  key={mode}
+                  accessibilityLabel={t(labelKey)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  style={[
+                    styles.choice,
+                    { backgroundColor: selected ? palette.accent : palette.panel, borderColor: palette.border },
+                  ]}
+                  onPress={() => void setThemeMode(mode)}
+                >
+                  <Text style={{ color: selected ? palette.onAccent : palette.ink }}>{t(labelKey)}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
         <View style={styles.row}>
-          <Pressable
-            accessibilityLabel={preferences.themeMode === 'dark' ? t('nav.darkTheme') : t('nav.lightTheme')}
-            accessibilityRole="button"
-            accessibilityState={{ selected: preferences.themeMode === 'dark' }}
-            style={[styles.choice, { backgroundColor: palette.panel, borderColor: palette.border }]}
-            onPress={() => void setThemeMode(preferences.themeMode === 'dark' ? 'light' : 'dark')}
-          >
-            <Text style={{ color: palette.ink }}>
-              {preferences.themeMode === 'dark' ? t('nav.darkTheme') : t('nav.lightTheme')}
-            </Text>
-            <Text style={[styles.chevron, { color: palette.inkMuted }]}>›</Text>
-          </Pressable>
           <Pressable
             accessibilityLabel={t('nav.language')}
             accessibilityRole="button"
@@ -250,10 +267,19 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
   },
+  settingGroup: {
+    gap: 8,
+  },
+  settingLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
   row: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
   },
   chevron: {
     fontSize: 18,
@@ -266,7 +292,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: 48,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
