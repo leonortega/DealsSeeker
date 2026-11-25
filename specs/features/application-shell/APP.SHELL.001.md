@@ -209,6 +209,7 @@ Scenario: Blocking loading state appears during required data waits
 - Blocking loading animation should be lightweight and consistent across light/dark themes.
 
 ## Related Specs
+- `APP.BRAND.001`
 - `APP.SHELL.005`
 - `APP.API.CONNECTIVITY.001`
 - `APP.CONFIG.MAPS.001`

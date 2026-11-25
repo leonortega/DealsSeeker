@@ -56,7 +56,7 @@ describe('LoadingOverlay', () => {
 describe('SplashScreen', () => {
   it('shows the brand mark, title and call to action', async () => {
     await render(<SplashScreen />);
-    expect(screen.getByText('DS')).toBeTruthy();
+    expect(screen.getByTestId('brand-mark')).toBeTruthy();
     expect(screen.getByText('app.title')).toBeTruthy();
     expect(screen.getByText('splash.cta')).toBeTruthy();
   });

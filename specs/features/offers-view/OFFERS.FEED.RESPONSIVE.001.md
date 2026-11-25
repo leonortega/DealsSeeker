@@ -222,6 +222,7 @@ Scenario: Wide viewport keeps the side panel
 - Icon controls shall remain reachable with a comfortable touch target size.
 
 ## Related Specs
+- `APP.BRAND.001`
 - `APP.SHELL.005`
 - `OFFERS.FEED.IMMERSIVE.001`
 - `OFFERS.IMMERSIVE.001`

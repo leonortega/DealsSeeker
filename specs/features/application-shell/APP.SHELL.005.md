@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Headerless Standard Views
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: Medium
@@ -23,7 +23,7 @@ Remove the global application header from standard views so each view presents o
 - `APP.SHELL.005-R3`: The Offers view's local presentation-mode and help controls shall remain available as defined by `OFFERS.MODE.SWITCH.001` and `APP.HELP.001`.
 - `APP.SHELL.005-R4`: The immersive offers view's top bar and its controls shall remain available as defined by `OFFERS.FEED.RESPONSIVE.001`; this spec does not change the immersive presentation.
 - `APP.SHELL.005-R5`: Navigation shall remain available through the shared bottom footer as defined by `APP.SHELL.001`.
-- `APP.SHELL.005-R6`: Application identity on the splash and login views shall remain unchanged.
+- `APP.SHELL.005-R6`: Application identity on the splash and login views shall remain displayed and shall follow `APP.BRAND.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -54,7 +54,7 @@ Scenario: Immersive top bar is unaffected
 Scenario: Application identity remains on splash and login
   Given the user has not reached the authenticated shell
   When the splash or login view is rendered
-  Then the application identity shall still be displayed
+  Then the application identity shall still be displayed as defined by `APP.BRAND.001`
 ```
 
 ## Example Inputs/Outputs
@@ -72,6 +72,7 @@ Scenario: Application identity remains on splash and login
 - Removing the global header shall not change footer navigation, presentation switching, help or immersive controls.
 
 ## Related Specs
+- `APP.BRAND.001`
 - `APP.SHELL.001`
 - `APP.SHELL.002`
 - `APP.SHELL.003`

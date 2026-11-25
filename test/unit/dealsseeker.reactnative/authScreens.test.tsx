@@ -46,6 +46,14 @@ describe('LoginScreen', () => {
     mockSetSession.mockResolvedValue(undefined);
   });
 
+  it('shows the authored brand mark beside the localized app name', async () => {
+    await render(<LoginScreen />);
+
+    expect(screen.getByTestId('brand-mark')).toBeTruthy();
+    expect(screen.getByText('app.title')).toBeTruthy();
+    expect(screen.queryByText('DS')).toBeNull();
+  });
+
   it('uses the email keyboard and can reveal the masked password', async () => {
     await render(<LoginScreen />);
 

@@ -56,7 +56,7 @@ The differentiating value is discovery + contribution together: hyperlocal disco
 - Specified branded behaviors that must be preserved: a branded splash screen (~2 seconds) on startup, and the application name and logo in the immersive feed.
 - All views share one font family, color palette, and surface treatment, including the immersive feed.
 
-*(Drawn from the behavioral specs, e.g. `APP.SHELL.001` and `OFFERS.FEED.IMMERSIVE.001`. No standalone brand assets, logo files, or documented voice guidelines were found in the repository.)*
+*(Drawn from the behavioral specs, e.g. `APP.SHELL.001` and `OFFERS.FEED.IMMERSIVE.001`. The authored logo set is the source of the brand assets; no documented voice guidelines were found.)*
 
 ## Evidence on Hand
 

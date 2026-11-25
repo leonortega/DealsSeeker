@@ -80,6 +80,7 @@ Scenario: Embedded map uses the panel corner treatment
 - These changes shall preserve the pinned design world and shall not introduce a wide desktop reflow.
 
 ## Related Specs
+- `APP.BRAND.001`
 - `APP.CONFIG.MAPS.001`
 - `APP.THEME.001`
 - `APP.ACCESSIBILITY.UX.003`

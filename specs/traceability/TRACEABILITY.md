@@ -105,6 +105,7 @@
 | `APP.SHELL.003` | `bdd/app-shell-native-behavior.feature` | N/A | N/A |
 | `APP.SHELL.004` | `bdd/app-shell-native-behavior.feature` | N/A | N/A |
 | `APP.SHELL.005` | `bdd/app-shell-headerless.feature` | N/A | N/A |
+| `APP.BRAND.001` | `bdd/app-brand.feature` | N/A | N/A |
 | `APP.LIFECYCLE.001` | `bdd/app-lifecycle.feature` | N/A | N/A |
 | `APP.ACCESSIBILITY.UX.004` | `bdd/app-navigation-focus.feature` | N/A | N/A |
 | `APP.HAPTICS.001` | `bdd/app-haptics.feature` | N/A | N/A |

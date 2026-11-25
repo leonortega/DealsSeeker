@@ -22,6 +22,23 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   }),
 }));
 
+const offer = {
+  offerId: 'o1',
+  businessName: 'Cafe',
+  description: 'Coffee',
+  tags: [],
+  imageUrl: '',
+  imageUrls: [],
+  isPromoted: false,
+  isReported: false,
+  isFavorite: false,
+  distanceMeters: 100,
+  hasCurrentUserVoted: false,
+  positiveAvailabilityCount: 2,
+  negativeAvailabilityCount: 1,
+  location: { lat: 40.7, lng: -74 },
+} as never;
+
 describe('immersive chrome over the fixed dark backdrop', () => {
   it('renders feed tab labels in a light color even when the light theme is active', async () => {
     await render(<ImmersiveFeedTabs activeTab="viewAll" onChangeTab={jest.fn()} />);
@@ -37,23 +54,6 @@ describe('immersive chrome over the fixed dark backdrop', () => {
   });
 
   it('renders availability counts in a light color even when the light theme is active', async () => {
-    const offer = {
-      offerId: 'o1',
-      businessName: 'Cafe',
-      description: 'Coffee',
-      tags: [],
-      imageUrl: '',
-      imageUrls: [],
-      isPromoted: false,
-      isReported: false,
-      isFavorite: false,
-      distanceMeters: 100,
-      hasCurrentUserVoted: false,
-      positiveAvailabilityCount: 2,
-      negativeAvailabilityCount: 1,
-      location: { lat: 40.7, lng: -74 },
-    } as never;
-
     await render(
       <ImmersiveOfferFeed
         offers={[offer]}
@@ -72,5 +72,26 @@ describe('immersive chrome over the fixed dark backdrop', () => {
     );
 
     expect(StyleSheet.flatten(screen.getByText('2').props.style).color).toBe('#c6d0c9');
+  });
+
+  it('renders the authored brand mark in the top bar', async () => {
+    await render(
+      <ImmersiveOfferFeed
+        offers={[offer]}
+        onRadiusChange={jest.fn()}
+        radiusMeters={1500}
+        query=""
+        onFavorite={jest.fn()}
+        onVote={jest.fn()}
+        onReport={jest.fn()}
+        onDirections={jest.fn()}
+        onComments={jest.fn()}
+        onSearch={jest.fn()}
+        feedTab="viewAll"
+        onFeedTabChange={jest.fn()}
+      />
+    );
+
+    expect(screen.getByTestId('brand-mark')).toBeTruthy();
   });
 });
