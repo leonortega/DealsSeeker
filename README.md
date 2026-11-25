@@ -56,20 +56,16 @@ the app with `expo run:android`:
 .\scripts\run-reactnative-android.ps1
 ```
 
-## Map Provider Configuration
-The app supports configurable map provider modules (`GoogleMaps`, `OpenLayers`).
+## Map and Geocoding Configuration
+One stack everywhere: native Google Maps for in-app rendering and external directions; Photon through the API for address search and reverse geocoding. There are no provider switches or fallback renderers.
 
 API config (`src/DealsSeeker.Api/appsettings.json`):
-- `Maps:DisplayProvider` / `Maps:DisplayFallbackProvider` (in-view map rendering + location lookup)
-- `Maps:RedirectProvider` / `Maps:RedirectFallbackProvider` (offer/marker redirect behavior)
-- `OpenLayers:*` (Photon geocoding settings)
-- `GoogleMaps:ApiKey` (required only when `GoogleMaps` is active/fallback and used)
+- `Photon:BaseUrl`, `Photon:UserAgent`, `Photon:MaxResults` (Photon geocoding settings)
+- `MapProviderResilience:*` (timeout, retry and circuit breaker for Photon)
 
 React Native client config (environment variables, see `src/DealsSeeker.ReactNative/README.md`):
-- `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` (required when in-app rendering uses `GoogleMaps` and no fallback is desired)
-- `EXPO_PUBLIC_MAP_DISPLAY_PROVIDER` / `EXPO_PUBLIC_MAP_DISPLAY_PROVIDER_FALLBACK`
-- `EXPO_PUBLIC_MAP_REDIRECT_PROVIDER` / `EXPO_PUBLIC_MAP_REDIRECT_PROVIDER_FALLBACK`
-- legacy compatibility: `EXPO_PUBLIC_MAP_PROVIDER`, `EXPO_PUBLIC_MAP_PROVIDER_FALLBACK`
+- `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` (required for native map tiles)
+- `EXPO_PUBLIC_API_BASE_URL` (API base URL)
 
 ## Persistence (Dapper + SQLite)
 - API persistence uses `Dapper` with `SQLite`.

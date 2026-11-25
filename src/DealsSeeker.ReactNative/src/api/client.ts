@@ -393,6 +393,39 @@ async function coalescedRead<TResponse>(
   return pending;
 }
 
+/**
+ * Small bounded cache for Photon-backed reads. The public Photon instance is fair-use only,
+ * so an identical query or coordinate is not sent twice while the entry is fresh.
+ * ponytail: bounded in-memory map; add persistence only if relaunch reuse is measured.
+ */
+const locationResultCache = new Map<string, { value: unknown; expiresAt: number }>();
+const LOCATION_CACHE_LIMIT = 100;
+const SEARCH_CACHE_TTL_MS = 10 * 60 * 1000;
+const REVERSE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const REVERSE_MISS_TTL_MS = 5 * 60 * 1000;
+
+function findCachedLocation<T>(key: string): T | undefined {
+  const entry = locationResultCache.get(key);
+  if (!entry) {
+    return undefined;
+  }
+  if (entry.expiresAt <= Date.now()) {
+    locationResultCache.delete(key);
+    return undefined;
+  }
+  return entry.value as T;
+}
+
+function cacheLocation<T>(key: string, value: T, ttlMs: number) {
+  if (locationResultCache.size >= LOCATION_CACHE_LIMIT) {
+    const oldest = locationResultCache.keys().next().value;
+    if (oldest !== undefined) {
+      locationResultCache.delete(oldest);
+    }
+  }
+  locationResultCache.set(key, { value, expiresAt: Date.now() + ttlMs });
+}
+
 async function requestCommandResult(
   options: ApiFactoryOptions,
   path: string,
@@ -656,8 +689,14 @@ export function createDealsSeekerApi(options: ApiFactoryOptions) {
     },
 
     async searchLocations(query: string, requestOptions?: RequestOptions) {
+      const cacheKey = `locations:${query.trim().toLowerCase()}`;
+      const cached = findCachedLocation<LocationSearchResultDto[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
       const encoded = encodeURIComponent(query);
-      return coalescedRead(`locations:${query.trim().toLowerCase()}`, () =>
+      const results = await coalescedRead(cacheKey, () =>
         request<LocationSearchResultDto[]>(
           options,
           `/api/locations/search?query=${encoded}`,
@@ -666,9 +705,16 @@ export function createDealsSeekerApi(options: ApiFactoryOptions) {
           requestOptions
         )
       );
+      cacheLocation(cacheKey, results, SEARCH_CACHE_TTL_MS);
+      return results;
     },
 
     async reverseLocation(lat: number, lng: number, requestOptions?: RequestOptions) {
+      const cacheKey = `locations:reverse:${lat.toFixed(4)}:${lng.toFixed(4)}`;
+      if (locationResultCache.has(cacheKey)) {
+        return findCachedLocation<LocationSearchResultDto | null>(cacheKey) ?? null;
+      }
+
       try {
         const response = await request<LocationSearchResultDto>(
           options,
@@ -680,9 +726,12 @@ export function createDealsSeekerApi(options: ApiFactoryOptions) {
           requestOptions
         );
 
-        return response ?? null;
+        const result = response ?? null;
+        cacheLocation(cacheKey, result, result ? REVERSE_CACHE_TTL_MS : REVERSE_MISS_TTL_MS);
+        return result;
       } catch (error) {
         if (error instanceof ApiRequestError && error.status === 404) {
+          cacheLocation(cacheKey, null, REVERSE_MISS_TTL_MS);
           return null;
         }
         throw error;

@@ -7,10 +7,15 @@ jest.mock('react-native-maps', () => {
   const { View } = require('react-native');
   return {
     __esModule: true,
-    default: ({ children, onPress, initialRegion }) =>
+    default: ({ children, onPress, onRegionChangeComplete, initialRegion }) =>
       React.createElement(
         View,
-        { testID: 'rn-map', onPress, accessibilityLabel: initialRegion ? 'native-map-region' : undefined },
+        {
+          testID: 'rn-map',
+          onPress,
+          onRegionChangeComplete,
+          accessibilityLabel: initialRegion ? 'native-map-region' : undefined,
+        },
         children
       ),
     Marker: ({ testID, title, onPress }) =>

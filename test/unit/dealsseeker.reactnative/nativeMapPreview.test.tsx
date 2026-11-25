@@ -66,7 +66,8 @@ describe('NativeMapPreview', () => {
     await render(<NativeMapPreview {...baseProps} interactive onMapDragEnd={onMapDragEnd} />);
 
     await fireEvent(screen.getByTestId('rn-map'), 'regionChangeComplete', {
-      nativeEvent: { region: { latitude: 40.74, longitude: -74.04 } },
+      latitude: 40.74,
+      longitude: -74.04,
     });
 
     expect(onMapDragEnd).toHaveBeenCalledWith({ lat: 40.74, lng: -74.04 });

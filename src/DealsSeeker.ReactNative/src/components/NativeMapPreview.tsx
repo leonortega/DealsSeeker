@@ -2,7 +2,6 @@ import { StyleSheet, View } from 'react-native';
 import MapView, { Circle, Marker } from 'react-native-maps';
 import { BusinessMarkerDto, GeoPoint } from '../api/types';
 import { useApp } from '../hooks/useApp';
-import { MapPreview } from './MapPreview';
 
 export interface NativeMapPreviewProps {
   center: GeoPoint;
@@ -12,6 +11,7 @@ export interface NativeMapPreviewProps {
   onSelectMarker?: (marker: BusinessMarkerDto) => void;
   interactive?: boolean;
   onMapTap?: (point: GeoPoint) => void;
+  onMapDragEnd?: (point: GeoPoint) => void;
   pin?: GeoPoint | null;
   hint?: string;
   showCoverage?: boolean;
@@ -26,29 +26,13 @@ export function NativeMapPreview({
   onSelectMarker,
   interactive,
   onMapTap,
+  onMapDragEnd,
   pin,
   hint,
   showCoverage,
   height,
 }: NativeMapPreviewProps) {
   const { palette } = useApp();
-  const fallbackProps = {
-    center,
-    businesses,
-    radiusMeters,
-    showUserMarker,
-    onSelectMarker,
-    interactive,
-    onMapTap,
-    pin,
-    hint,
-    showCoverage,
-    height,
-  };
-
-  if (!MapView) {
-    return <MapPreview {...fallbackProps} />;
-  }
 
   return (
     <View testID="native-map" style={[styles.container, height ? { height } : null]}>
@@ -61,11 +45,14 @@ export function NativeMapPreview({
           longitudeDelta: 0.02,
         }}
         onPress={(event) => {
-          if (onMapTap) {
-            onMapTap({
-              lat: event.nativeEvent.coordinate.latitude,
-              lng: event.nativeEvent.coordinate.longitude,
-            });
+          onMapTap?.({
+            lat: event.nativeEvent.coordinate.latitude,
+            lng: event.nativeEvent.coordinate.longitude,
+          });
+        }}
+        onRegionChangeComplete={(region) => {
+          if (interactive) {
+            onMapDragEnd?.({ lat: region.latitude, lng: region.longitude });
           }
         }}
       >

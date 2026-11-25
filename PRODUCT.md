@@ -32,7 +32,7 @@ The differentiating value is discovery + contribution together: hyperlocal disco
 ## Operating Context
 
 - Mobile client (Android and iOS) backed by a single ASP.NET Core minimal API.
-- Device geolocation supplies the user location; in-app map rendering and external navigation use configurable map provider modules (Google Maps display/redirect, OpenLayers display/redirect with Photon geocoding, and fallbacks).
+- Device geolocation supplies the user location; in-app maps and external navigation use Google Maps, while address search and reverse geocoding use Photon through the API.
 - Offers are browsed as a vertical full-screen feed, a map, or a grid/list; the immersive feed overlays business name, distance, description, and tags.
 - Account flows: register/login, sessions persisted across app launches, profile with avatar and owned offers.
 - Contribution flows: Add Offer (image capture/upload, auto + searched location, description + tags, tag suggestions), Suggestions submit, and Reports submit with offer prefill.
@@ -44,8 +44,8 @@ The differentiating value is discovery + contribution together: hyperlocal disco
 
 - Spec-first workflow is mandatory: any behavior change must be preceded by an Approved spec change in `specs/`; no code change without a corresponding spec change.
 - Coordinate privacy: Add Offer and Offers views must not expose raw `lat`/`lng` to users; coordinates are internal to mapping, navigation, and persistence.
-- Map provider selection is internal app configuration (display/redirect providers plus fallbacks). A Google Maps API key is required only when that provider is active without a working fallback.
-- Cross-cutting concerns future work must preserve: theme, localization, logging, map provider configuration, navigation mode (pedestrian/car), coordinate privacy, session persistence, smart search, promoted/reported offers, and the photo carousel.
+- The map stack is fixed: native Google Maps for display and directions, Photon for geocoding. Location searches are debounced and cached, and reverse geocoding runs only on tap or drag completion.
+- Cross-cutting concerns future work must preserve: theme, localization, logging, Google Maps credential configuration, navigation mode (pedestrian/car), coordinate privacy, session persistence, smart search, promoted/reported offers, and the photo carousel.
 - Scale direction (from the Draft `ARCHITECTURE.md` proposal, not yet approved product truth): bounded per-request cost, no blocking I/O on the request path, graceful degradation of external providers, defensiveness under abuse (rate limits, payload caps, 429 with `Retry-After`), observability, and a documented SQLite-to-PostgreSQL path.
 
 *(Inferred from repository evidence: `AGENTS.md`, `README.md`, `ARCHITECTURE.md`, and the specs.)*

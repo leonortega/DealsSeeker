@@ -9,11 +9,9 @@ Set these variables before running:
 ```powershell
 $env:EXPO_PUBLIC_API_BASE_URL="http://10.0.2.2:5005"
 $env:EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=""
-$env:EXPO_PUBLIC_MAP_DISPLAY_PROVIDER="OpenLayers"
-$env:EXPO_PUBLIC_MAP_DISPLAY_PROVIDER_FALLBACK="OpenLayers"
-$env:EXPO_PUBLIC_MAP_REDIRECT_PROVIDER="GoogleMaps"
-$env:EXPO_PUBLIC_MAP_REDIRECT_PROVIDER_FALLBACK="OpenLayers"
 ```
+
+Maps use the native Google Maps view and directions always open Google Maps. Address search and reverse geocoding are served by Photon through the API; there are no provider switches.
 
 Android emulator builds should use `http://10.0.2.2:5005`. On a physical device, replace it with a host reachable from that device.
 

@@ -13,7 +13,7 @@ port/adapter boundary is real and enforceable.
 ```
 Driving adapters          Ports (pure interfaces)        Driven adapters
 Endpoints (Minimal API) → IOfferService / IAuthService → Dapper*Service
-                          ILocationLookupService       → GoogleMaps/OpenLayers
+                          ILocationLookupService       → PhotonLocationLookupService
                           ICacheService, ICurrentUser  → MemoryCache/Session/CurrentUser
                                                        → SqliteConnectionFactory, log sink
 

@@ -21,8 +21,8 @@ ASP.NET Core 10 Minimal API (Program.cs, 453 lines, ~20 lambda endpoints)
       ├── IOfferService         (DapperOfferService)  → search, CRUD, votes, favorites, reports
       ├── ICommentService       (DapperCommentService)
       ├── IFeedbackService      (DapperFeedbackService)
-      ├── ILocationLookupService(ConfigurableLocationLookupService)
-      │        └── GoogleMapsLocationLookupService / OpenLayersLocationLookupService (external HTTP)
+      ├── ILocationLookupService(PhotonLocationLookupService)
+      │        └── Photon HTTP geocoder
       │
       ▼
 SQLite (single file: Data/dealseeker.db)  via Dapper + Microsoft.Data.Sqlite
@@ -59,7 +59,7 @@ Every problem below reduces to one of four root causes:
 
 1. **Bounded per-request cost** — a search for 20 results must cost roughly the same as a search for 200.
 2. **No per-request blocking I/O on the request thread** — all persistence and log writes off the hot path.
-3. **Graceful degradation** — external providers (Google Maps / OpenLayers) fail without taking the API down.
+3. **Graceful degradation** — external geocoding (Photon) fails without taking the API down.
 4. **Defensible under abuse** — rate limits, payload caps, timeouts, circuit breakers.
 5. **Observable** — p50/p95/p99 per endpoint, DB timings, queue depths, cache hit rates.
 6. **Store-portable** — a documented path to PostgreSQL if write throughput outgrows SQLite.
@@ -357,7 +357,7 @@ builder.Services.AddRateLimiter(options =>
 - **Promoted offers** are fetched for the whole candidate set and then filtered **in C#** (`DapperOfferService.cs:89-101`, `IsPromotionActive` at `:937-951`).
 - **The offer search document** (normalised description tokens + tags) is rebuilt per request (`BuildSearchTerms`, `:789-811`).
 - **Tag lexicon synonym expansion** runs per request (`ExpandQueryWithSynonyms`, `:784-787`, backed by `Shared/Tags/TagLexicon.cs`).
-- **Geocoding results are never cached** — every keystroke becomes an external API call against a metered (Google) or rate-limited public (Photon/OpenLayers) endpoint.
+- **Geocoding results must be reused** — the public Photon instance is fair-use only, so identical lookups must not become repeated external calls.
 - **`avatar_id` normalisation** (`AvatarCatalog.Normalize`) runs per comment row.
 
 **Impact.** Redundant CPU and network work on every request, and no protection against a burst of identical requests.
@@ -375,7 +375,7 @@ builder.Services.AddRateLimiter(options =>
 2. **Search documents** — cache per offer: `ConcurrentDictionary<string, SearchDocument>` or `IMemoryCache` with the offer id as key, storing the normalised term set. Invalidate on offer write (`AddAsync`, `UpdateAsync`, `DeleteAsync` in `DapperOfferService`). Bound the cache size and evict LRU.
 3. **Tag lexicon expansion** — cache by `(locale, normalisedQuery)`. The lexicon is static (`TagLexicon.cs`), so the expansion is a pure function and highly cacheable.
 4. **Geocoding** — cache in two layers:
-   - **In-process** `IMemoryCache`, key = `(provider, normalisedQuery)`, TTL 24h for Google (billing-friendly, geocoding is stable) / 1h for OpenLayers. Also cache **negative** results for a short TTL (5 min) to avoid hammering a provider that returns nothing.
+   - **In-process** cache, key = `normalisedQuery` (or rounded coordinate for reverse), TTL 24h for positive results and 5 min for negative results to avoid hammering Photon.
    - **HTTP-level** — set `Cache-Control` on `/api/locations/search` responses so intermediaries can also cache.
 5. **General pattern.** Introduce a thin `ICacheService` abstraction over `IMemoryCache` (or use `HybridCache` in .NET 10) so cache keys and TTLs are centralised and metrics (`cache_hit_total` / `cache_miss_total` per key prefix) are consistent. Keep it in `DealsSeeker.Api/Caching/`.
 6. **Do not cache** per-user state (favourites/votes) beyond the request — it must stay correct. Only cache the *user-independent* parts (offers, tags, images, promotions, promotions map).
@@ -386,20 +386,11 @@ builder.Services.AddRateLimiter(options =>
 
 ---
 
-### 10. Geocoding has no timeout, retry, circuit breaker, or rate limit
+### 10. Geocoding resilience and Photon fair use
 
-**Problem.** `Services/Locations/GoogleMapsLocationLookupService.cs:32` and `OpenLayersLocationLookupService.cs` use a plain `httpClient.GetAsync(endpoint, cancellationToken)` with the **default 100-second timeout** and no resilience policy. `Program.cs:73-74` registers `AddHttpClient<GoogleMapsLocationLookupService>()` / `AddHttpClient<OpenLayersLocationLookupService>()` but configures neither timeout nor handler.
+**Resolved.** A single `PhotonLocationLookupService` serves both search and reverse lookups. The old Google Maps geocoder, the alternate OpenLayers/Nominatim endpoints, and the provider-selection/fallback layer were removed (`APP.MAP.STACK.001`). Search input is debounced and identical lookups are cached on device and at the API; reverse geocoding happens only on gesture completion (`APP.LOCATION.QUERY.001`).
 
-`ConfigurableLocationLookupService` (`:36-49`) does implement a **fallback** between providers on exception, which is good, but a timeout is 100s away — the fallback never engages in time to help the user.
-
-**Impact.**
-
-- A hung provider ties up a request thread for up to 100 seconds.
-- Repeated failures trigger a fallback call per request → a failure storm doubles outbound traffic.
-- No circuit breaker → every request retries the dead provider.
-- The free OpenLayers/Photon endpoint rate-limits aggressively; a burst will produce failures and fallbacks.
-
-**Proposal.**
+**Design in place.**
 
 1. **Per-provider timeout.** Configure via `AddHttpClient<T>(c => c.Timeout = TimeSpan.FromSeconds(3))`. For geocoding, 3s is generous.
 2. **Resilience pipeline.** Use `Microsoft.Extensions.Http.Resilience` (the supported successor to the standalone Polly packages) to add:
@@ -947,7 +938,7 @@ These guide the implementation of all 21 items and prevent regressions.
     "SearchPermitLimit": 60,
     "LocationPermitLimit": 30
   },
-  "MapProviders": {
+  "MapProviderResilience": {
     "TimeoutSeconds": 3,
     "RetryCount": 2,
     "CircuitBreakerSeconds": 30

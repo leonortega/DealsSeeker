@@ -424,6 +424,19 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
     }
   }, [tags.length, t]);
 
+  function handleMapDragEnd(point: GeoPoint) {
+    const current = location?.position;
+    if (
+      current &&
+      Math.abs(current.lat - point.lat) < 0.000001 &&
+      Math.abs(current.lng - point.lng) < 0.000001
+    ) {
+      return;
+    }
+
+    void handleMapTap(point);
+  }
+
   async function handleMapTap(point: GeoPoint) {
     const sequence = pinSequence.current + 1;
     pinSequence.current = sequence;
@@ -926,6 +939,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
               showCoverage={false}
               interactive
               onMapTap={(point) => void handleMapTap(point)}
+              onMapDragEnd={handleMapDragEnd}
             />
           ) : null}
           <Pressable

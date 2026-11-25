@@ -6,7 +6,7 @@ DealsSeeker is a .NET 10 app:
 - `DealsSeeker.Api`: ASP.NET Core 10 Minimal API.
 - `DealsSeeker.Shared`: shared contracts/models.
 
-Persistence: Dapper + SQLite. Logging: Serilog. Maps: configurable providers (GoogleMaps/OpenLayers).
+Persistence: Dapper + SQLite. Logging: Serilog. Maps: native Google Maps for display and directions; Photon through the API for address search and reverse geocoding (no provider switches).
 
 ## Specs Repository (`specs/`)
 Implementation-agnostic, AI-friendly behavioral specs.
