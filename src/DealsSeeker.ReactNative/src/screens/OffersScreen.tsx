@@ -26,6 +26,7 @@ import { resolveOffersViewState } from '../utils/offersState';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
 import { resolveOffersGridColumns } from '../utils/layout';
 import { loadFirstRunCompleted, saveFirstRunCompleted } from '../utils/storage';
+import { resolveEmulatorLocation } from '../utils/emulatorLocation';
 
 const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
@@ -58,6 +59,15 @@ export function OffersScreen() {
   const helpButtonRef = useRef<ElementRef<typeof View> | null>(null);
 
   async function resolveCurrentLocation() {
+    const emulatorLocation = resolveEmulatorLocation();
+    if (emulatorLocation) {
+      setUserLocation(emulatorLocation);
+      setLocationFallback(false);
+      lastLocationAttemptFailed.current = false;
+      setLocationNoticeDismissed(true);
+      return emulatorLocation;
+    }
+
     let nextLocation = fallbackLocation;
     let usingFallback = false;
 

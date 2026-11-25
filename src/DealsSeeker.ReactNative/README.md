@@ -17,6 +17,8 @@ $env:EXPO_PUBLIC_MAP_REDIRECT_PROVIDER_FALLBACK="OpenLayers"
 
 Android emulator builds should use `http://10.0.2.2:5005`. On a physical device, replace it with a host reachable from that device.
 
+If the emulator has no working location provider, set `EXPO_PUBLIC_EMULATOR_LOCATION` in the untracked `.env.local` to a `latitude,longitude` pair (for example `40.7128,-74.006`). The client then uses that position instead of device geolocation and skips the approximate-area notice. Remove the variable to go back to device location. The value must stay out of tracked/release configuration.
+
 ## Run the API (backend)
 
 The React Native client requires `DealsSeeker.Api` to be running. From the repository root, with the .NET 10 SDK installed:
