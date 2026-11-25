@@ -76,6 +76,7 @@
 | `OFFERS.GRID.CARDS.001` | `bdd/offers-grid-cards.feature` | N/A | `examples/offers-view/offers-grid-cards.responsive.json` |
 | `OFFERS.IMAGE.RENDERING.001` | `bdd/offers-image-rendering.feature` | `contracts/json-schema/add-offer-draft.schema.json`, `contracts/json-schema/offer-search-response.schema.json` | `examples/offers-view/offers-image-rendering.framing.json` |
 | `OFFERS.FAVORITES.001` | `bdd/offers-favorites.feature` | `contracts/json-schema/offer-search-response.schema.json`, `contracts/json-schema/set-favorite-request.schema.json`, `contracts/json-schema/command-result.schema.json` | `examples/offers-actions/set-favorite.input.json`, `examples/offers-actions/set-favorite.output.json`, `examples/offers-view/offers-favorites.toggle.json` |
+| `OFFERS.FEED.STABILITY.001` | `bdd/offers-feed-stability.feature` | N/A | N/A |
 | `OFFERS.REPORTED.DEMOTION.001` | `bdd/offers-reported-demotion.feature` | `contracts/json-schema/offer-search-response.schema.json` | `examples/offers-view/offers-reported-demotion.order.json` |
 | `OFFERS.DETAIL.ACTIONS.001` | `bdd/offers-detail-actions.feature` | `contracts/json-schema/offer-search-response.schema.json`, `contracts/json-schema/offer-item.schema.json` | `examples/offers-view/offers-detail-actions.zoom-directions.json` |
 | `OFFERS.PHOTOS.CAROUSEL.001` | `bdd/offers-photos-carousel.feature` | `contracts/json-schema/add-offer-draft.schema.json`, `contracts/json-schema/offer-search-response.schema.json` | `examples/offers-view/offers-photos-carousel.reorder.json` |

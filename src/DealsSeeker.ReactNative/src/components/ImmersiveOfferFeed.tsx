@@ -1,10 +1,21 @@
-import { FlatList, Image, LayoutChangeEvent, PanResponder, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import {
+  FlatList,
+  Image,
+  LayoutChangeEvent,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { ReactNode, type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
+import { resolveFeedRestoreIndex } from '../utils/feedPosition';
 import { openDirections } from '../utils/maps';
 import { immersiveBackdrop, immersiveInk, immersiveInkMuted } from '../utils/theme';
 import { ImmersiveActionCaption, ImmersiveActionIconGlyph } from './ImmersiveActionGlyphs';
@@ -354,6 +365,26 @@ export function ImmersiveOfferFeed({
   const [feedHeight, setFeedHeight] = useState(0);
   const isNarrow = width < NARROW_BREAKPOINT;
   const pageHeight = Math.max(320, feedHeight || height);
+  const listRef = useRef<FlatList<OfferItemDto> | null>(null);
+  const activeOfferId = useRef<string | null>(null);
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: Array<{ isViewable?: boolean | null; item: unknown }> }) => {
+      const visible = viewableItems.find((token) => token.isViewable);
+      activeOfferId.current = (visible?.item as OfferItemDto | undefined)?.offerId ?? null;
+    }
+  ).current;
+
+  useEffect(() => {
+    const index = resolveFeedRestoreIndex(offers, activeOfferId.current);
+    if (index === null) {
+      return undefined;
+    }
+    const frame = requestAnimationFrame(() => {
+      listRef.current?.scrollToIndex({ index, animated: false });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [offers, pageHeight]);
 
   function handleFeedAreaLayout(event: LayoutChangeEvent) {
     setFeedHeight(event.nativeEvent.layout.height);
@@ -369,9 +400,13 @@ export function ImmersiveOfferFeed({
       <View style={styles.contentRow}>
         <View onLayout={handleFeedAreaLayout} style={styles.feedArea}>
           <FlatList
+            ref={listRef}
             style={{ flex: 1 }}
+            testID="immersive-offer-list"
             data={offers}
             keyExtractor={(item) => item.offerId}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
             pagingEnabled
             showsVerticalScrollIndicator={false}
             snapToInterval={pageHeight}
