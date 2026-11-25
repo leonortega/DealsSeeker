@@ -148,3 +148,9 @@ Feature: Application shell and session-aware landing
     When the Offers view performs its initial location resolution and search
     Then the blocking loading state is visible immediately
     And when it completes the offers are displayed or the no-offers message is shown
+
+  Scenario: One stable loading indicator in the feed
+    Given the immersive offers feed is loading
+    When a blocking loading state is active
+    Then only one loading indicator is visible
+    And showing or hiding a subsequent indicator does not move the feed controls

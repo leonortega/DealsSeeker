@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 
 let mockImmersiveOffers = false;
+let mockIsPending = false;
 const mockSearchOffers = jest.fn();
 const mockOpenImmersiveOffers = jest.fn();
 const mockCloseImmersiveOffers = jest.fn();
@@ -24,7 +25,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     },
     closeImmersiveOffers: mockCloseImmersiveOffers,
     immersiveOffers: mockImmersiveOffers,
-    isPending: () => false,
+    isPending: () => mockIsPending,
     loadingCount: 0,
     openAddOffer: jest.fn(),
     openImmersiveOffers: mockOpenImmersiveOffers,
@@ -53,6 +54,7 @@ describe('presentation mode switch', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockImmersiveOffers = false;
+    mockIsPending = false;
     mockSearchOffers.mockResolvedValue({ offers: [], businesses: [] });
   });
 
@@ -76,6 +78,28 @@ describe('presentation mode switch', () => {
     expect(screen.queryByText('offers.emptyTitle')).toBeNull();
     expect(screen.queryByText('offers.createFirstOffer')).toBeNull();
     expect(screen.getByTestId('offers-scroll')).toBeTruthy();
+  });
+
+  it('shows only one loading indicator during startup in the feed', async () => {
+    mockImmersiveOffers = true;
+    mockIsPending = true;
+    mockSearchOffers.mockReturnValue(new Promise(() => {}));
+
+    await render(<OffersScreen />);
+
+    expect(screen.queryAllByText('app.loading')).toHaveLength(1);
+    expect(screen.queryAllByText('offers.loading')).toHaveLength(0);
+  });
+
+  it('keeps the feed progress indicator out of the layout flow', async () => {
+    mockImmersiveOffers = true;
+    mockIsPending = true;
+
+    await render(<OffersScreen />);
+
+    expect(StyleSheet.flatten(screen.getByText('offers.loading').parent.props.style)).toMatchObject({
+      position: 'absolute',
+    });
   });
 
   it('offers Feed and Map options in the Offers view', async () => {

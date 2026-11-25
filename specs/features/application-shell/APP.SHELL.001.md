@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v2.2`
+- **Version**: `v2.3`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -51,6 +51,7 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R27`: The footer options shall be evenly distributed across the available width and shall shrink as needed so that every option, including the view button, remains inside the footer.
 - `APP.SHELL.001-R28`: On a mobile viewport, each footer option label shall wrap to at most two centered lines beneath its icon instead of being truncated with an ellipsis.
 - `APP.SHELL.001-R30`: From the moment the Offers view becomes visible after startup, a blocking loading state shall be shown until the initial search completes; it shall then be replaced by offers or by the no-offers message.
+- `APP.SHELL.001-R31`: Only one loading indicator shall be visible at a time, and showing or hiding a transient indicator shall not move the Offers controls or the feed layout.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -194,6 +195,12 @@ Scenario: Startup shows loading before offers or the no-offers message
   When the Offers view performs its initial location resolution and search
   Then the blocking loading state shall be visible immediately
   And when it completes the offers shall be displayed or the no-offers message shall be shown
+
+Scenario: One stable loading indicator in the feed
+  Given the immersive offers feed is loading
+  When a blocking loading state is active
+  Then only one loading indicator shall be visible
+  And showing or hiding a subsequent indicator shall not move the feed controls
 ```
 
 ## Example Inputs/Outputs
