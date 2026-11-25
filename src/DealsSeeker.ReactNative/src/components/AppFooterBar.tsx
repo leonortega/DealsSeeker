@@ -20,9 +20,17 @@ export interface FooterItem {
   active?: boolean;
 }
 
-export function AppFooterBar({ items }: { items: FooterItem[] }) {
+export function AppFooterBar({
+  items,
+  createAction,
+  fullWidth = false,
+}: {
+  items: FooterItem[];
+  createAction?: ReactNode;
+  fullWidth?: boolean;
+}) {
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, fullWidth && styles.fullWidth]}>
       {items.map((item) => (
         <Pressable
           key={item.key}
@@ -38,6 +46,7 @@ export function AppFooterBar({ items }: { items: FooterItem[] }) {
           </Text>
         </Pressable>
       ))}
+      {createAction ? <View style={styles.createSlot}>{createAction}</View> : null}
     </View>
   );
 }
@@ -54,7 +63,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 10,
     marginHorizontal: 16,
-    maxWidth: 420,
+    maxWidth: 480,
     paddingHorizontal: 4,
     paddingVertical: 8,
   },
@@ -84,13 +93,21 @@ const styles = StyleSheet.create({
   label: {
     color: footerInkMuted,
     flexShrink: 1,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
-    letterSpacing: -0.4,
+    letterSpacing: -0.5,
     lineHeight: 14,
     textAlign: 'center',
   },
   labelActive: {
     color: footerInk,
+  },
+  createSlot: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 56,
+  },
+  fullWidth: {
+    marginHorizontal: 0,
   },
 });

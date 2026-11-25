@@ -82,22 +82,22 @@ export function AccountScreen() {
     >
       <StandardHeader />
       <View style={[styles.hero, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
-        <View style={[styles.avatar, { backgroundColor: palette.accentMuted }]}>
-          <Text style={[styles.avatarText, { color: palette.accent }]}>{avatarEmoji(profile?.avatarId ?? avatarId)}</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.heroTitle, { color: palette.ink }]}>{profile?.displayName ?? t('account.title')}</Text>
-          <View style={styles.accountDetails}>
-            <Text style={[styles.email, { color: palette.inkMuted }]}>{profile?.email ?? ''}</Text>
-            <Pressable
-              accessibilityLabel={t('account.logout')}
-              accessibilityRole="button"
-              style={[styles.logout, { backgroundColor: palette.danger }]}
-              onPress={() => void logout()}
-            >
-              <Text style={styles.logoutLabel}>{t('account.logout')}</Text>
-            </Pressable>
+        <View style={styles.heroTop}>
+          <View style={[styles.avatar, { backgroundColor: palette.accentMuted }]}>
+            <Text style={[styles.avatarText, { color: palette.accent }]}>{avatarEmoji(profile?.avatarId ?? avatarId)}</Text>
           </View>
+          <Text style={[styles.heroTitle, { color: palette.ink }]}>{profile?.displayName ?? t('account.title')}</Text>
+        </View>
+        <View style={styles.accountDetails}>
+          <Text numberOfLines={2} style={[styles.email, { color: palette.inkMuted }]}>{profile?.email ?? ''}</Text>
+          <Pressable
+            accessibilityLabel={t('account.logout')}
+            accessibilityRole="button"
+            style={[styles.logout, { backgroundColor: palette.danger }]}
+            onPress={() => void logout()}
+          >
+            <Text style={styles.logoutLabel}>{t('account.logout')}</Text>
+          </Pressable>
         </View>
       </View>
 
@@ -114,6 +114,7 @@ export function AccountScreen() {
             <Text style={{ color: palette.ink }}>
               {preferences.themeMode === 'dark' ? t('nav.darkTheme') : t('nav.lightTheme')}
             </Text>
+            <Text style={[styles.chevron, { color: palette.inkMuted }]}>›</Text>
           </Pressable>
           <Pressable
             accessibilityLabel={t('nav.language')}
@@ -122,6 +123,7 @@ export function AccountScreen() {
             onPress={() => void setLanguage(preferences.language === 'en' ? 'es' : 'en')}
           >
             <Text style={{ color: palette.ink }}>{preferences.language.toUpperCase()}</Text>
+            <Text style={[styles.chevron, { color: palette.inkMuted }]}>›</Text>
           </Pressable>
           <Pressable
             accessibilityLabel={preferences.navigationMode === 'car' ? t('nav.car') : t('nav.pedestrian')}
@@ -133,6 +135,7 @@ export function AccountScreen() {
             <Text style={{ color: palette.ink }}>
               {preferences.navigationMode === 'car' ? t('nav.car') : t('nav.pedestrian')}
             </Text>
+            <Text style={[styles.chevron, { color: palette.inkMuted }]}>›</Text>
           </Pressable>
         </View>
       </View>
@@ -190,12 +193,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   hero: {
-    alignItems: 'center',
     borderRadius: 28,
     borderWidth: 1,
-    flexDirection: 'row',
     gap: 14,
     padding: 18,
+  },
+  heroTop: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 14,
   },
   avatar: {
     alignItems: 'center',
@@ -250,10 +256,16 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 10,
   },
+  chevron: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
   choice: {
     alignItems: 'center',
     borderRadius: 16,
     borderWidth: 1,
+    flexDirection: 'row',
+    gap: 6,
     justifyContent: 'center',
     minHeight: 44,
     paddingHorizontal: 14,

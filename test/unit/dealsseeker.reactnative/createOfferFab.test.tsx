@@ -21,11 +21,14 @@ describe('CreateOfferFab', () => {
     expect(screen.queryByRole('button', { name: 'Create' })).toBeNull();
   });
 
-  it('sits centered above the footer instead of over the action rail', async () => {
+  it('uses a docked slot instead of floating over content', async () => {
     await render(<CreateOfferFab label="Create" onPress={jest.fn()} palette={palette} />);
 
     const style = StyleSheet.flatten(screen.getByRole('button', { name: 'Create' }).props.style);
-    expect(style.left).toBe('50%');
-    expect(style.right).toBeUndefined();
+    expect(style.position).toBeUndefined();
+    expect(style.left).toBeUndefined();
+    expect(style.bottom).toBeUndefined();
+    expect(style.width).toBe(56);
+    expect(style.height).toBe(56);
   });
 });

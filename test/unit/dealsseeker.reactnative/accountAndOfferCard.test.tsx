@@ -86,6 +86,18 @@ describe('AccountScreen', () => {
     mockDeleteOffer.mockResolvedValue({ success: true });
   });
 
+  it('shows a change affordance on each settings control', async () => {
+    await render(<AccountScreen />);
+
+    expect(screen.getAllByText('›')).toHaveLength(3);
+  });
+
+  it('bounds the email to two lines so no fragment is stranded', async () => {
+    await render(<AccountScreen />);
+
+    expect(screen.getByText('tester@example.com').props.numberOfLines).toBe(2);
+  });
+
   it('paints the scrollable content area with the active theme background', async () => {
     await render(<AccountScreen />);
 

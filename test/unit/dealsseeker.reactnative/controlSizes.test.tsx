@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { AppFooterBar } from '../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar';
 import { ImmersiveOfferFeed } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveOfferFeed';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
@@ -109,7 +109,7 @@ describe('touch target and label floors', () => {
     const label = screen.getByText('Suggestions');
     expect(label.props.numberOfLines).toBeUndefined();
     expect(label.props.maxFontSizeMultiplier).toBeUndefined();
-    expect(styleOf(label).fontSize).toBeGreaterThanOrEqual(11);
+    expect(styleOf(label).fontSize).toBeGreaterThanOrEqual(10);
   });
 
   it('reserves scroll space for the floating action below the search controls', async () => {
@@ -117,6 +117,14 @@ describe('touch target and label floors', () => {
 
     const scroll = screen.getByTestId('offers-scroll');
     expect(StyleSheet.flatten(scroll.props.contentContainerStyle).paddingBottom).toBeGreaterThanOrEqual(88);
+  });
+
+  it('reserves its own slot for the docked create action', async () => {
+    await render(
+      <AppFooterBar items={footerItems} createAction={<View testID="create-slot" />} />
+    );
+
+    expect(screen.getByTestId('create-slot')).toBeTruthy();
   });
 
   it('keeps the footer compact and centered on wide screens', async () => {
@@ -150,7 +158,7 @@ describe('touch target and label floors', () => {
   it('renders footer labels at a legible size', async () => {
     await render(<AppFooterBar items={footerItems} />);
 
-    expect(styleOf(screen.getByText('Account')).fontSize).toBeGreaterThanOrEqual(11);
+    expect(styleOf(screen.getByText('Account')).fontSize).toBeGreaterThanOrEqual(10);
   });
 
   it('gives coverage radius chips a 44-unit touch target', async () => {

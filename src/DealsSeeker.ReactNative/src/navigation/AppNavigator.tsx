@@ -33,7 +33,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 
 function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
-  const { activeTab, openTab, t } = useApp();
+  const { activeTab, immersiveOffers, openAddOffer, openTab, palette, sheetCount, t } = useApp();
   const selectedTab = resolveTabFromRoute(String(state.routes[state.index]?.name ?? ''));
   const lastNavTab = useRef<MainTab | null>(selectedTab);
 
@@ -50,6 +50,7 @@ function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
 
   return (
     <AppFooterBar
+      fullWidth={!(immersiveOffers && activeTab === 'offers')}
       items={MAIN_TAB_DESTINATIONS.map((destination) => {
         const active = activeTab === destination.name;
         return {
@@ -63,12 +64,20 @@ function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
           active,
         };
       })}
+      createAction={
+        <CreateOfferFab
+          label={t('nav.createOffer')}
+          onPress={() => openAddOffer()}
+          palette={palette}
+          visible={sheetCount === 0}
+        />
+      }
     />
   );
 }
 
 function MainView() {
-  const { activeTab, closeImmersiveOffers, immersiveOffers, openAddOffer, overlayRoute, palette, sheetCount, t } = useApp();
+  const { activeTab, closeImmersiveOffers, immersiveOffers, overlayRoute, palette, t } = useApp();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const containerRef = useRef<ComponentRef<typeof View>>(null);
@@ -104,12 +113,6 @@ function MainView() {
           <Tabs.Screen name="offers" component={OffersScreen} />
         </Tabs.Navigator>
       </View>
-      <CreateOfferFab
-        label={t('nav.createOffer')}
-        onPress={openAddOffer}
-        palette={palette}
-        visible={sheetCount === 0}
-      />
       <LoadingOverlay />
     </View>
   );

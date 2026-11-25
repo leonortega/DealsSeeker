@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Navigate to Add Offer from Offers View
-- **Version**: `v2.0`
+- **Version**: `v2.1`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -21,6 +21,7 @@ Enable users to start offer creation from a single, consistent action in both pr
 - `OFFERS.NAV.ADD.001-R2`: The create action shall not be presented as a destination in the shared bottom navigation.
 - `OFFERS.NAV.ADD.001-R3`: Only one create-offer action shall be visible at a time.
 - `OFFERS.NAV.ADD.001-R4`: The create action shall open the Add Offer view in create mode with no offer identifier, regardless of any event value supplied by the trigger.
+- `OFFERS.NAV.ADD.001-R5`: The create action shall be docked to the shared bottom navigation as a raised circular control in its own reserved slot; it shall not float over scrollable content or cover discovery, profile or form controls.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -39,6 +40,12 @@ Scenario: Create is not a navigation destination
   Given the shared bottom navigation is displayed
   When the user views its destinations
   Then no create-offer destination is present
+
+Scenario: Create action is docked without covering content
+  Given the shared bottom navigation is displayed on any standard view or the immersive feed
+  When the user views the create action
+  Then it shall occupy its own reserved slot in the navigation bar
+  And no search, filter, card or profile control shall be covered by it
 ```
 
 ## Example Inputs/Outputs
