@@ -8,7 +8,7 @@ import {
 
 type OverlayRoute = { name: string } | null;
 
-function Probe({ tab, overlay }: { tab: 'offers' | 'reports'; overlay?: OverlayRoute }) {
+function Probe({ tab, overlay }: { tab: 'offers' | 'suggestions'; overlay?: OverlayRoute }) {
   const containerRef = useRef<View>(null);
   useDestinationFocus(containerRef, tab, overlay ?? null, (key) => `t:${key}`, () => 123);
   return <View ref={containerRef} />;
@@ -26,7 +26,7 @@ describe('destination focus', () => {
   });
 
   it('maps destinations to their localized labels', () => {
-    expect(resolveDestinationKey('reports', null)).toBe('nav.reports');
+    expect(resolveDestinationKey('offers', { name: 'report' })).toBe('nav.reports');
     expect(resolveDestinationKey('offers', { name: 'favorites' })).toBe('nav.favorites');
     expect(resolveDestinationKey('offers', { name: 'add-offer' })).toBe('nav.addOffer');
   });
@@ -35,14 +35,14 @@ describe('destination focus', () => {
     const view = await render(<Probe tab="offers" />);
 
     await act(async () => {
-      view.rerender(<Probe tab="reports" />);
+      view.rerender(<Probe tab="offers" overlay={{ name: 'report' }} />);
     });
 
     expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith('t:nav.reports');
   });
 
   it('announces the restored destination when Back returns to Offers', async () => {
-    const view = await render(<Probe tab="reports" />);
+    const view = await render(<Probe tab="offers" overlay={{ name: 'report' }} />);
 
     await act(async () => {
       view.rerender(<Probe tab="offers" />);
@@ -63,7 +63,7 @@ describe('destination focus', () => {
   });
 
   it('moves focus to the destination container', async () => {
-    await render(<Probe tab="reports" />);
+    await render(<Probe tab="offers" overlay={{ name: 'report' }} />);
 
     expect(AccessibilityInfo.setAccessibilityFocus).toHaveBeenCalled();
   });

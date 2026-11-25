@@ -1,30 +1,22 @@
-Feature: Reports generic submission flow
-  As an authenticated user
-  I want to submit reports from the Reports section
-  So that I can flag issues even when not starting from a specific offer
+Feature: Offer-scoped report submission
+  As a community contributor
+  I want to report a problem with a specific offer
+  So that the report is always tied to the right offer
 
-  Scenario: Authenticated user submits a generic report
+  Scenario: Authenticated user reports an offer
     Given the user is authenticated
-    And the user opens Reports directly without offer context
-    When the user submits a non-empty report message
-    Then no offer preview is required
-    And the report payload includes message, authenticated userId, and report date/time
-    And the app redirects to Offers after a successful response
+    And the user selects Report on an offer
+    When the report overlay opens and the user submits a non-empty message
+    Then the offer preview is displayed
+    And the payload includes message, offer identifier, authenticated userId, and report date/time
+    And after a successful response the system closes the overlay and redirects to Offers
 
-  Scenario: Submit action works with the keyboard open
-    Given the user is on Reports view
-    And the on-screen keyboard is open in the message field
-    When the user taps the submit action
-    Then the report is submitted
-    And the tap is not captured by the keyboard
+  Scenario: No standalone Reports entry point
+    Given the shared footer is displayed
+    When the user views its destinations
+    Then no Reports destination is present
 
-  Scenario: Unauthenticated user opens Reports
+  Scenario: Unauthenticated user selects Report
     Given the user is not authenticated
-    When the user opens Reports
-    Then the Login view is shown
-
-  Scenario: Legacy Complaints entry uses the same report flow
-    Given the user is authenticated
-    When the user opens the legacy Complaints entry point
-    Then the Reports submission flow is shown
-    And submitting a valid report uses the same behavior as Reports
+    When the user selects Report on an offer
+    Then the Login view is displayed

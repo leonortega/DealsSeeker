@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
 import { useStatusNotice } from '../hooks/useStatusNotice';
-import { useDelayedOffersRedirect } from '../hooks/useDelayedOffersRedirect';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { announceStatus } from '../utils/announce';
 import { successFeedback } from '../utils/haptics';
@@ -11,12 +10,21 @@ import { keyboardAvoidanceBehavior } from '../utils/layout';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
 
 export function ReportsScreen() {
-  const { activeTab, clearReportDraft, openTab, palette, reportDraft, session, api, t } = useApp();
+  const { clearReportDraft, closeOverlay, openTab, overlayRoute, palette, reportDraft, session, api, t } = useApp();
   const insets = useSafeAreaInsets();
   const [message, setMessage] = useState('');
   const [reportedAtUtc, setReportedAtUtc] = useState(new Date().toISOString());
   const { status, statusTone, reportStatus: reportNotice } = useStatusNotice();
-  const redirectAfterSuccess = useDelayedOffersRedirect(activeTab, 'reports', openTab);
+  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (redirectTimer.current) {
+        clearTimeout(redirectTimer.current);
+      }
+    },
+    []
+  );
 
   function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
     reportNotice(message, tone);
@@ -34,7 +42,7 @@ export function ReportsScreen() {
     setReportedAtUtc(reportDraft.reportedAtUtc);
   }, [reportDraft]);
 
-  if (activeTab !== 'reports') {
+  if (overlayRoute?.name !== 'report') {
     return null;
   }
 
@@ -61,7 +69,11 @@ export function ReportsScreen() {
     clearReportDraft();
     reportStatus(t('reports.success'));
     successFeedback();
-    redirectAfterSuccess();
+    redirectTimer.current = setTimeout(() => {
+      redirectTimer.current = null;
+      closeOverlay();
+      openTab('offers');
+    }, 900);
   }
 
   return (

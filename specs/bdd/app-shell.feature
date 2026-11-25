@@ -7,7 +7,7 @@ Feature: Application shell and session-aware landing
     Given the DealsSeeker mobile application is launchable
     And there is no active authenticated session
     When the user starts the application
-    Then the main navigation shows My Account, Offers, Suggestions, and Reports
+    Then the main navigation shows My Account, Offers, and Suggestions
     And Login is the first visible view
 
   Scenario: App starts at Offers when session exists
@@ -25,9 +25,9 @@ Feature: Application shell and session-aware landing
     Then the persisted session is cleared
     And Login is the first visible view
 
-  Scenario: Suggestions and Reports successful submit redirects to Offers
+  Scenario: Suggestions and offer report successful submit redirects to Offers
     Given the user is authenticated
-    And the user is in Suggestions or Reports view
+    And the user is in Suggestions view or an offer-scoped report overlay
     When the user submits with valid data
     And the response is successful with no errors
     Then the success confirmation is perceivable before the redirect
@@ -72,7 +72,7 @@ Feature: Application shell and session-aware landing
     Given the user is authenticated
     And the app is running on an Android device
     And the user is on the immersive offers feed
-    When the user opens My Account, Suggestions, or Reports from the shared navigation, or Add Offer from the create action
+    When the user opens My Account or Suggestions from the shared navigation, an offer report overlay, or Add Offer from the create action
     And the user invokes the system back gesture or back button
     Then the immersive offers feed is visible again
     And the application remains open
@@ -89,7 +89,7 @@ Feature: Application shell and session-aware landing
     Given the user is authenticated
     And the user is on a standard view
     When the footer is rendered
-    Then it displays My Account, Suggestions, Reports, and Offers in that order
+    Then it displays My Account, Suggestions, and Offers in that order
     And each destination uses an icon from the same authored monochrome set
     And the footer is present in every view
     And at most one destination is highlighted at a time

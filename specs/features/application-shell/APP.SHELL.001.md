@@ -21,7 +21,8 @@ Define global app sections and startup landing behavior based on session state.
 
 ## Requirements
 - `APP.SHELL.001-R0`: The system shall be a mobile application named `DealsSeeker`.
-- `APP.SHELL.001-R1`: The system shall provide the main navigation sections: `My Account`, `Offers`, `Suggestions`, `Reports`.
+- `APP.SHELL.001-R1`: The system shall provide the main navigation sections: `My Account`, `Offers`, `Suggestions`.
+- `APP.SHELL.001-R23`: Reporting shall be reachable only from an offer's Report action and shall open as an offer-scoped overlay; no `Reports` destination shall appear in the shared footer.
 - `APP.SHELL.001-R2`: When there is no active authenticated session, the first view at startup shall be `Login`.
 - `APP.SHELL.001-R3`: When there is an active authenticated session, the first view at startup shall be `Offers`, with the `Feed` presentation selected by default as defined in `OFFERS.MODE.SWITCH.001`.
 - `APP.SHELL.001-R4`: After successful login or successful user creation, the system shall navigate to `Offers`.
@@ -58,7 +59,7 @@ Scenario: App starts on Login without active session
   And there is no active authenticated session
   When the user opens the application
   Then the app identity shall be DealsSeeker mobile application
-  And the main navigation shall display My Account, Offers, Suggestions, and Reports
+  And the main navigation shall display My Account, Offers, and Suggestions
   And the Login view shall be the first visible view
 
 Scenario: App starts on Offers with active session
@@ -76,8 +77,8 @@ Scenario: App starts on Login when persisted session is expired
   Then the persisted session shall be cleared
   And the Login view shall be the first visible view
 
-Scenario: Suggestions and Reports success submissions redirect to Offers
-  Given the authenticated user is in Suggestions or Reports view
+Scenario: Suggestions and offer report success submissions redirect to Offers
+  Given the authenticated user is in Suggestions view or in an offer-scoped Reports overlay
   When the user submits the form
   And the submit response is successful with no errors
   Then the success confirmation shall remain perceivable before the redirect
@@ -118,7 +119,7 @@ Scenario: Android back from the first view leaves the application
 
 Scenario: Android back returns from a destination opened in the immersive feed
   Given the authenticated user is on the immersive offers feed
-  When the user opens `My Account`, `Suggestions`, `Reports`, or `Add Offer` from the immersive feed navigation
+  When the user opens `My Account`, `Suggestions`, an offer's Report action, or `Add Offer` from the immersive feed navigation
   And the user invokes the system back gesture or back button
   Then the immersive offers feed shall become visible again
   And the application shall remain open

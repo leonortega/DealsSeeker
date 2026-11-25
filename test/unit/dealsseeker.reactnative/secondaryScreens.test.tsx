@@ -7,6 +7,7 @@ let mockActiveTab = 'favorites';
 let mockOverlayRoute: { name: string } | null = { name: 'favorites' };
 let mockReportDraft: unknown = null;
 const mockOpenTab = jest.fn();
+const mockCloseOverlay = jest.fn();
 const mockClearReportDraft = jest.fn();
 const mockSearchOffers = jest.fn();
 const mockSetOfferFavorite = jest.fn();
@@ -36,6 +37,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
       submitSuggestion: mockSubmitSuggestion,
     },
     clearReportDraft: mockClearReportDraft,
+    closeOverlay: mockCloseOverlay,
     openTab: mockOpenTab,
     overlayRoute: mockOverlayRoute,
     palette: {
@@ -145,7 +147,7 @@ describe('SuggestionsScreen', () => {
     await fireEvent.press(screen.getByText('suggestions.submit'));
     await waitFor(() => expect(mockSubmitSuggestion).toHaveBeenCalled());
 
-    mockActiveTab = 'reports';
+    mockActiveTab = 'account';
     await act(async () => {
       view.rerender(<SuggestionsScreen />);
     });
@@ -171,7 +173,8 @@ describe('SuggestionsScreen', () => {
 describe('ReportsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockActiveTab = 'reports';
+    mockActiveTab = 'offers';
+    mockOverlayRoute = { name: 'report' };
     mockReportDraft = null;
     mockSubmitReport.mockResolvedValue({ success: true });
   });
@@ -209,6 +212,7 @@ describe('ReportsScreen', () => {
     await act(async () => {
       jest.advanceTimersByTime(1000);
     });
+    expect(mockCloseOverlay).toHaveBeenCalledTimes(1);
     expect(mockOpenTab).toHaveBeenCalledWith('offers');
     jest.useRealTimers();
   });
@@ -220,9 +224,8 @@ describe('ReportsScreen', () => {
     await fireEvent.press(screen.getByText('reports.submit'));
     await waitFor(() => expect(mockSubmitReport).toHaveBeenCalled());
 
-    mockActiveTab = 'account';
     await act(async () => {
-      view.rerender(<ReportsScreen />);
+      view.unmount();
     });
     await act(async () => {
       jest.advanceTimersByTime(1000);

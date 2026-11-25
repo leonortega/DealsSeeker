@@ -25,6 +25,7 @@ export type RootStackParamList = {
   Main: undefined;
   AddOffer: { offerId?: string } | undefined;
   Favorites: undefined;
+  Report: undefined;
 };
 
 type MainTabParamList = Record<MainTab, undefined>;
@@ -109,7 +110,6 @@ function MainView() {
         >
           <Tabs.Screen name="account" component={AccountScreen} />
           <Tabs.Screen name="suggestions" component={SuggestionsScreen} />
-          <Tabs.Screen name="reports" component={ReportsScreen} />
           <Tabs.Screen name="offers" component={OffersScreen} />
         </Tabs.Navigator>
       </View>
@@ -170,6 +170,8 @@ export function AppNavigator() {
       });
     } else if (key === 'favorites') {
       navigationRef.navigate('Favorites');
+    } else if (key === 'report') {
+      navigationRef.navigate('Report');
     } else {
       navigationRef.goBack();
     }
@@ -201,6 +203,14 @@ export function AppNavigator() {
             <>
               <DismissSync onDismiss={syncDismiss} />
               <FavoritesScreen />
+            </>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="Report" options={stackScreenOptions(reduceMotion)}>
+          {() => (
+            <>
+              <DismissSync onDismiss={syncDismiss} />
+              <ReportsScreen />
             </>
           )}
         </Stack.Screen>

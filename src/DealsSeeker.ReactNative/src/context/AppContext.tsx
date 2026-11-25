@@ -29,6 +29,7 @@ type AuthScreen = 'login' | 'register';
 type OverlayRoute =
   | { name: 'add-offer'; offerId?: string }
   | { name: 'favorites' }
+  | { name: 'report' }
   | null;
 
 interface AppContextValue {
@@ -354,7 +355,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       reportedAtUtc: now,
       initialMessage,
     });
-    setActiveTab('reports');
+    setOverlayRoute({ name: 'report' });
   }
 
   const value: AppContextValue = {

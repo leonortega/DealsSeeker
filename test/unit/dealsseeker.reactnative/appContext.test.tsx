@@ -176,9 +176,9 @@ describe('AppProvider', () => {
     await act(() => context?.openAddOffer());
     expect(context?.overlayRoute?.name).toBe('add-offer');
 
-    await act(() => context?.openTab('reports'));
+    await act(() => context?.openTab('suggestions'));
 
-    expect(context?.activeTab).toBe('reports');
+    expect(context?.activeTab).toBe('suggestions');
     expect(context?.overlayRoute).toBeNull();
   });
 
@@ -231,13 +231,13 @@ describe('AppProvider', () => {
     expect(context?.palette.mode).toBe('dark');
   });
 
-  it('creates a localized report draft and switches to Reports', async () => {
+  it('creates a localized report draft and opens the report overlay', async () => {
     await renderProvider();
     const offer = { offerId: 'o1' } as never;
 
     await act(() => context?.setReportDraft(offer));
 
-    expect(context?.activeTab).toBe('reports');
+    expect(context?.overlayRoute).toEqual({ name: 'report' });
     expect(context?.reportDraft?.initialMessage).toContain('o1');
     await act(() => context?.clearReportDraft());
     expect(context?.reportDraft).toBeNull();

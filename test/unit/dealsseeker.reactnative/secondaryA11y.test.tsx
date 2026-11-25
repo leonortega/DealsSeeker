@@ -7,6 +7,8 @@ import { FavoritesScreen } from '../../../src/DealsSeeker.ReactNative/src/screen
 import { HelpSheet } from '../../../src/DealsSeeker.ReactNative/src/components/HelpSheet';
 
 let mockActiveTab = 'suggestions';
+let mockOverlayRoute: { name: string } | null = null;
+const mockCloseOverlay = jest.fn();
 const mockSubmitSuggestion = jest.fn();
 const mockSubmitReport = jest.fn();
 const mockGetFavorites = jest.fn();
@@ -25,8 +27,9 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
       getFavorites: mockGetFavorites,
       setOfferFavorite: mockSetFavorite,
     },
+    closeOverlay: mockCloseOverlay,
     openTab: mockOpenTab,
-    overlayRoute: null,
+    overlayRoute: mockOverlayRoute,
     palette: {
       accent: '#b85c38',
       border: '#d7c9b5',
@@ -48,6 +51,7 @@ describe('secondary surface accessibility (APP.ACCESSIBILITY.UX.002/003)', () =>
   beforeEach(() => {
     jest.clearAllMocks();
     mockActiveTab = 'suggestions';
+    mockOverlayRoute = null;
     jest.spyOn(AccessibilityInfo, 'announceForAccessibility').mockImplementation(() => {});
     mockSubmitSuggestion.mockResolvedValue({ success: false });
     mockGetFavorites.mockResolvedValue([]);
@@ -65,7 +69,7 @@ describe('secondary surface accessibility (APP.ACCESSIBILITY.UX.002/003)', () =>
   });
 
   it('labels the report message field without exposing internal identifiers', async () => {
-    mockActiveTab = 'reports';
+    mockOverlayRoute = { name: 'report' };
     mockGetFavorites.mockResolvedValue([]);
     await render(<ReportsScreen />);
     expect(screen.getByLabelText('reports.message')).toBeTruthy();

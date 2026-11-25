@@ -12,12 +12,12 @@ export function StandardHeader() {
     ? t('nav.addOffer')
     : overlayRoute?.name === 'favorites'
       ? t('nav.favorites')
-      : activeTab === 'account'
-        ? t('nav.account')
-        : activeTab === 'suggestions'
-          ? t('nav.suggestions')
-          : activeTab === 'reports'
-            ? t('nav.reports')
+      : overlayRoute?.name === 'report'
+        ? t('nav.reports')
+        : activeTab === 'account'
+          ? t('nav.account')
+          : activeTab === 'suggestions'
+            ? t('nav.suggestions')
             : t('nav.offers');
 
   return (

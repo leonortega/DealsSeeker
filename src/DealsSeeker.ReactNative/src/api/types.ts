@@ -1,7 +1,7 @@
 export type Language = 'en' | 'es';
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type NavigationMode = 'pedestrian' | 'car';
-export type MainTab = 'account' | 'offers' | 'suggestions' | 'reports';
+export type MainTab = 'account' | 'offers' | 'suggestions';
 
 export interface GeoPoint {
   lat: number;

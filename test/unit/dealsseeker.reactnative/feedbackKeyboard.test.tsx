@@ -3,6 +3,7 @@ import { SuggestionsScreen } from '../../../src/DealsSeeker.ReactNative/src/scre
 import { ReportsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/ReportsScreen';
 
 let mockActiveTab = 'suggestions';
+let mockOverlayRoute: { name: string } | null = null;
 const mockApi = {
   submitSuggestion: jest.fn().mockResolvedValue({ success: true }),
   submitReport: jest.fn().mockResolvedValue({ success: true }),
@@ -13,6 +14,8 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     activeTab: mockActiveTab,
     api: mockApi,
     clearReportDraft: jest.fn(),
+    closeOverlay: jest.fn(),
+    overlayRoute: mockOverlayRoute,
     openTab: jest.fn(),
     palette: {
       accent: '#b85c38',
@@ -34,6 +37,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/components/StandardHeader', 
 describe('feedback forms keyboard access', () => {
   beforeEach(() => {
     mockActiveTab = 'suggestions';
+    mockOverlayRoute = null;
   });
 
   it('wraps the suggestion form in a keyboard-avoiding view', async () => {
@@ -43,7 +47,7 @@ describe('feedback forms keyboard access', () => {
   });
 
   it('wraps the report form in a keyboard-avoiding view', async () => {
-    mockActiveTab = 'reports';
+    mockOverlayRoute = { name: 'report' };
     await render(<ReportsScreen />);
 
     expect(screen.getByTestId('reports-keyboard-view')).toBeTruthy();

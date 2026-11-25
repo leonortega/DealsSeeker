@@ -1,11 +1,10 @@
 import { MAIN_TAB_DESTINATIONS, resolveTabFromRoute } from '../../../src/DealsSeeker.ReactNative/src/navigation/tabs';
 
 describe('native tab destinations', () => {
-  it('exposes the four branded sections in the spec order', () => {
+  it('exposes the three branded sections in the spec order', () => {
     expect(MAIN_TAB_DESTINATIONS.map((destination) => destination.name)).toEqual([
       'account',
       'suggestions',
-      'reports',
       'offers',
     ]);
   });

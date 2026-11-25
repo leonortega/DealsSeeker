@@ -15,6 +15,9 @@ export function resolveDestinationKey(activeTab: MainTab, overlayRoute: Destinat
   if (overlayRoute?.name === 'favorites') {
     return 'nav.favorites';
   }
+  if (overlayRoute?.name === 'report') {
+    return 'nav.reports';
+  }
   return MAIN_TAB_DESTINATIONS.find((destination) => destination.name === activeTab)?.labelKey ?? null;
 }
 

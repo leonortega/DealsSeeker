@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Reports View Generic Submission Flow
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Reports View
 - **Priority**: High
@@ -17,9 +17,9 @@ Allow an authenticated user to submit a generic report from the Reports section,
 - User opens `Reports` or submits the report form.
 
 ## Requirements
-- `REPORTS.SUBMIT.001-R1`: The system shall provide a dedicated `Reports` view for authenticated users.
-- `REPORTS.SUBMIT.001-R2`: The Reports view shall support the standard Reports entry point and the legacy Complaints entry point as the same reporting flow.
-- `REPORTS.SUBMIT.001-R3`: When Reports is opened without offer-prefilled context, the view shall omit the offer preview and still allow report submission.
+- `REPORTS.SUBMIT.001-R1`: The system shall provide a dedicated report overlay for authenticated users, opened only from an offer's Report action.
+- `REPORTS.SUBMIT.001-R2`: The report overlay shall not be a navigation destination and shall not be reachable without offer context.
+- `REPORTS.SUBMIT.001-R3`: The overlay shall show the offer preview and the prefilled offer identifier from `REPORTS.OFFER.PREFILL.001`.
 - `REPORTS.SUBMIT.001-R4`: The Reports view shall prefill the current authenticated `userId` and a UTC report date/time value.
 - `REPORTS.SUBMIT.001-R5`: The report message shall be required for submission.
 - `REPORTS.SUBMIT.001-R6`: The report payload shall submit message, optional offerId, authenticated userId, and report date/time.
@@ -29,33 +29,32 @@ Allow an authenticated user to submit a generic report from the Reports section,
 
 ## Acceptance Criteria (BDD)
 ```gherkin
-Scenario: Authenticated user submits a generic report
+Scenario: Authenticated user reports an offer
   Given the user is authenticated
-  And the user opens Reports directly without offer context
-  When the user submits a non-empty report message
-  Then no offer preview shall be required
-  And the payload shall include message, authenticated userId, and report date/time
-  And after a successful response the system shall redirect the user to Offers
+  And the user selects Report on an offer
+  When the report overlay opens and the user submits a non-empty message
+  Then the offer preview shall be displayed
+  And the payload shall include message, offer identifier, authenticated userId, and report date/time
+  And after a successful response the system shall close the overlay and redirect to Offers
 
-Scenario: Unauthenticated user opens Reports
+Scenario: No standalone Reports entry point
+  Given the shared footer is displayed
+  When the user views its destinations
+  Then no Reports destination shall be present
+
+Scenario: Unauthenticated user selects Report
   Given the user is not authenticated
-  When the user opens Reports
+  When the user selects Report on an offer
   Then the Login view shall be displayed
-
-Scenario: Reports supports legacy Complaints entry point
-  Given the user is authenticated
-  When the user opens the legacy Complaints entry point
-  Then the Reports submission flow shall be displayed
-  And submitting a valid report shall use the same report behavior as Reports
 ```
 
 ## Example Inputs/Outputs
-- Example input: generic report message with no offer selected.
+- Example input: report message submitted from an offer's Report action.
 - Expected output: report is accepted with userId and UTC report timestamp, then the app redirects to `Offers`.
 
 ## Edge Cases
 - Message is blank; submission is rejected and Reports remains visible.
-- Offer-prefilled reporting behavior is specified separately and augments, rather than replaces, this generic report flow.
+- Offer-prefilled reporting behavior is specified in `REPORTS.OFFER.PREFILL.001` and is the only report flow.
 
 ## Non-Functional Constraints
 - Reports view should be immediately available after navigation from menu or legacy alias.
