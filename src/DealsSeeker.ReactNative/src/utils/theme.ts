@@ -12,6 +12,9 @@ export interface Palette {
   inkMuted: string;
   accent: string;
   accentMuted: string;
+  onAccent: string;
+  highlight: string;
+  onHighlight: string;
   success: string;
   danger: string;
   shadow: string;
@@ -20,36 +23,42 @@ export interface Palette {
 
 const lightPalette: Palette = {
   mode: 'light',
-  background: '#f4efe6',
-  backgroundRaised: '#efe5d8',
-  panel: '#fff9f0',
-  panelAlt: '#e6f0e6',
-  card: '#fffdf8',
-  border: '#d7c9b5',
-  ink: '#1f3128',
-  inkMuted: '#5f6d63',
-  accent: '#b85c38',
-  accentMuted: '#e9c9b8',
-  success: '#2f6e46',
-  danger: '#8d2f2f',
-  shadow: 'rgba(31, 49, 40, 0.14)',
+  background: '#fbf6ec',
+  backgroundRaised: '#f3ead9',
+  panel: '#fffcf5',
+  panelAlt: '#e4f1df',
+  card: '#fffdf9',
+  border: '#9c8461',
+  ink: '#1d3126',
+  inkMuted: '#5b6b5e',
+  accent: '#b0512c',
+  accentMuted: '#fbede3',
+  onAccent: '#ffffff',
+  highlight: '#f0b447',
+  onHighlight: '#1d3126',
+  success: '#2e7d52',
+  danger: '#a33a32',
+  shadow: 'rgba(40, 28, 18, 0.16)',
   overlay: 'rgba(22, 30, 28, 0.52)',
 };
 
 const darkPalette: Palette = {
   mode: 'dark',
-  background: '#17201d',
-  backgroundRaised: '#22302b',
-  panel: '#22332f',
-  panelAlt: '#2d4037',
-  card: '#293a35',
-  border: '#476258',
-  ink: '#f7f1e8',
-  inkMuted: '#c6d0c9',
-  accent: '#f08f62',
-  accentMuted: '#5e3a2a',
-  success: '#7ec48c',
-  danger: '#f08f8f',
+  background: '#121d19',
+  backgroundRaised: '#1b2a24',
+  panel: '#20332b',
+  panelAlt: '#2a4236',
+  card: '#253b32',
+  border: '#6a8a75',
+  ink: '#fbf4e9',
+  inkMuted: '#c8d4c8',
+  accent: '#ff9e6b',
+  accentMuted: '#5c3525',
+  onAccent: '#1d3126',
+  highlight: '#f5c56b',
+  onHighlight: '#1d3126',
+  success: '#86d5a0',
+  danger: '#ff9b8e',
   shadow: 'rgba(0, 0, 0, 0.3)',
   overlay: 'rgba(4, 7, 6, 0.66)',
 };
@@ -57,7 +66,9 @@ const darkPalette: Palette = {
 /**
  * Backdrop color used behind the immersive offer feed, independent of the active theme.
  */
-export const primaryButtonText = '#ffffff';
+export function primaryButtonText(palette: Palette): string {
+  return palette.onAccent;
+}
 
 export const immersiveBackdrop = '#1b2f28';
 export const immersiveInk = '#f7f1e8';

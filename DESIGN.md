@@ -2,32 +2,37 @@
 name: DealsSeeker
 description: Hyperlocal deal discovery and community upkeep in one warm, wayfinding-led design language.
 colors:
-  warm-paper: "#f4efe6"
-  paper-raised: "#efe5d8"
-  cream-panel: "#fff9f0"
-  sage-panel: "#e6f0e6"
-  card-cream: "#fffdf8"
-  sand-border: "#d7c9b5"
-  forest-ink: "#1f3128"
-  slate-ink: "#5f6d63"
-  kiln-terracotta: "#b85c38"
-  clay-blush: "#e9c9b8"
-  field-success: "#2f6e46"
-  brick-danger: "#8d2f2f"
-  soft-shadow: "rgba(31, 49, 40, 0.18)"
+  warm-paper: "#fbf6ec"
+  paper-raised: "#f3ead9"
+  cream-panel: "#fffcf5"
+  sage-panel: "#e4f1df"
+  card-cream: "#fffdf9"
+  sand-border: "#9c8461"
+  forest-ink: "#1d3126"
+  slate-ink: "#5b6b5e"
+  kiln-terracotta: "#b0512c"
+  clay-blush: "#fbede3"
+  field-success: "#2e7d52"
+  brick-danger: "#a33a32"
+  honey-highlight: "#f0b447"
+  light-on-accent: "#ffffff"
+  highlight-ink: "#1d3126"
+  soft-shadow: "rgba(40, 28, 18, 0.16)"
   day-scrim: "rgba(22, 30, 28, 0.52)"
-  night-paper: "#17201d"
-  night-raised: "#22302b"
-  night-panel: "#22332f"
-  night-sage: "#2d4037"
-  night-card: "#293a35"
-  night-border: "#476258"
-  dawn-ink: "#f7f1e8"
-  mist-ink: "#c6d0c9"
-  ember-accent: "#f08f62"
-  clay-deep: "#5e3a2a"
-  mint-success: "#7ec48c"
-  rose-danger: "#f08f8f"
+  night-paper: "#121d19"
+  night-raised: "#1b2a24"
+  night-panel: "#20332b"
+  night-sage: "#2a4236"
+  night-card: "#253b32"
+  night-border: "#6a8a75"
+  dawn-ink: "#fbf4e9"
+  mist-ink: "#c8d4c8"
+  ember-accent: "#ff9e6b"
+  clay-deep: "#5c3525"
+  mint-success: "#86d5a0"
+  rose-danger: "#ff9b8e"
+  lantern-gold: "#f5c56b"
+  dark-on-accent: "#1d3126"
   night-shadow: "rgba(0, 0, 0, 0.3)"
   night-scrim: "rgba(4, 7, 6, 0.66)"
   trail-forest: "#1b2f28"
@@ -130,13 +135,14 @@ A cartographer's palette: paper and cream panels under forest-ink type, with one
 
 ### Primary
 - **Kiln Terracotta** (`#b85c38` / dark `#f08f62`): The waypoint. Primary button fills, the active navigation tile's icon, the immersive tab indicator, and selected states. It marks the path — never the background.
-- **Ember Accent** (`#f08f62`): The dark-mode terracotta, brightened to hold contrast against forest-night surfaces.
+- **Ember Accent** (`#ff9e6b`): The dark-mode terracotta, brightened to hold contrast against forest-night surfaces. Primary buttons pair it with forest-ink text (`#1d3126`), never white.
 
 ### Secondary
-- **Sage Panel** (`#e6f0e6` / dark `#2d4037`): A quiet green tint for alternate panels and chip surfaces, giving status and grouping a place outside the accent.
+- **Sage Panel** (`#e4f1df` / dark `#2a4236`): A quiet green tint for alternate panels and chip surfaces, giving status and grouping a place outside the accent.
 
 ### Tertiary
-- **Clay Blush** (`#e9c9b8` / dark `#5e3a2a`): A muted terracotta family used for accent-muted fills — the active navigation tile's base and soft accent details.
+- **Clay Blush** (`#fbede3` / dark `#5c3525`): A muted terracotta family used for accent-muted fills — the active navigation tile's base and soft accent details.
+- **Honey Highlight** (`#f0b447` / dark `#f5c56b`): A reserved offer signal for promoted and deal badges only, always paired with forest-ink text. It is not a wayfinding accent.
 
 ### Neutral
 - **Warm Paper** (`#f4efe6`): The daylight app background — the map's paper.
@@ -212,7 +218,7 @@ Soft, generous rounding with a clear hierarchy. Full pills (`999px`) are for any
 
 ### Chips & Badges
 - **Style:** Full pill, 10px horizontal / 6px vertical padding, 11px/700 label.
-- **State:** Tags are bordered with ink text; badges are solid (overlay or accent) with white 11px/800 uppercase labels; selected filters take the accent.
+- **State:** Tags are bordered with ink text; badges are solid (overlay, accent or the reserved highlight) with 11px/800 uppercase labels in the matching on-color; selected filters take the accent.
 
 ### Cards / Containers
 - **Corner Style:** 26px on offer cards, 28px on brand and form cards.
@@ -246,7 +252,7 @@ Soft, generous rounding with a clear hierarchy. Full pills (`999px`) are for any
 
 ### Don't:
 - **Don't** set body copy or metadata in Georgia; it is for landmarks only.
-- **Don't** invent a third accent color. Sage is secondary, clay is tertiary, and success/danger are status-only.
+- **Don't** add a second wayfinding accent. Sage is secondary, clay is tertiary, success/danger are status-only, and the honey highlight is reserved for offer signals.
 - **Don't** stack shadows or use hard-offset shadows; the system is flat at rest with one ambient lift.
 - **Don't** add a hover-only affordance or a wide desktop reflow — native touch is the primary target and both platforms share the phone-first composition.
 - **Don't** hardcode a new surface color when a palette role already exists; the hardcoded footer is the one deliberate exception.

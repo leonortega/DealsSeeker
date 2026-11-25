@@ -27,7 +27,7 @@ export function FirstRunSheet({ visible, onDismiss }: { visible: boolean; onDism
             onPress={onDismiss}
             style={[styles.action, { backgroundColor: palette.accent }]}
           >
-            <Text style={styles.actionLabel}>{t('onboarding.gotIt')}</Text>
+            <Text style={[styles.actionLabel, { color: palette.onAccent }]}>{t('onboarding.gotIt')}</Text>
           </Pressable>
         </View>
       </Pressable>
@@ -67,7 +67,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   actionLabel: {
-    color: '#fff',
     fontSize: 15,
     fontWeight: '800',
   },

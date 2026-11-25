@@ -29,7 +29,6 @@ import { statusColor, type StatusTone } from '../utils/statusNotice';
 import { extractCompletedWord, extractWords } from '../utils/format';
 import { keyboardAvoidanceBehavior, resolveAddOfferColumns } from '../utils/layout';
 import { getSuggestedTags, maxDraftTags, normalizeTag } from '../utils/tagLexicon';
-import { primaryButtonText } from '../utils/theme';
 
 interface DraftImage {
   previewUri: string | null;
@@ -1062,7 +1061,9 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
           style={[styles.submitButton, { backgroundColor: palette.accent }]}
           onPress={() => void submit()}
         >
-          <Text style={styles.submitLabel}>{editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}</Text>
+          <Text style={[styles.submitLabel, { color: palette.onAccent }]}>
+            {editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
+          </Text>
         </Pressable>
         {status ? (
           <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
@@ -1236,7 +1237,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   submitLabel: {
-    color: primaryButtonText,
     fontSize: 16,
     fontWeight: '800',
     textAlign: 'center',

@@ -96,7 +96,7 @@ export function AccountScreen() {
             style={[styles.logout, { backgroundColor: palette.danger }]}
             onPress={() => void logout()}
           >
-            <Text style={styles.logoutLabel}>{t('account.logout')}</Text>
+            <Text style={[styles.logoutLabel, { color: palette.onAccent }]}>{t('account.logout')}</Text>
           </Pressable>
         </View>
       </View>
@@ -237,7 +237,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   logoutLabel: {
-    color: '#fff',
     fontWeight: '800',
   },
   panel: {

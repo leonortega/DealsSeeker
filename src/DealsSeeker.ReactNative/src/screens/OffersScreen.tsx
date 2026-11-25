@@ -266,7 +266,9 @@ export function OffersScreen() {
           onPress={() => void retryLocation()}
           style={[styles.fallbackButton, { backgroundColor: palette.accent }]}
         >
-          <Text style={styles.fallbackButtonLabel}>{t('offers.useMyLocation')}</Text>
+          <Text style={[styles.fallbackButtonLabel, { color: palette.onAccent }]}>
+            {t('offers.useMyLocation')}
+          </Text>
         </Pressable>
         <Pressable
           accessibilityLabel={t('offers.dismissNotice')}
@@ -536,7 +538,7 @@ export function OffersScreen() {
           </View>
           <View style={styles.actionRow}>
             <Pressable style={[styles.actionButton, { backgroundColor: palette.accent }]} onPress={() => void search()}>
-              <Text style={styles.primaryLabel}>{t('common.search')}</Text>
+              <Text style={[styles.primaryLabel, { color: palette.onAccent }]}>{t('common.search')}</Text>
             </Pressable>
             <Pressable
               style={[styles.actionButton, { backgroundColor: favoritesOnly ? palette.accentMuted : palette.panel }]}
@@ -692,7 +694,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   fallbackButtonLabel: {
-    color: '#fff',
     fontSize: 14,
     fontWeight: '800',
   },
@@ -753,7 +754,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   primaryLabel: {
-    color: '#fff',
     fontWeight: '800',
     textAlign: 'center',
   },

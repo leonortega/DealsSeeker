@@ -128,7 +128,7 @@ export function OfferReportSheet({ draft, visible, onClose, returnFocusRef }: Of
         {status ? <Text style={[styles.status, { color: statusColor(palette, statusTone) }]}>{status}</Text> : null}
 
         <Pressable style={[styles.publishButton, { backgroundColor: palette.accent }]} onPress={() => void submit()}>
-          <Text style={styles.publishLabel}>{t('reports.submit')}</Text>
+          <Text style={[styles.publishLabel, { color: palette.onAccent }]}>{t('reports.submit')}</Text>
         </Pressable>
       </View>
     </NativeBottomSheet>
@@ -181,7 +181,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   publishLabel: {
-    color: '#fff',
     fontWeight: '800',
     textAlign: 'center',
   },

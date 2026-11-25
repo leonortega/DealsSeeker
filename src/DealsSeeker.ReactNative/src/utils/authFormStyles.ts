@@ -27,7 +27,6 @@ export const authFormStyles = StyleSheet.create({
     paddingVertical: 15,
   },
   primaryButtonLabel: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '800',
     textAlign: 'center',

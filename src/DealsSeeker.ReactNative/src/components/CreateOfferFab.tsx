@@ -24,7 +24,7 @@ export function CreateOfferFab({
       onPress={onPress}
       style={[styles.fab, { backgroundColor: palette.accent, shadowColor: palette.shadow }]}
     >
-      <NavIcon color="#ffffff" name="create" />
+      <NavIcon color={palette.onAccent} name="create" />
     </Pressable>
   );
 }

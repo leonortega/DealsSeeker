@@ -23,7 +23,7 @@ export function OffersStatePanel({ actionLabel, hint, onAction, palette, title }
           onPress={onAction}
           style={[styles.action, { backgroundColor: palette.accent }]}
         >
-          <Text style={styles.actionLabel}>{actionLabel}</Text>
+          <Text style={[styles.actionLabel, { color: palette.onAccent }]}>{actionLabel}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -58,7 +58,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   actionLabel: {
-    color: '#ffffff',
     fontSize: 16,
     fontWeight: '800',
   },

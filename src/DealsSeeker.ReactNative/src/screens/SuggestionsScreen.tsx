@@ -86,7 +86,7 @@ export function SuggestionsScreen() {
           style={[styles.button, { backgroundColor: palette.accent }]}
           onPress={() => void submit()}
         >
-          <Text style={styles.buttonLabel}>{t('suggestions.submit')}</Text>
+          <Text style={[styles.buttonLabel, { color: palette.onAccent }]}>{t('suggestions.submit')}</Text>
         </Pressable>
         {status ? (
           <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
@@ -145,7 +145,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   buttonLabel: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '800',
     textAlign: 'center',

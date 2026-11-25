@@ -186,7 +186,7 @@ export function OfferCommentsModal({ offer, visible, onClose, returnFocusRef }: 
           {status ? <Text style={[styles.status, { color: palette.danger }]}>{status}</Text> : null}
 
           <Pressable style={[styles.publishButton, { backgroundColor: palette.accent }]} onPress={() => void publish()}>
-            <Text style={styles.publishLabel}>{t('comments.publish')}</Text>
+            <Text style={[styles.publishLabel, { color: palette.onAccent }]}>{t('comments.publish')}</Text>
           </Pressable>
         </View>
     </NativeBottomSheet>
@@ -298,7 +298,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   publishLabel: {
-    color: '#fff',
     fontWeight: '800',
     textAlign: 'center',
   },

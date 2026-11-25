@@ -120,7 +120,9 @@ export function RegisterScreen() {
           style={[authFormStyles.primaryButton, { backgroundColor: palette.accent }]}
           onPress={() => void submit()}
         >
-          <Text style={authFormStyles.primaryButtonLabel}>{t('auth.registerButton')}</Text>
+          <Text style={[authFormStyles.primaryButtonLabel, { color: palette.onAccent }]}>
+            {t('auth.registerButton')}
+          </Text>
         </Pressable>
         <Pressable accessibilityLabel={t('auth.loginLink')} accessibilityRole="link" onPress={showLogin}>
           <Text style={[authFormStyles.link, { color: palette.accent }]}>{t('auth.loginLink')}</Text>

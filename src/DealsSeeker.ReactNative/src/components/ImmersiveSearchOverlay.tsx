@@ -70,7 +70,7 @@ export function ImmersiveSearchOverlay({
                     },
                   ]}
                 >
-                  <Text style={{ color: selected ? '#ffffff' : palette.ink, fontSize: 11, fontWeight: '700' }}>
+                  <Text style={{ color: selected ? palette.onAccent : palette.ink, fontSize: 11, fontWeight: '700' }}>
                     {option} m
                   </Text>
                 </Pressable>
@@ -91,7 +91,7 @@ export function ImmersiveSearchOverlay({
               onPress={onSearch}
               style={[styles.actionButton, { backgroundColor: palette.accent }]}
             >
-              <Text style={{ color: '#ffffff', fontWeight: '800' }}>{t('common.search')}</Text>
+              <Text style={{ color: palette.onAccent, fontWeight: '800' }}>{t('common.search')}</Text>
             </Pressable>
           </View>
         </View>

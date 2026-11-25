@@ -91,13 +91,13 @@ export function OfferCard({
         )}
         <View style={styles.badgeRow}>
           {offer.isPromoted ? (
-            <View style={[styles.badge, { backgroundColor: palette.accent }]}>
-              <Text style={styles.badgeLabel}>{t('offers.promoted')}</Text>
+            <View style={[styles.badge, { backgroundColor: palette.highlight }]}>
+              <Text style={[styles.badgeLabel, { color: palette.onHighlight }]}>{t('offers.promoted')}</Text>
             </View>
           ) : null}
           {offer.isReported ? (
             <View style={[styles.badge, { backgroundColor: palette.danger }]}>
-              <Text style={styles.badgeLabel}>{t('offers.reported')}</Text>
+              <Text style={[styles.badgeLabel, { color: palette.onAccent }]}>{t('offers.reported')}</Text>
             </View>
           ) : null}
         </View>
@@ -266,7 +266,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   badgeLabel: {
-    color: '#fff',
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'uppercase',
