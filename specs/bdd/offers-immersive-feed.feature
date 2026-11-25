@@ -173,4 +173,4 @@ Feature: Immersive vertical full-screen main page feed
   Scenario: Empty feed state
     Given no offers are available
     When the main page loads
-    Then an empty-state message is displayed
+    Then no empty-state message is displayed

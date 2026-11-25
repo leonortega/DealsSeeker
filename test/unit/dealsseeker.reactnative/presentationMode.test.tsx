@@ -70,6 +70,14 @@ describe('presentation mode switch', () => {
     await waitFor(() => expect(screen.queryByText('app.loading')).toBeNull());
   });
 
+  it('does not show an empty-state card when a search returns no offers', async () => {
+    await render(<OffersScreen />);
+
+    expect(screen.queryByText('offers.emptyTitle')).toBeNull();
+    expect(screen.queryByText('offers.createFirstOffer')).toBeNull();
+    expect(screen.getByTestId('offers-scroll')).toBeTruthy();
+  });
+
   it('offers Feed and Map options in the Offers view', async () => {
     await render(<OffersScreen />);
 

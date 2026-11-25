@@ -76,11 +76,11 @@ describe('Offers discovery states', () => {
     );
   });
 
-  it('offers to create the first offer when no offers exist', async () => {
+  it('keeps the Offers controls usable when no offers exist', async () => {
     await render(<OffersScreen />);
 
-    await fireEvent.press(await screen.findByRole('button', { name: 'offers.createFirstOffer' }));
-
-    expect(mockOpenAddOffer).toHaveBeenCalled();
+    expect(screen.queryByText('offers.emptyTitle')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'offers.createFirstOffer' })).toBeNull();
+    expect(screen.getByPlaceholderText('offers.searchPlaceholder')).toBeTruthy();
   });
 });

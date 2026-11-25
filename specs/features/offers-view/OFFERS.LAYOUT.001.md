@@ -48,7 +48,7 @@ Scenario: Initial load supports promoted section
 - Expected output: All required layout blocks are visible.
 
 ## Edge Cases
-- Empty offer data still shows layout with empty-state feed.
+- Empty offer data still shows the Offers layout without an empty-state card.
 
 ## Non-Functional Constraints
 - Layout shall remain usable on small mobile screens.

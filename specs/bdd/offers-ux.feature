@@ -18,20 +18,17 @@ Feature: Recoverable no-results and empty discovery states
     And a new search is executed using the 1000 meter radius
     And available offers are displayed
 
-  Scenario: No offers at all offers to create the first offer
+  Scenario: No offers at all shows no empty-state card
     Given the user is on the Offers view
     And no query or favorites filter is active
     When a search completes with no offers
-    Then an empty-state message is displayed
-    And an action to create the first offer is available
-    When the user selects that action
-    Then the Add Offer view is opened
+    Then no empty-state message or creation prompt is displayed
+    And the Offers controls and map remain usable
 
-  Scenario: Immersive feed presents the same recoverable empty state
+  Scenario: Immersive feed keeps an uncluttered empty surface
     Given the immersive offers feed is active
     When a search completes with no offers
-    Then an empty-state message is displayed in the feed
-    And a recovery action is available
+    Then no empty-state message is displayed in the feed
 
   Scenario: Favorites-only filter with no matches offers recovery
     Given the favorites-only filter is active

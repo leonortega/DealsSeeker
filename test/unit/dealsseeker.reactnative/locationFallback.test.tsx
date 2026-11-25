@@ -129,9 +129,10 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
 
   it('paints the immersive content area behind state panels', async () => {
     mockImmersive = true;
+    mockSearchOffers.mockRejectedValue(new Error('offline'));
     await render(<OffersScreen />);
 
-    expect(await screen.findByText('offers.emptyTitle')).toBeTruthy();
+    expect(await screen.findByText('offers.searchFailed')).toBeTruthy();
     expect(StyleSheet.flatten(screen.getByTestId('immersive-content').props.style).backgroundColor).toBe('#121417');
   });
 

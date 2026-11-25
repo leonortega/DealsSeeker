@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive Vertical Full-Screen Main Page Feed
-- **Version**: `v2.1`
+- **Version**: `v2.2`
 - **Status**: Approved
 - **Context/View**: Offers View (Main Page)
 - **Priority**: High
@@ -39,7 +39,7 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R39`: When expanded, associated tags shall be displayed as inline text prefixed with the `#` symbol.
 - `OFFERS.FEED.IMMERSIVE.001-R11`: Promoted offers shall remain visually labeled on their feed page.
 - `OFFERS.FEED.IMMERSIVE.001-R12`: Reported offers shall retain their reported visual indicator and demotion behavior.
-- `OFFERS.FEED.IMMERSIVE.001-R13`: When no offers are available, the system shall render an empty-state message instead of feed pages.
+- `OFFERS.FEED.IMMERSIVE.001-R13`: When no offers are available, the system shall keep the feed surface uncluttered and shall not render an empty-state message instead of feed pages.
 - `OFFERS.FEED.IMMERSIVE.001-R14`: The view shall not expose raw `lat` or `lng` values to users.
 - `OFFERS.FEED.IMMERSIVE.001-R15`: The feed shall remain scrollable and responsive on small mobile screens.
 - `OFFERS.FEED.IMMERSIVE.001-R16`: The immersive feed shall be opened from the shared bottom footer view button labeled `New view` / `Nueva vista` with a ⭐ glyph; no new-view button shall be rendered in the Offers hero area.
@@ -266,7 +266,7 @@ Scenario: Left panel text and contained offer image
 Scenario: Empty feed state
   Given no offers are available
   When the main page loads
-  Then an empty-state message shall be displayed
+  Then no empty-state message shall be displayed
 ```
 
 ## Example Inputs/Outputs
@@ -277,7 +277,7 @@ Scenario: Empty feed state
 - Offers with missing images still render a full-screen page with placeholder visual.
 - Very long descriptions remain truncated until expanded.
 - Promoted and reported indicators remain visible in the overlay and/or side rail.
-- Empty offer result renders empty-state instead of blank feed.
+- An empty offer result leaves the feed surface uncluttered.
 - Devices without a reported safe-area inset still clear the status area using a minimum top offset.
 - A vertical swipe over a multi-photo offer scrolls the feed without changing the displayed photo.
 - Offer text overlays remain readable over both light and dark offer images while their background stays transparent.
