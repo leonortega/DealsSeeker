@@ -20,7 +20,6 @@ import { isRequestAborted } from '../api/client';
 import { apiConfig } from '../api/config';
 import { GeoPoint, OfferImageDto, OfferLocationDto } from '../api/types';
 import { NativeMapPreview } from '../components/NativeMapPreview';
-import { StandardHeader } from '../components/StandardHeader';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
 import { useStatusNotice } from '../hooks/useStatusNotice';
@@ -479,7 +478,6 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
         contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}
         style={{ backgroundColor: palette.background }}
       >
-        <StandardHeader />
         <View style={styles.header}>
           <Text style={[styles.title, { color: palette.ink }]}>{t('add.editTitle')}</Text>
         </View>
@@ -747,7 +745,6 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
         style={{ backgroundColor: palette.background }}
         testID="add-offer-scroll"
       >
-        <StandardHeader />
         <View style={styles.header}>
           <Text style={[styles.title, { color: palette.ink }]}>{editingOfferId ? t('add.editTitle') : t('add.title')}</Text>
           <Pressable

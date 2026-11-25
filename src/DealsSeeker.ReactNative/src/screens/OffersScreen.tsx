@@ -17,7 +17,6 @@ import { HelpSheet } from '../components/HelpSheet';
 import { NavIcon } from '../components/NavIcon';
 import { OffersStatePanel } from '../components/OffersStatePanel';
 import { PresentationModeSwitch, type PresentationMode } from '../components/PresentationModeSwitch';
-import { StandardHeader } from '../components/StandardHeader';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
 import { useStatusNotice } from '../hooks/useStatusNotice';
@@ -486,7 +485,6 @@ export function OffersScreen() {
         style={{ backgroundColor: palette.background }}
       >
         {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
-        <StandardHeader />
         <View style={styles.heroRow}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.title, { color: palette.ink }]}>{t('offers.title')}</Text>

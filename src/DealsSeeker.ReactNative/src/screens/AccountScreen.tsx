@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { OfferItemDto, ThemeMode, ThemeWorld, UserProfileDto } from '../api/types';
 import { AvatarPicker } from '../components/AvatarPicker';
-import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
 import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
@@ -92,7 +91,6 @@ export function AccountScreen() {
       style={{ backgroundColor: palette.background }}
       testID="account-scroll"
     >
-      <StandardHeader />
       <View style={[styles.hero, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
         <View style={styles.heroTop}>
           <View style={[styles.avatar, { backgroundColor: palette.accentMuted }]}>

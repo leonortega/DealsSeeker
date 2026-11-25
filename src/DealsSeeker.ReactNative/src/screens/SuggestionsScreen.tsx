@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { StandardHeader } from '../components/StandardHeader';
 import { useApp } from '../hooks/useApp';
 import { useStatusNotice } from '../hooks/useStatusNotice';
 import { useDelayedOffersRedirect } from '../hooks/useDelayedOffersRedirect';
@@ -55,7 +54,6 @@ export function SuggestionsScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}
         style={{ backgroundColor: palette.background }}
       >
-      <StandardHeader />
       <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: palette.ink }]}>{t('suggestions.title')}</Text>
