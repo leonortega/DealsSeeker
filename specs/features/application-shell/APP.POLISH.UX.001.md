@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Design-system conformance and dialog recovery
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Application shell, Offers View, My Account, Add Offer, Suggestions, Reports
 - **Priority**: Low
@@ -27,6 +27,7 @@ Close the remaining design-system and recovery gaps without changing the establi
 - `APP.POLISH.UX.001-R8`: Embedded web documents shall use the application's system sans font stack.
 - `APP.POLISH.UX.001-R9`: Every scrollable surface shall keep its bottommost control clear of display cutouts and system bars.
 - `APP.POLISH.UX.001-R10`: Search inputs and filter controls shall use the fully rounded pill shape from the Pill Rule, while structural panels keep their 12–28px corners.
+- `APP.POLISH.UX.001-R11`: Embedded map surfaces shall be presented within a structurally rounded, 1px-bordered surface using the active palette; the map content shall be clipped to the corner of that surface.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -56,6 +57,12 @@ Scenario: Search and filter controls are pills
   When the search input and filter actions are rendered
   Then they shall use fully rounded corners
   And the surrounding panel shall keep its structural corner radius
+
+Scenario: Embedded map uses the panel corner treatment
+  Given an embedded map is rendered in the Offers or Add Offer view
+  When the map surface is displayed
+  Then it shall sit within a rounded, 1px-bordered surface using the active palette
+  And the map content shall be clipped to that surface's corners
 ```
 
 ## Example Inputs/Outputs
@@ -63,6 +70,7 @@ Scenario: Search and filter controls are pills
 - Expected output: pin and markers use the palette's danger/accent roles, not a separate red.
 
 ## Edge Cases
+- A map rendered inside an already bordered panel shall not add a second border.
 - A dialog with unsaved input (scrim tap must not discard it).
 - A very small viewport with a tall keyboard.
 - A localized success message longer than the source text.

@@ -40,3 +40,9 @@ Feature: Design-system conformance and dialog recovery
     When the search input and filter actions are rendered
     Then they use fully rounded corners
     And the surrounding panel keeps its structural corner radius
+
+  Scenario: Embedded map uses the panel corner treatment
+    Given an embedded map is rendered in the Offers or Add Offer view
+    When the map surface is displayed
+    Then it sits within a rounded, 1px-bordered surface using the active palette
+    And the map content is clipped to that surface's corners

@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 
 let mockImmersiveOffers = false;
@@ -58,6 +59,16 @@ describe('presentation mode switch', () => {
     expect(screen.getByRole('tab', { name: 'offers.mode.feed' })).toBeTruthy();
     expect(screen.getByRole('tab', { name: 'offers.mode.map' })).toBeTruthy();
     expect(screen.queryByText('app.title')).toBeNull();
+  });
+
+  it('presents the Offers map inside a bordered panel', async () => {
+    await render(<OffersScreen />);
+
+    expect(StyleSheet.flatten(screen.getByTestId('native-map').parent.props.style)).toMatchObject({
+      borderRadius: 28,
+      borderWidth: 1,
+      borderColor: '#d7c9b5',
+    });
   });
 
   it('marks Map selected in the standard view and switches to Feed', async () => {

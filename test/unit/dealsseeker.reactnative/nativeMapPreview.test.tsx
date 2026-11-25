@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { NativeMapPreview } from '../../../src/DealsSeeker.ReactNative/src/components/NativeMapPreview';
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
@@ -24,6 +25,15 @@ describe('NativeMapPreview', () => {
 
     expect(screen.getByTestId('native-map')).toBeTruthy();
     expect(screen.getByTestId('rn-map')).toBeTruthy();
+  });
+
+  it('clips the map surface to structural panel corners', async () => {
+    await render(<NativeMapPreview {...baseProps} />);
+
+    expect(StyleSheet.flatten(screen.getByTestId('native-map').props.style)).toMatchObject({
+      borderRadius: 28,
+      overflow: 'hidden',
+    });
   });
 
   it('shows business markers and coverage', async () => {
