@@ -41,7 +41,6 @@ jest.mock('expo-location', () => ({
   requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ granted: false }),
 }));
 
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/MapPreview', () => ({ MapPreview: () => null }));
 
 describe('AddOfferScreen', () => {
   beforeEach(() => {

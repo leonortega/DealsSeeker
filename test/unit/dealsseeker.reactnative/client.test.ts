@@ -190,4 +190,24 @@ describe('API client', () => {
     expect(fetchMock.mock.calls[0][0]).toBe('http://api.test/api/locations/search?query=a%20b%2Fc');
     expect(fetchMock.mock.calls[1][0]).toBe('http://api.test/api/offers/off%201/availability');
   });
+
+  it('reuses a cached Photon search result for an identical query', async () => {
+    const { api } = loadApi();
+    const results = [{ label: 'Central Park', position: { lat: 40.7128, lng: -74.006 } }];
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(jsonResponse(results));
+
+    expect(await api.searchLocations('Central Park')).toEqual(results);
+    expect(await api.searchLocations('  central park  ')).toEqual(results);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('reuses a cached reverse-geocode result for the same coordinate', async () => {
+    const { api } = loadApi();
+    const result = { label: 'Central Park', position: { lat: 40.7128, lng: -74.006 } };
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(jsonResponse(result));
+
+    expect(await api.reverseLocation(40.7128, -74.006)).toEqual(result);
+    expect(await api.reverseLocation(40.7128, -74.006)).toEqual(result);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });

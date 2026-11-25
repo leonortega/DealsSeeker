@@ -1,8 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { NativeMapPreview } from '../../../src/DealsSeeker.ReactNative/src/components/NativeMapPreview';
 
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/MapPreview', () => ({ MapPreview: () => null }));
-
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
     palette: { accent: '#b85c38', accentMuted: '#e9c9b8', card: '#fffdf8', danger: '#8d2f2f', success: '#2f6e46' },
@@ -61,5 +59,16 @@ describe('NativeMapPreview', () => {
     await render(<NativeMapPreview {...baseProps} pin={{ lat: 40.73, lng: -74.03 }} />);
 
     expect(screen.getByTestId('native-map-pin')).toBeTruthy();
+  });
+
+  it('reports the final center when a drag ends', async () => {
+    const onMapDragEnd = jest.fn();
+    await render(<NativeMapPreview {...baseProps} interactive onMapDragEnd={onMapDragEnd} />);
+
+    await fireEvent(screen.getByTestId('rn-map'), 'regionChangeComplete', {
+      nativeEvent: { region: { latitude: 40.74, longitude: -74.04 } },
+    });
+
+    expect(onMapDragEnd).toHaveBeenCalledWith({ lat: 40.74, lng: -74.04 });
   });
 });

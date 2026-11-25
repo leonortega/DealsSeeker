@@ -40,7 +40,6 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   }),
 }));
 
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/MapPreview', () => ({ MapPreview: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferCard', () => ({ OfferCard: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferDetailModal', () => ({ OfferDetailModal: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferCommentsModal', () => ({ OfferCommentsModal: () => null }));

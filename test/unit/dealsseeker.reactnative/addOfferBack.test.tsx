@@ -47,7 +47,6 @@ jest.mock('expo-location', () => ({
   requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ granted: false }),
 }));
 
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/MapPreview', () => ({ MapPreview: () => null }));
 
 describe('Add Offer system Back (ADD.OFFER.EXIT.001-R8)', () => {
   beforeEach(() => {

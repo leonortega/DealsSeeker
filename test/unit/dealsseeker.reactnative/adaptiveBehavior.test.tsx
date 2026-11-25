@@ -1,20 +1,10 @@
 import { render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { MapPreview } from '../../../src/DealsSeeker.ReactNative/src/components/MapPreview';
+import { NativeMapPreview } from '../../../src/DealsSeeker.ReactNative/src/components/NativeMapPreview';
 import { LoginScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/LoginScreen';
 import { OfferCard } from '../../../src/DealsSeeker.ReactNative/src/components/OfferCard';
 import { OfferDetailModal } from '../../../src/DealsSeeker.ReactNative/src/components/OfferDetailModal';
 import { resolveMotionPreferences } from '../../../src/DealsSeeker.ReactNative/src/utils/motion';
-
-jest.mock('react-native-webview', () => {
-  const React = require('react');
-  const { View: MockView } = require('react-native');
-  const WebViewMock = React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
-    React.useImperativeHandle(ref, () => ({ postMessage: jest.fn() }));
-    return React.createElement(MockView, { ...props, testID: 'map-webview' });
-  });
-  return { WebView: WebViewMock };
-});
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
@@ -64,18 +54,18 @@ const offer = {
 } as never;
 
 describe('adaptive behavior (APP.ADAPTIVE.UX.002)', () => {
-  it('does not disable pinch-zoom on the embedded map', async () => {
+  it('uses the native map view instead of an embedded web page', async () => {
     await render(
-      <MapPreview
+      <NativeMapPreview
         businesses={[]}
         center={{ lat: 40.7, lng: -74 }}
         onSelectMarker={jest.fn()}
         radiusMeters={1500}
       />
     );
-    const html = screen.getByTestId('map-webview').props.source.html as string;
-    expect(html).toContain('width=device-width');
-    expect(html).not.toContain('maximum-scale=1');
+
+    expect(screen.getByTestId('native-map')).toBeTruthy();
+    expect(screen.queryByTestId('map-webview')).toBeNull();
   });
 
   it('uses non-animated motion when the system requests reduced motion', () => {
