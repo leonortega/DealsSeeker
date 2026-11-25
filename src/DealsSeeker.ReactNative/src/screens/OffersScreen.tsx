@@ -669,6 +669,7 @@ const styles = StyleSheet.create({
   },
   topBar: {
     left: 0,
+    marginHorizontal: -16,
     position: 'absolute',
     right: 0,
     top: 0,

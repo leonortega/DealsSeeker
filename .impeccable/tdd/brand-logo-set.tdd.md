@@ -54,6 +54,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 6/6 in that suite; 64 suites / 375 tests overall; `typecheck` clean.
 - The standard Offers view now pins a top bar at the same position as the immersive feed, with the rounded symbol tile at the left, presentation switch centered via `space-between`, and help at the right; scroll content gets a 56px top inset so nothing hides under it.
 
+## Follow-up: exact feed-view alignment
+
+- **Spec**: `APP.BRAND.001` v1.3, R10 (Approved); BDD assertion added.
+- **RED**: `npm test -- --runInBand presentationMode` — 1 test failed: top bar lacked the -16 horizontal margin needed to escape the shell's 16px content padding.
+- **GREEN**: 6/6 in that suite; 64 suites / 375 tests overall; `typecheck` clean.
+- The immersive feed runs edge-to-edge (`paddingHorizontal: 0`), while the standard screen inherits 16px. The pinned controls row now cancels that padding, so the logo, switch and help sit at the same screen coordinates in both presentations.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
