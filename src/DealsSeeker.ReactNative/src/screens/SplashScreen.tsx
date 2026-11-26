@@ -11,7 +11,13 @@ export function SplashScreen() {
         style={styles.brandLogo}
         testID="brand-mark"
       />
-      <Text style={[styles.cta, { color: '#000000' }]}>{t('splash.cta')}</Text>
+      <View style={[styles.iconTile, { backgroundColor: palette.panel, borderColor: palette.border }]}>
+        <Image
+          source={require('../../assets/brand/logo-icon.png')}
+          style={styles.iconImage}
+          testID="splash-icon"
+        />
+      </View>
     </View>
   );
 }
@@ -29,11 +35,18 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 240,
   },
-  cta: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-    marginTop: 22,
-    textTransform: 'uppercase',
+  iconTile: {
+    alignItems: 'center',
+    borderRadius: 28,
+    borderWidth: 1,
+    height: 80,
+    justifyContent: 'center',
+    marginTop: 24,
+    width: 80,
+  },
+  iconImage: {
+    height: 48,
+    resizeMode: 'contain',
+    width: 48,
   },
 });

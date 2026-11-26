@@ -152,6 +152,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 64 suites / 386 tests overall; `typecheck` clean.
 - Offer images now use `cover`, so the page fills edge-to-edge with no expanding empty band at the top when the image loads. Device screenshot confirms a full-bleed image.
 
+## Follow-up: splash icon tile, no CTA text
+
+- **Spec**: `APP.BRAND.001` v1.9 (R13) and BDD scenario updated.
+- **RED**: `npm test -- --runInBand presentationComponents` — 1 test failed: `splash.cta` was rendered and no `splash-icon` existed.
+- **GREEN**: 64 suites / 386 tests overall; `typecheck` clean.
+- Splash now shows the stacked lockup plus a rounded tile with the symbol from `dealsseeker-icon-color.svg`; the `DealsSeeker mobile` CTA text is removed.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
