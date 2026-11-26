@@ -41,6 +41,7 @@ interface LocationSearchResult {
 
 const maxPhotos = 8;
 const minAutoTagLength = 3;
+const maxTagLength = 40;
 const successDwellMs = 3000;
 const descriptionMaxLength = 500;
 const locationQueryMaxLength = 120;
@@ -269,7 +270,10 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
             return;
           }
 
-          const draftTags = (draft.tags ?? []).map(normalizeTag).filter(Boolean);
+          const draftTags = (draft.tags ?? [])
+            .map((tag) => normalizeTag(tag).slice(0, maxTagLength))
+            .filter(Boolean)
+            .slice(0, maxDraftTags);
           setDescription(draft.description ?? '');
           setTags(draftTags);
           setSuggestionTags([]);
@@ -507,7 +511,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
   }
 
   function addTag(value: string, source: 'description' | 'manual' | 'suggestion' = 'description') {
-    const normalized = normalizeTag(value);
+    const normalized = normalizeTag(value).slice(0, maxTagLength);
     if (!normalized || (source !== 'manual' && dismissedTags.includes(normalized)) || tags.includes(normalized)) {
       return;
     }
@@ -554,7 +558,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       return null;
     }
 
-    const normalized = normalizeTag(lastWord);
+    const normalized = normalizeTag(lastWord).slice(0, maxTagLength);
     if (normalized.length < minAutoTagLength || dismissedTags.includes(normalized)) {
       return null;
     }
