@@ -72,16 +72,23 @@ Feature: Native navigation behavior with brand chrome
     When the modal content is rendered
     Then no platform-native close button shall be drawn inside the brand-styled content
 
-  Scenario: Back with no previous in-app destination
-    Given the user is on the first view after launch
+  Scenario: Back from Offers asks for exit confirmation
+    Given the user is on Offers with no open overlay
     When the user invokes system Back
-    Then the application shall leave the foreground using platform default behavior
+    Then an exit confirmation is shown
+    And the application remains open until the user confirms
 
-  Scenario: Back returns to the previously visited destination
+  Scenario: Back closes an open overlay before the exit confirmation
+    Given an overlay is open on Offers
+    When the user invokes system Back
+    Then the overlay closes
+    And no exit confirmation is shown
+
+  Scenario: Back returns to Offers from another view
     Given the user moved from Offers to Suggestions
     When the user invokes system Back
-    Then Offers shall become visible with its search query and radius preserved
-    And the application shall remain open
+    Then Offers becomes visible with its search query and radius preserved
+    And the application remains open
 
   Scenario: Back from the immersive feed destination
     Given the user opened My Account from the immersive offers feed

@@ -1,4 +1,4 @@
-import { StyleSheet, Text } from 'react-native';
+import { BackHandler, StyleSheet, Text } from 'react-native';
 import { act, render, screen } from '@testing-library/react-native';
 import { NativeBottomSheet } from '../../../src/DealsSeeker.ReactNative/src/components/NativeBottomSheet';
 
@@ -53,6 +53,25 @@ describe('NativeBottomSheet', () => {
 
     const sheet = screen.getByTestId('native-bottom-sheet');
     expect(StyleSheet.flatten(sheet.props.backgroundStyle).backgroundColor).toBe('#293a35');
+  });
+
+  it('closes on system Back while visible', async () => {
+    const onClose = jest.fn();
+    let handler: (() => boolean) | undefined;
+    jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_event, backHandler) => {
+      handler = backHandler as () => boolean;
+      return { remove: jest.fn() };
+    });
+
+    await render(
+      <NativeBottomSheet visible onClose={onClose}>
+        <Text>Sheet content</Text>
+      </NativeBottomSheet>
+    );
+
+    expect(handler?.()).toBe(true);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    jest.restoreAllMocks();
   });
 
   it('renders nothing while hidden', async () => {

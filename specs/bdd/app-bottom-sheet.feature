@@ -48,3 +48,9 @@ Feature: Native bottom-sheet behavior for overlays
     Then the feed's top bar and tabs do not appear above the sheet
     And the status banner does not appear above the sheet
     And all sheet content remains readable
+
+  Scenario: System Back dismisses an open sheet
+    Given an overlay sheet is open
+    When the user invokes system Back
+    Then the sheet closes through its normal dismissal path
+    And the underlying view remains unchanged

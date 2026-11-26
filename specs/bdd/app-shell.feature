@@ -45,20 +45,28 @@ Feature: Application shell and session-aware landing
     When the Offers hero area is rendered
     Then no presentation control is displayed in the hero area
 
-  Scenario: Android back returns to the previously visited view
+  Scenario: Android back closes an open overlay first
+    Given an overlay or bottom sheet is open on any view
+    When the user invokes the system back gesture or back button
+    Then the overlay or sheet is closed
+    And the underlying view remains visible
+
+  Scenario: Android back returns to Offers from another view
     Given the user is authenticated
     And the app is running on an Android device
-    And the user has moved from one view to another within the application
+    And the user is on a view other than Offers with no overlay open
     When the user invokes the system back gesture or back button
-    Then the previously visited view is visible
+    Then the Offers view is visible
     And the application remains open
 
-  Scenario: Android back from the first view leaves the application
-    Given the app is running on an Android device
-    And the user is on the first view shown after application launch
-    And no other view has been visited within the application
+  Scenario: Android back from Offers asks for exit confirmation
+    Given the user is on the Offers view with no overlay open
     When the user invokes the system back gesture or back button
-    Then the application leaves the foreground using the platform default behavior
+    Then an exit confirmation is shown
+    When the user confirms
+    Then the application leaves the foreground
+    When the user cancels
+    Then the Offers view remains visible
 
   Scenario: Android back returns from a destination opened in the immersive feed
     Given the user is authenticated

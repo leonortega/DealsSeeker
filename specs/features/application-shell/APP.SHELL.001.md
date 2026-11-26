@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v2.6`
+- **Version**: `v2.7`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -39,8 +39,8 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R12`: When any active view is waiting for required data (for example, location resolution or search execution), the system shall display a blocking animated loading state.
 - `APP.SHELL.001-R13`: While the blocking loading state is visible, user interaction with the underlying view shall be prevented.
 - `APP.SHELL.001-R14`: The blocking loading state shall be dismissed automatically when all pending required operations complete.
-- `APP.SHELL.001-R17`: On Android, the system back gesture or back button shall navigate to the previously visited view within the application when one exists, instead of closing the application.
-- `APP.SHELL.001-R18`: When no previously visited view exists within the application, the Android system back gesture or back button shall leave the application using the platform default behavior.
+- `APP.SHELL.001-R17`: On Android, the system back gesture or back button shall close an open overlay or sheet first; when no overlay is open and the active view is not Offers, it shall return to the Offers view.
+- `APP.SHELL.001-R18`: When the Offers view is active and no overlay is open, the Android system back gesture or back button shall ask the user to confirm exiting; the application shall leave only after the user confirms. When unauthenticated, the authentication view shall use the same exit confirmation because Offers is not available.
 - `APP.SHELL.001-R19`: Back navigation shall preserve view context that the destination view restores on entry, including the offers search query and radius when returning to the offers feed.
 - `APP.SHELL.001-R21`: All views shall present the same bottom footer navigation with My Account (👤), Suggestions, Create, Offers (💲) and a view button in that order. At most one footer option shall be highlighted at a time, and the view button shall never be highlighted. Opening an overlay shall highlight only the option that opened it.
 - `APP.SHELL.001-R22`: The view button shall use ⭐ with the label `New view` when the standard view is selected and 🗺️ with the label `Map mode` when the immersive view is selected; selecting it shall change the selected view mode and shall display the offers view in the newly selected mode, even when the user was on another view such as Suggestions. The view button shall never be highlighted.
@@ -97,18 +97,27 @@ Scenario: No view button is displayed in the Offers hero
   Then no new-view button shall be displayed in the hero area
   And the view button shall only be available in the shared bottom footer
 
-Scenario: Android back returns to the previously visited view
-  Given the authenticated user has moved from one view to another within the application
+Scenario: Android back closes an open overlay first
+  Given an overlay or bottom sheet is open on any view
+  When the user invokes the system back gesture or back button
+  Then the overlay or sheet shall close
+  And the underlying view shall remain visible
+
+Scenario: Android back returns to Offers from another view
+  Given the authenticated user is on a view other than Offers with no overlay open
   And the app is running on an Android device
   When the user invokes the system back gesture or back button
-  Then the previously visited view shall become visible
+  Then the Offers view shall become visible
   And the application shall remain open
 
-Scenario: Android back from the first view leaves the application
-  Given the user is on the first view shown after application launch
-  And no other view has been visited within the application
+Scenario: Android back from Offers asks for exit confirmation
+  Given the user is on the Offers view with no overlay open
   When the user invokes the system back gesture or back button
-  Then the application shall leave the foreground using the platform default behavior
+  Then an exit confirmation shall be shown
+  When the user confirms
+  Then the application shall leave the foreground
+  When the user cancels
+  Then the Offers view shall remain visible
 
 Scenario: Android back returns from a destination opened in the immersive feed
   Given the authenticated user is on the immersive offers feed

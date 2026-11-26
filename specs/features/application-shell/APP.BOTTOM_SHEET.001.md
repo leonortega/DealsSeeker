@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Native Bottom-Sheet Behavior for Overlays
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Application Shell, Offers overlays
 - **Priority**: Low
@@ -28,6 +28,7 @@ Give the application's modal overlays native bottom-sheet interaction — drag, 
 - `APP.BOTTOM_SHEET.001-R8`: A sheet that is not visible shall not open the on-screen keyboard or take focus from the current surface.
 - `APP.BOTTOM_SHEET.001-R9`: An overlay sheet shall not render a separate Close button that duplicates the native handle and swipe dismissal; dismissal shall remain available through the native affordance and to assistive technology.
 - `APP.BOTTOM_SHEET.001-R10`: While a sheet is open, its surface and backdrop shall render above all presenting-view chrome, including headers, presentation switches, filters and transient status banners.
+- `APP.BOTTOM_SHEET.001-R11`: System Back while a sheet is open shall dismiss the sheet through its normal dismissal path and shall not affect the underlying view.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -77,6 +78,12 @@ Scenario: Sheet content is not covered by presenting-view chrome
   Then the feed's top bar and tabs shall not appear above the sheet
   And the status banner shall not appear above the sheet
   And all sheet content shall remain readable
+
+Scenario: System Back dismisses an open sheet
+  Given an overlay sheet is open
+  When the user invokes system Back
+  Then the sheet shall close through its normal dismissal path
+  And the underlying view shall remain unchanged
 ```
 
 ## Example Inputs/Outputs

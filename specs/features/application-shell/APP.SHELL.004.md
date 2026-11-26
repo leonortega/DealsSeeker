@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: System Back Semantics via Native Navigation
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -18,10 +18,10 @@ Define that system Back (Android button and predictive gesture, iOS edge swipe) 
 - The user invokes the platform back gesture or back button.
 
 ## Requirements
-- `APP.SHELL.004-R1`: System Back shall be handled through native navigation lifecycle handlers rather than a custom global back stack.
+- `APP.SHELL.004-R1`: In-app Back navigation shall be handled through native navigation lifecycle handlers rather than a custom global back stack; a root-level handler may intercept Back only to request exit confirmation when Offers is the active view.
 - `APP.SHELL.004-R2`: On Add Offer with unsaved edits, system Back shall follow the cancel and discard-confirmation behavior defined in `ADD.OFFER.EXIT.001`.
 - `APP.SHELL.004-R3`: When a destination was opened from the immersive offers feed, system Back shall return to the immersive feed as defined in `OFFERS.IMMERSIVE.001`.
-- `APP.SHELL.004-R4`: When no previous in-app destination exists, system Back shall leave the application using platform default behavior, per `APP.SHELL.001-R18`.
+- `APP.SHELL.004-R4`: When Offers is the active view with no open overlay, system Back shall request exit confirmation and shall leave the application only after confirmation, per `APP.SHELL.001-R18`.
 - `APP.SHELL.004-R5`: System Back shall preserve destination view state as required by `APP.SHELL.001-R19`.
 - `APP.SHELL.004-R6`: No visible in-app back control shall be introduced; navigation controls shall remain as defined in `APP.SHELL.001-R24`.
 - `APP.SHELL.004-R7`: Back handling shall be equivalent for Android system Back / predictive Back and iOS left-edge swipe, differing only where the platform itself differs.
@@ -29,12 +29,19 @@ Define that system Back (Android button and predictive gesture, iOS edge swipe) 
 
 ## Acceptance Criteria (BDD)
 ```gherkin
-Scenario: Back with no previous in-app destination
-  Given the user is on the first view after launch
+Scenario: Back from Offers asks for exit confirmation
+  Given the user is on Offers with no open overlay
   When the user invokes system Back
-  Then the application shall leave the foreground using platform default behavior
+  Then an exit confirmation shall be shown
+  And the application shall remain open until the user confirms
 
-Scenario: Back returns to the previously visited destination
+Scenario: Back closes an open overlay before the exit confirmation
+  Given an overlay is open on Offers
+  When the user invokes system Back
+  Then the overlay shall close
+  And no exit confirmation shall be shown
+
+Scenario: Back returns to Offers from another view
   Given the user moved from Offers to Suggestions
   When the user invokes system Back
   Then Offers shall become visible with its search query and radius preserved
