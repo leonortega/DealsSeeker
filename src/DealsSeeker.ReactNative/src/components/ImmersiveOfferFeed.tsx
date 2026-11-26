@@ -18,6 +18,7 @@ import { formatDistanceMeters, shorten } from '../utils/format';
 import { resolveFeedRestoreIndex } from '../utils/feedPosition';
 import { openDirections } from '../utils/maps';
 import { immersiveInk, immersiveInkMuted } from '../utils/theme';
+import { landmarkFontFamily } from '../utils/typography';
 import { ImmersiveActionCaption, ImmersiveActionIconGlyph } from './ImmersiveActionGlyphs';
 import { ImmersiveFeedTab, ImmersiveFeedTabs } from './ImmersiveFeedTabs';
 import { ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
@@ -599,8 +600,9 @@ const styles = StyleSheet.create({
   },
   businessName: {
     color: '#fff',
+    fontFamily: landmarkFontFamily(),
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   distance: {
     color: '#fff',

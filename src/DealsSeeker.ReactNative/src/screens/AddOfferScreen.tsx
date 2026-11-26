@@ -1,3 +1,4 @@
+import { landmarkFontFamily } from '../utils/typography';
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -1120,7 +1121,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   title: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 28,
     fontWeight: '700',
   },
@@ -1131,7 +1132,7 @@ const styles = StyleSheet.create({
     padding: 18,
   },
   sectionTitle: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 22,
     fontWeight: '700',
   },

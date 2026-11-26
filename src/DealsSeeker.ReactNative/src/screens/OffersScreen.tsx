@@ -1,3 +1,4 @@
+import { landmarkFontFamily } from '../utils/typography';
 import { type ElementRef, useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import * as Location from 'expo-location';
@@ -721,7 +722,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   title: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 30,
     fontWeight: '700',
   },
@@ -779,7 +780,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   sectionTitle: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 24,
     fontWeight: '700',
   },

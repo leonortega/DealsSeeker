@@ -1,3 +1,4 @@
+import { landmarkFontFamily } from '../utils/typography';
 import type { RefObject } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 24,
     fontWeight: '700',
     marginBottom: 12,

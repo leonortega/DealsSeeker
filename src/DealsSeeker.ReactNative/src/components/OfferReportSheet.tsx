@@ -1,3 +1,4 @@
+import { landmarkFontFamily } from '../utils/typography';
 import { type RefObject, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { OfferReportDraft } from '../api/types';
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 24,
     fontWeight: '700',
     marginRight: 12,

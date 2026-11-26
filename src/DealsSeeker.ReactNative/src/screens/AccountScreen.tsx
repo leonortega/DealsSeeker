@@ -1,3 +1,4 @@
+import { landmarkFontFamily } from '../utils/typography';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { OfferItemDto, ThemeMode, ThemeWorld, UserProfileDto } from '../api/types';
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
   },
   heroTitle: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 24,
     fontWeight: '700',
   },
@@ -290,7 +291,7 @@ const styles = StyleSheet.create({
     padding: 18,
   },
   panelTitle: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 24,
     fontWeight: '700',
   },

@@ -1,3 +1,4 @@
+import { landmarkFontFamily } from '../utils/typography';
 import { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
@@ -126,7 +127,7 @@ const styles = StyleSheet.create({
     width: 64,
   },
   brandTitle: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 30,
     fontWeight: '700',
     marginTop: 10,
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   formTitle: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 24,
     fontWeight: '700',
   },

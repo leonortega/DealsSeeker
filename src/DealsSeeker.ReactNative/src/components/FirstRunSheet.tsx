@@ -1,3 +1,4 @@
+import { landmarkFontFamily } from '../utils/typography';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
 
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 22,
     fontWeight: '700',
   },

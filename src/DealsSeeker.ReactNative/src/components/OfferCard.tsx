@@ -1,3 +1,4 @@
+import { landmarkFontFamily } from '../utils/typography';
 import { Image, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useEffect, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   businessName: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 22,
     fontWeight: '700',
   },

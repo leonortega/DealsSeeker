@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Palette } from '../utils/theme';
+import { landmarkFontFamily } from '../utils/typography';
 import { NavIcon } from './NavIcon';
 
 export interface OfferTopBarProps {
@@ -74,8 +75,9 @@ const styles = StyleSheet.create({
     width: 40,
   },
   title: {
+    fontFamily: landmarkFontFamily(),
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   modeSlot: {
     maxWidth: 360,

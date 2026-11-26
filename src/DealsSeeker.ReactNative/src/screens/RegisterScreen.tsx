@@ -1,3 +1,4 @@
+import { landmarkFontFamily } from '../utils/typography';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
@@ -146,7 +147,7 @@ export function RegisterScreen() {
 
 const styles = StyleSheet.create({
   formTitle: {
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 24,
     fontWeight: '700',
   },

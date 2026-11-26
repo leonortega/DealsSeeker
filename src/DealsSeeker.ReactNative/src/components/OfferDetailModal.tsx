@@ -1,3 +1,4 @@
+import { landmarkFontFamily } from '../utils/typography';
 import React, { type RefObject, useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -503,7 +504,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontFamily: 'Georgia',
+    fontFamily: landmarkFontFamily(),
     fontSize: 24,
     fontWeight: '700',
     marginRight: 12,
