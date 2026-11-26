@@ -18,43 +18,26 @@ Implementation stack:
 - `ADD.OFFER.*`: Add Offer page with image capture/upload, auto location, location search, confirm location, and tag long-press logic.
 
 ## Run (React Native UI + API, two terminals)
-The React Native client expects the API on port **5005**. The `run-dev.ps1` script starts both
-processes as independent consoles: the API in one terminal, the Expo UI in the other.
-
-```powershell
-# Open two terminals: one for the API, one for the UI
-.\scripts\run-dev.ps1
-```
-
-The script waits for the API to report healthy before starting the UI, so the UI never races the
-API. Close each terminal with `Ctrl+C`.
+The React Native client expects the API on port **5005**. Both scripts start the API and the client
+in separate terminals; close each terminal with `Ctrl+C`.
 
 | Command | Effect |
 |---|---|
-| `.\scripts\run-dev.ps1` | Open the API and the UI in two separate terminal windows |
-| `.\scripts\run-dev.ps1 -Target api` | Run only the API, in the current terminal |
-| `.\scripts\run-dev.ps1 -Target ui` | Run only the UI, in the current terminal |
-| `.\scripts\run-dev.ps1 -Platform ios` | Point the UI at `http://localhost:5005` |
-| `.\scripts\run-dev.ps1 -Platform device -ApiHost 0.0.0.0` | Run against a physical device on the same network |
-| `.\scripts\run-dev.ps1 -Clear` | Clear the Expo bundler cache before starting the UI |
-| `.\scripts\run-dev.ps1 -Wait` | Keep the launching terminal open until `Ctrl+C` |
+| `.\scripts\run-expo-go.ps1` | Start the API and Metro for a physical device running Expo Go (tunnel mode) |
+| `.\scripts\run-expo-go.ps1 -Clear` | Same, clearing the Metro cache after dependency/config changes |
+| `.\scripts\run-expo-go.ps1 -MetroHost lan` | Use the LAN address instead of the tunnel (port 8081 must be reachable from the device) |
+| `.\scripts\run-reactnative-android.ps1` | Start the API and build/launch a local native Android app on an emulator or USB device |
+| `.\scripts\run-reactnative-android.ps1 -Target api` | Run only the API, in the current terminal |
 
-The API base URL handed to the UI follows the chosen platform:
+The API base URL handed to the client follows the chosen platform:
 
 | Platform | API base URL |
 |---|---|
-| `android` (default) | `http://10.0.2.2:5005` — the emulator alias for the host |
-| `ios` / `web` | `http://localhost:5005` |
-| `device` | `http://<machine-lan-ip>:5005` |
+| `android` emulator | `http://10.0.2.2:5005` — the emulator alias for the host |
+| physical device | `http://<machine-lan-ip>:5005` |
 
-### Native Android build
-`run-reactnative-android.ps1` runs the API and the Android app in two separate terminals. It
-resolves the Android SDK/JDK, starts an emulator when no device is connected, and builds/launches
-the app with `expo run:android`:
-
-```powershell
-.\scripts\run-reactnative-android.ps1
-```
+Device setup, Expo Go requirements, and the note that EAS is reserved for future Play Store publishing
+are in `src/DealsSeeker.ReactNative/README.md`.
 
 ## Map and Geocoding Configuration
 One stack everywhere: native Google Maps for in-app rendering and external directions; Photon through the API for address search and reverse geocoding. There are no provider switches or fallback renderers.
