@@ -56,8 +56,9 @@ function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string
   if (canRenderImage && !imageFailed) {
     return (
       <Image
-        resizeMode="contain"
+        resizeMode="cover"
         source={{ uri: imageUri ?? undefined }}
+        testID="offer-image"
         style={[styles.backgroundImage, { backgroundColor: palette.backdrop }]}
         onError={() => setImageFailed(true)}
       />

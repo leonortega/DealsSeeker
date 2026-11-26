@@ -145,6 +145,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 64 suites / 385 tests overall; `typecheck` clean.
 - Feed-area and page measurements are now applied only on the first layout, so loading the offer image cannot re-layout the background or side rail. Device capture across the transition shows stable controls and image position.
 
+## Follow-up: full-bleed feed image
+
+- **Specs**: `OFFERS.FEED.IMMERSIVE.001` v2.3 (R36) and BDD scenario in `offers-immersive-feed.feature`.
+- **RED**: `npm test -- --runInBand immersiveChrome` — 1 test failed: `resizeMode` was `contain`.
+- **GREEN**: 64 suites / 386 tests overall; `typecheck` clean.
+- Offer images now use `cover`, so the page fills edge-to-edge with no expanding empty band at the top when the image loads. Device screenshot confirms a full-bleed image.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
