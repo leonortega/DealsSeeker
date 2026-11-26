@@ -73,7 +73,6 @@ function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
           label={t('nav.createOffer')}
           onPress={() => openAddOffer()}
           palette={palette}
-          visible={sheetCount === 0}
         />
       }
     />
