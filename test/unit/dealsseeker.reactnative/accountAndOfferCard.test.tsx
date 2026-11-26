@@ -257,8 +257,8 @@ describe('OfferCard', () => {
 
   it('submits positive and negative availability votes', async () => {
     await renderCard();
-    await fireEvent.press(screen.getByText('👍 3'));
-    await fireEvent.press(screen.getByText('👎 1'));
+    await fireEvent.press(screen.getByLabelText('offers.action.available 3'));
+    await fireEvent.press(screen.getByLabelText('offers.action.unavailable 1'));
     expect(callbacks.onVote).toHaveBeenNthCalledWith(1, expect.anything(), 1);
     expect(callbacks.onVote).toHaveBeenNthCalledWith(2, expect.anything(), 2);
   });

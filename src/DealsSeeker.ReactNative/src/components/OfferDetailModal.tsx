@@ -1,4 +1,5 @@
 import { landmarkFontFamily } from '../utils/typography';
+import { immersiveInk } from '../utils/theme';
 import React, { type RefObject, useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -570,7 +571,7 @@ const styles = StyleSheet.create({
     right: 12,
   },
   galleryCounterLabel: {
-    color: '#fff',
+    color: immersiveInk,
     fontSize: 12,
     fontWeight: '700',
   },

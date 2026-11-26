@@ -2,6 +2,7 @@ import { StyleSheet, Text } from 'react-native';
 import { G, Path, Svg } from 'react-native-svg';
 import { useApp } from '../hooks/useApp';
 import { decorativeProps } from '../utils/decorativeProps';
+import { immersiveInkMuted } from '../utils/theme';
 
 export type ImmersiveActionIcon =
   | 'comments'
@@ -85,7 +86,7 @@ export function ImmersiveActionIconGlyph({
 
 export function ImmersiveActionCaption({ label }: { label: string }) {
   return (
-    <Text {...decorativeProps} numberOfLines={1} style={[styles.actionCaption, { color: '#c6d0c9' }]}>
+    <Text {...decorativeProps} numberOfLines={1} style={[styles.actionCaption, { color: immersiveInkMuted }]}>
       {label}
     </Text>
   );

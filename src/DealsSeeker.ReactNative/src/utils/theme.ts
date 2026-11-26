@@ -184,6 +184,11 @@ const palettes: Record<ThemeWorld, { light: Palette; dark: Palette }> = {
 /** White-on-photo text for the immersive overlay; independent of the active palette. */
 export const immersiveInk = '#f7f1e8';
 export const immersiveInkMuted = '#c6d0c9';
+export const immersiveScrim = 'rgba(0, 0, 0, 0.28)';
+export const immersiveDivider = 'rgba(255, 255, 255, 0.28)';
+export const immersiveTagSurface = 'rgba(255, 255, 255, 0.2)';
+export const immersivePhotoNav = 'rgba(0, 0, 0, 0.45)';
+export const immersiveDot = 'rgba(255, 255, 255, 0.45)';
 
 export function primaryButtonText(palette: Palette): string {
   return palette.onAccent;

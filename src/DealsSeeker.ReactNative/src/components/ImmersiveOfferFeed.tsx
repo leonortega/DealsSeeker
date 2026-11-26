@@ -17,7 +17,15 @@ import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
 import { resolveFeedRestoreIndex } from '../utils/feedPosition';
 import { openDirections } from '../utils/maps';
-import { immersiveInk, immersiveInkMuted } from '../utils/theme';
+import {
+  immersiveDivider,
+  immersiveDot,
+  immersiveInk,
+  immersiveInkMuted,
+  immersivePhotoNav,
+  immersiveScrim,
+  immersiveTagSurface,
+} from '../utils/theme';
 import { landmarkFontFamily } from '../utils/typography';
 import { ImmersiveActionCaption, ImmersiveActionIconGlyph } from './ImmersiveActionGlyphs';
 import { ImmersiveFeedTab, ImmersiveFeedTabs } from './ImmersiveFeedTabs';
@@ -73,7 +81,7 @@ function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string
         { alignItems: 'center', backgroundColor: palette.backdrop, justifyContent: 'center' },
       ]}
     >
-      <Text style={{ color: '#fff', fontSize: 76, opacity: 0.45 }}>{placeholderSymbol}</Text>
+      <Text style={{ color: immersiveInk, fontSize: 76, opacity: 0.45 }}>{placeholderSymbol}</Text>
     </View>
   );
 }
@@ -537,7 +545,7 @@ const styles = StyleSheet.create({
     top: 0,
   },
   overlay: {
-    backgroundColor: 'rgba(0,0,0,0.28)',
+    backgroundColor: immersiveScrim,
     bottom: 0,
     left: 0,
     position: 'absolute',
@@ -565,7 +573,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   railDivider: {
-    backgroundColor: 'rgba(255,255,255,0.28)',
+    backgroundColor: immersiveDivider,
     height: 1,
     marginVertical: 2,
     width: 28,
@@ -599,19 +607,19 @@ const styles = StyleSheet.create({
     paddingRight: 110,
   },
   businessName: {
-    color: '#fff',
+    color: immersiveInk,
     fontFamily: landmarkFontFamily(),
     fontSize: 18,
     fontWeight: '700',
   },
   distance: {
-    color: '#fff',
+    color: immersiveInk,
     fontSize: 12,
     fontWeight: '700',
     marginTop: 4,
   },
   description: {
-    color: '#fff',
+    color: immersiveInk,
     fontSize: 14,
     lineHeight: 18,
     marginTop: 8,
@@ -623,24 +631,24 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   tagsText: {
-    color: '#fff',
+    color: immersiveInk,
     fontSize: 13,
     fontWeight: '700',
     marginTop: 8,
   },
   tag: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: immersiveTagSurface,
     borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
   tagLabel: {
-    color: '#fff',
+    color: immersiveInk,
     fontSize: 11,
     fontWeight: '700',
   },
   moreButton: {
-    color: '#fff',
+    color: immersiveInk,
     fontWeight: '800',
     marginTop: 6,
   },
@@ -673,14 +681,14 @@ const styles = StyleSheet.create({
   },
   immersivePhotoNavButton: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: immersivePhotoNav,
     borderRadius: 999,
     height: 44,
     justifyContent: 'center',
     width: 44,
   },
   immersivePhotoNavLabel: {
-    color: '#fff',
+    color: immersiveInk,
     fontSize: 20,
     fontWeight: '700',
   },
@@ -690,13 +698,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   immersivePhotoDot: {
-    backgroundColor: 'rgba(255,255,255,0.45)',
+    backgroundColor: immersiveDot,
     borderRadius: 999,
     height: 8,
     width: 8,
   },
   immersivePhotoDotActive: {
-    backgroundColor: '#ffffff',
+    backgroundColor: immersiveInk,
     height: 10,
     width: 10,
   },

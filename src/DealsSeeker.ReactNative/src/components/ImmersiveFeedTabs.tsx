@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
-import { immersiveInk, immersiveInkMuted } from '../utils/theme';
+import { immersiveInk, immersiveInkMuted, immersivePhotoNav } from '../utils/theme';
 
 export type ImmersiveFeedTab = 'favorites' | 'viewAll';
 
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontSize: 13,
     fontWeight: '700',
-    textShadowColor: 'rgba(0,0,0,0.45)',
+    textShadowColor: immersivePhotoNav,
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },

@@ -5,6 +5,8 @@ import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { useApp } from '../hooks/useApp';
 import { isSvgImageUri } from '../utils/images';
+import { immersiveInk } from '../utils/theme';
+import { ImmersiveActionIconGlyph } from './ImmersiveActionGlyphs';
 import { formatDistanceMeters, shorten } from '../utils/format';
 
 interface OfferCardProps {
@@ -182,7 +184,10 @@ function OfferCardRow({
                 offer.hasCurrentUserVoted && styles.disabled,
               ]}
             >
-              <Text style={{ color: palette.ink }}>👍 {offer.positiveAvailabilityCount}</Text>
+              <View style={styles.voteContent}>
+                <ImmersiveActionIconGlyph kind="votePositive" />
+                <Text style={{ color: palette.ink }}>{offer.positiveAvailabilityCount}</Text>
+              </View>
             </Pressable>
             <Pressable
               accessibilityLabel={`${t('offers.action.unavailable')} ${offer.negativeAvailabilityCount}`}
@@ -196,7 +201,10 @@ function OfferCardRow({
                 offer.hasCurrentUserVoted && styles.disabled,
               ]}
             >
-              <Text style={{ color: palette.ink }}>👎 {offer.negativeAvailabilityCount}</Text>
+              <View style={styles.voteContent}>
+                <ImmersiveActionIconGlyph kind="voteNegative" />
+                <Text style={{ color: palette.ink }}>{offer.negativeAvailabilityCount}</Text>
+              </View>
             </Pressable>
             <Pressable
               accessibilityLabel={t('offers.report')}
@@ -219,6 +227,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 26,
     borderWidth: 1,
+    elevation: 8,
     overflow: 'hidden',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
@@ -279,7 +288,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   metaChipLabel: {
-    color: '#fff',
+    color: immersiveInk,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -350,6 +359,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+  },
+  voteContent: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
   },
   voteButton: {
     alignItems: 'center',

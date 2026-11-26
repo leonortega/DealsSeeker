@@ -12,6 +12,7 @@ import { useApp } from '../hooks/useApp';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { useDestinationFocus } from '../hooks/useDestinationFocus';
 import type { MainTab } from '../api/types';
+import { resolveFooterColors } from '../utils/theme';
 import { AccountScreen } from '../screens/AccountScreen';
 import { AddOfferScreen } from '../screens/AddOfferScreen';
 import { FavoritesScreen } from '../screens/FavoritesScreen';
@@ -35,6 +36,7 @@ function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
   const { activeTab, immersiveOffers, openAddOffer, openTab, palette, sheetCount, t } = useApp();
   const selectedTab = resolveTabFromRoute(String(state.routes[state.index]?.name ?? ''));
   const lastNavTab = useRef<MainTab | null>(selectedTab);
+  const footer = resolveFooterColors(palette);
 
   useEffect(() => {
     if (selectedTab && selectedTab !== lastNavTab.current) {
@@ -59,7 +61,7 @@ function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
         const active = activeTab === destination.name;
         return {
           key: destination.name,
-          icon: <NavIcon color={active ? '#f08f62' : '#c6d0c9'} name={destination.icon} />,
+          icon: <NavIcon color={active ? footer.accent : footer.inkMuted} name={destination.icon} />,
           label: t(destination.labelKey),
           onPress: () => {
             openTab(destination.name);
