@@ -49,6 +49,7 @@ interface AppContextValue {
   closeSheet: () => void;
   pendingOperations: string[];
   isPending: (operationKey: string) => boolean;
+  runOperation: <T>(operationKey: string | null, task: () => Promise<T>) => Promise<T>;
   api: ReturnType<typeof createDealsSeekerApi>;
   t: (key: string) => string;
   showRegister: () => void;
@@ -379,6 +380,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     closeSheet,
     pendingOperations,
     isPending,
+    runOperation,
     api,
     t: translateKey,
     showRegister: () => setAuthScreen('register'),

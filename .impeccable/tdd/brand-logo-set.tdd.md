@@ -172,6 +172,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - Regenerated `icon.png`, `favicon.png`, and the Android adaptive layers from `dealsseeker-icon-color.svg`: white symbol on brand green for the launcher/favicon, white foreground on green background, black monochrome silhouette. The previous adaptive foreground was green on green and effectively invisible.
 - Native launcher icons require an APK rebuild, not just a Metro reload; the dev build is being rebuilt with the updated resources.
 
+## Follow-up: single root-level loading position
+
+- **Spec**: `APP.SHELL.001` v2.6 (R31) and BDD scenario updated.
+- **RED**: `npm test -- --runInBand presentationMode` — 1 test failed: OffersScreen did not use the shell loading operation.
+- **GREEN**: 64 suites / 384 tests overall; `typecheck` clean.
+- `runOperation` is exposed from `AppContext`; `OffersScreen` wraps its initial location resolution and search in `runOperation(null, ...)` and no longer mounts its own `LoadingOverlay`. The only spinner is the root-level one in `AppNavigator`, so its screen position is constant across all loading stages.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.

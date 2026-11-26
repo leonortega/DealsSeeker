@@ -14,7 +14,6 @@ import { OfferDetailModal } from '../components/OfferDetailModal';
 import { OfferCommentsModal } from '../components/OfferCommentsModal';
 import { OfferReportSheet } from '../components/OfferReportSheet';
 import { FirstRunSheet } from '../components/FirstRunSheet';
-import { LoadingOverlay } from '../components/LoadingOverlay';
 import { HelpSheet } from '../components/HelpSheet';
 import { NavIcon } from '../components/NavIcon';
 import { OffersStatePanel } from '../components/OffersStatePanel';
@@ -38,7 +37,7 @@ const radiusOptions = [500, 1000, 1500, 2500, 5000];
 const searchDebounceMs = 300;
 
 export function OffersScreen() {
-  const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, loadingCount, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, setReportDraft, t } =
+  const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, runOperation, setReportDraft, t } =
     useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -57,7 +56,6 @@ export function OffersScreen() {
   const [locationFallback, setLocationFallback] = useState(false);
   const [locationNoticeDismissed, setLocationNoticeDismissed] = useState(false);
   const [firstRunVisible, setFirstRunVisible] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
   const searchRequest = useAbortableRequest();
   const searchSequence = useRef(0);
   const lastLocationAttemptFailed = useRef(false);
@@ -191,7 +189,7 @@ export function OffersScreen() {
       return;
     }
 
-    void (async () => {
+    void runOperation(null, async () => {
       try {
         const location = await resolveCurrentLocation();
         const response = await api.searchOffers({
@@ -208,11 +206,9 @@ export function OffersScreen() {
         if (!isRequestAborted(error)) {
           setSearchFailed(true);
         }
-      } finally {
-        setInitialLoading(false);
       }
-    })();
-  }, [activeTab, preferences.language]);
+    });
+  }, [activeTab, preferences.language, runOperation]);
 
   if (activeTab !== 'offers') {
     return null;
@@ -468,7 +464,6 @@ export function OffersScreen() {
           visible={reportDraft !== null}
         />
         <FirstRunSheet onDismiss={dismissFirstRun} visible={firstRunVisible} />
-        {loadingCount === 0 ? <LoadingOverlay visible={initialLoading} /> : null}
       </View>
     );
   }
@@ -643,7 +638,6 @@ export function OffersScreen() {
         returnFocusRef={helpButtonRef}
         visible={reportDraft !== null}
       />
-      {loadingCount === 0 ? <LoadingOverlay visible={initialLoading} /> : null}
     </View>
   );
 }
