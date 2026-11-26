@@ -47,6 +47,10 @@ function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
     }
   }, [activeTab, navigation, openTab, selectedTab]);
 
+  if (sheetCount > 0) {
+    return null;
+  }
+
   return (
     <AppFooterBar
       palette={palette}
