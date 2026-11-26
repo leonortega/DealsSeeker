@@ -24,3 +24,11 @@ Feature: Suggestions submission flow
     Then the suggestion submission is rejected
     And the Suggestions view remains shown
     And a recoverable failure message is shown
+
+  Scenario: Suggestion message counter tracks typing and stops at 120
+    Given the user is on Suggestions view with an empty message
+    When the user types 10 characters
+    Then the counter shows "10/120"
+    When the message reaches 120 characters
+    Then the input accepts no further characters
+    And the counter shows "120/120"

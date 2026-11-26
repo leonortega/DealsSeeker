@@ -49,3 +49,11 @@ Feature: Offer comments
     Given an authenticated user views an offer in the immersive feed
     When the user inspects the offer action panel
     Then the comments action shall use the same colors and button styling as the offer actions of the classic offers view
+
+  Scenario: Comment body counter tracks typing and stops at 120
+    Given an authenticated user has the comments section open for an offer
+    When the user types 10 characters into the comment body
+    Then the counter shows "10/120"
+    When the body reaches 120 characters
+    Then the input accepts no further characters
+    And the counter shows "120/120"

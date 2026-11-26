@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Reports View Generic Submission Flow
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Reports View
 - **Priority**: High
@@ -26,6 +26,7 @@ Allow an authenticated user to submit a generic report from the Reports section,
 - `REPORTS.SUBMIT.001-R7`: After a successful report submission response, the system shall redirect the user to `Offers`.
 - `REPORTS.SUBMIT.001-R8`: Unauthenticated access to Reports shall redirect to `Login`.
 - `REPORTS.SUBMIT.001-R9`: The submit action shall remain visible and operable while the on-screen keyboard is open.
+- `REPORTS.SUBMIT.001-R10`: The report message input shall display a live counter in `<current>/120` form and shall accept at most 120 characters, as specified in `APP.TEXTCOUNTER.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -46,6 +47,14 @@ Scenario: Unauthenticated user selects Report
   Given the user is not authenticated
   When the user selects Report on an offer
   Then the Login view shall be displayed
+
+Scenario: Report message counter tracks typing and stops at 120
+  Given the report overlay is open with an empty message
+  When the user types 10 characters
+  Then the counter shows "10/120"
+  When the message reaches 120 characters
+  Then the input accepts no further characters
+  And the counter shows "120/120"
 ```
 
 ## Example Inputs/Outputs
@@ -60,6 +69,7 @@ Scenario: Unauthenticated user selects Report
 - Reports view should be immediately available after navigation from menu or legacy alias.
 
 ## Related Specs
+- `APP.TEXTCOUNTER.001`
 - `APP.SHELL.001`
 - `REPORTS.SHEET.001`
 - `REPORTS.OFFER.PREFILL.001`

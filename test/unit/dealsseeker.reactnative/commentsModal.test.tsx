@@ -84,6 +84,21 @@ describe('OfferCommentsModal', () => {
     expect(screen.getByPlaceholderText('comments.placeholder').props.value).toBe('');
   });
 
+  it('shows a live body counter that stops at 120 characters', async () => {
+    await renderModal();
+    await screen.findByText('Great deal!');
+
+    const input = screen.getByPlaceholderText('comments.placeholder');
+    expect(screen.getByText('0/120')).toBeTruthy();
+
+    await fireEvent.changeText(input, 'Short');
+    expect(screen.getByText('5/120')).toBeTruthy();
+
+    await fireEvent.changeText(input, 'x'.repeat(130));
+    expect(input.props.value).toHaveLength(120);
+    expect(screen.getByText('120/120')).toBeTruthy();
+  });
+
   it('reports a publish failure', async () => {
     mockCreateOfferComment.mockRejectedValue(new Error('offline'));
     await renderModal();

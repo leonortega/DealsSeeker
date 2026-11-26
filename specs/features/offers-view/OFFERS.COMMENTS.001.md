@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offer Comments
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Offers View (immersive feed and offer detail view)
 - **Priority**: Medium
@@ -32,6 +32,7 @@ Allow authenticated users to read and publish plain-text comments attached to an
 - `OFFERS.COMMENTS.001-R12`: The comments section shall not expose offer coordinates.
 - `OFFERS.COMMENTS.001-R13`: The comments action shall use the same colors and button styling as the offer actions of the classic offers view.
 - `OFFERS.COMMENTS.001-R14`: The comments section shall load comments progressively and expose the paging affordance defined in `OFFERS.COMMENTS.PAGINATION.001`.
+- `OFFERS.COMMENTS.001-R15`: The comment body input shall display a live counter in `<current>/120` form and shall accept at most 120 characters, as specified in `APP.TEXTCOUNTER.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -89,6 +90,14 @@ Scenario: User loads the next page of comments
   Then the additional comments shall be appended to the comments list
   And the comments shall remain ordered from oldest to newest
   And no comment shall be shown twice
+
+Scenario: Comment body counter tracks typing and stops at 120
+  Given an authenticated user has the comments section open for an offer
+  When the user types 10 characters into the comment body
+  Then the counter shows "10/120"
+  When the body reaches 120 characters
+  Then the input accepts no further characters
+  And the counter shows "120/120"
 ```
 
 ## Example Inputs/Outputs
@@ -108,6 +117,7 @@ Scenario: User loads the next page of comments
 - The comments section shall remain usable on narrow viewports.
 
 ## Related Specs
+- `APP.TEXTCOUNTER.001`
 - `ACCOUNT.PROFILE.AVATAR.001`
 - `OFFERS.COMMENTS.PAGINATION.001`
 - `OFFERS.DETAIL.ACTIONS.001`

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Suggestions View Submission Flow
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Suggestions View
 - **Priority**: Medium
@@ -24,6 +24,7 @@ Allow a user to submit product suggestions with a required message and optional 
 - `SUGGESTIONS.SUBMIT.001-R5`: After a successful suggestion submission response, the system shall redirect the user to `Offers`.
 - `SUGGESTIONS.SUBMIT.001-R6`: When suggestion submission fails, the system shall keep the user in `Suggestions` and show a recoverable failure state.
 - `SUGGESTIONS.SUBMIT.001-R7`: The submit action shall remain visible and operable while the on-screen keyboard is open.
+- `SUGGESTIONS.SUBMIT.001-R8`: The suggestion message input shall display a live counter in `<current>/120` form and shall accept at most 120 characters, as specified in `APP.TEXTCOUNTER.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -41,6 +42,14 @@ Scenario: Blank suggestion is rejected
   Then the suggestion submission shall be rejected
   And the Suggestions view shall remain displayed
   And a recoverable failure message shall be shown
+
+Scenario: Suggestion message counter tracks typing and stops at 120
+  Given the user is on Suggestions view with an empty message
+  When the user types 10 characters
+  Then the counter shows "10/120"
+  When the message reaches 120 characters
+  Then the input accepts no further characters
+  And the counter shows "120/120"
 ```
 
 ## Example Inputs/Outputs
@@ -55,6 +64,7 @@ Scenario: Blank suggestion is rejected
 - Submission feedback should be returned promptly and should not require app restart or relaunch.
 
 ## Related Specs
+- `APP.TEXTCOUNTER.001`
 - `APP.SHELL.001`
 - `APP.ACCESSIBILITY.UX.003`
 - `APP.POLISH.UX.001`

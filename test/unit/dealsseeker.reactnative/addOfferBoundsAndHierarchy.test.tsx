@@ -65,6 +65,20 @@ describe('Add Offer input bounds (ADD.OFFER.INPUT.BOUNDS.001)', () => {
     expect(screen.getByText('Up to 500 characters')).toBeTruthy();
   });
 
+  it('shows a live description counter that stops at 500 characters', async () => {
+    await render(<AddOfferScreen />);
+
+    const input = screen.getByPlaceholderText('Describe the offer');
+    expect(screen.getByText('0/500')).toBeTruthy();
+
+    await fireEvent.changeText(input, 'Short');
+    expect(screen.getByText('5/500')).toBeTruthy();
+
+    await fireEvent.changeText(input, 'x'.repeat(600));
+    expect(input.props.value).toHaveLength(500);
+    expect(screen.getByText('500/500')).toBeTruthy();
+  });
+
   it('bounds the location search at 120 characters', async () => {
     await render(<AddOfferScreen />);
 

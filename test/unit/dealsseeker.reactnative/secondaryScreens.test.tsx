@@ -163,6 +163,20 @@ describe('SuggestionsScreen', () => {
     jest.useRealTimers();
   });
 
+  it('shows a live message counter that stops at 120 characters', async () => {
+    await render(<SuggestionsScreen />);
+
+    const input = screen.getByPlaceholderText('suggestions.message');
+    expect(screen.getByText('0/120')).toBeTruthy();
+
+    await fireEvent.changeText(input, 'Short');
+    expect(screen.getByText('5/120')).toBeTruthy();
+
+    await fireEvent.changeText(input, 'x'.repeat(130));
+    expect(input.props.value).toHaveLength(120);
+    expect(screen.getByText('120/120')).toBeTruthy();
+  });
+
   it('reports a failed submission without leaving the view', async () => {
     mockSubmitSuggestion.mockResolvedValue({ success: false });
     await render(<SuggestionsScreen />);
@@ -196,6 +210,17 @@ describe('OfferReportSheet', () => {
     expect(screen.getByText('Draft Cafe')).toBeTruthy();
     expect(screen.getByPlaceholderText('reports.message').props.value).toBe('Report draft for o9');
     expect(screen.getByTestId('native-bottom-sheet')).toBeTruthy();
+  });
+
+  it('shows a live message counter that stops at 120 characters', async () => {
+    await render(<OfferReportSheet draft={mockReportDraft} onClose={onClose} visible />);
+
+    const input = screen.getByPlaceholderText('reports.message');
+    expect(screen.getByText(`${draft.initialMessage.length}/120`)).toBeTruthy();
+
+    await fireEvent.changeText(input, 'x'.repeat(130));
+    expect(input.props.value).toHaveLength(120);
+    expect(screen.getByText('120/120')).toBeTruthy();
   });
 
   it('requires a message before submitting', async () => {

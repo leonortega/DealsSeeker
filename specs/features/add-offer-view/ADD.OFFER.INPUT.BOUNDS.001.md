@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Bounded text input in the Add Offer view
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: Medium
@@ -21,6 +21,7 @@ Keep pasted or typed text within reasonable bounds so the form and its payload s
 - `ADD.OFFER.INPUT.BOUNDS.001-R2`: The location search input shall accept at most 120 characters.
 - `ADD.OFFER.INPUT.BOUNDS.001-R3`: The description section shall disclose its limit before the user reaches it.
 - `ADD.OFFER.INPUT.BOUNDS.001-R4`: The bounds shall apply in both create mode and edit mode, and shall not alter validation, submission, or tag extraction.
+- `ADD.OFFER.INPUT.BOUNDS.001-R5`: The description section shall disclose its bound with a live counter in `<current>/500` form, as specified in `APP.TEXTCOUNTER.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -38,6 +39,15 @@ Scenario: Bounds apply to a prefilled edit draft
   Given the user opens Add Offer view in edit mode for a user-owned offer
   When the prefilled description is shown
   Then the same character bound applies to further typing
+  And the counter shows the prefilled description length out of 500
+
+Scenario: Description counter tracks typing and stops at the bound
+  Given the description section is displayed
+  When the user types 10 characters
+  Then the counter shows "10/500"
+  When the description reaches 500 characters
+  Then the input accepts no further characters
+  And the counter shows "500/500"
 ```
 
 ## Example Inputs/Outputs
@@ -54,6 +64,7 @@ Scenario: Bounds apply to a prefilled edit draft
 - Character counting shall use Unicode characters, not bytes.
 
 ## Related Specs
+- `APP.TEXTCOUNTER.001`
 - `ADD.OFFER.LAYOUT.001`
 - `ADD.OFFER.DESCRIPTION.TAGS.001`
 - `ADD.OFFER.LOCATION.001`
