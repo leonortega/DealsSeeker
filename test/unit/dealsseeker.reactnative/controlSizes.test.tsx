@@ -6,6 +6,7 @@ import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/O
 import type { OfferItemDto } from '../../../src/DealsSeeker.ReactNative/src/api/types';
 
 const mockSearchOffers = jest.fn();
+const mockRunOperation = (_key: string | null, task: () => Promise<unknown>) => task();
 
 const palette = {
   accent: '#b85c38',
@@ -38,6 +39,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     openTab: jest.fn(),
     palette,
     preferences: { language: 'en', navigationMode: 'pedestrian' },
+    runOperation: mockRunOperation,
     setReportDraft: jest.fn(),
     t: (key: string) => key,
   }),

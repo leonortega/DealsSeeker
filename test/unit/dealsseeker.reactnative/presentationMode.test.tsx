@@ -1,12 +1,12 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { LoadingOverlay } from '../../../src/DealsSeeker.ReactNative/src/components/LoadingOverlay';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 
 let mockImmersiveOffers = false;
 let mockIsPending = false;
 let mockLoadingCount = 0;
 const mockSearchOffers = jest.fn();
+const mockRunOperation = jest.fn((_key: string | null, task: () => Promise<unknown>) => task());
 const mockOpenImmersiveOffers = jest.fn();
 const mockCloseImmersiveOffers = jest.fn();
 
@@ -40,6 +40,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
       panel: '#fff9f0',
     },
     preferences: { language: 'en', navigationMode: 'pedestrian' },
+    runOperation: mockRunOperation,
     setReportDraft: jest.fn(),
     t: (key: string) => key,
   }),
@@ -61,18 +62,11 @@ describe('presentation mode switch', () => {
     mockSearchOffers.mockResolvedValue({ offers: [], businesses: [] });
   });
 
-  it('shows blocking loading immediately while the initial search is pending', async () => {
-    mockSearchOffers.mockReturnValue(new Promise(() => {}));
-
+  it('uses the shell loading operation for the initial search', async () => {
     await render(<OffersScreen />);
 
-    expect(screen.getByText('app.loading')).toBeTruthy();
-  });
-
-  it('removes blocking loading once the initial search completes', async () => {
-    await render(<OffersScreen />);
-
-    await waitFor(() => expect(screen.queryByText('app.loading')).toBeNull());
+    expect(mockRunOperation).toHaveBeenCalledWith(null, expect.any(Function));
+    expect(screen.queryByText('app.loading')).toBeNull();
   });
 
   it('does not show an empty-state card when a search returns no offers', async () => {
@@ -83,15 +77,13 @@ describe('presentation mode switch', () => {
     expect(screen.getByTestId('offers-scroll')).toBeTruthy();
   });
 
-  it('shows only one loading indicator during startup in the feed', async () => {
+  it('does not mount its own loading overlay in the feed', async () => {
     mockImmersiveOffers = true;
-    mockIsPending = true;
-    mockSearchOffers.mockReturnValue(new Promise(() => {}));
 
     await render(<OffersScreen />);
 
-    expect(screen.queryAllByText('app.loading')).toHaveLength(1);
-    expect(screen.queryAllByText('offers.loading')).toHaveLength(0);
+    expect(screen.queryByText('app.loading')).toBeNull();
+    expect(screen.queryByText('offers.loading')).toBeNull();
   });
 
   it('never runs a second inline progress indicator in the feed', async () => {
@@ -102,20 +94,6 @@ describe('presentation mode switch', () => {
     await waitFor(() => expect(screen.queryByText('app.loading')).toBeNull());
 
     expect(screen.queryByText('offers.loading')).toBeNull();
-  });
-
-  it('does not stack the startup overlay with the shell loading overlay', async () => {
-    mockLoadingCount = 1;
-    mockSearchOffers.mockReturnValue(new Promise(() => {}));
-
-    await render(
-      <>
-        <LoadingOverlay />
-        <OffersScreen />
-      </>
-    );
-
-    expect(screen.getAllByText('app.loading')).toHaveLength(1);
   });
 
   it('offers Feed and Map options in the Offers view', async () => {

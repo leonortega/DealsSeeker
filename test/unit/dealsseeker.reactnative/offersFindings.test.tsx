@@ -5,6 +5,7 @@ import { OffersStatePanel } from '../../../src/DealsSeeker.ReactNative/src/compo
 
 let mockImmersiveOffers = false;
 const mockCloseImmersiveOffers = jest.fn();
+const mockRunOperation = (_key: string | null, task: () => Promise<unknown>) => task();
 
 jest.mock('expo-location', () => ({
   LocationAccuracy: { Balanced: 3 },
@@ -35,6 +36,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
       panel: '#fff9f0',
     },
     preferences: { language: 'en', navigationMode: 'pedestrian' },
+    runOperation: mockRunOperation,
     setReportDraft: jest.fn(),
     t: (key: string) => key,
   }),

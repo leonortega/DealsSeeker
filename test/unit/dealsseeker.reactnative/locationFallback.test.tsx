@@ -5,6 +5,7 @@ import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/O
 const mockRequestPermission = jest.fn();
 const mockGetCurrentPosition = jest.fn();
 const mockSearchOffers = jest.fn();
+const mockRunOperation = (_key: string | null, task: () => Promise<unknown>) => task();
 const mockReverseLocation = jest.fn();
 
 let mockImmersive = false;
@@ -42,6 +43,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
       panel: '#fff9f0',
     },
     preferences: { language: 'en', navigationMode: 'pedestrian' },
+    runOperation: mockRunOperation,
     setReportDraft: jest.fn(),
     t: (key: string) => key,
   }),

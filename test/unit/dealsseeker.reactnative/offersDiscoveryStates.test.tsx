@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 
 const mockSearchOffers = jest.fn();
+const mockRunOperation = (_key: string | null, task: () => Promise<unknown>) => task();
 const mockOpenAddOffer = jest.fn();
 
 jest.mock('expo-location', () => ({
@@ -31,6 +32,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
       panel: '#fff9f0',
     },
     preferences: { language: 'en', navigationMode: 'pedestrian' },
+    runOperation: mockRunOperation,
     setReportDraft: jest.fn(),
     t: (key: string) => key,
   }),
