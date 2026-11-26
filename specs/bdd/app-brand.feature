@@ -55,7 +55,13 @@ Feature: Brand logo set and placement
     Then the title starts below the controls row with a clear gap
     And no top-bar control is clipped by the screen edges
 
-  Scenario: Splash uses the stacked lockup with black copy
+  Scenario: Native launcher icon uses the symbol with contrast
+    Given the application is installed on an Android device
+    When the launcher icon and its adaptive layers are rendered
+    Then the symbol mark appears in a contrasting color on the brand background
+    And the adaptive foreground contrasts with the adaptive background
+
+  Scenario: Splash uses only the stacked lockup
     Given the application is showing its in-app splash view
     When the splash is rendered
     Then only the stacked lockup is displayed as the brand identity

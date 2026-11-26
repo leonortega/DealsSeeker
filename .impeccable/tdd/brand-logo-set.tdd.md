@@ -166,6 +166,12 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 64 suites / 386 tests overall; `typecheck` clean.
 - Splash now shows only the stacked lockup; the symbol tile and all text lines are removed.
 
+## Follow-up: native launcher icon from the SVG set
+
+- **Spec**: `APP.BRAND.001` v1.11 (R14) and BDD scenario in `app-brand.feature`.
+- Regenerated `icon.png`, `favicon.png`, and the Android adaptive layers from `dealsseeker-icon-color.svg`: white symbol on brand green for the launcher/favicon, white foreground on green background, black monochrome silhouette. The previous adaptive foreground was green on green and effectively invisible.
+- Native launcher icons require an APK rebuild, not just a Metro reload; the dev build is being rebuilt with the updated resources.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Brand Logo Set and Placement
-- **Version**: `v1.10`
+- **Version**: `v1.11`
 - **Status**: Approved
 - **Context/View**: Application Shell (all views), Login, Offers (immersive)
 - **Priority**: Medium
@@ -30,6 +30,7 @@ Use one authored logo set consistently in every app surface and replace placehol
 - `APP.BRAND.001-R11`: The standard Offers top bar shall use the same structure and spacing as the immersive feed top bar, including the reserved search slot; the search control itself shall not be displayed in the standard Offers view.
 - `APP.BRAND.001-R12`: The standard Offers view title shall be separated from the controls row by a clear gap, and no top-bar control shall be clipped by the screen edges.
 - `APP.BRAND.001-R13`: The in-app splash view shall display only the stacked lockup as its brand identity; it shall not display a second logo, an application-subtitle line, or a `DealsSeeker mobile` text line.
+- `APP.BRAND.001-R14`: The native launcher icon shall use the symbol mark from the authored logo set on the brand background with sufficient contrast; the adaptive foreground shall contrast with the adaptive background.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
