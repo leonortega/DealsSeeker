@@ -25,8 +25,8 @@ import { OfferTopBar } from './OfferTopBar';
 
 export const NARROW_BREAKPOINT = 768;
 
-export function shouldShowImmersiveCaptions(isNarrow: boolean, fontScale: number, availableHeight = Infinity) {
-  return !isNarrow && fontScale < 1.5 && availableHeight >= 640;
+export function shouldShowImmersiveCaptions(availableHeight: number) {
+  return availableHeight >= 640;
 }
 
 interface ImmersiveOfferFeedProps {
@@ -371,7 +371,7 @@ export function ImmersiveOfferFeed({
   helpControl,
   returnFocusRef,
 }: ImmersiveOfferFeedProps) {
-  const { fontScale, height, width } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
   const { palette, t } = useApp();
   const [searchQuery, setSearchQuery] = useState(query);
   const [searchVisible, setSearchVisible] = useState(false);
@@ -443,7 +443,7 @@ export function ImmersiveOfferFeed({
               <View style={{ height: pageHeight }}>
                 <ImmersiveOfferPage
                   offer={item}
-                  showCaptions={shouldShowImmersiveCaptions(isNarrow, fontScale, height)}
+                  showCaptions={shouldShowImmersiveCaptions(pageHeight)}
                   showPhotoArrows={!isNarrow}
                   onDirections={onDirections}
                   onFavorite={onFavorite}

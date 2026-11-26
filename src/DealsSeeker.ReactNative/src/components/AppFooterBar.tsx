@@ -48,7 +48,11 @@ export function AppFooterBar({
           <Text style={[styles.icon, { color: item.active ? footer.accent : footer.inkMuted }]}>
             {item.icon}
           </Text>
-          <Text style={[styles.label, { color: item.active ? footer.ink : footer.inkMuted }]}>
+          <Text
+            maxFontSizeMultiplier={1.2}
+            numberOfLines={1}
+            style={[styles.label, { color: item.active ? footer.ink : footer.inkMuted }]}
+          >
             {item.label}
           </Text>
         </Pressable>

@@ -33,7 +33,12 @@ export function PresentationModeSwitch({ feedLabel, mapLabel, onChange, palette,
             onPress={() => onChange(option.key)}
             style={[styles.segment, { backgroundColor: selected ? palette.accent : palette.panel }]}
           >
-            <Text style={[styles.label, { color: selected ? palette.onAccent : palette.ink }]}>{option.label}</Text>
+            <Text
+              maxFontSizeMultiplier={1.2}
+              style={[styles.label, { color: selected ? palette.onAccent : palette.ink }]}
+            >
+              {option.label}
+            </Text>
           </Pressable>
         );
       })}
