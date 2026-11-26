@@ -1,11 +1,10 @@
-import { act, render } from '@testing-library/react-native';
-
-
+import { act, render, screen } from '@testing-library/react-native';
 
 const listeners: Record<string, Array<(event: { preventDefault: () => void }) => void>> = {};
 const mockCloseImmersiveOffers = jest.fn();
 const mockNavigate = jest.fn();
 let mockActiveTab = 'offers';
+let mockSheetCount = 0;
 
 jest.mock('@react-navigation/native', () => ({
   NavigationContainer: ({ children }: { children: React.ReactNode }) => children,
@@ -79,6 +78,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     openAddOffer: jest.fn(),
     openTab: jest.fn(),
     overlayRoute: null,
+    sheetCount: mockSheetCount,
     palette: {
       accent: '#b85c38',
       background: '#f4efe6',
@@ -92,7 +92,10 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   }),
 }));
 
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar', () => ({ AppFooterBar: () => null }));
+jest.mock('../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar', () => {
+  const { View: MockView } = require('react-native');
+  return { AppFooterBar: () => <MockView testID="app-footer-bar" /> };
+});
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/CreateOfferFab', () => ({ CreateOfferFab: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/LoadingOverlay', () => ({ LoadingOverlay: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/NavIcon', () => ({ NavIcon: () => null }));
@@ -108,6 +111,7 @@ describe('native shell Back handling', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockActiveTab = 'offers';
+    mockSheetCount = 0;
     tabNavigatorProps = {};
     Object.keys(listeners).forEach((key) => delete listeners[key]);
   });
@@ -137,5 +141,17 @@ describe('native shell Back handling', () => {
 
     expect(preventDefault).toHaveBeenCalledTimes(1);
     expect(mockCloseImmersiveOffers).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides the branded footer while a sheet is open (APP.BOTTOM_SHEET.001-R12)', async () => {
+    const view = await render(<AppNavigator />);
+    expect(screen.getByTestId('app-footer-bar')).toBeTruthy();
+
+    mockSheetCount = 1;
+    await act(async () => {
+      view.rerender(<AppNavigator />);
+    });
+
+    expect(screen.queryByTestId('app-footer-bar')).toBeNull();
   });
 });

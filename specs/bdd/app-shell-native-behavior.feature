@@ -111,3 +111,9 @@ Feature: Native navigation behavior with brand chrome
     When the user invokes system Back
     Then the request shall resolve before the shell reacts
     And the Back action shall not be applied twice
+
+  Scenario: Predictive Back is available on Android
+    Given the app runs on Android
+    When the user starts a system Back gesture
+    Then the platform's predictive Back affordance is available
+    And the gesture resolves through the same shell Back policy as the Back button

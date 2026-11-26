@@ -396,3 +396,170 @@ The closeout critique (37/40) left two P2s, and both were implemented through th
 
 Verification: `npm test` 42 suites / 260 tests, `npm run typecheck` clean, `npm run test:e2e` 14/14. The plan now has no open implementation items; only native/screen-reader sign-off remains.
 
+---
+
+## 10. Fresh evidence pass (2026-11-26) — reopened after closure
+
+**Status:** Planning — no spec approved, no code changed by this section.
+
+### 10.1 Why the plan reopens
+
+A read-only `impeccable` critique + native audit was run against the current source, backed by live captures on `emulator-5554` (1080×1920, Market/Night palette, `font_scale` 1.0 and 1.5; font scale restored to 1.0 afterwards).
+
+| Measure | Previously recorded | This pass | Note |
+|---|---|---|---|
+| Critique | 37/40 (Excellent) | **26/40 (Acceptable)** | Deeper pass + rendered evidence; several findings are spec regressions, not taste |
+| Native audit | 17/20 (Good) | **10/20 (Acceptable)** | Same |
+
+Evidence artifacts: `impeccable-baseline.png` (Comments sheet), `impeccable-feed.png`, `impeccable-map.png`, `impeccable-large-text2.png` in `%TEMP%` (not committed). No repository files were modified by the review.
+
+**Excluded as false positives / by-design:**
+- The gear circle and "Tools" bubble in captures are the Expo dev-tools overlay (`content-desc="Tools"`), not app UI.
+- Hidden app name on narrow screens is required by `APP.BRAND.001-R3` + `OFFERS.FEED.RESPONSIVE.001`.
+- Identical iOS/Android chrome, custom tab bar, hidden native headers, and no platform-native icon sets are required by `APP.SHELL.002-R9` — **not** defects to fix unilaterally.
+- A separate Close button on sheets is forbidden by `APP.BOTTOM_SHEET.001-R9` and `APP.SHELL.003-R7` — the plan does not add one.
+
+### 10.2 Spec reconciliation (authoritative before skill advice)
+
+| Finding | Spec status | Action in this plan |
+|---|---|---|
+| Sheet painted behind the custom footer; comment Publish unreachable | **Regression** of `APP.BOTTOM_SHEET.001-R10` ("above all presenting-view chrome") | Add R12 naming the footer explicitly + BDD; fix |
+| Android predictive Back disabled in `app.json` | **Regression** of `APP.SHELL.004-R7` (Back equivalent on both platforms) | Add BDD scenario; fix |
+| Footer label "Suggestions" wraps at `font_scale` 1.5; fixed `fontSize` throughout | Gap: `APP.ADAPTIVE.UX.002-R2` covers body text, not chrome labels | Add R8; fix |
+| Captions suppressed by `isNarrow`/`fontScale` thresholds rather than measured overlap | Gap in `APP.ADAPTIVE.UX.002-R7` (omission must be due to insufficient space, with AT labels retained) | Refine R7; fix |
+| Georgia never renders on Android; no font asset | Spec gap | New `APP.TYPOGRAPHY.001` |
+| Six icon-only rail actions on every phone | Spec gap (AT labels exist, visible labels do not) | New `OFFERS.ACTIONS.LABELS.001` |
+| Unvirtualized lists; no memoization; context value churn | Spec gap (scroll-state preservation is behavioral) | New `APP.LIST.VIRTUALIZATION.001` |
+| Hardcoded footer icon colors and immersive literals | **Regression** of `APP.THEME.001-R8` (all surfaces use active theme colors) | Add R10; fix |
+| White splash + unthemed status bar in dark sessions | Spec gap | Add `APP.THEME.001-R11` |
+| Emoji vote glyphs mixed with authored SVG set | Spec gap (within brand, not a platform-conformance issue) | Add `APP.BRAND.001-R15` |
+| iOS-only shadows, no Android elevation | Gap against DESIGN.md's one-shadow rule | Add `APP.POLISH.UX.001-R13` |
+| Five radius options + query + toggle visible at once in Map mode | New interaction decision | Optional Cycle L — requires `shape` + new spec + user approval |
+
+### 10.3 Cycle G — Sheet/footer regression and system Back **[P0]**
+
+**Spec work first (must be Approved before code):**
+- `APP.BOTTOM_SHEET.001` → `v1.4`: add R12 — "While a sheet is open, the branded footer navigation and its Create action shall not render above the sheet, and every sheet control including its primary action shall remain visible and reachable." Add a BDD scenario using the Comments sheet and its Publish control. Add bidirectional `Related Specs` entry to `APP.SHELL.002`.
+- `APP.SHELL.004` → `v1.2`: add a BDD scenario asserting predictive Back is enabled and equivalent to the button, per existing R7.
+
+**Implementation (TDD, RED → GREEN → REFACTOR):**
+- `AppNavigator.tsx` — hide the entire `AppFooterBar` while `sheetCount > 0` (currently only the FAB is hidden); re-stack so sheet containers paint above the tab-bar container.
+- `NativeBottomSheet.tsx` — verify the sheet's backdrop and content layer above all sibling chrome; do **not** add a Close button (R9).
+- `app.json` — enable `predictiveBackGestureEnabled`.
+- Keep `BackNavigationHandler` behavior unchanged except that a sheet owns Back while open (already true).
+
+**Tests:** unit test on the tab bar for `sheetCount > 0`; Maestro flow "open Comments → Publish is visible and tappable"; Back gesture from sheet does not exit.
+
+**Acceptance:** live capture shows Publish fully visible above the footer in both themes and both presentations; all existing Back E2E flows still pass.
+
+**Suggested command:** `/impeccable adapt`.
+
+### 10.4 Cycle H — Text scaling and visible action labels **[P1]**
+
+**Spec work first:**
+- `APP.ADAPTIVE.UX.002` → `v1.2`: refine R7 so captions are omitted only when *measured* available space cannot hold them (not by width/font-scale thresholds), and add a labeled visible alternative at large text; add R8 — "Navigation, mode-switch, filter and status labels shall scale with the system text size without clipping, wrapping into unreadable fragments, or overlapping adjacent controls." Add BDD scenarios at 150% and 200%.
+- New `OFFERS.ACTIONS.LABELS.001` (offers-view): rail actions shall have a visible text label in the default phone presentation; where space genuinely forbids labels, a single labeled "More" disclosure shall expose the secondary actions. Directions remains the single waypoint-marked primary action per `OFFERS.UX.002-R8`. Positive + edge scenarios (long localized labels, 200% text, short viewport).
+
+**Implementation:**
+- `AppFooterBar.tsx`, `PresentationModeSwitch.tsx`, `ImmersiveFeedTabs.tsx`, `OffersStatePanel.tsx` — allow type scaling with controlled multipliers and enough width/height for localized labels.
+- `ImmersiveOfferFeed.tsx` — replace `shouldShowImmersiveCaptions(isNarrow, fontScale, height)` with a measured-layout rule; show captions on phones when they fit; provide labeled fallback when they do not.
+- Keep `accessibilityLabel`/`accessibilityRole` on every rail control (already present).
+
+**Tests:** render assertions at `fontScale` 1.0/1.5/2.0 and long ES labels; Maestro capture at `font_scale` 1.5; verify no duplicate accessible names (prior E2E regression).
+
+**Acceptance:** no clipped/wrapped footer labels at 150%; every rail action has a visible or disclosed text label at all text sizes; 44-unit touch floor from R1 preserved.
+
+**Suggested commands:** `/impeccable adapt`, `/impeccable clarify`.
+
+### 10.5 Cycle I — Cross-platform typography **[P1]**
+
+**Spec work first:**
+- New `APP.TYPOGRAPHY.001` (application-shell): landmark typography (display/headline/section titles/business names) shall render with the authored serif on **both** platforms; operational text stays on the system sans; a font asset shall be bundled where the OS does not provide the face; hierarchy and weight follow DESIGN.md. Positive + edge scenarios (long localized headlines, large text, both themes).
+
+**Implementation:**
+- Bundle the serif asset in `src/DealsSeeker.ReactNative/assets/fonts` and wire it via `expo-font` / config plugin (no new dependency if `expo-font` is already available — verify first per `ponytail`).
+- Centralize type roles in `theme.ts` or a single `typography.ts`; replace the 16 raw `fontFamily: 'Georgia'` sites, including `ImmersiveOfferFeed.tsx` business name and `OfferTopBar` title where the viewport rule allows it.
+- Do **not** change which text is a landmark (spec/brand decision) — only guarantee it renders.
+
+**Tests:** style-level unit assertions per role; captures on Android emulator and iOS simulator in both themes.
+
+**Acceptance:** serif visibly renders on Android; sans remains on body/metadata; no layout regressions at 200% text.
+
+**Suggested command:** `/impeccable typeset`.
+
+### 10.6 Cycle J — List virtualization and render churn **[P1]**
+
+**Spec work first:**
+- New `APP.LIST.VIRTUALIZATION.001`: long offer collections (Offers map view, Account "My Offers", Favorites) shall recycle rows and preserve scroll position across tab switches and refreshes; no visible behavior or action set changes. Positive + edge scenarios (0/1/1000 offers, refresh mid-scroll, favorites removal mid-scroll).
+
+**Implementation:**
+- Replace `ScrollView` + `map` in `OffersScreen.tsx`, `AccountScreen.tsx`, `FavoritesScreen.tsx` with `FlatList` (`keyExtractor`, stable `extraData`, `getItemLayout` where rows are fixed).
+- Memoize `OfferCard` and other row components; memoize the `AppContext` value; stabilize `combinedOffers` with `useMemo`.
+- Cap/decimate base64 photos before storing up to 8 images in `AddOfferScreen.tsx`.
+
+**Tests:** render-count unit test for context consumers; scroll-position E2E; `npm test`, `npm run typecheck`.
+
+**Acceptance:** no observable behavior change; smooth scroll with 100+ seeded offers on emulator.
+
+**Suggested command:** `/impeccable optimize`.
+
+### 10.7 Cycle K — Theming and icon-language consistency **[P2]**
+
+**Spec work first:**
+- `APP.THEME.001` → `v0.4`: add R10 — "Every chrome color, including footer icons, immersive overlay text and badges, shall be derived from the active palette or its documented fixed-backdrop tokens." Add R11 — "The startup surface and status bar shall follow the active theme." BDD scenarios across all three palette worlds in both modes.
+- `APP.BRAND.001` → `v1.12`: add R15 — "Offer action icons shall use the authored SVG glyph set; emoji shall not be used as action icons." (Avatar emoji are decorative identity, not action icons — leave them.)
+- `APP.POLISH.UX.001` → `v1.6`: add R13 — "Raised surfaces shall keep the single soft-shadow vocabulary on both platforms."
+
+**Implementation:**
+- Remove hardcoded footer icon colors in `AppNavigator.tsx`; use `resolveFooterColors`.
+- Replace raw `#fff`/`rgba(...)` in `ImmersiveOfferFeed.tsx`, `ImmersiveActionGlyphs.tsx`, `ImmersiveFeedTabs.tsx`, `OfferCard.tsx`, `OfferDetailModal.tsx` with existing `immersiveInk`/`immersiveInkMuted` tokens or new palette roles.
+- Theme the splash background and render a `StatusBar` driven by the palette/immersive mode; remove the dead `resolveShellChrome` or wire it.
+- Replace 👍/👎 action glyphs with the existing thumbs SVG; add Android `elevation` equivalent for the one card shadow.
+- Remove dead code/unused dependency identified in the audit (`motion.ts`, unused styles, `expo-system-ui`) only where behavior is unchanged (exempt from spec-first, justify in commit).
+
+**Acceptance:** zero palette bypasses in `src/` outside the central palette file; both palettes captured in light/dark; no white splash flash in dark sessions.
+
+**Suggested commands:** `/impeccable polish`, `/impeccable harden`.
+
+### 10.8 Cycle L — Map-mode cognitive load (optional, decision required)
+
+Five radius options, query, favorites toggle, map and cards compete in one scroll. Before any change, run `/impeccable shape OffersSearchControls` and get a user decision on collapsing radius into a single picker. If approved, create `OFFERS.FILTER.SIMPLIFICATION.001` with BDD and implement after its approval. **No code in this plan without that decision.**
+
+### 10.9 Cycle M — Closeout
+
+- Re-run `critique` and `audit`; target **≥34/40** and **≥15/20** with no P0/P1 open.
+- Run `ponytail-review` on the full diff; reconcile structural findings with `design-pattern-review --code --scope DealsSeeker.ReactNative`.
+- Run `npm test`, `npm run typecheck`, `npm run test:e2e` (Maestro), plus emulator captures: both palettes × light/dark × phone/landscape × `font_scale` 1.0/1.5/2.0.
+- Screen-reader sign-off (TalkBack on emulator, VoiceOver on device) for sheet focus return and rail labels.
+- Update this section's status to Closed and record RED→GREEN commit pairs.
+
+### 10.10 Traceability rows to add (before implementation)
+
+| Spec ID | Feature file | Contract | Examples |
+|---|---|---|---|
+| `APP.BOTTOM_SHEET.001` (v1.4) | `bdd/app-bottom-sheet.feature` | N/A | `examples/application-shell/app-bottom-sheet.footer-render.json` |
+| `APP.SHELL.004` (v1.2) | `bdd/app-shell-native-behavior.feature` | N/A | N/A |
+| `APP.ADAPTIVE.UX.002` (v1.2) | `bdd/app-adaptive-ux-002.feature` | N/A | `examples/application-shell/app-adaptive.text-200.json` |
+| `OFFERS.ACTIONS.LABELS.001` | `bdd/offers-action-labels.feature` | N/A | `examples/offers-view/offers-action-labels.render.json` |
+| `APP.TYPOGRAPHY.001` | `bdd/app-typography.feature` | N/A | `examples/application-shell/app-typography.roles.json` |
+| `APP.LIST.VIRTUALIZATION.001` | `bdd/app-list-virtualization.feature` | N/A | `examples/offers-view/offers-list-virtualization.render.json` |
+| `APP.THEME.001` (v0.4) | `bdd/app-theme.feature` | N/A | `examples/application-shell/app-theme.chrome.json` |
+| `APP.BRAND.001` (v1.12) | `bdd/app-brand.feature` | N/A | N/A |
+| `APP.POLISH.UX.001` (v1.6) | `bdd/app-polish-ux.feature` | N/A | N/A |
+| `OFFERS.FILTER.SIMPLIFICATION.001` (optional) | `bdd/offers-filter-simplification.feature` | N/A | TBD |
+
+Add bidirectional `Related Specs` links: `APP.BOTTOM_SHEET.001` ↔ `APP.SHELL.002`; `APP.ADAPTIVE.UX.002` ↔ `OFFERS.ACTIONS.LABELS.001` ↔ `OFFERS.FEED.RESPONSIVE.001`; `APP.TYPOGRAPHY.001` ↔ `APP.BRAND.001` ↔ `APP.SHELL.002`; `APP.THEME.001` ↔ `APP.POLISH.UX.001`; `APP.LIST.VIRTUALIZATION.001` ↔ `OFFERS.FEED.STABILITY.001`.
+
+### 10.11 Guardrails and open decisions
+
+- Spec-first and BDD approval gates are unchanged; Draft specs never gate implementation.
+- Do not "fix" `APP.SHELL.002-R9` platform parity, the narrow-screen title rule, or sheet Close semantics without an explicit product decision and a spec amendment.
+- Refinement only — preserve "The Trail Map"; no new accent, no wide reflow, no redesign.
+- Coordinate privacy and EN/ES localization stay mandatory.
+- **Open decision 1:** keep identical iOS/Android UI (`APP.SHELL.002-R9`) or adopt platform conventions? Blocks any HIG/Material conformance work.
+- **Open decision 2:** approve the Cycle L filter simplification before planning its spec.
+
+### 10.12 Suggested execution order
+
+G → H → I → J → K → M, with L only after a decision. Each cycle: spec + BDD → validate → Approve → RED test → implementation → GREEN → REFACTOR → capture → `ponytail-review` on that cycle's diff.
+

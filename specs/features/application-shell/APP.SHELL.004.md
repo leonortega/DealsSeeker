@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: System Back Semantics via Native Navigation
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -68,6 +68,12 @@ Scenario: Back during an in-progress save
   When the user invokes system Back
   Then the request shall resolve before the shell reacts
   And the Back action shall not be applied twice
+
+Scenario: Predictive Back is available on Android
+  Given the app runs on Android
+  When the user starts a system Back gesture
+  Then the platform's predictive Back affordance shall be available
+  And the gesture shall resolve through the same shell Back policy as the Back button
 ```
 
 ## Example Inputs/Outputs

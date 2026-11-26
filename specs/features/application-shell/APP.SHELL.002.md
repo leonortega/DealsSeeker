@@ -92,6 +92,7 @@ Scenario: Brand UI is identical across platforms
 
 ## Related Specs
 - `APP.SHELL.001`
+- `APP.BOTTOM_SHEET.001`
 - `APP.SHELL.005`
 - `APP.SHELL.003`
 - `APP.SHELL.004`
