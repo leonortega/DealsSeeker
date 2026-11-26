@@ -5,66 +5,58 @@ jest.mock('react-native', () => ({
 
 const MAPS_PATH = '../../../src/DealsSeeker.ReactNative/src/utils/maps';
 
-interface MapOptions {
-  os?: string;
-  canOpenNative?: boolean;
-}
-
-function loadMaps(options: MapOptions = {}) {
-  const { os = 'web', canOpenNative = true } = options;
-
+function loadMaps(os = 'web') {
   process.env.EXPO_PUBLIC_MAP_REDIRECT_PROVIDER = 'OpenLayers';
   jest.resetModules();
 
   const reactNative = require('react-native');
   reactNative.Platform.OS = os;
-  reactNative.Linking.canOpenURL.mockResolvedValue(canOpenNative);
+  reactNative.Linking.canOpenURL.mockResolvedValue(true);
 
   const { openDirections } = require(MAPS_PATH);
   return { openDirections, Linking: reactNative.Linking };
 }
 
 const destination = { lat: 40.7128, lng: -74.006 };
+const walkingUrl = 'https://www.google.com/maps/dir/?api=1&destination=40.7128,-74.006&travelmode=walking';
+const drivingUrl = 'https://www.google.com/maps/dir/?api=1&destination=40.7128,-74.006&travelmode=driving';
 
 describe('map directions', () => {
   afterEach(() => {
     delete process.env.EXPO_PUBLIC_MAP_REDIRECT_PROVIDER;
   });
 
-  it('opens the Google Maps web URL for pedestrian mode', async () => {
+  it('opens the Google Maps directions URL for pedestrian mode', async () => {
     const { openDirections, Linking } = loadMaps();
 
     await openDirections(destination, 'pedestrian');
 
-    expect(Linking.openURL).toHaveBeenCalledWith(
-      'https://www.google.com/maps/dir/?api=1&destination=40.7128,-74.006&travelmode=walking'
-    );
+    expect(Linking.openURL).toHaveBeenCalledWith(walkingUrl);
   });
 
-  it('opens the native Android intent when supported', async () => {
-    const { openDirections, Linking } = loadMaps({ os: 'android' });
-
-    await openDirections(destination, 'car');
-
-    expect(Linking.openURL).toHaveBeenCalledWith('google.navigation:q=40.7128,-74.006&mode=d');
-  });
-
-  it('falls back to the Google Maps web URL when the native intent is unavailable', async () => {
-    const { openDirections, Linking } = loadMaps({ os: 'android', canOpenNative: false });
-
-    await openDirections(destination, 'car');
-
-    expect(Linking.openURL).toHaveBeenCalledWith(
-      'https://www.google.com/maps/dir/?api=1&destination=40.7128,-74.006&travelmode=driving'
-    );
-  });
-
-  it('opens the native iOS URL when supported', async () => {
-    const { openDirections, Linking } = loadMaps({ os: 'ios' });
+  it('opens the directions preview in walking mode on Android without auto-navigation', async () => {
+    const { openDirections, Linking } = loadMaps('android');
 
     await openDirections(destination, 'pedestrian');
 
-    expect(Linking.openURL).toHaveBeenCalledWith('maps://?daddr=40.7128,-74.006&dirflg=w');
+    expect(Linking.openURL).toHaveBeenCalledWith(walkingUrl);
+    expect(Linking.canOpenURL).not.toHaveBeenCalled();
+  });
+
+  it('opens the directions preview in driving mode on Android for car', async () => {
+    const { openDirections, Linking } = loadMaps('android');
+
+    await openDirections(destination, 'car');
+
+    expect(Linking.openURL).toHaveBeenCalledWith(drivingUrl);
+  });
+
+  it('opens the Google Maps directions URL on iOS instead of a native maps app URL', async () => {
+    const { openDirections, Linking } = loadMaps('ios');
+
+    await openDirections(destination, 'pedestrian');
+
+    expect(Linking.openURL).toHaveBeenCalledWith(walkingUrl);
   });
 
   it('ignores an alternate redirect provider setting', async () => {
@@ -72,8 +64,6 @@ describe('map directions', () => {
 
     await openDirections(destination, 'car');
 
-    expect(Linking.openURL).toHaveBeenCalledWith(
-      'https://www.google.com/maps/dir/?api=1&destination=40.7128,-74.006&travelmode=driving'
-    );
+    expect(Linking.openURL).toHaveBeenCalledWith(drivingUrl);
   });
 });

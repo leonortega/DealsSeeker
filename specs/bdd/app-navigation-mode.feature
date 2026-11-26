@@ -15,3 +15,9 @@ Feature: Directions travel mode preference
     Then directions mode persists for that user
     And offer directions use car mode
     And the offer detail directions button text reflects car directions
+
+  Scenario: Directions URL carries the selected travel mode
+    Given the selected travel mode is pedestrian
+    When the user opens directions for an offer
+    Then Google Maps receives the directions URL with travelmode=walking
+    And no navigation starts automatically

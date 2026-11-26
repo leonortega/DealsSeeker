@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: User-Selectable Directions Travel Mode
-- **Version**: `v0.1`
+- **Version**: `v0.2`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: Medium
@@ -22,7 +22,7 @@ Allow the user to choose whether external directions should default to pedestria
 - `APP.NAVIGATION.MODE.001-R2`: The default directions travel mode shall be `pedestrian` when the user has not selected an override.
 - `APP.NAVIGATION.MODE.001-R3`: The user shall be able to change the directions travel mode from user preferences.
 - `APP.NAVIGATION.MODE.001-R4`: The selected directions travel mode shall persist per authenticated user account.
-- `APP.NAVIGATION.MODE.001-R5`: Offer direction actions shall launch the external maps provider using the selected directions travel mode.
+- `APP.NAVIGATION.MODE.001-R5`: Offer direction actions shall open the Google Maps HTTPS directions URL with `travelmode=walking` for `pedestrian` and `travelmode=driving` for `car`, showing a route preview without auto-starting navigation.
 - `APP.NAVIGATION.MODE.001-R6`: Offer detail direction button text shall reflect the selected directions travel mode.
 
 ## Acceptance Criteria (BDD)
@@ -39,6 +39,12 @@ Scenario: User changes directions mode to car
   Then the selected directions mode shall persist for that user
   And offer direction actions shall use car mode
   And the offer detail direction button text shall reflect car directions
+
+Scenario: Directions URL carries the selected travel mode
+  Given the selected travel mode is pedestrian
+  When the user opens directions for an offer
+  Then the directions URL shall request `travelmode=walking`
+  And navigation shall not start automatically
 ```
 
 ## Example Inputs/Outputs

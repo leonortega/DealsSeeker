@@ -20,6 +20,14 @@ Feature: Single map and geocoding stack
     When the user opens directions
     Then Google Maps shall be opened with the selected destination and travel mode
 
+  Scenario: Directions open a route preview in the selected mode
+    Given the selected travel mode is pedestrian
+    When the user opens directions for an offer
+    Then Google Maps receives the HTTPS directions URL with travelmode=walking
+    And navigation does not start automatically
+    When the selected travel mode is car
+    Then Google Maps receives the same URL with travelmode=driving
+
   Scenario: No provider switches are exposed
     Given the user opens application settings
     When map, geocoding, or redirect provider options are looked for

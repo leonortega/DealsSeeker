@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Map Display and Configured Navigation Launch
-- **Version**: `v1.8`
+- **Version**: `v1.9`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -25,8 +25,8 @@ Show user and business locations and support navigation to selected business usi
 - `OFFERS.MAP.001-R5`: No alternate map renderer shall be used in the Offers view.
 - `OFFERS.MAP.001-R6`: On business marker selection, the system shall open navigation with the configured travel mode and selected location preloaded.
 - `OFFERS.MAP.001-R7`: On offer item selection for directions, the system shall open navigation with the configured travel mode and selected offer location preloaded.
-- `OFFERS.MAP.001-R8`: Navigation redirect shall open Google Maps with the selected destination and travel mode.
-- `OFFERS.MAP.001-R9`: Navigation launch shall be platform-aware: desktop opens browser directions; mobile opens native map app when available, otherwise browser fallback.
+- `OFFERS.MAP.001-R8`: Navigation redirect shall open the Google Maps HTTPS directions URL with the selected destination and a `travelmode` matching the user's selected mode.
+- `OFFERS.MAP.001-R9`: The same HTTPS directions URL shall be used on every platform; the Google Maps app handles it when installed and a browser handles it otherwise. No native navigation URI that auto-starts driving shall be used.
 - `OFFERS.MAP.001-R10`: Offers view location text shown to users shall use human-readable address labels.
 - `OFFERS.MAP.001-R11`: Raw coordinate values (`lat`, `lng`) shall not be displayed to users in Offers view UI text.
 - `OFFERS.MAP.001-R12`: Raw coordinate values (`lat`, `lng`) shall remain available in internal data for map rendering, filtering, navigation, and persistence.
@@ -53,10 +53,10 @@ Scenario: User opens directions from selected offer item
   Given the Offers list displays an offer with a location
   And directions mode is configured as car
   When the user selects the offer item for directions
-  Then Google Maps navigation shall open with the offer location preloaded
-  And desktop clients shall open browser directions
-  And mobile clients shall open the Google Maps app in car mode when available
-  And browser fallback shall be used when the app is unavailable
+  Then the Google Maps HTTPS directions URL shall open with the offer location preloaded
+  And the URL shall request `travelmode=driving`
+  And navigation shall not start automatically
+  And the Google Maps app shall handle the URL when installed, otherwise a browser
 
 Scenario: The native renderer and redirect use the same provider
   Given the Offers map is rendered by the native Google Maps view

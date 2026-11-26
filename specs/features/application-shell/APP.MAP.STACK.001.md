@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Single Map and Geocoding Stack
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell, Offers map, Add Offer location map
 - **Priority**: High
@@ -24,6 +24,7 @@ Use one map stack everywhere: a native Google Maps view for display and Photon t
 - `APP.MAP.STACK.001-R5`: No runtime setting shall switch map display, geocoding, or redirect providers.
 - `APP.MAP.STACK.001-R6`: Consolidating the stack shall preserve marker selection, coverage radius, tap-to-pin, coordinate privacy, theming, and provider-failure reporting defined by the related specs.
 - `APP.MAP.STACK.001-R7`: If the native map or Google Maps credential is unavailable, the app shall report the failure without showing an alternate map surface.
+- `APP.MAP.STACK.001-R8`: External directions shall open the Google Maps HTTPS directions URL with an explicit `travelmode` matching the selected mode; no deep link that starts navigation automatically shall be used.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -43,6 +44,14 @@ Scenario: Directions always open Google Maps
   Given an offer, a marker, or a detail action offers directions
   When the user opens directions
   Then Google Maps shall be opened with the selected destination and travel mode
+
+Scenario: Directions open a route preview in the selected mode
+  Given the selected travel mode is pedestrian
+  When the user opens directions for an offer
+  Then Google Maps shall receive the HTTPS directions URL with `travelmode=walking`
+  And navigation shall not start automatically
+  When the selected travel mode is car
+  Then Google Maps shall receive the same URL with `travelmode=driving`
 
 Scenario: No provider switches are exposed
   Given the user opens application settings
