@@ -159,6 +159,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 64 suites / 386 tests overall; `typecheck` clean.
 - Splash now shows the stacked lockup plus a rounded tile with the symbol from `dealsseeker-icon-color.svg`; the `DealsSeeker mobile` CTA text is removed.
 
+## Follow-up: single splash logo
+
+- **Spec**: `APP.BRAND.001` v1.10 (R13) and BDD scenario updated.
+- **RED**: `npm test -- --runInBand presentationComponents` — 1 test failed: the extra `splash-icon` tile was still rendered.
+- **GREEN**: 64 suites / 386 tests overall; `typecheck` clean.
+- Splash now shows only the stacked lockup; the symbol tile and all text lines are removed.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
