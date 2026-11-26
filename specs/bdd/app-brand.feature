@@ -58,6 +58,6 @@ Feature: Brand logo set and placement
   Scenario: Splash uses the stacked lockup with black copy
     Given the application is showing its in-app splash view
     When the splash is rendered
-    Then the stacked lockup is displayed as the brand identity
-    And a symbol-icon tile is displayed below it
+    Then only the stacked lockup is displayed as the brand identity
+    And no second logo or symbol tile is displayed
     And no separate application-title, subtitle or `DealsSeeker mobile` text is displayed

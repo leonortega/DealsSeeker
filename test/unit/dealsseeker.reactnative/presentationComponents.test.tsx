@@ -54,10 +54,10 @@ describe('LoadingOverlay', () => {
 });
 
 describe('SplashScreen', () => {
-  it('shows the stacked lockup with an icon tile and no text lines', async () => {
+  it('shows only the stacked lockup with no text lines', async () => {
     await render(<SplashScreen />);
     expect(screen.getByTestId('brand-mark')).toBeTruthy();
-    expect(screen.getByTestId('splash-icon')).toBeTruthy();
+    expect(screen.queryByTestId('splash-icon')).toBeNull();
     expect(screen.queryByText('app.title')).toBeNull();
     expect(screen.queryByText('app.subtitle')).toBeNull();
     expect(screen.queryByText('splash.cta')).toBeNull();
