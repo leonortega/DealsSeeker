@@ -6,6 +6,8 @@ import { restoreFocus } from '../utils/focusReturn';
 import { NativeBottomSheet } from './NativeBottomSheet';
 import { avatarEmoji } from '../utils/avatars';
 
+const bodyMaxLength = 120;
+
 interface OfferCommentsModalProps {
   offer: OfferItemDto | null;
   visible: boolean;
@@ -175,13 +177,15 @@ export function OfferCommentsModal({ offer, visible, onClose, returnFocusRef }: 
           />
 
           <TextInput
+            maxLength={bodyMaxLength}
             multiline
-            onChangeText={setBody}
+            onChangeText={(value) => setBody(value.slice(0, bodyMaxLength))}
             placeholder={t('comments.placeholder')}
             placeholderTextColor={palette.inkMuted}
             style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
             value={body}
           />
+          <Text style={{ color: palette.inkMuted, textAlign: 'right' }}>{`${body.length}/${bodyMaxLength}`}</Text>
 
           {status ? <Text style={[styles.status, { color: palette.danger }]}>{status}</Text> : null}
 

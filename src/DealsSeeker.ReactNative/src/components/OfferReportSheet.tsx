@@ -9,6 +9,8 @@ import { successFeedback } from '../utils/haptics';
 import { statusColor } from '../utils/statusNotice';
 import { NativeBottomSheet } from './NativeBottomSheet';
 
+const messageMaxLength = 120;
+
 interface OfferReportSheetProps {
   draft: OfferReportDraft | null;
   visible: boolean;
@@ -117,13 +119,15 @@ export function OfferReportSheet({ draft, visible, onClose, returnFocusRef }: Of
 
         <TextInput
           accessibilityLabel={t('reports.message')}
+          maxLength={messageMaxLength}
           multiline
-          onChangeText={setMessage}
+          onChangeText={(value) => setMessage(value.slice(0, messageMaxLength))}
           placeholder={t('reports.message')}
           placeholderTextColor={palette.inkMuted}
           style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
           value={message}
         />
+        <Text style={{ color: palette.inkMuted, textAlign: 'right' }}>{`${message.length}/${messageMaxLength}`}</Text>
 
         {status ? <Text style={[styles.status, { color: statusColor(palette, statusTone) }]}>{status}</Text> : null}
 

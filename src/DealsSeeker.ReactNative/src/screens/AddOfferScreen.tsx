@@ -998,8 +998,9 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
             maxLength={descriptionMaxLength}
             multiline
             onChangeText={(value) => {
-              setDescription(value);
-              if (!value.trim()) {
+              const next = value.slice(0, descriptionMaxLength);
+              setDescription(next);
+              if (!next.trim()) {
                 setTags([]);
                 setSuggestionTags([]);
                 setSeedTags([]);
@@ -1007,14 +1008,14 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
                 return;
               }
 
-              const completedWord = extractCompletedWord(value);
+              const completedWord = extractCompletedWord(next);
               if (completedWord) {
                 const normalized = normalizeTag(completedWord);
                 if (normalized.length >= minAutoTagLength) {
                   addTag(normalized);
                 }
               } else {
-                const lastWord = extractWords(value).at(-1);
+                const lastWord = extractWords(next).at(-1);
                 if (lastWord && /[^\p{L}\p{Nd}]$/u.test(lastWord)) {
                   const normalized = normalizeTag(lastWord);
                   if (normalized.length >= minAutoTagLength) {
@@ -1032,6 +1033,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
             ]}
             value={description}
           />
+          <Text style={{ color: palette.inkMuted, textAlign: 'right' }}>{`${description.length}/${descriptionMaxLength}`}</Text>
           <Text style={{ color: palette.inkMuted }}>{t('add.descriptionMaxHint')}</Text>
           <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.detectedWords')}</Text>
           <View style={styles.wordGrid}>

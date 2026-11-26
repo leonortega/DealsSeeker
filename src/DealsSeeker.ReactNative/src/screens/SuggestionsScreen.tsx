@@ -9,6 +9,8 @@ import { successFeedback } from '../utils/haptics';
 import { keyboardAvoidanceBehavior } from '../utils/layout';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
 
+const messageMaxLength = 120;
+
 export function SuggestionsScreen() {
   const { activeTab, api, openTab, palette, t } = useApp();
   const insets = useSafeAreaInsets();
@@ -60,8 +62,9 @@ export function SuggestionsScreen() {
         </View>
         <TextInput
           accessibilityLabel={t('suggestions.message')}
+          maxLength={messageMaxLength}
           multiline
-          onChangeText={setMessage}
+          onChangeText={(value) => setMessage(value.slice(0, messageMaxLength))}
           placeholder={t('suggestions.message')}
           placeholderTextColor={palette.inkMuted}
           style={[
@@ -70,6 +73,7 @@ export function SuggestionsScreen() {
           ]}
           value={message}
         />
+        <Text style={{ color: palette.inkMuted, textAlign: 'right' }}>{`${message.length}/${messageMaxLength}`}</Text>
         <TextInput
           accessibilityLabel={t('suggestions.contact')}
           onChangeText={setContact}
