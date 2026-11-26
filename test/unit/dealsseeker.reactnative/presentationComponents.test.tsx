@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
 import { AvatarPicker } from '../../../src/DealsSeeker.ReactNative/src/components/AvatarPicker';
 import { LoadingOverlay } from '../../../src/DealsSeeker.ReactNative/src/components/LoadingOverlay';
 import { SplashScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/SplashScreen';
@@ -55,11 +54,12 @@ describe('LoadingOverlay', () => {
 });
 
 describe('SplashScreen', () => {
-  it('shows the stacked lockup with black copy and no title or subtitle', async () => {
+  it('shows the stacked lockup with an icon tile and no text lines', async () => {
     await render(<SplashScreen />);
     expect(screen.getByTestId('brand-mark')).toBeTruthy();
+    expect(screen.getByTestId('splash-icon')).toBeTruthy();
     expect(screen.queryByText('app.title')).toBeNull();
     expect(screen.queryByText('app.subtitle')).toBeNull();
-    expect(StyleSheet.flatten(screen.getByText('splash.cta').props.style).color).toBe('#000000');
+    expect(screen.queryByText('splash.cta')).toBeNull();
   });
 });
