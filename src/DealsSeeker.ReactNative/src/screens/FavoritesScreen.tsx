@@ -1,6 +1,6 @@
 import { landmarkFontFamily } from '../utils/typography';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import { OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
@@ -80,48 +80,54 @@ export function FavoritesScreen() {
   }
 
   return (
-    <ScrollView
+    <FlatList
       contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}
-      style={{ backgroundColor: palette.background }}
-    >
-      <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: palette.ink }]}>{t('favorites.title')}</Text>
-        </View>
-        {offers.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('favorites.empty')}</Text> : null}
-        {offers.map((offer) => (
-          <View key={offer.offerId} style={[styles.card, { backgroundColor: palette.panel, borderColor: palette.border }]}>
-            <Text style={[styles.offerTitle, { color: palette.ink }]}>{offer.businessName}</Text>
-            <Text style={{ color: palette.inkMuted }}>{shorten(offer.description, 110)}</Text>
-            <View style={styles.actionRow}>
-              <Pressable
-                accessibilityLabel={preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
-                accessibilityRole="button"
-                style={[styles.button, { backgroundColor: palette.panelAlt }]}
-                onPress={() => void openDirections(offer.location, preferences.navigationMode)}
-              >
-                <Text style={{ color: palette.ink, fontWeight: '700', textAlign: 'center' }}>
-                  {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
-                </Text>
-              </Pressable>
-              <Pressable
-                accessibilityLabel={t('offers.favoriteRemove')}
-                accessibilityRole="button"
-                style={[styles.button, { backgroundColor: palette.panelAlt }]}
-                onPress={() => void removeFavorite(offer)}
-              >
-                <Text style={{ color: palette.danger, fontWeight: '700', textAlign: 'center' }}>{t('offers.favoriteRemove')}</Text>
-              </Pressable>
-            </View>
+      data={offers}
+      keyExtractor={(item) => item.offerId}
+      ListHeaderComponent={
+        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <View style={styles.header}>
+            <Text style={[styles.title, { color: palette.ink }]}>{t('favorites.title')}</Text>
           </View>
-        ))}
-        {status ? (
+          {offers.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('favorites.empty')}</Text> : null}
+        </View>
+      }
+      ListFooterComponent={
+        status ? (
           <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.danger }]}>
             {status}
           </Text>
-        ) : null}
-      </View>
-    </ScrollView>
+        ) : undefined
+      }
+      renderItem={({ item: offer }) => (
+        <View style={[styles.card, { backgroundColor: palette.panel, borderColor: palette.border }]}>
+          <Text style={[styles.offerTitle, { color: palette.ink }]}>{offer.businessName}</Text>
+          <Text style={{ color: palette.inkMuted }}>{shorten(offer.description, 110)}</Text>
+          <View style={styles.actionRow}>
+            <Pressable
+              accessibilityLabel={preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+              accessibilityRole="button"
+              style={[styles.button, { backgroundColor: palette.panelAlt }]}
+              onPress={() => void openDirections(offer.location, preferences.navigationMode)}
+            >
+              <Text style={{ color: palette.ink, fontWeight: '700', textAlign: 'center' }}>
+                {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityLabel={t('offers.favoriteRemove')}
+              accessibilityRole="button"
+              style={[styles.button, { backgroundColor: palette.panelAlt }]}
+              onPress={() => void removeFavorite(offer)}
+            >
+              <Text style={{ color: palette.danger, fontWeight: '700', textAlign: 'center' }}>{t('offers.favoriteRemove')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+      style={{ backgroundColor: palette.background }}
+      testID="favorites-scroll"
+    />
   );
 }
 

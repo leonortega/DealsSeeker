@@ -1,6 +1,6 @@
 import { landmarkFontFamily } from '../utils/typography';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { OfferItemDto, ThemeMode, ThemeWorld, UserProfileDto } from '../api/types';
 import { AvatarPicker } from '../components/AvatarPicker';
 import { useApp } from '../hooks/useApp';
@@ -87,12 +87,15 @@ export function AccountScreen() {
   }
 
   return (
-    <ScrollView
+    <FlatList
       contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}
+      data={offers}
+      keyExtractor={(item) => item.offerId}
       style={{ backgroundColor: palette.background }}
       testID="account-scroll"
-    >
-      <View style={[styles.hero, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
+      ListHeaderComponent={
+        <>
+          <View style={[styles.hero, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
         <View style={styles.heroTop}>
           <View style={[styles.avatar, { backgroundColor: palette.accentMuted }]}>
             <Text style={[styles.avatarText, { color: palette.accentText }]}>{avatarEmoji(profile?.avatarId ?? avatarId)}</Text>
@@ -190,40 +193,44 @@ export function AccountScreen() {
         <AvatarPicker selectedAvatarId={avatarId} onSelect={(nextAvatarId) => void selectAvatar(nextAvatarId)} />
       </View>
 
-      <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.panelTitle, { color: palette.ink }]}>{t('account.offers')}</Text>
-        {offers.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('account.noOffers')}</Text> : null}
-        {offers.map((offer) => (
-          <View key={offer.offerId} style={[styles.offerCard, { backgroundColor: palette.panel, borderColor: palette.border }]}>
-            <Text style={[styles.offerTitle, { color: palette.ink }]}>{offer.businessName}</Text>
-            <Text style={{ color: palette.inkMuted }}>{shorten(offer.description, 100)}</Text>
-            <View style={styles.actionRow}>
-              <Pressable
-                accessibilityLabel={t('account.editOffer')}
-                accessibilityRole="button"
-                style={[styles.smallButton, { backgroundColor: palette.accentMuted }]}
-                onPress={() => openAddOffer(offer.offerId)}
-              >
-                <Text style={{ color: palette.accentText }}>{t('account.editOffer')}</Text>
-              </Pressable>
-              <Pressable
-                accessibilityLabel={t('account.removeOffer')}
-                accessibilityRole="button"
-                style={[styles.smallButton, { backgroundColor: palette.panelAlt }]}
-                onPress={() => removeOffer(offer)}
-              >
-                <Text style={{ color: palette.danger }}>{t('account.removeOffer')}</Text>
-              </Pressable>
-            </View>
+          <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+            <Text style={[styles.panelTitle, { color: palette.ink }]}>{t('account.offers')}</Text>
+            {offers.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('account.noOffers')}</Text> : null}
           </View>
-        ))}
-      </View>
-      {status ? (
-        <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
-          {status}
-        </Text>
-      ) : null}
-    </ScrollView>
+        </>
+      }
+      ListFooterComponent={
+        status ? (
+          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
+            {status}
+          </Text>
+        ) : undefined
+      }
+      renderItem={({ item: offer }) => (
+        <View style={[styles.offerCard, { backgroundColor: palette.panel, borderColor: palette.border }]}>
+          <Text style={[styles.offerTitle, { color: palette.ink }]}>{offer.businessName}</Text>
+          <Text style={{ color: palette.inkMuted }}>{shorten(offer.description, 100)}</Text>
+          <View style={styles.actionRow}>
+            <Pressable
+              accessibilityLabel={t('account.editOffer')}
+              accessibilityRole="button"
+              style={[styles.smallButton, { backgroundColor: palette.accentMuted }]}
+              onPress={() => openAddOffer(offer.offerId)}
+            >
+              <Text style={{ color: palette.accentText }}>{t('account.editOffer')}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityLabel={t('account.removeOffer')}
+              accessibilityRole="button"
+              style={[styles.smallButton, { backgroundColor: palette.panelAlt }]}
+              onPress={() => removeOffer(offer)}
+            >
+              <Text style={{ color: palette.danger }}>{t('account.removeOffer')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+    />
   );
 }
 

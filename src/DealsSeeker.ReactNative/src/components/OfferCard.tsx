@@ -1,6 +1,6 @@
 import { landmarkFontFamily } from '../utils/typography';
 import { Image, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { useApp } from '../hooks/useApp';
@@ -48,7 +48,7 @@ function HighlightedDescription({ description, query }: { description: string; q
   );
 }
 
-export function OfferCard({
+function OfferCardRow({
   offer,
   onComments,
   onDirections,
@@ -212,6 +212,8 @@ export function OfferCard({
     </View>
   );
 }
+
+export const OfferCard = memo(OfferCardRow);
 
 const styles = StyleSheet.create({
   card: {

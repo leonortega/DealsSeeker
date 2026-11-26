@@ -1,6 +1,6 @@
 import { landmarkFontFamily } from '../utils/typography';
-import { type ElementRef, useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { type ElementRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, SectionList, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
@@ -318,7 +318,17 @@ export function OffersScreen() {
     return null;
   }
 
-  const sections = partitionOffers(results.offers, query);
+  const sections = useMemo(() => partitionOffers(results.offers, query), [results.offers, query]);
+  const listSections = useMemo(
+    () => [
+      ...(sections.promoted.length > 0
+        ? [{ key: 'promoted', title: t('offers.promoted'), data: sections.promoted }]
+        : []),
+      ...(sections.feed.length > 0 ? [{ key: 'feed', title: t('nav.offers'), data: sections.feed }] : []),
+    ],
+    [sections, t]
+  );
+  const combinedOffers = useMemo(() => [...sections.promoted, ...sections.feed], [sections]);
   const gridColumns = resolveOffersGridColumns(viewportWidth);
   const cardWidth = Math.max(
     220,
@@ -401,8 +411,6 @@ export function OffersScreen() {
   }
 
   if (immersiveOffers) {
-    const combinedOffers = [...sections.promoted, ...sections.feed];
-
     return (
       <View style={[styles.immersiveWrapper, { backgroundColor: palette.backdrop }]} testID="immersive-content">
         {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
@@ -484,14 +492,17 @@ export function OffersScreen() {
           titleColor={palette.ink}
         />
       </View>
-      <ScrollView
+      <SectionList
         testID="offers-scroll"
         contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom, paddingHorizontal: 16, paddingTop: 68 }]}
+        sections={listSections}
+        keyExtractor={(item) => item.offerId}
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
         style={{ backgroundColor: palette.background }}
-      >
-        {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
+        ListHeaderComponent={
+          <>
+            {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
         <View style={styles.heroRow}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.title, { color: palette.ink }]}>{t('offers.title')}</Text>
@@ -557,65 +568,42 @@ export function OffersScreen() {
 
         {renderStatePanel()}
 
-        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border, padding: 0 }]}>
-          <NativeMapPreview
-            businesses={results.businesses}
-            center={userLocation}
-            height={300}
-            onSelectMarker={(marker) => void openDirections(marker.location, preferences.navigationMode)}
-            radiusMeters={radiusMeters}
+            <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border, padding: 0 }]}>
+              <NativeMapPreview
+                businesses={results.businesses}
+                center={userLocation}
+                height={300}
+                onSelectMarker={(marker) => void openDirections(marker.location, preferences.navigationMode)}
+                radiusMeters={radiusMeters}
+              />
+            </View>
+          </>
+        }
+      ListFooterComponent={
+        status ? (
+          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
+            {status}
+          </Text>
+        ) : undefined
+      }
+      renderSectionHeader={({ section }) => (
+        <Text style={[styles.sectionTitle, { color: palette.ink }]}>{section.title}</Text>
+      )}
+      renderItem={({ item: offer }) => (
+        <View style={gridColumns === 1 ? styles.gridCellFull : [styles.gridCell, { width: cardWidth }]}>
+          <OfferCard
+            offer={offer}
+            onComments={openOfferComments}
+            onDirections={openOfferDirections}
+            onFavorite={toggleFavorite}
+            onOpenDetail={setDetailOffer}
+            onReport={setReportDraft}
+            onVote={vote}
+            query={query}
           />
         </View>
-
-        {sections.promoted.length > 0 ? (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('offers.promoted')}</Text>
-            <View style={styles.grid}>
-              {sections.promoted.map((offer) => (
-                <View
-                  key={`promoted-${offer.offerId}`}
-                  style={gridColumns === 1 ? styles.gridCellFull : [styles.gridCell, { width: cardWidth }]}
-                >
-                  <OfferCard
-                    offer={offer}
-                    onComments={openOfferComments}
-                    onDirections={openOfferDirections}
-                    onFavorite={toggleFavorite}
-                    onOpenDetail={setDetailOffer}
-                    onReport={setReportDraft}
-                    onVote={vote}
-                    query={query}
-                  />
-                </View>
-              ))}
-            </View>
-          </View>
-        ) : null}
-
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('nav.offers')}</Text>
-          <View style={styles.grid}>
-            {sections.feed.map((offer) => (
-              <View
-                key={offer.offerId}
-                style={gridColumns === 1 ? styles.gridCellFull : [styles.gridCell, { width: cardWidth }]}
-              >
-                <OfferCard
-                  offer={offer}
-                  onComments={openOfferComments}
-                  onDirections={openOfferDirections}
-                  onFavorite={toggleFavorite}
-                  onOpenDetail={setDetailOffer}
-                  onReport={setReportDraft}
-                  onVote={vote}
-                  query={query}
-                />
-              </View>
-            ))}
-          </View>
-        </View>
-        {status ? <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>{status}</Text> : null}
-      </ScrollView>
+      )}
+    />
 
       <OfferDetailModal
         offer={detailOffer}
