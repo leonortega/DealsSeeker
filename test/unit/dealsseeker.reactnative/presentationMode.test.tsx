@@ -152,6 +152,14 @@ describe('presentation mode switch', () => {
     expect(scroll.props.showsHorizontalScrollIndicator).toBe(false);
   });
 
+  it('renders standard offers through a recycling list', async () => {
+    await render(<OffersScreen />);
+
+    const scroll = screen.getByTestId('offers-scroll');
+    expect(Array.isArray(scroll.props.data)).toBe(true);
+    expect(typeof scroll.props.renderItem).toBe('function');
+  });
+
   it('gives the title clearance below the map-view controls', async () => {
     await render(<OffersScreen />);
 

@@ -108,6 +108,15 @@ describe('FavoritesScreen', () => {
     await render(<FavoritesScreen />);
     expect(await screen.findByText('favorites.loadFailed')).toBeTruthy();
   });
+
+  it('renders favorites through a recycling list', async () => {
+    await render(<FavoritesScreen />);
+    await screen.findByText('Main Street Cafe');
+
+    const scroll = screen.getByTestId('favorites-scroll');
+    expect(scroll.props.data).toEqual([expect.objectContaining({ offerId: 'o1' })]);
+    expect(typeof scroll.props.renderItem).toBe('function');
+  });
 });
 
 describe('SuggestionsScreen', () => {

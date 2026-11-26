@@ -75,6 +75,7 @@ Scenario: Unauthenticated user opens My Favorites
 - Favorite toggling should provide immediate UI feedback.
 
 ## Related Specs
+- `APP.LIST.VIRTUALIZATION.001`
 - `OFFERS.GRID.CARDS.001`
 - `ACCOUNT.PROFILE.001`
 - `APP.NAVIGATION.MODE.001`

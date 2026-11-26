@@ -59,6 +59,7 @@ Scenario: Card actions stack on a narrow mobile viewport
 - Grid scrolling should remain smooth under typical list sizes.
 
 ## Related Specs
+- `APP.LIST.VIRTUALIZATION.001`
 - `OFFERS.LAYOUT.001`
 - `OFFERS.IMAGE.RENDERING.001`
 - `OFFERS.FAVORITES.001`

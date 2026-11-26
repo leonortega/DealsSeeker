@@ -94,6 +94,7 @@ Scenario: User edits an owned offer
 - Owned-offer management actions shall not expose or mutate offers owned by another user.
 
 ## Related Specs
+- `APP.LIST.VIRTUALIZATION.001`
 - `ACCOUNT.AUTH.LOGIN.001`
 - `ACCOUNT.AUTH.REGISTER.001`
 - `ACCOUNT.SETTINGS.AFFORDANCE.001`

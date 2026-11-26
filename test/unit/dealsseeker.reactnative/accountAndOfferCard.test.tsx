@@ -108,6 +108,14 @@ describe('AccountScreen', () => {
     expect(scroll.props.style.backgroundColor).toBe('#17201d');
   });
 
+  it('renders owned offers through a recycling list', async () => {
+    await render(<AccountScreen />);
+
+    const scroll = screen.getByTestId('account-scroll');
+    expect(Array.isArray(scroll.props.data)).toBe(true);
+    expect(typeof scroll.props.renderItem).toBe('function');
+  });
+
   it('renders nothing outside the account tab', async () => {
     mockActiveTab = 'offers';
     await render(<AccountScreen />);
@@ -259,5 +267,9 @@ describe('OfferCard', () => {
     await renderCard({ isReported: true });
     expect(screen.getByText('offers.reported')).toBeTruthy();
     expect(screen.getByText('offers.reportedWarning')).toBeTruthy();
+  });
+
+  it('memoizes the row so unrelated state changes do not re-render every card', () => {
+    expect((OfferCard as never as { $$typeof?: symbol }).$$typeof).toBe(Symbol.for('react.memo'));
   });
 });

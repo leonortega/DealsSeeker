@@ -72,6 +72,7 @@ Scenario: Unfavoriting under the favorites filter removes the offer
 - Position restoration shall not introduce visible animation.
 
 ## Related Specs
+- `APP.LIST.VIRTUALIZATION.001`
 - `OFFERS.FEED.IMMERSIVE.001`
 - `OFFERS.FAVORITES.001`
 - `OFFERS.UX.002`
