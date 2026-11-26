@@ -21,3 +21,12 @@ Feature: Authentication input affordances
     Given a valid email and password are entered
     When the user reveals the password and submits
     Then authentication shall behave as with a masked password
+
+  Scenario: Authentication inputs stop at their contract maxima
+    Given the user is on Login or Register
+    When the user pastes an email longer than 254 characters
+    Then the email input shall hold exactly 254 characters
+    When the user pastes a password longer than 200 characters
+    Then the password input shall hold exactly 200 characters
+    When the user is on Register and pastes a display name longer than 80 characters
+    Then the display name input shall hold exactly 80 characters

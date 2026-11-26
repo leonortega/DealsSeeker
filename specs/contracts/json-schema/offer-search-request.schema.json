@@ -11,6 +11,7 @@
   "properties": {
     "query": {
       "type": "string",
+      "maxLength": 200,
       "description": "Empty string is allowed and triggers pre-search ordering in the API."
     },
     "locale": {

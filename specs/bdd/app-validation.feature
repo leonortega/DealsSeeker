@@ -43,3 +43,9 @@ Feature: Input validation and standard error response
     Given a request fails validation
     When the system responds with HTTP status 400
     Then no data shall be written or changed
+
+  Scenario: Client input stops at the contract maximum
+    Given a text input bound to a declared request-contract maximum
+    When the user types or pastes text beyond that maximum
+    Then the input retains exactly the maximum number of characters
+    And the excess text shall not be sent in any request

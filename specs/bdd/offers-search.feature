@@ -65,3 +65,8 @@ Feature: Search offers in Offers view
     Then an animated loading overlay is shown
     And interactions with map and offer controls are blocked
     And when loading completes the overlay is hidden
+
+  Scenario: Search query stops at its contract maximum
+    Given the standard or immersive search input is displayed
+    When the user pastes 250 characters into the search input
+    Then the input holds exactly 200 characters

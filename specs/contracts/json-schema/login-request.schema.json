@@ -12,11 +12,13 @@
     "email": {
       "type": "string",
       "format": "email",
+      "maxLength": 254,
       "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
     },
     "password": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 200,
       "pattern": ".*\\S.*"
     }
   },

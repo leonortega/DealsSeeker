@@ -130,6 +130,22 @@ describe('accessible contribution and auth surfaces (APP.ACCESSIBILITY.UX.002)',
     expect(screen.getByRole('button', { name: 'common.search' })).toBeTruthy();
   });
 
+  it('caps the immersive search input at 200 characters', async () => {
+    await render(
+      <ImmersiveSearchOverlay
+        visible
+        query=""
+        radiusMeters={1500}
+        onChangeQuery={jest.fn()}
+        onChangeRadius={jest.fn()}
+        onSearch={jest.fn()}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(screen.getByLabelText('offers.searchPlaceholder').props.maxLength).toBe(200);
+  });
+
   it('uses a pill corner for the immersive search input', async () => {
     await render(
       <ImmersiveSearchOverlay

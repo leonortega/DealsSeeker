@@ -78,6 +78,15 @@ describe('Offers discovery states', () => {
     );
   });
 
+  it('caps the standard search query at 200 characters', async () => {
+    await render(<OffersScreen />);
+
+    const input = screen.getByPlaceholderText('offers.searchPlaceholder');
+    await fireEvent.changeText(input, 'x'.repeat(250));
+
+    expect(input.props.value).toHaveLength(200);
+  });
+
   it('keeps the Offers controls usable when no offers exist', async () => {
     await render(<OffersScreen />);
 

@@ -32,3 +32,8 @@ Feature: Suggestions submission flow
     When the message reaches 120 characters
     Then the input accepts no further characters
     And the counter shows "120/120"
+
+  Scenario: Optional contact stops at its contract maximum
+    Given the user is on Suggestions view
+    When the user pastes 300 characters into the contact input
+    Then the contact input holds exactly 254 characters

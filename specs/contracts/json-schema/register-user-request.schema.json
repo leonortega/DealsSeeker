@@ -13,16 +13,19 @@
     "displayName": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 80,
       "pattern": ".*\\S.*"
     },
     "email": {
       "type": "string",
       "format": "email",
+      "maxLength": 254,
       "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
     },
     "password": {
       "type": "string",
       "minLength": 8,
+      "maxLength": 200,
       "pattern": "^(?=.*[A-Za-z])(?=.*\\d).{8,}$"
     }
   },

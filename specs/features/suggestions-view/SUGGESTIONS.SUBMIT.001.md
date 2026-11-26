@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Suggestions View Submission Flow
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Suggestions View
 - **Priority**: Medium
@@ -25,6 +25,7 @@ Allow a user to submit product suggestions with a required message and optional 
 - `SUGGESTIONS.SUBMIT.001-R6`: When suggestion submission fails, the system shall keep the user in `Suggestions` and show a recoverable failure state.
 - `SUGGESTIONS.SUBMIT.001-R7`: The submit action shall remain visible and operable while the on-screen keyboard is open.
 - `SUGGESTIONS.SUBMIT.001-R8`: The suggestion message input shall display a live counter in `<current>/120` form and shall accept at most 120 characters, as specified in `APP.TEXTCOUNTER.001`.
+- `SUGGESTIONS.SUBMIT.001-R9`: The optional contact input shall accept at most 254 characters.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -50,6 +51,11 @@ Scenario: Suggestion message counter tracks typing and stops at 120
   When the message reaches 120 characters
   Then the input accepts no further characters
   And the counter shows "120/120"
+
+Scenario: Optional contact stops at its contract maximum
+  Given the user is on Suggestions view
+  When the user pastes 300 characters into the contact input
+  Then the contact input holds exactly 254 characters
 ```
 
 ## Example Inputs/Outputs

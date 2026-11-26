@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Input Validation and Standard Error Response
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -28,6 +28,7 @@ Define how invalid input is rejected by the API, the shape of the standard error
 - `APP.VALIDATION.001-R8`: The system shall enforce a maximum total request payload size, so that oversized submissions, including submissions with embedded image data, are rejected rather than accepted.
 - `APP.VALIDATION.001-R9`: A validation failure shall perform no work: no data shall be written or changed.
 - `APP.VALIDATION.001-R10`: Field-specific limits shall be described by the request contract of the affected operation rather than restated per failure.
+- `APP.VALIDATION.001-R11`: Each client text input shall cap typed and pasted text at the maximum declared by the corresponding request contract, so that the user cannot enter text the API would reject.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -71,6 +72,12 @@ Scenario: Validation failure performs no work
   Given a request fails validation
   When the system responds with HTTP status 400
   Then no data shall be written or changed
+
+Scenario: Client input stops at the contract maximum
+  Given a text input bound to a declared request-contract maximum
+  When the user types or pastes text beyond that maximum
+  Then the input retains exactly the maximum number of characters
+  And the excess text shall not be sent in any request
 ```
 
 ## Example Inputs/Outputs

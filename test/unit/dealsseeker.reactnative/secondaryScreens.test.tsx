@@ -177,6 +177,15 @@ describe('SuggestionsScreen', () => {
     expect(screen.getByText('120/120')).toBeTruthy();
   });
 
+  it('caps the optional contact at 254 characters', async () => {
+    await render(<SuggestionsScreen />);
+
+    const input = screen.getByPlaceholderText('suggestions.contact');
+    await fireEvent.changeText(input, 'x'.repeat(300));
+
+    expect(input.props.value).toHaveLength(254);
+  });
+
   it('reports a failed submission without leaving the view', async () => {
     mockSubmitSuggestion.mockResolvedValue({ success: false });
     await render(<SuggestionsScreen />);

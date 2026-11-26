@@ -17,7 +17,8 @@
       "type": [
         "string",
         "null"
-      ]
+      ],
+      "maxLength": 254
     }
   },
   "additionalProperties": false

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Authentication Input Affordances
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: My Account (Login and Register)
 - **Priority**: Medium
@@ -23,6 +23,9 @@ Make email and password entry self-describing on mobile without changing authent
 - `ACCOUNT.AUTH.INPUT.001-R4`: The visibility control shall expose its current state to assistive technology.
 - `ACCOUNT.AUTH.INPUT.001-R5`: Revealing a password shall not change validation or submission behavior.
 - `ACCOUNT.AUTH.INPUT.001-R6`: The behavior shall be identical on Login and Register and in both themes.
+- `ACCOUNT.AUTH.INPUT.001-R7`: The email input shall accept at most 254 characters on both Login and Register.
+- `ACCOUNT.AUTH.INPUT.001-R8`: The password input shall accept at most 200 characters on both Login and Register.
+- `ACCOUNT.AUTH.INPUT.001-R9`: The Register display name input shall accept at most 80 characters.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -44,6 +47,15 @@ Scenario: Revealing does not change submission
   Given a valid email and password are entered
   When the user reveals the password and submits
   Then authentication shall behave as with a masked password
+
+Scenario: Authentication inputs stop at their contract maxima
+  Given the user is on Login or Register
+  When the user pastes an email longer than 254 characters
+  Then the email input shall hold exactly 254 characters
+  When the user pastes a password longer than 200 characters
+  Then the password input shall hold exactly 200 characters
+  When the user is on Register and pastes a display name longer than 80 characters
+  Then the display name input shall hold exactly 80 characters
 ```
 
 ## Example Inputs/Outputs

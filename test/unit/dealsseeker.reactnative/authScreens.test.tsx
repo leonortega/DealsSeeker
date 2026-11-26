@@ -105,6 +105,35 @@ describe('LoginScreen', () => {
   });
 });
 
+describe('Authentication input caps (ACCOUNT.AUTH.INPUT.001)', () => {
+  it('caps login email at 254 and password at 200 characters', async () => {
+    await render(<LoginScreen />);
+
+    const email = screen.getByPlaceholderText('auth.email');
+    const password = screen.getByPlaceholderText('auth.password');
+    await fireEvent.changeText(email, 'a'.repeat(300));
+    await fireEvent.changeText(password, 'b'.repeat(250));
+
+    expect(email.props.value).toHaveLength(254);
+    expect(password.props.value).toHaveLength(200);
+  });
+
+  it('caps register display name at 80, email at 254 and password at 200 characters', async () => {
+    await render(<RegisterScreen />);
+
+    const displayName = screen.getByPlaceholderText('auth.displayName');
+    const email = screen.getByPlaceholderText('auth.email');
+    const password = screen.getByPlaceholderText('auth.password');
+    await fireEvent.changeText(displayName, 'c'.repeat(120));
+    await fireEvent.changeText(email, 'a'.repeat(300));
+    await fireEvent.changeText(password, 'b'.repeat(250));
+
+    expect(displayName.props.value).toHaveLength(80);
+    expect(email.props.value).toHaveLength(254);
+    expect(password.props.value).toHaveLength(200);
+  });
+});
+
 describe('RegisterScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();

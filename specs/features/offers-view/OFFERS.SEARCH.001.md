@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offers Search Execution and Radius Refresh
-- **Version**: `v1.6`
+- **Version**: `v1.7`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -31,6 +31,7 @@ Allow users to execute offer search and keep list/map results synchronized as se
 - `OFFERS.SEARCH.001-R11`: While required location resolution is in progress, the view shall show a blocking animated loading state as defined in `APP.SHELL.001`. While a search lookup is in progress, the view shall show a progress indication scoped to the affected content and shall remain interactive, as defined in `APP.SEARCH.INTERACTION.001`.
 - `OFFERS.SEARCH.001-R12`: The offer list results shall be delivered in pages as defined in `OFFERS.SEARCH.PAGINATION.001`.
 - `OFFERS.SEARCH.001-R13`: The map marker set shall continue to represent the full filtered offer set regardless of the requested page, as defined in `OFFERS.SEARCH.PAGINATION.001`.
+- `OFFERS.SEARCH.001-R14`: Both the standard search bar and the immersive search overlay shall accept at most 200 characters, matching the offer-search request contract.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -92,6 +93,11 @@ Scenario: Invalid page size is rejected
   When the user requests a search with a page size greater than the allowed maximum
   Then the request shall be rejected with a validation error
   And no search shall be performed
+
+Scenario: Search query stops at its contract maximum
+  Given the standard or immersive search input is displayed
+  When the user pastes 250 characters into the search input
+  Then the input holds exactly 200 characters
 ```
 
 ## Example Inputs/Outputs
