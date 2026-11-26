@@ -38,7 +38,7 @@ const radiusOptions = [500, 1000, 1500, 2500, 5000];
 const searchDebounceMs = 300;
 
 export function OffersScreen() {
-  const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, setReportDraft, t } =
+  const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, loadingCount, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, setReportDraft, t } =
     useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -468,7 +468,7 @@ export function OffersScreen() {
           visible={reportDraft !== null}
         />
         <FirstRunSheet onDismiss={dismissFirstRun} visible={firstRunVisible} />
-        <LoadingOverlay visible={initialLoading} />
+        {loadingCount === 0 ? <LoadingOverlay visible={initialLoading} /> : null}
       </View>
     );
   }
@@ -643,7 +643,7 @@ export function OffersScreen() {
         returnFocusRef={helpButtonRef}
         visible={reportDraft !== null}
       />
-      <LoadingOverlay visible={initialLoading} />
+      {loadingCount === 0 ? <LoadingOverlay visible={initialLoading} /> : null}
     </View>
   );
 }

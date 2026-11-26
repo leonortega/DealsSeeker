@@ -131,6 +131,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 64 suites / 383 tests overall; `typecheck` clean.
 - Removed the inline feed progress banner and its styles; only the blocking `LoadingOverlay` remains. Feed caption visibility (and therefore the side rail offset) now uses viewport height instead of a measured feed height, so the rail does not re-position as content loads.
 
+## Follow-up: mutually exclusive loading overlays
+
+- **Spec**: `APP.SHELL.001` v2.5 (R31) — only one overlay even when global and startup loading states overlap.
+- **RED**: `npm test -- --runInBand presentationMode` — 1 test failed: rendering the shell overlay plus Offers produced two `app.loading` texts.
+- **GREEN**: 64 suites / 384 tests overall; `typecheck` clean.
+- The Offers view skips its local `LoadingOverlay` entirely while `loadingCount > 0`, so the shell overlay is the single visible spinner. Device capture confirmed one spinner before the feed appears.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
