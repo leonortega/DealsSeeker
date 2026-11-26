@@ -118,6 +118,7 @@ Feature: Immersive feed responsive presentation
     Given the user is on the immersive offers view
     When offers and their images finish loading
     Then the side action rail keeps the same position
+    And the offer image surface keeps the same position
     And caption visibility does not change because of a measured feed height
 
   Scenario: Horizontal swipe changes the photo on every viewport size

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { ImmersiveActionCaption } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveActionGlyphs';
 import { ImmersiveFeedTabs } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveFeedTabs';
@@ -93,5 +93,32 @@ describe('immersive chrome over the fixed dark backdrop', () => {
     );
 
     expect(screen.getByTestId('brand-mark')).toBeTruthy();
+  });
+
+  it('keeps measured page geometry stable after the first layout', async () => {
+    await render(
+      <ImmersiveOfferFeed
+        offers={[offer]}
+        onRadiusChange={jest.fn()}
+        radiusMeters={1500}
+        query=""
+        onFavorite={jest.fn()}
+        onVote={jest.fn()}
+        onReport={jest.fn()}
+        onDirections={jest.fn()}
+        onComments={jest.fn()}
+        onSearch={jest.fn()}
+        feedTab="viewAll"
+        onFeedTabChange={jest.fn()}
+      />
+    );
+
+    const feedArea = screen.getByTestId('immersive-feed-area');
+    fireEvent(feedArea, 'layout', { nativeEvent: { layout: { height: 600 } } });
+    fireEvent(feedArea, 'layout', { nativeEvent: { layout: { height: 500 } } });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('immersive-offer-list').props.getItemLayout(null, 0).length).toBe(600)
+    );
   });
 });
