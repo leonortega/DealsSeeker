@@ -10,6 +10,7 @@ import { keyboardAvoidanceBehavior } from '../utils/layout';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
 
 const messageMaxLength = 120;
+const contactMaxLength = 254;
 
 export function SuggestionsScreen() {
   const { activeTab, api, openTab, palette, t } = useApp();
@@ -76,7 +77,8 @@ export function SuggestionsScreen() {
         <Text style={{ color: palette.inkMuted, textAlign: 'right' }}>{`${message.length}/${messageMaxLength}`}</Text>
         <TextInput
           accessibilityLabel={t('suggestions.contact')}
-          onChangeText={setContact}
+          maxLength={contactMaxLength}
+          onChangeText={(value) => setContact(value.slice(0, contactMaxLength))}
           placeholder={t('suggestions.contact')}
           placeholderTextColor={palette.inkMuted}
           style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}

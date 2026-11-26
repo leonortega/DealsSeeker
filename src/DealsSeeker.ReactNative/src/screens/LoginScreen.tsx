@@ -6,6 +6,9 @@ import { announceStatus } from '../utils/announce';
 import { authFormStyles } from '../utils/authFormStyles';
 import { keyboardAvoidanceBehavior } from '../utils/layout';
 
+const emailMaxLength = 254;
+const passwordMaxLength = 200;
+
 export function LoginScreen() {
   const { api, palette, sessionNotice, setSession, showRegister, t } = useApp();
   const [email, setEmail] = useState('');
@@ -59,7 +62,8 @@ export function LoginScreen() {
           accessibilityLabel={t('auth.email')}
           autoCapitalize="none"
           keyboardType="email-address"
-          onChangeText={setEmail}
+          maxLength={emailMaxLength}
+          onChangeText={(value) => setEmail(value.slice(0, emailMaxLength))}
           placeholder={t('auth.email')}
           placeholderTextColor={palette.inkMuted}
           style={[authFormStyles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
@@ -67,7 +71,8 @@ export function LoginScreen() {
         />
         <TextInput
           accessibilityLabel={t('auth.password')}
-          onChangeText={setPassword}
+          maxLength={passwordMaxLength}
+          onChangeText={(value) => setPassword(value.slice(0, passwordMaxLength))}
           placeholder={t('auth.password')}
           placeholderTextColor={palette.inkMuted}
           secureTextEntry={!showPassword}

@@ -35,6 +35,7 @@ import { restoreFocus } from '../utils/focusReturn';
 const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const radiusOptions = [500, 1000, 1500, 2500, 5000];
 const searchDebounceMs = 300;
+const queryMaxLength = 200;
 
 export function OffersScreen() {
   const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, runOperation, setReportDraft, t } =
@@ -501,9 +502,11 @@ export function OffersScreen() {
         <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <TextInput
             accessibilityLabel={t('offers.searchPlaceholder')}
+            maxLength={queryMaxLength}
             onChangeText={(value) => {
-              setQuery(value);
-              searchDebounced(value, radiusMeters, favoritesOnly);
+              const next = value.slice(0, queryMaxLength);
+              setQuery(next);
+              searchDebounced(next, radiusMeters, favoritesOnly);
             }}
             placeholder={t('offers.searchPlaceholder')}
             placeholderTextColor={palette.inkMuted}

@@ -6,6 +6,8 @@ import { NativeBottomSheet } from './NativeBottomSheet';
 
 export const COVERAGE_DISTANCE_OPTIONS = [500, 1000, 1500, 2500, 5000];
 
+const queryMaxLength = 200;
+
 export function ImmersiveSearchOverlay({
   visible,
   query,
@@ -42,6 +44,7 @@ export function ImmersiveSearchOverlay({
 
           <TextInput
             accessibilityLabel={t('offers.searchPlaceholder')}
+            maxLength={queryMaxLength}
             onChangeText={onChangeQuery}
             onSubmitEditing={onSearch}
             placeholder={t('offers.searchPlaceholder')}
