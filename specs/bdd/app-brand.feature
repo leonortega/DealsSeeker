@@ -67,3 +67,9 @@ Feature: Brand logo set and placement
     Then only the stacked lockup is displayed as the brand identity
     And no second logo or symbol tile is displayed
     And no separate application-title, subtitle or `DealsSeeker mobile` text is displayed
+
+  Scenario: Offer actions use the authored glyph set
+    Given an offer card or immersive action rail is displayed
+    When its actions are rendered
+    Then each action uses an authored SVG glyph
+    And no emoji is used as an action icon

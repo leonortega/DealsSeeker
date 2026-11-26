@@ -272,4 +272,9 @@ describe('OfferCard', () => {
   it('memoizes the row so unrelated state changes do not re-render every card', () => {
     expect((OfferCard as never as { $$typeof?: symbol }).$$typeof).toBe(Symbol.for('react.memo'));
   });
+
+  it('uses authored glyphs instead of emoji for vote actions', async () => {
+    await renderCard();
+    expect(screen.queryAllByText(/[👍👎]/)).toHaveLength(0);
+  });
 });

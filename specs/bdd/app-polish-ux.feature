@@ -52,3 +52,9 @@ Feature: Design-system conformance and dialog recovery
     Given the authenticated user is on the standard Offers view
     When the view content is scrolled
     Then no vertical or horizontal scroll indicator is displayed
+
+  Scenario: Raised surfaces keep one soft shadow on both platforms
+    Given an offer card and a primary action are displayed on iOS and Android
+    When the surfaces are rendered
+    Then each keeps the single low, soft shadow from the design system
+    And no hard-offset or stacked shadow is introduced

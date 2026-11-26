@@ -35,3 +35,14 @@ Feature: Theme behavior with system default and override
     When the immersive offer feed displays availability counts on the fixed backdrop
     Then the counts use a light foreground that remains legible
     And the same foreground is used when the dark theme is active
+
+  Scenario: Chrome colors follow the active palette
+    Given the app uses any palette world in light or dark mode
+    When an immersive offer, footer and status message are rendered
+    Then their colors come from the active palette or its documented fixed-backdrop tokens
+    And no unthemed literal is used for chrome
+
+  Scenario: Status bar follows the presentation
+    Given the app is in a light, dark or immersive presentation
+    When the surface is rendered
+    Then the status bar content stays legible against that surface

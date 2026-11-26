@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Brand Logo Set and Placement
-- **Version**: `v1.11`
+- **Version**: `v1.12`
 - **Status**: Approved
 - **Context/View**: Application Shell (all views), Login, Offers (immersive)
 - **Priority**: Medium
@@ -31,6 +31,7 @@ Use one authored logo set consistently in every app surface and replace placehol
 - `APP.BRAND.001-R12`: The standard Offers view title shall be separated from the controls row by a clear gap, and no top-bar control shall be clipped by the screen edges.
 - `APP.BRAND.001-R13`: The in-app splash view shall display only the stacked lockup as its brand identity; it shall not display a second logo, an application-subtitle line, or a `DealsSeeker mobile` text line.
 - `APP.BRAND.001-R14`: The native launcher icon shall use the symbol mark from the authored logo set on the brand background with sufficient contrast; the adaptive foreground shall contrast with the adaptive background.
+- `APP.BRAND.001-R15`: Offer action icons shall use the authored SVG glyph set; emoji shall not be used as action icons. Decorative avatar emoji are not action icons.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -85,6 +86,12 @@ Scenario: Map-view title clears the controls row
   When the view content is rendered
   Then the title starts below the controls row with a clear gap
   And no top-bar control is clipped by the screen edges
+
+Scenario: Offer actions use the authored glyph set
+  Given an offer card or immersive action rail is displayed
+  When its actions are rendered
+  Then each action uses an authored SVG glyph
+  And no emoji is used as an action icon
 
 Scenario: Splash uses the stacked lockup with black copy
   Given the application is showing its in-app splash view

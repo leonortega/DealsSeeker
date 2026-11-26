@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: System-Aware Theme with Manual Override
-- **Version**: `v0.3`
+- **Version**: `v0.4`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: Medium
@@ -26,6 +26,8 @@ Provide light and dark theme support aligned with device preference and user ove
 - `APP.THEME.001-R7`: When the user changes theme from the My Account control, the selected theme shall apply instantly in the current view without requiring app restart.
 - `APP.THEME.001-R8`: All app surfaces, including the immersive offer chrome, the bottom footer navigation, and the offers views, shall use the active theme colors and the shared button styles.
 - `APP.THEME.001-R9`: Text and metadata drawn on the fixed immersive backdrop shall use a foreground that remains legible in both themes, regardless of the active theme's text color.
+- `APP.THEME.001-R10`: Every visible chrome color, including footer icons, immersive overlay text, badges and action counters, shall be derived from the active palette or its documented fixed-backdrop tokens.
+- `APP.THEME.001-R11`: The status bar shall follow the active theme and presentation so its content stays legible in light, dark and immersive surfaces.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -55,6 +57,17 @@ Scenario: Surfaces share the active theme colors
   Given the app is using dark theme
   When the user views the immersive offer chrome, the bottom footer navigation, and the offers views
   Then every surface shall use the active theme colors and the shared button styles
+
+Scenario: Chrome colors follow the active palette
+  Given the app uses any palette world in light or dark mode
+  When an immersive offer, footer and status message are rendered
+  Then their colors come from the active palette or its documented fixed-backdrop tokens
+  And no unthemed literal is used for chrome
+
+Scenario: Status bar follows the presentation
+  Given the app is in a light, dark or immersive presentation
+  When the surface is rendered
+  Then the status bar content stays legible against that surface
 
 Scenario: Immersive metadata stays legible in the light theme
   Given the app is using the light theme
