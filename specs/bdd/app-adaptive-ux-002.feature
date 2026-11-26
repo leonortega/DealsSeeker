@@ -30,9 +30,21 @@ Feature: Adaptive touch, text, zoom, and motion behavior
     Given the available vertical space is insufficient for decorative action captions
     When the offer actions are displayed
     Then the captions are omitted
-    And every action remains labelled for assistive technology
+    And every action remains independently tappable and labelled for assistive technology
 
   Scenario: Reduced motion in both themes and landscape
     Given reduced motion is enabled and the device is in landscape
     When a surface is rendered in either theme
     Then the touch floor and text scaling still hold
+
+  Scenario: Action captions survive large text on a phone
+    Given a phone displays an offer with the system text size set to 150 percent
+    When the action rail is rendered
+    Then every action is visibly labelled or reachable through a visibly labelled disclosure
+    And no caption clips or overlaps an adjacent control
+
+  Scenario: Navigation labels scale without breaking
+    Given the system text size is set to 150 percent
+    When the footer, presentation switch and feed tabs are rendered
+    Then their labels remain readable on one line or wrap at word boundaries
+    And no label overlaps an adjacent control

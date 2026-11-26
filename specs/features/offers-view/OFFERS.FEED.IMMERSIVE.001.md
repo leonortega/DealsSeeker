@@ -288,6 +288,7 @@ Scenario: Empty feed state
 - Layout shall remain usable on small mobile screens.
 
 ## Related Specs
+- `OFFERS.ACTIONS.LABELS.001`
 - `APP.SHELL.005`
 - `OFFERS.LAYOUT.001`
 - `OFFERS.FEED.RESPONSIVE.001`

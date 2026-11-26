@@ -67,6 +67,7 @@ Scenario: New feedback replaces the previous feedback
 - Feedback shall be transient and shall not require a separate dismissal action to continue using the feed.
 
 ## Related Specs
+- `OFFERS.ACTIONS.LABELS.001`
 - `OFFERS.UX.001`
 - `OFFERS.FEED.IMMERSIVE.001`
 - `OFFERS.LIST.ACTIONS.001`

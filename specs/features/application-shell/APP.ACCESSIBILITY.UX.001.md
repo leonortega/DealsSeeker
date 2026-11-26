@@ -77,6 +77,7 @@ Scenario: Floating action does not cover controls at large text size
 
 ## Related Specs
 - `APP.THEME.001`
+- `OFFERS.ACTIONS.LABELS.001`
 - `APP.LOCALIZATION.001`
 - `OFFERS.UX.001`
 - `OFFERS.FEED.IMMERSIVE.001`
