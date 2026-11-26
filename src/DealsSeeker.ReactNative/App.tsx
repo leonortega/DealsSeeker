@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { BackNavigationHandler } from './src/components/BackNavigationHandler';
 import { LoadingOverlay } from './src/components/LoadingOverlay';
 import { AppProvider } from './src/context/AppContext';
 import { useApp } from './src/hooks/useApp';
@@ -35,6 +36,7 @@ export default function App() {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <AppProvider>
+          <BackNavigationHandler />
           <AppRoot />
         </AppProvider>
       </SafeAreaProvider>

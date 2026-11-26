@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useRef } from 'react';
+import { BackHandler } from 'react-native';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import type { BottomSheetMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
 import { useApp } from '../hooks/useApp';
@@ -18,12 +19,21 @@ export function NativeBottomSheet({
 }) {
   const { palette, openSheet, closeSheet } = useApp();
   const sheetRef = useRef<BottomSheetMethods>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (visible) {
       sheetRef.current?.expand();
       openSheet();
-      return () => closeSheet();
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        onCloseRef.current();
+        return true;
+      });
+      return () => {
+        subscription.remove();
+        closeSheet();
+      };
     }
     sheetRef.current?.close();
   }, [visible, openSheet, closeSheet]);

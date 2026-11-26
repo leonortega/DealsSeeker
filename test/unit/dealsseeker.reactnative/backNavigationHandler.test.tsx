@@ -53,12 +53,21 @@ describe('BackNavigationHandler (APP.SHELL.001-R17/R18)', () => {
   afterEach(() => jest.restoreAllMocks());
 
   it('closes an overlay before navigating or asking to exit', async () => {
-    mockState.overlayRoute = { name: 'add-offer' };
+    mockState.overlayRoute = { name: 'favorites' };
     await render(<BackNavigationHandler />);
 
     expect(backHandler?.()).toBe(true);
     expect(mockCloseOverlay).toHaveBeenCalledTimes(1);
     expect(mockOpenTab).not.toHaveBeenCalled();
+    expect(Alert.alert).not.toHaveBeenCalled();
+  });
+
+  it('leaves Add Offer dismissal to its own discard guard', async () => {
+    mockState.overlayRoute = { name: 'add-offer' };
+    await render(<BackNavigationHandler />);
+
+    expect(backHandler?.()).toBe(true);
+    expect(mockCloseOverlay).not.toHaveBeenCalled();
     expect(Alert.alert).not.toHaveBeenCalled();
   });
 
