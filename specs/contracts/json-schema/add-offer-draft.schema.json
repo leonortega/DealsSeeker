@@ -18,7 +18,8 @@
       "type": "array",
       "maxItems": 10,
       "items": {
-        "type": "string"
+        "type": "string",
+        "maxLength": 40
       },
       "description": "Tags are normalized and de-duplicated server-side. Spec IDs: ADD.OFFER.TAG.LIMIT.001"
     },

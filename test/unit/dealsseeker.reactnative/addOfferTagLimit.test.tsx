@@ -72,6 +72,34 @@ describe('Add Offer tag limit (ADD.OFFER.TAG.LIMIT.001)', () => {
     expect(screen.getByText('add.tagsLimitHint')).toBeTruthy();
   });
 
+  it('caps each automatic tag at 40 normalized characters', async () => {
+    await render(<AddOfferScreen />);
+    const input = screen.getByPlaceholderText('add.descriptionPlaceholder');
+
+    await fireEvent.changeText(input, `${'x'.repeat(50)} `);
+
+    await waitFor(() => expect(screen.getAllByTestId('add-tag-chip')).toHaveLength(1));
+    expect(screen.getByText('x'.repeat(40))).toBeTruthy();
+  });
+
+  it('caps prefilled draft tags by count and length', async () => {
+    mockOverlayRoute = { name: 'add-offer', offerId: 'o1' };
+    const longTag = 'z'.repeat(50);
+    mockGetMyOfferDraft.mockResolvedValue({
+      description: 'prefilled',
+      tags: [longTag, 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven'],
+      images: [],
+      location: null,
+    });
+
+    await render(<AddOfferScreen />);
+    await waitFor(() => expect(screen.getAllByTestId('add-tag-chip').length).toBeGreaterThan(0));
+
+    expect(screen.getAllByTestId('add-tag-chip')).toHaveLength(10);
+    expect(screen.queryByText(longTag)).toBeNull();
+    expect(screen.getByText('z'.repeat(40))).toBeTruthy();
+  });
+
   it('refuses manual additions at the limit and frees a slot when a tag is removed', async () => {
     mockOverlayRoute = { name: 'add-offer', offerId: 'o1' };
     mockGetMyOfferDraft.mockResolvedValue({
@@ -119,5 +147,6 @@ describe('Add Offer tag limit (ADD.OFFER.TAG.LIMIT.001)', () => {
     await waitFor(() => expect(mockCreateOffer).toHaveBeenCalled());
     const payload = mockCreateOffer.mock.calls[0][0];
     expect(payload.tags.length).toBeLessThanOrEqual(10);
+    expect(payload.tags.every((tag: string) => tag.length <= 40)).toBe(true);
   });
 });

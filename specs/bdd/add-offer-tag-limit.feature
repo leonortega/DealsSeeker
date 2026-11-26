@@ -25,3 +25,15 @@ Feature: Bounded tag list in Add Offer view
     Given the tag list holds 10 tags
     When the user removes one tag
     Then a new tag can be added
+
+  Scenario: Each tag is capped at 40 characters
+    Given the user types a description containing a word longer than 40 characters
+    When the word is added as a tag
+    Then the tag holds exactly 40 normalized characters
+
+  Scenario: Prefilled and submitted tags respect both limits
+    Given an edit draft contains more than 10 tags and a tag longer than 40 characters
+    When the draft loads
+    Then at most 10 tags are shown and every tag holds at most 40 characters
+    When the user submits
+    Then the payload contains at most 10 tags and every tag holds at most 40 characters
