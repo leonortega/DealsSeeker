@@ -1,9 +1,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
+import { LoadingOverlay } from '../../../src/DealsSeeker.ReactNative/src/components/LoadingOverlay';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 
 let mockImmersiveOffers = false;
 let mockIsPending = false;
+let mockLoadingCount = 0;
 const mockSearchOffers = jest.fn();
 const mockOpenImmersiveOffers = jest.fn();
 const mockCloseImmersiveOffers = jest.fn();
@@ -26,7 +28,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     closeImmersiveOffers: mockCloseImmersiveOffers,
     immersiveOffers: mockImmersiveOffers,
     isPending: () => mockIsPending,
-    loadingCount: 0,
+    loadingCount: mockLoadingCount,
     openAddOffer: jest.fn(),
     openImmersiveOffers: mockOpenImmersiveOffers,
     palette: {
@@ -55,6 +57,7 @@ describe('presentation mode switch', () => {
     jest.clearAllMocks();
     mockImmersiveOffers = false;
     mockIsPending = false;
+    mockLoadingCount = 0;
     mockSearchOffers.mockResolvedValue({ offers: [], businesses: [] });
   });
 
@@ -99,6 +102,20 @@ describe('presentation mode switch', () => {
     await waitFor(() => expect(screen.queryByText('app.loading')).toBeNull());
 
     expect(screen.queryByText('offers.loading')).toBeNull();
+  });
+
+  it('does not stack the startup overlay with the shell loading overlay', async () => {
+    mockLoadingCount = 1;
+    mockSearchOffers.mockReturnValue(new Promise(() => {}));
+
+    await render(
+      <>
+        <LoadingOverlay />
+        <OffersScreen />
+      </>
+    );
+
+    expect(screen.getAllByText('app.loading')).toHaveLength(1);
   });
 
   it('offers Feed and Map options in the Offers view', async () => {
