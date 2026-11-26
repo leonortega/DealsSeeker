@@ -118,6 +118,12 @@ Feature: Immersive vertical full-screen main page feed
     And its top bar, footer, controls, status banners and search sheet use the same colors and surfaces as the standard application UI
     And the offer text overlay has no surrounding box or opaque background and stays readable over the image
 
+  Scenario: Offer image fills the feed page
+    Given the user is on the immersive offers view
+    When an offer image finishes loading
+    Then the image fills the page as a full-bleed background
+    And no empty band appears above or below the photo
+
   Scenario: Immersive view follows the active theme
     Given the user is on the immersive offers view
     And the active theme is dark

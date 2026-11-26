@@ -39,6 +39,10 @@ const offer = {
   location: { lat: 40.7, lng: -74 },
 } as never;
 
+jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useOfferImageUri', () => ({
+  useOfferImageUri: () => 'https://example.com/offer.png',
+}));
+
 describe('immersive chrome over the fixed dark backdrop', () => {
   it('renders feed tab labels in a light color even when the light theme is active', async () => {
     await render(<ImmersiveFeedTabs activeTab="viewAll" onChangeTab={jest.fn()} />);
@@ -93,6 +97,27 @@ describe('immersive chrome over the fixed dark backdrop', () => {
     );
 
     expect(screen.getByTestId('brand-mark')).toBeTruthy();
+  });
+
+  it('renders the offer image as a full-bleed background', async () => {
+    await render(
+      <ImmersiveOfferFeed
+        offers={[offer]}
+        onRadiusChange={jest.fn()}
+        radiusMeters={1500}
+        query=""
+        onFavorite={jest.fn()}
+        onVote={jest.fn()}
+        onReport={jest.fn()}
+        onDirections={jest.fn()}
+        onComments={jest.fn()}
+        onSearch={jest.fn()}
+        feedTab="viewAll"
+        onFeedTabChange={jest.fn()}
+      />
+    );
+
+    expect(screen.getByTestId('offer-image').props.resizeMode).toBe('cover');
   });
 
   it('keeps measured page geometry stable after the first layout', async () => {

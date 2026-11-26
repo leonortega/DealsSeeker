@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive Vertical Full-Screen Main Page Feed
-- **Version**: `v2.2`
+- **Version**: `v2.3`
 - **Status**: Approved
 - **Context/View**: Offers View (Main Page)
 - **Priority**: High
@@ -62,7 +62,7 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R33`: The left panel shall not include language, theme, or navigation-mode toggle buttons; those controls shall remain in the Account destination.
 - `OFFERS.FEED.IMMERSIVE.001-R34`: The left panel shall display coverage distance buttons below the search input, using the same radius options as the standard offers view.
 - `OFFERS.FEED.IMMERSIVE.001-R35`: Text in the left panel, including the application name, shall use the standard application UI text colors.
-- `OFFERS.FEED.IMMERSIVE.001-R36`: Offer images shall be contained within the page; when an image does not fill the width, bars using the page background color shall appear on the left and right so the page background remains fully covered.
+- `OFFERS.FEED.IMMERSIVE.001-R36`: Offer images shall fill the page as a full-bleed background without leaving empty bands above or below the photo; when a platform cannot crop the image to fill, bars using the page background color shall cover any remaining space.
 - `OFFERS.FEED.IMMERSIVE.001-R37`: When an offer has more than one photo, the immersive feed shall allow changing the displayed photo using left and right keyboard arrow keys, a horizontal swipe gesture over the offer page, and a navigation control with one point per photo, displayed above the offer title and horizontally centered within the offer panel.
 - `OFFERS.FEED.IMMERSIVE.001-R48`: A horizontal swipe gesture over the offer page shall change the displayed photo, in both pointer and touch environments.
 - `OFFERS.FED.IMMERSIVE.001-R49`: A horizontal swipe gesture over the offer page shall not prevent the user from scrolling vertically between offers.
