@@ -563,3 +563,11 @@ Add bidirectional `Related Specs` links: `APP.BOTTOM_SHEET.001` ↔ `APP.SHELL.0
 
 G → H → I → J → K → M, with L only after a decision. Each cycle: spec + BDD → validate → Approve → RED test → implementation → GREEN → REFACTOR → capture → `ponytail-review` on that cycle's diff.
 
+### 10.13 Execution status (2026-11-26)
+
+Cycles **G, H, I, J and K are complete**, each with its approved spec/BDD, RED→GREEN TDD evidence in `.impeccable/tdd/`, and checkpoint commits on `dev`. Cycle **L remains blocked** on a product decision about simplifying the Map-mode filter controls. Cycle M verification performed: `npm test` 69 suites / 415 tests, `npm run typecheck` clean, `npm run test:coverage` 82.41% statements / 75.23% branches / 82.13% functions / 82.20% lines.
+
+Device E2E was intentionally not run at the user's request. The P0 sheet/footer occlusion was verified manually on `emulator-5554` before and after the fix; the 150%-text and serif-rendering captures remain outstanding. Re-running the formal `critique` / `audit` scores is still pending; fixes closed the original P0 and the P1 text-scaling, typography, virtualization and palette findings, but no new score has been recorded.
+
+Open follow-ups carried forward: `AppContext` provider-value churn, base64 photo capping in Add Offer, theme-aware native splash background, the static white splash, and the no-results state panel rendering above the absolute top bar.
+
