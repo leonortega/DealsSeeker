@@ -111,8 +111,14 @@ function ImmersiveOfferPage({
   const carouselWidth = Math.max(320, pageWidth || viewportWidth - 220);
   const carouselHeight = pageHeight || Math.max(320, viewportHeight);
 
+  const pageMeasured = useRef(false);
+
   function handlePageLayout(event: LayoutChangeEvent) {
+    if (pageMeasured.current) {
+      return;
+    }
     const { width, height } = event.nativeEvent.layout;
+    pageMeasured.current = true;
     setPageWidth(width);
     setPageHeight(height);
   }
@@ -179,7 +185,7 @@ function ImmersiveOfferPage({
   }, [offer.offerId]);
 
   return (
-    <View style={[styles.page, { backgroundColor: palette.backdrop }]} onLayout={handlePageLayout}>
+    <View testID="immersive-offer-page" style={[styles.page, { backgroundColor: palette.backdrop }]} onLayout={handlePageLayout}>
       {hasMultipleImages ? (
         <View
           {...panResponder.panHandlers}
@@ -392,7 +398,13 @@ export function ImmersiveOfferFeed({
     return () => cancelAnimationFrame(frame);
   }, [offers, pageHeight]);
 
+  const feedAreaMeasured = useRef(false);
+
   function handleFeedAreaLayout(event: LayoutChangeEvent) {
+    if (feedAreaMeasured.current) {
+      return;
+    }
+    feedAreaMeasured.current = true;
     setFeedHeight(event.nativeEvent.layout.height);
   }
 
@@ -405,6 +417,7 @@ export function ImmersiveOfferFeed({
     <View style={[styles.container, { backgroundColor: palette.backdrop }]}>
       <View style={styles.contentRow}>
         <View
+          testID="immersive-feed-area"
           onLayout={handleFeedAreaLayout}
           style={[styles.feedArea, { backgroundColor: palette.backdrop }]}
         >

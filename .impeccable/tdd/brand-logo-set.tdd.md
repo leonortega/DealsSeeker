@@ -138,6 +138,13 @@ As a user, I want one consistent authored logo in every app surface instead of p
 - **GREEN**: 64 suites / 384 tests overall; `typecheck` clean.
 - The Offers view skips its local `LoadingOverlay` entirely while `loadingCount > 0`, so the shell overlay is the single visible spinner. Device capture confirmed one spinner before the feed appears.
 
+## Follow-up: stable feed background during image load
+
+- **Spec**: `OFFERS.FEED.RESPONSIVE.001` v1.4 (R33) — page geometry stays fixed after first layout.
+- **RED**: `npm test -- --runInBand immersiveChrome` — 1 test failed: a second layout event changed the measured page height.
+- **GREEN**: 64 suites / 385 tests overall; `typecheck` clean.
+- Feed-area and page measurements are now applied only on the first layout, so loading the offer image cannot re-layout the background or side rail. Device capture across the transition shows stable controls and image position.
+
 ## Coverage and gaps
 
 - Branch coverage (74.18%) is below the 80% target; pre-existing in untouched modules.
