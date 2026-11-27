@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { ImmersiveActionCaption } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveActionGlyphs';
 import { ImmersiveFeedTabs } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveFeedTabs';
@@ -122,6 +122,55 @@ describe('immersive chrome over the fixed dark backdrop', () => {
     );
 
     expect(screen.getByTestId('offer-image').props.resizeMode).toBe('cover');
+  });
+
+  it('falls back to a placeholder when an offer image fails to load', async () => {
+    await render(
+      <ImmersiveOfferFeed
+        offers={[offer]}
+        onRadiusChange={jest.fn()}
+        radiusMeters={1500}
+        query=""
+        onFavorite={jest.fn()}
+        onVote={jest.fn()}
+        onReport={jest.fn()}
+        onDirections={jest.fn()}
+        onComments={jest.fn()}
+        onSearch={jest.fn()}
+        feedTab="viewAll"
+        onFeedTabChange={jest.fn()}
+      />
+    );
+
+    const image = screen.getByTestId('offer-image');
+    await act(async () => image.props.onError());
+
+    expect(screen.getByText('▤')).toBeTruthy();
+  });
+
+  it('expands a truncated description when More is pressed', async () => {
+    const longOffer = { ...offer, description: 'x'.repeat(200) };
+    await render(
+      <ImmersiveOfferFeed
+        offers={[longOffer]}
+        onRadiusChange={jest.fn()}
+        radiusMeters={1500}
+        query=""
+        onFavorite={jest.fn()}
+        onVote={jest.fn()}
+        onReport={jest.fn()}
+        onDirections={jest.fn()}
+        onComments={jest.fn()}
+        onSearch={jest.fn()}
+        feedTab="viewAll"
+        onFeedTabChange={jest.fn()}
+      />
+    );
+
+    await fireEvent.press(screen.getByText('offers.more'));
+
+    expect(screen.getByText('x'.repeat(200))).toBeTruthy();
+    expect(screen.queryByText('offers.more')).toBeNull();
   });
 
   it('keeps measured page geometry stable after the first layout', async () => {

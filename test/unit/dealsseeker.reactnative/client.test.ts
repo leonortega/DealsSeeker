@@ -201,6 +201,39 @@ describe('API client', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('maps a server error response into ApiRequestError with its status', async () => {
+    const { api, ApiRequestError } = loadApi();
+    jest.spyOn(global, 'fetch').mockResolvedValue(jsonResponse({ message: 'boom' }, 500));
+
+    await expect(api.getMyProfile()).rejects.toMatchObject({ status: 500 });
+    expect(ApiRequestError).toBeDefined();
+  });
+
+  it('returns null when a requested draft is missing', async () => {
+    const { api } = loadApi();
+    jest.spyOn(global, 'fetch').mockResolvedValue(jsonResponse({ message: 'missing' }, 404));
+
+    await expect(api.getMyOfferDraft('o1')).resolves.toBeNull();
+  });
+
+  it('retries a network failure against a development fallback host', async () => {
+    process.env.NODE_ENV = 'development';
+    try {
+      const { api } = loadApi();
+      const fetchMock = jest
+        .spyOn(global, 'fetch')
+        .mockRejectedValueOnce(new TypeError('Network request failed'))
+        .mockResolvedValueOnce(jsonResponse({ offers: [], businesses: [] }));
+
+      const result = await api.searchOffers({} as never);
+
+      expect(result.offers).toEqual([]);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    } finally {
+      delete process.env.NODE_ENV;
+    }
+  });
+
   it('reuses a cached reverse-geocode result for the same coordinate', async () => {
     const { api } = loadApi();
     const result = { label: 'Central Park', position: { lat: 40.7128, lng: -74.006 } };
