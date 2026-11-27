@@ -1,7 +1,17 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
+import { decorativeProps } from '../utils/decorativeProps';
 
-export type PlatformTabIconName = 'account' | 'suggestions' | 'offers' | 'create' | 'search' | 'help' | 'favorites';
+export type PlatformTabIconName =
+  | 'account'
+  | 'suggestions'
+  | 'offers'
+  | 'create'
+  | 'search'
+  | 'help'
+  | 'favorites'
+  | 'chevronForward'
+  | 'chevronBackward';
 
 const iosGlyphs: Record<PlatformTabIconName, React.ComponentProps<typeof Ionicons>['name']> = {
   account: 'person-outline',
@@ -11,6 +21,8 @@ const iosGlyphs: Record<PlatformTabIconName, React.ComponentProps<typeof Ionicon
   search: 'search-outline',
   help: 'help-circle-outline',
   favorites: 'heart-outline',
+  chevronForward: 'chevron-forward-outline',
+  chevronBackward: 'chevron-back-outline',
 };
 
 const androidGlyphs: Record<PlatformTabIconName, React.ComponentProps<typeof MaterialIcons>['name']> = {
@@ -21,6 +33,8 @@ const androidGlyphs: Record<PlatformTabIconName, React.ComponentProps<typeof Mat
   search: 'search',
   help: 'help-outline',
   favorites: 'favorite-border',
+  chevronForward: 'chevron-right',
+  chevronBackward: 'chevron-left',
 };
 
 export function PlatformTabIcon({
@@ -33,8 +47,8 @@ export function PlatformTabIcon({
   size?: number;
 }) {
   if (Platform.OS === 'ios') {
-    return <Ionicons color={color} name={iosGlyphs[name]} size={size} />;
+    return <Ionicons {...decorativeProps} color={color} name={iosGlyphs[name]} size={size} />;
   }
 
-  return <MaterialIcons color={color} name={androidGlyphs[name]} size={size} />;
+  return <MaterialIcons {...decorativeProps} color={color} name={androidGlyphs[name]} size={size} />;
 }

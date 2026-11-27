@@ -7,7 +7,6 @@ import {
   GestureResponderEvent,
   Image,
   LayoutChangeEvent,
-  Modal,
   NativeScrollEvent,
   NativeSyntheticEvent,
   FlatList,
@@ -25,6 +24,7 @@ import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { resolveMotionPreferences } from '../utils/motion';
 import { restoreFocus } from '../utils/focusReturn';
 import { NativeBottomSheet } from './NativeBottomSheet';
+import { PlatformTabIcon } from './PlatformTabIcon';
 import { OfferActionGlyph, OFFER_ACTION_GLYPHS } from './OfferActionVocabulary';
 import { formatDistanceMeters } from '../utils/format';
 
@@ -269,11 +269,18 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
     onClose();
     restoreFocus(returnFocusRef);
   }
+
+  function closeFullscreen() {
+    setFullscreenVisible(false);
+    restoreFocus(fullscreenReturnRef);
+  }
+
   const motion = resolveMotionPreferences(useReduceMotion());
   const { width: viewportWidth } = useWindowDimensions();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
   const detailScrollRef = useRef<FlatList<string> | null>(null);
+  const fullscreenReturnRef = useRef<React.ComponentRef<typeof View> | null>(null);
 
   useEffect(() => {
     setSelectedImageIndex(0);
@@ -357,7 +364,7 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
               onPress={showPreviousImage}
               style={[styles.galleryButton, !hasMultipleImages && styles.galleryButtonDisabled]}
             >
-              <Text style={[styles.galleryButtonLabel, { color: palette.ink }]}>‹</Text>
+              <PlatformTabIcon color={palette.ink} name="chevronBackward" size={24} />
             </Pressable>
 
             <View style={styles.galleryPanel}>
@@ -367,8 +374,9 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
                 horizontal
                 keyExtractor={(imageUrl, index) => `${imageUrl ?? 'placeholder'}-${index}`}
                 pagingEnabled
-                renderItem={({ item: imageUrl }: { item: string }) => (
+                renderItem={({ item: imageUrl, index }: { item: string; index: number }) => (
                   <Pressable
+                    ref={selectedImageIndex === index ? fullscreenReturnRef : undefined}
                     testID="offer-gallery-slide"
                     onPress={() => setFullscreenVisible(true)}
                     style={[styles.gallerySlide, { width: carouselWidth }]}
@@ -394,7 +402,7 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
               onPress={showNextImage}
               style={[styles.galleryButton, !hasMultipleImages && styles.galleryButtonDisabled]}
             >
-              <Text style={[styles.galleryButtonLabel, { color: palette.ink }]}>›</Text>
+              <PlatformTabIcon color={palette.ink} name="chevronForward" size={24} />
             </Pressable>
           </View>
 
@@ -468,63 +476,48 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
         </View>
       </NativeBottomSheet>
 
-      <Modal animationType="fade" transparent visible={fullscreenVisible} onRequestClose={() => setFullscreenVisible(false)}>
-        <View style={[styles.fullscreenBackdrop, { backgroundColor: palette.overlay }]}> 
-          <View accessibilityViewIsModal style={[styles.fullscreenSheet, { backgroundColor: palette.card, borderColor: palette.border }]}> 
-            <View style={styles.header}>
-              <Text numberOfLines={1} style={[styles.title, { color: palette.ink }]}>{offer.businessName}</Text>
-              <Pressable accessibilityLabel={t('offers.fullscreenClose')} accessibilityRole="button" hitSlop={8} onPress={() => setFullscreenVisible(false)} style={styles.closeButton}>
-                <Text style={[styles.close, { color: palette.ink }]}>{t('offers.fullscreenClose')}</Text>
+      <NativeBottomSheet visible={fullscreenVisible} onClose={closeFullscreen}>
+        <View
+          accessibilityViewIsModal
+          testID="offer-fullscreen-sheet"
+          style={[styles.fullscreenSheet, { backgroundColor: palette.card, borderColor: palette.border }]}
+        >
+          <View style={styles.header}>
+            <Text numberOfLines={1} style={[styles.title, { color: palette.ink }]}>{offer.businessName}</Text>
+            <Pressable accessibilityLabel={t('offers.fullscreenClose')} accessibilityRole="button" hitSlop={8} onPress={closeFullscreen} style={styles.closeButton}>
+              <Text style={[styles.close, { color: palette.ink }]}>{t('offers.fullscreenClose')}</Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.fullscreenFrame}>
+            {hasMultipleImages ? (
+              <Pressable accessibilityLabel={t('offers.previousImage')} accessibilityRole="button" onPress={showPreviousImage} style={styles.fullscreenNavButton}>
+                <PlatformTabIcon color={palette.ink} name="chevronBackward" size={24} />
               </Pressable>
-            </View>
+            ) : null}
 
-            <View style={styles.fullscreenFrame}>
-              {hasMultipleImages ? (
-                <Pressable accessibilityLabel={t('offers.previousImage')} onPress={showPreviousImage} style={styles.fullscreenNavButton}>
-                  <Text style={[styles.galleryButtonLabel, { color: palette.ink }]}>‹</Text>
-                </Pressable>
-              ) : null}
-
-              <View style={styles.fullscreenImageWrap}>
-                <ZoomableImage imageUrl={currentImage} placeholderSymbol={hasMultipleImages ? '▣' : '▤'} />
-                <View style={[styles.galleryCounter, styles.fullscreenCounter, { backgroundColor: palette.overlay }]}> 
-                  <Text style={styles.galleryCounterLabel}>
-                    {detailImages.length === 0 ? '0 / 0' : `${selectedImageIndex + 1} / ${detailImages.length}`}
-                  </Text>
-                </View>
+            <View style={styles.fullscreenImageWrap}>
+              <ZoomableImage imageUrl={currentImage} placeholderSymbol={hasMultipleImages ? '▣' : '▤'} />
+              <View style={[styles.galleryCounter, styles.fullscreenCounter, { backgroundColor: palette.overlay }]}>
+                <Text style={styles.galleryCounterLabel}>
+                  {detailImages.length === 0 ? '0 / 0' : `${selectedImageIndex + 1} / ${detailImages.length}`}
+                </Text>
               </View>
-
-              {hasMultipleImages ? (
-                <Pressable accessibilityLabel={t('offers.nextImage')} onPress={showNextImage} style={styles.fullscreenNavButton}>
-                  <Text style={[styles.galleryButtonLabel, { color: palette.ink }]}>›</Text>
-                </Pressable>
-              ) : null}
             </View>
+
+            {hasMultipleImages ? (
+              <Pressable accessibilityLabel={t('offers.nextImage')} accessibilityRole="button" onPress={showNextImage} style={styles.fullscreenNavButton}>
+                <PlatformTabIcon color={palette.ink} name="chevronForward" size={24} />
+              </Pressable>
+            ) : null}
           </View>
         </View>
-      </Modal>
+      </NativeBottomSheet>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  scrim: {
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  fullscreenBackdrop: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    padding: 16,
-  },
   sheet: {
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
@@ -585,10 +578,6 @@ const styles = StyleSheet.create({
   },
   galleryButtonDisabled: {
     opacity: 0.35,
-  },
-  galleryButtonLabel: {
-    fontSize: 28,
-    fontWeight: '600',
   },
   galleryPanel: {
     alignItems: 'center',

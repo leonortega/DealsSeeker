@@ -5,7 +5,7 @@ import { Pressable, SectionList, StyleSheet, Text, TextInput, useWindowDimension
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
-import { getDevicePositionAsync } from '../utils/deviceLocation';
+import { type DevicePosition, getDevicePositionAsync } from '../utils/deviceLocation';
 import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '../api/types';
 import { CoverageDistanceControl } from '../components/CoverageDistanceControl';
 import { ImmersiveOfferFeed, NARROW_BREAKPOINT } from '../components/ImmersiveOfferFeed';
@@ -17,13 +17,13 @@ import { OfferDetailModal } from '../components/OfferDetailModal';
 import { OfferCommentsModal } from '../components/OfferCommentsModal';
 import { OfferReportSheet } from '../components/OfferReportSheet';
 import { FirstRunSheet } from '../components/FirstRunSheet';
-import { HelpSheet } from '../components/HelpSheet';
-import { NavIcon } from '../components/NavIcon';
+import { HelpSheet, type HelpTopic } from '../components/HelpSheet';
+import { PlatformTabIcon } from '../components/PlatformTabIcon';
 import { OffersStatePanel } from '../components/OffersStatePanel';
 import { PresentationModeSwitch, type PresentationMode } from '../components/PresentationModeSwitch';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
-import { useStatusNotice } from '../hooks/useStatusNotice';
+import { STATUS_DWELL_MS, useStatusNotice } from '../hooks/useStatusNotice';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { partitionOffers } from '../utils/format';
 import { selectionFeedback, successFeedback } from '../utils/haptics';
@@ -35,7 +35,6 @@ import { loadFirstRunCompleted, saveFirstRunCompleted } from '../utils/storage';
 import { resolveEmulatorLocation } from '../utils/emulatorLocation';
 import { restoreFocus } from '../utils/focusReturn';
 
-const fallbackLocation = { lat: 40.7128, lng: -74.006 };
 const searchDebounceMs = 300;
 const queryMaxLength = 200;
 
@@ -51,74 +50,60 @@ export function OffersScreen() {
   const [results, setResults] = useState<SearchOffersResponse>({ offers: [], businesses: [] });
   const [detailOffer, setDetailOffer] = useState<OfferItemDto | null>(null);
   const [commentsOffer, setCommentsOffer] = useState<OfferItemDto | null>(null);
-  const [userLocation, setUserLocation] = useState(fallbackLocation);
-  const [userLocationLabel, setUserLocationLabel] = useState(t('offers.currentLocation'));
-  const { status, statusTone, reportStatus: setActionStatus } = useStatusNotice();
+  const [userLocation, setUserLocation] = useState<DevicePosition | null>(null);
+  const [userLocationLabel, setUserLocationLabel] = useState(t('offers.locationUnavailable'));
+  const { status, statusTone, statusAction, reportStatus: setActionStatus } = useStatusNotice();
   const [searchFailed, setSearchFailed] = useState(false);
   const [helpVisible, setHelpVisible] = useState(false);
-  const [locationFallback, setLocationFallback] = useState(false);
-  const [locationNoticeDismissed, setLocationNoticeDismissed] = useState(false);
+  const [helpTopic, setHelpTopic] = useState<HelpTopic | undefined>(undefined);
+  const [locationUnavailable, setLocationUnavailable] = useState(false);
   const [firstRunVisible, setFirstRunVisible] = useState(false);
   const searchRequest = useAbortableRequest();
   const searchSequence = useRef(0);
-  const lastLocationAttemptFailed = useRef(false);
-  const fallbackAcceptedRef = useRef(false);
+  const voteTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
   const helpButtonRef = useRef<ElementRef<typeof View> | null>(null);
 
-  async function resolveCurrentLocation() {
+  async function resolveCurrentLocation(): Promise<DevicePosition | null> {
     const emulatorLocation = resolveEmulatorLocation();
     if (emulatorLocation) {
       setUserLocation(emulatorLocation);
-      setLocationFallback(false);
-      lastLocationAttemptFailed.current = false;
-      setLocationNoticeDismissed(true);
+      setLocationUnavailable(false);
+      setUserLocationLabel(t('offers.currentLocation'));
       return emulatorLocation;
     }
 
-    let nextLocation = fallbackLocation;
-    let usingFallback = false;
-
     try {
       const permission = await Location.requestForegroundPermissionsAsync();
-      if (permission.granted) {
-        nextLocation = await getDevicePositionAsync();
-      } else {
-        usingFallback = true;
+      if (!permission.granted) {
+        setUserLocation(null);
+        setLocationUnavailable(true);
+        setUserLocationLabel(t('offers.locationUnavailable'));
+        return null;
       }
+
+      const position = await getDevicePositionAsync();
+      setUserLocation(position);
+      setLocationUnavailable(false);
+      try {
+        const reverse = await api.reverseLocation(position.lat, position.lng);
+        setUserLocationLabel(reverse?.label?.trim() || t('offers.currentLocation'));
+      } catch {
+        setUserLocationLabel(t('offers.currentLocation'));
+      }
+      return position;
     } catch {
-      usingFallback = true;
-      nextLocation = fallbackLocation;
+      setUserLocation(null);
+      setLocationUnavailable(true);
+      setUserLocationLabel(t('offers.locationUnavailable'));
+      return null;
     }
-
-    setUserLocation(nextLocation);
-    setLocationFallback(usingFallback);
-    lastLocationAttemptFailed.current = usingFallback;
-    if (usingFallback) {
-      fallbackAcceptedRef.current = false;
-    }
-    setLocationNoticeDismissed(false);
-
-    try {
-      const reverse = await api.reverseLocation(nextLocation.lat, nextLocation.lng);
-      const resolvedLabel = reverse?.label?.trim();
-      setUserLocationLabel(
-        usingFallback
-          ? resolvedLabel
-            ? `${t('offers.approximateArea')}: ${resolvedLabel}`
-            : t('offers.approximateArea')
-          : resolvedLabel || t('offers.currentLocation')
-      );
-    } catch {
-      setUserLocationLabel(usingFallback ? t('offers.approximateArea') : t('offers.currentLocation'));
-    }
-
-    return nextLocation;
   }
 
   async function retryLocation() {
     const location = await resolveCurrentLocation();
 
-    if (lastLocationAttemptFailed.current) {
+    if (!location) {
       setActionStatus(t('offers.locationRetryFailed'), 'error');
       return;
     }
@@ -132,6 +117,7 @@ export function OffersScreen() {
         favoritesOnly,
       });
       setResults(response);
+      setActionStatus(null);
       setSearchFailed(false);
     } catch {
       setSearchFailed(true);
@@ -143,7 +129,8 @@ export function OffersScreen() {
     nextRadius = radiusMeters,
     nextFavoritesOnly = favoritesOnly
   ) {
-    if (lastLocationAttemptFailed.current && !fallbackAcceptedRef.current) {
+    if (!userLocation) {
+      setLocationUnavailable(true);
       return;
     }
 
@@ -154,11 +141,10 @@ export function OffersScreen() {
     const signal = searchRequest.begin();
 
     try {
-      const location = userLocation ?? (await resolveCurrentLocation());
       const response = await api.searchOffers(
         {
           query: nextQuery,
-          userLocation: location,
+          userLocation: userLocation,
           radiusMeters: nextRadius,
           locale: preferences.language,
           favoritesOnly: nextFavoritesOnly,
@@ -204,7 +190,7 @@ export function OffersScreen() {
     void runOperation(null, async () => {
       try {
         const location = await resolveCurrentLocation();
-        if (lastLocationAttemptFailed.current && !fallbackAcceptedRef.current) {
+        if (!location) {
           return;
         }
         const response = await api.searchOffers({
@@ -263,39 +249,27 @@ export function OffersScreen() {
       onPress={() => setHelpVisible(true)}
       style={[styles.helpButton, { backgroundColor: palette.panel, borderColor: palette.border }]}
     >
-      <NavIcon color={palette.ink} name="help" size={20} />
+      <PlatformTabIcon color={palette.ink} name="help" size={20} />
     </Pressable>
   );
 
-  const fallbackNotice = (
-    <View style={[styles.fallbackNotice, { backgroundColor: palette.card, borderColor: palette.border }]}>
-      <Text accessibilityLiveRegion="polite" style={[styles.fallbackText, { color: palette.ink }]}>
-        {t('offers.locationFallbackNotice')}
-      </Text>
-      <View style={styles.fallbackActions}>
-        <Pressable
-          accessibilityLabel={t('offers.useMyLocation')}
-          accessibilityRole="button"
-          onPress={() => void retryLocation()}
-          style={[styles.fallbackButton, { backgroundColor: palette.accent }]}
-        >
-          <Text style={[styles.fallbackButtonLabel, { color: palette.onAccent }]}>
-            {t('offers.useMyLocation')}
-          </Text>
-        </Pressable>
-        <Pressable
-          accessibilityLabel={t('offers.browseApproximateArea')}
-          accessibilityRole="button"
-          onPress={() => {
-            fallbackAcceptedRef.current = true;
-            setLocationNoticeDismissed(true);
-            void search(query, radiusMeters, favoritesOnly);
-          }}
-          style={[styles.fallbackButton, { backgroundColor: palette.panel }]}
-        >
-          <Text style={{ color: palette.ink }}>{t('offers.browseApproximateArea')}</Text>
-        </Pressable>
-      </View>
+  const locationUnavailablePanel = (
+    <View>
+      <OffersStatePanel
+        actionLabel={t('offers.retry')}
+        hint={t('offers.locationUnavailableHint')}
+        onAction={() => void retryLocation()}
+        palette={palette}
+        title={t('offers.locationUnavailable')}
+      />
+      <Pressable
+        accessibilityLabel={t('common.why')}
+        accessibilityRole="button"
+        onPress={() => openContextHelp('help.find')}
+        style={styles.whyButton}
+      >
+        <Text style={{ color: palette.accentText, fontWeight: '800' }}>{t('common.why')}</Text>
+      </Pressable>
     </View>
   );
 
@@ -311,15 +285,30 @@ export function OffersScreen() {
     void search('', radiusMeters, false);
   }
 
+  function openContextHelp(topic: HelpTopic) {
+    setHelpTopic(topic);
+    setHelpVisible(true);
+  }
+
   function panel(title: string, hint: string, actionLabel: string, onAction: () => void) {
     return (
-      <OffersStatePanel
-        actionLabel={actionLabel}
-        hint={hint}
-        onAction={onAction}
-        palette={palette}
-        title={title}
-      />
+      <View>
+        <OffersStatePanel
+          actionLabel={actionLabel}
+          hint={hint}
+          onAction={onAction}
+          palette={palette}
+          title={title}
+        />
+        <Pressable
+          accessibilityLabel={t('common.why')}
+          accessibilityRole="button"
+          onPress={() => openContextHelp('help.find')}
+          style={styles.whyButton}
+        >
+          <Text style={{ color: palette.accentText, fontWeight: '800' }}>{t('common.why')}</Text>
+        </Pressable>
+      </View>
     );
   }
 
@@ -396,7 +385,25 @@ export function OffersScreen() {
       current?.offerId === offer.offerId ? { ...current, isFavorite: nextFavorite } : current
     );
 
-    setActionStatus(t('offers.favoriteUpdated'));
+    setActionStatus(t('offers.favoriteUpdated'), 'neutral', {
+      label: t('common.undo'),
+      onPress: () => {
+        void api.setOfferFavorite(offer.offerId, { isFavorite: false }).then((undoResult) => {
+          if (!undoResult.success) {
+            return;
+          }
+          setResults((previous) => ({
+            ...previous,
+            offers: favoritesOnly
+              ? [offer, ...previous.offers]
+              : previous.offers.map((item) => (item.offerId === offer.offerId ? offer : item)),
+          }));
+          setDetailOffer((current) => (current?.offerId === offer.offerId ? offer : current));
+          setCommentsOffer((current) => (current?.offerId === offer.offerId ? offer : current));
+          setActionStatus(t('offers.favoriteReverted'));
+        });
+      },
+    });
     selectionFeedback();
   }
 
@@ -405,16 +412,6 @@ export function OffersScreen() {
       return;
     }
     setActionStatus(null);
-    const result = await api.voteOfferAvailability(offer.offerId, { vote: voteType });
-    if (!result.success) {
-      setActionStatus(
-        result.message.toLowerCase().includes('already')
-          ? t('offers.voteAlreadySubmitted')
-          : t('offers.voteFailed'),
-        'error'
-      );
-      return;
-    }
 
     const applyVote = (item: OfferItemDto): OfferItemDto =>
       item.offerId === offer.offerId
@@ -425,12 +422,52 @@ export function OffersScreen() {
             negativeAvailabilityCount: item.negativeAvailabilityCount + (voteType === 2 ? 1 : 0),
           }
         : item;
+    const restore = () => {
+      setResults((previous) => ({
+        ...previous,
+        offers: previous.offers.map((item) => (item.offerId === offer.offerId ? offer : item)),
+      }));
+      setDetailOffer((current) => (current?.offerId === offer.offerId ? offer : current));
+      setCommentsOffer((current) => (current?.offerId === offer.offerId ? offer : current));
+    };
+
     setResults((previous) => ({ ...previous, offers: previous.offers.map(applyVote) }));
     setDetailOffer((current) => (current ? applyVote(current) : current));
     setCommentsOffer((current) => (current ? applyVote(current) : current));
 
-    setActionStatus(t('offers.feedbackRegistered'));
-    successFeedback();
+    setActionStatus(t('offers.feedbackRegistered'), 'neutral', {
+      label: t('common.undo'),
+      onPress: () => {
+        const pending = voteTimers.current[offer.offerId];
+        if (pending) {
+          clearTimeout(pending);
+          delete voteTimers.current[offer.offerId];
+        }
+        restore();
+        setActionStatus(t('offers.voteUndone'));
+      },
+    });
+    // The API has no retract endpoint, so the vote is committed only after the
+    // undo window closes. This keeps the optimistic change reversible.
+    const previousTimer = voteTimers.current[offer.offerId];
+    if (previousTimer) {
+      clearTimeout(previousTimer);
+    }
+    voteTimers.current[offer.offerId] = setTimeout(async () => {
+      delete voteTimers.current[offer.offerId];
+      const result = await api.voteOfferAvailability(offer.offerId, { vote: voteType });
+      if (!result.success) {
+        restore();
+        setActionStatus(
+          result.message.toLowerCase().includes('already')
+            ? t('offers.voteAlreadySubmitted')
+            : t('offers.voteFailed'),
+          'error'
+        );
+        return;
+      }
+      successFeedback();
+    }, STATUS_DWELL_MS + 200);
   }
 
   async function openOfferDirections(offer: OfferItemDto) {
@@ -455,20 +492,30 @@ export function OffersScreen() {
   if (immersiveOffers) {
     return (
       <View style={[styles.immersiveWrapper, { backgroundColor: palette.backdrop }]} testID="immersive-content">
-        {locationFallback || renderStatePanel() ? (
+        {locationUnavailable || renderStatePanel() ? (
           <View pointerEvents="box-none" style={styles.immersiveStateOverlay} testID="immersive-state-overlay">
-            {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
+            {locationUnavailable ? locationUnavailablePanel : null}
             {renderStatePanel()}
           </View>
         ) : null}
         {status ? (
           <View pointerEvents="box-none" style={styles.feedbackToast}>
-            <Text
-              accessibilityLiveRegion="polite"
-              style={[styles.feedbackToastText, { backgroundColor: palette.card, borderColor: palette.border, color: statusColor(palette, statusTone) }]}
+            <View
+              style={[styles.feedbackToastText, { backgroundColor: palette.card, borderColor: palette.border }]}
             >
-              {status}
-            </Text>
+              <Text accessibilityLiveRegion="polite" style={{ color: statusColor(palette, statusTone) }}>
+                {status}
+              </Text>
+              {statusAction ? (
+                <Pressable
+                  accessibilityLabel={statusAction.label}
+                  accessibilityRole="button"
+                  onPress={statusAction.onPress}
+                >
+                  <Text style={{ color: palette.accentText, fontWeight: '800' }}>{statusAction.label}</Text>
+                </Pressable>
+              ) : null}
+            </View>
           </View>
         ) : null}
         <ImmersiveOfferFeed
@@ -509,7 +556,7 @@ export function OffersScreen() {
           returnFocusRef={helpButtonRef}
           visible={commentsOffer !== null}
         />
-        <HelpSheet onClose={() => setHelpVisible(false)} returnFocusRef={helpButtonRef} visible={helpVisible} />
+        <HelpSheet onClose={() => setHelpVisible(false)} returnFocusRef={helpButtonRef} topic={helpTopic} visible={helpVisible} />
         <OfferReportSheet
           draft={reportDraft}
           onClose={() => {
@@ -548,7 +595,7 @@ export function OffersScreen() {
         style={{ backgroundColor: palette.background }}
         ListHeaderComponent={
           <>
-            {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
+            {locationUnavailable ? locationUnavailablePanel : null}
         <View style={styles.heroRow}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.title, { color: palette.ink }]}>{t('offers.title')}</Text>
@@ -602,22 +649,35 @@ export function OffersScreen() {
 
         {renderStatePanel()}
 
-            <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border, padding: 0 }]}>
-              <NativeMapPreview
-                businesses={results.businesses}
-                center={userLocation}
-                height={300}
-                onSelectMarker={(marker) => void openDirections(marker.location, preferences.navigationMode)}
-                radiusMeters={radiusMeters}
-              />
-            </View>
+            {userLocation ? (
+              <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border, padding: 0 }]}>
+                <NativeMapPreview
+                  businesses={results.businesses}
+                  center={userLocation}
+                  height={300}
+                  onSelectMarker={(marker) => void openDirections(marker.location, preferences.navigationMode)}
+                  radiusMeters={radiusMeters}
+                />
+              </View>
+            ) : null}
           </>
         }
       ListFooterComponent={
         status ? (
-          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
-            {status}
-          </Text>
+          <View style={styles.statusRow}>
+            <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
+              {status}
+            </Text>
+            {statusAction ? (
+              <Pressable
+                accessibilityLabel={statusAction.label}
+                accessibilityRole="button"
+                onPress={statusAction.onPress}
+              >
+                <Text style={{ color: palette.accentText, fontWeight: '800' }}>{statusAction.label}</Text>
+              </Pressable>
+            ) : null}
+          </View>
         ) : undefined
       }
       renderSectionHeader={({ section }) => (
@@ -654,7 +714,7 @@ export function OffersScreen() {
         returnFocusRef={helpButtonRef}
           visible={commentsOffer !== null}
       />
-      <HelpSheet onClose={() => setHelpVisible(false)} returnFocusRef={helpButtonRef} visible={helpVisible} />
+      <HelpSheet onClose={() => setHelpVisible(false)} returnFocusRef={helpButtonRef} topic={helpTopic} visible={helpVisible} />
       <OfferReportSheet
         draft={reportDraft}
         onClose={() => {
@@ -805,6 +865,19 @@ const styles = StyleSheet.create({
     fontFamily: landmarkFontFamily(),
     fontSize: 24,
     fontWeight: '700',
+  },
+  whyButton: {
+    alignSelf: 'flex-start',
+    minHeight: platformTouchFloor,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  statusRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
   },
   status: {
     fontSize: 14,

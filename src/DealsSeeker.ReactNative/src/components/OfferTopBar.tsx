@@ -3,7 +3,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { platformTouchFloor } from '../utils/layout';
 import type { Palette } from '../utils/theme';
 import { landmarkFontFamily } from '../utils/typography';
-import { NavIcon } from './NavIcon';
+import { PlatformTabIcon } from './PlatformTabIcon';
 
 export interface OfferTopBarProps {
   headerControl: ReactNode;
@@ -49,7 +49,7 @@ export function OfferTopBar({
             onPress={onSearch}
             style={[styles.iconButton, { backgroundColor: palette.panel, borderColor: palette.border }]}
           >
-            <NavIcon color={palette.ink} name="search" size={20} />
+            <PlatformTabIcon color={palette.ink} name="search" size={20} />
           </Pressable>
         ) : (
           <View style={styles.searchSlot} />

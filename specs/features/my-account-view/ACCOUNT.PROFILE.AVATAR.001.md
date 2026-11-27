@@ -77,6 +77,7 @@ Scenario: Avatar selection fails
 - The avatar choice shall not affect offer visibility or ranking.
 
 ## Related Specs
+- `APP.SYMBOL.VOCABULARY.001`
 - `APP.SHELL.005`
 - `OFFERS.COMMENTS.001`
 - `ACCOUNT.PROFILE.001`

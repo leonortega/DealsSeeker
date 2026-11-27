@@ -1,15 +1,32 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { OfferDetailModal } from '../../../src/DealsSeeker.ReactNative/src/components/OfferDetailModal';
+import { platformTouchFloor } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
 
 const mockOnClose = jest.fn();
 const mockOnFavorite = jest.fn();
 const mockOnDirections = jest.fn();
 const mockOnComments = jest.fn();
+const mockOpenSheet = jest.fn();
+const mockCloseSheet = jest.fn();
+const mockRestoreFocus = jest.fn();
+
+jest.mock('../../../src/DealsSeeker.ReactNative/src/utils/focusReturn', () => ({
+  restoreFocus: (...args: unknown[]) => mockRestoreFocus(...args),
+}));
+
+jest.mock('../../../src/DealsSeeker.ReactNative/src/components/PlatformTabIcon', () => {
+  const { Text } = require('react-native');
+  return {
+    PlatformTabIcon: ({ name }: { name: string }) =>
+      require('react').createElement(Text, { testID: `platform-glyph-${name}` }, name),
+  };
+});
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
-    openSheet: jest.fn(),
-    closeSheet: jest.fn(),
+    openSheet: mockOpenSheet,
+    closeSheet: mockCloseSheet,
     palette: {
       accent: '#b85c38',
       accentMuted: '#e9c9b8',
@@ -42,6 +59,17 @@ const offer = {
   imageUrls: ['https://example.test/a.png', 'https://example.test/b.png'],
   distanceMeters: 500,
 } as never;
+
+function hostTypes(node: unknown): string[] {
+  if (!node || typeof node !== 'object') {
+    return [];
+  }
+  const entry = node as { type?: unknown; children?: unknown[] };
+  return [
+    ...(typeof entry.type === 'string' ? [entry.type] : []),
+    ...(entry.children ?? []).flatMap(hostTypes),
+  ];
+}
 
 async function renderModal() {
   return await render(
@@ -178,5 +206,59 @@ describe('OfferDetailModal', () => {
       />
     );
     expect(screen.getByLabelText('offers.nextImage').props.accessibilityState.disabled).toBe(true);
+  });
+
+  it('uses platform glyphs for gallery navigation with unchanged labels and touch floors', async () => {
+    await renderModal();
+
+    expect(screen.queryByText('‹')).toBeNull();
+    expect(screen.queryByText('›')).toBeNull();
+
+    expect(within(screen.getByLabelText('offers.previousImage')).getByTestId('platform-glyph-chevronBackward')).toBeTruthy();
+    expect(within(screen.getByLabelText('offers.nextImage')).getByTestId('platform-glyph-chevronForward')).toBeTruthy();
+
+    for (const label of ['offers.previousImage', 'offers.nextImage']) {
+      const button = screen.getByLabelText(label);
+      expect(button.props.accessibilityRole).toBe('button');
+      expect(StyleSheet.flatten(button.props.style).height).toBeGreaterThanOrEqual(platformTouchFloor);
+    }
+  });
+
+  it('opens the image viewer in the same sheet system and restores focus on dismissal', async () => {
+    const view = await renderModal();
+    expect(screen.getAllByTestId('native-bottom-sheet')).toHaveLength(1);
+
+    await fireEvent.press(view.getAllByTestId('offer-gallery-slide')[0]);
+
+    expect(screen.getAllByTestId('native-bottom-sheet')).toHaveLength(2);
+    expect(screen.getByTestId('offer-fullscreen-sheet')).toBeTruthy();
+    expect(hostTypes(screen.toJSON())).not.toContain('Modal');
+
+    await fireEvent(screen.getAllByTestId('native-bottom-sheet')[1], 'close');
+
+    expect(screen.getAllByTestId('native-bottom-sheet')).toHaveLength(1);
+    expect(mockOnClose).not.toHaveBeenCalled();
+    expect(mockRestoreFocus).toHaveBeenCalledTimes(1);
+  });
+
+  it('dismisses the image viewer through the same path from its labelled close action', async () => {
+    const view = await renderModal();
+    await fireEvent.press(view.getAllByTestId('offer-gallery-slide')[0]);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.fullscreenClose' }));
+
+    expect(screen.getAllByTestId('native-bottom-sheet')).toHaveLength(1);
+    expect(mockRestoreFocus).toHaveBeenCalledTimes(1);
+  });
+
+  it('tracks both stacked sheets in the shared sheet accounting', async () => {
+    const view = await renderModal();
+    expect(mockOpenSheet).toHaveBeenCalledTimes(1);
+
+    await fireEvent.press(view.getAllByTestId('offer-gallery-slide')[0]);
+    expect(mockOpenSheet).toHaveBeenCalledTimes(2);
+
+    await view.unmount();
+    expect(mockCloseSheet).toHaveBeenCalledTimes(2);
   });
 });

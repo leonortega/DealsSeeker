@@ -1,8 +1,8 @@
 # Spec: `APP.SHELL.003`
 
 ## Metadata
-- **Title**: Native Modal Behavior for Overlay Destinations
-- **Version**: `v1.2`
+- **Title**: Native Route Behavior for Overlay Destinations
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -77,6 +77,7 @@ Scenario: No foreign close control appears in the brand UI
 - No new dependency shall be added solely to render modal visuals.
 
 ## Related Specs
+- `APP.MODALITY.UNIFICATION.001`
 - `APP.SHELL.001`
 - `APP.PLATFORM.CHROME.001`
 - `APP.SHELL.005`

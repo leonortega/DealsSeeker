@@ -29,23 +29,36 @@ Feature: Platform-native shell chrome and conformance
     Then no platform-native header is displayed
     And only the immersive top bar is present
 
-  Scenario: One symbol vocabulary per platform
+  Scenario: One symbol vocabulary per platform across chrome
     Given shell controls are rendered on iOS and Android
-    When their icons are displayed
+    When the headers, Create action, help, galleries and tabs display their symbols
     Then iOS uses only SF-style symbols and Android only Material symbols
     And matching controls keep identical accessible names and actions
 
   Scenario: No mixed or web icon languages
     Given a screen with navigation, action and header controls
     When it is rendered on either platform
-    Then no control uses a symbol from the other platform's set or a web icon set
+    Then no control uses a symbol from the other platform's vocabulary or a web icon set
+    And placeholder imagery is not treated as a control symbol
+    And avatar artwork remains product content
 
-  Scenario: One consistent modality system
-    Given a focused sub-task and an immersive presentation are available
+  Scenario: One sheet system and one native-route system
+    Given a focused sub-task and a full-screen destination are available
     When each is opened
-    Then the sub-task uses a dismissible sheet and the immersive presentation uses a full-screen cover
-    And both use the same Cancel/Done and dismissal conventions
-    And no screen introduces a second conflicting modality pattern
+    Then the sub-task uses a native sheet and the destination uses a native route
+    And no third modal or non-modal pattern is introduced
+    And both keep the same brand styling and dismissal conventions
+
+  Scenario: One Back dispatch for sheets and routes
+    Given a sheet is open above a native route
+    When system Back is invoked
+    Then the topmost sheet is dismissed through its normal dismissal path
+    And the native route is not popped by the same invocation
+
+  Scenario: Focus returns after a sheet is dismissed
+    Given a sheet was opened from a chrome control
+    When the sheet is dismissed
+    Then focus returns to the control that opened it
 
   Scenario: Modality dismissal stays consistent with unsaved edits
     Given a sheet has unsaved edits

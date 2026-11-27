@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Native Navigation Behavior with Brand Chrome
-- **Version**: `v2.0`
+- **Version**: `v2.1`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -31,6 +31,8 @@ Define that navigation structure and system interaction are delegated to platfor
 - `APP.SHELL.002-R11`: Controls shall use the platform's native touch affordances and touch floors as defined by `APP.ACCESSIBILITY.UX.001`, with identical labels, states and actions on both platforms.
 - `APP.SHELL.002-R12`: At expanded/tablet width, the navigation rail or drawer shall carry the same night-footer surface, waypoint tile, palette and type roles as the compact tab bar; the compact bottom bar shall not be shipped unchanged to a tablet-width viewport.
 - `APP.SHELL.002-R13`: The platform's edge-swipe back gesture and predictive Back affordance shall remain available on every navigation surface and shall resolve through native navigation; an in-app exit confirmation or overlay dismissal shall not suppress the platform's Back preview.
+- `APP.SHELL.002-R14`: Outside the offer action rail, each platform shall use one symbol vocabulary for shell chrome and content glyphs as defined by `APP.SYMBOL.VOCABULARY.001`; matching controls shall keep identical accessible names and actions on both platforms.
+- `APP.SHELL.002-R15`: Focused sub-tasks shall use the single sheet system and full-screen destinations shall use native routes, with one Back dispatch and one focus-return rule, as defined by `APP.MODALITY.UNIFICATION.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -101,6 +103,19 @@ Scenario: Brand UI is consistent across platforms and widths
   When the branded shell is rendered
   Then palette, type roles, iconography, spacing and waypoint tile shall match
   And only navigation structure may adapt to platform and width
+
+Scenario: Chrome and content glyphs use one platform vocabulary
+  Given shell chrome and content glyphs are rendered on iOS and Android
+  When the controls are displayed
+  Then each platform uses exactly one symbol vocabulary for those glyphs
+  And matching controls keep identical accessible names on both platforms
+
+Scenario: Focused sub-tasks use sheets and destinations use native routes
+  Given a focused sub-task and a full-screen destination are available
+  When each is opened
+  Then the sub-task uses the single sheet system
+  And the destination uses a native route
+  And one Back dispatch and one focus-return rule apply to both
 ```
 
 ## Example Inputs/Outputs
@@ -119,6 +134,8 @@ Scenario: Brand UI is consistent across platforms and widths
 - A very long localized label shall wrap as defined in `APP.SHELL.001-R28`, without changing the navigation surface.
 - A tablet-width viewport uses a rail or drawer; rotating back to compact width restores the bottom tab bar with the same brand styling and preserved view state.
 - Predictive Back is triggered while an exit confirmation is armed; the platform preview shall still appear before confirmation resolves.
+- A focused sub-task is opened over a native route; one Back invocation dismisses the sheet without popping the route.
+- A placeholder panel or avatar is rendered in a native surface; neither is counted as a second symbol vocabulary.
 
 ## Non-Functional Constraints
 - Native navigation dependencies shall be limited to navigation behavior; no visual component library shall be adopted.
@@ -139,3 +156,5 @@ Scenario: Brand UI is consistent across platforms and widths
 - `APP.ACCESSIBILITY.UX.004`
 - `OFFERS.MODE.SWITCH.001`
 - `ADD.OFFER.TABLET.LAYOUT.001`
+- `APP.SYMBOL.VOCABULARY.001`
+- `APP.MODALITY.UNIFICATION.001`

@@ -8,7 +8,7 @@ Feature: Developer location override for emulators
     And the device cannot provide a position
     When the Offers view loads
     Then the configured location is used for search and map context
-    And the approximate-area notice is not displayed
+    And no location-unavailable state is displayed
     And the area label describes the resolved location
 
   Scenario: Malformed override falls back to device location

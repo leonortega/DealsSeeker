@@ -49,6 +49,7 @@ Scenario: Fallback placeholder preserves layout
 - Image processing and rendering should not block core feed interactions.
 
 ## Related Specs
+- `APP.SYMBOL.VOCABULARY.001`
 - `ADD.OFFER.IMAGE.001`
 - `OFFERS.GRID.CARDS.001`
 - `OFFERS.PHOTOS.CAROUSEL.001`

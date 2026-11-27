@@ -51,6 +51,15 @@ jest.mock('expo-location', () => ({
 }));
 
 
+async function goToPlace() {
+  await fireEvent.press(screen.getByTestId('add-step-next'));
+}
+
+async function goToDetails() {
+  await fireEvent.press(screen.getByTestId('add-step-next'));
+  await fireEvent.press(screen.getByTestId('add-step-next'));
+}
+
 describe('Add Offer input bounds (ADD.OFFER.INPUT.BOUNDS.001)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -60,6 +69,7 @@ describe('Add Offer input bounds (ADD.OFFER.INPUT.BOUNDS.001)', () => {
 
   it('bounds the description at 500 characters and discloses the limit', async () => {
     await render(<AddOfferScreen />);
+    await goToDetails();
 
     expect(screen.getByPlaceholderText('Describe the offer').props.maxLength).toBe(500);
     expect(screen.getByText('Up to 500 characters')).toBeTruthy();
@@ -67,6 +77,7 @@ describe('Add Offer input bounds (ADD.OFFER.INPUT.BOUNDS.001)', () => {
 
   it('shows a live description counter that stops at 500 characters', async () => {
     await render(<AddOfferScreen />);
+    await goToDetails();
 
     const input = screen.getByPlaceholderText('Describe the offer');
     expect(screen.getByText('0/500')).toBeTruthy();
@@ -81,6 +92,7 @@ describe('Add Offer input bounds (ADD.OFFER.INPUT.BOUNDS.001)', () => {
 
   it('bounds the location search at 120 characters', async () => {
     await render(<AddOfferScreen />);
+    await goToPlace();
 
     expect(screen.getByPlaceholderText('Search business or address').props.maxLength).toBe(120);
   });
@@ -90,6 +102,8 @@ describe('Add Offer input bounds (ADD.OFFER.INPUT.BOUNDS.001)', () => {
     mockGetMyOfferDraft.mockResolvedValue({ description: 'prefilled', tags: [], images: [], location: null });
 
     await render(<AddOfferScreen />);
+    await waitFor(() => expect(mockGetMyOfferDraft).toHaveBeenCalled());
+    await goToDetails();
     await waitFor(() => expect(screen.getByPlaceholderText('Describe the offer').props.value).toBe('prefilled'));
 
     expect(screen.getByPlaceholderText('Describe the offer').props.maxLength).toBe(500);

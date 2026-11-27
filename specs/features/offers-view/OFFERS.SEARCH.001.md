@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offers Search Execution and Radius Refresh
-- **Version**: `v1.7`
+- **Version**: `v1.8`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -32,6 +32,7 @@ Allow users to execute offer search and keep list/map results synchronized as se
 - `OFFERS.SEARCH.001-R12`: The offer list results shall be delivered in pages as defined in `OFFERS.SEARCH.PAGINATION.001`.
 - `OFFERS.SEARCH.001-R13`: The map marker set shall continue to represent the full filtered offer set regardless of the requested page, as defined in `OFFERS.SEARCH.PAGINATION.001`.
 - `OFFERS.SEARCH.001-R14`: Both the standard search bar and the immersive search overlay shall accept at most 200 characters, matching the offer-search request contract.
+- `OFFERS.SEARCH.001-R15`: In the immersive search sheet, the focused search input and the primary search action shall remain visible above the on-screen keyboard or IME, and taps on visible sheet controls shall reach them, as defined by `OFFERS.SEARCH.KEYBOARD.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -98,6 +99,13 @@ Scenario: Search query stops at its contract maximum
   Given the standard or immersive search input is displayed
   When the user pastes 250 characters into the search input
   Then the input holds exactly 200 characters
+
+Scenario: Immersive search sheet keeps input and action above the keyboard
+  Given the immersive search sheet is open
+  And the on-screen keyboard is open
+  When the search input is focused
+  Then the input and the primary search action remain visible above the keyboard
+  And taps on visible sheet controls reach those controls
 ```
 
 ## Example Inputs/Outputs
@@ -110,11 +118,13 @@ Scenario: Search query stops at its contract maximum
 - Coverage radius change with empty query applies distance-only filtering and refreshes list/map.
 - Coverage radius change also adjusts map zoom to keep selected radius visible.
 - Required location resolution timeout/failure shall remove the loading state and show the corresponding non-blocking error/empty state.
+- The immersive search sheet is open with a tall keyboard; the input and primary search action remain visible and taps are not swallowed.
 
 ## Non-Functional Constraints
 - Search response should feel immediate for typical local datasets.
 
 ## Related Specs
+- `APP.HELP.CONTEXTUAL.001`
 - `OFFERS.EMPTY.001`
 - `OFFERS.FILTER.SIMPLIFICATION.001`
 - `OFFERS.SEARCH.SMART.001`
@@ -130,3 +140,5 @@ Scenario: Search query stops at its contract maximum
 - `APP.RESILIENCE.UX.001`
 - `OFFERS.MODE.SWITCH.001`
 - `APP.LOCATION.FALLBACK.001`
+- `OFFERS.SEARCH.KEYBOARD.001`
+- `APP.BOTTOM_SHEET.001`

@@ -123,3 +123,10 @@
 | `OFFERS.EMPTY.001` | `bdd/offers-empty.feature`, `bdd/offers-ux.feature` | N/A | N/A |
 | `APP.PERFORMANCE.001` | `bdd/app-performance.feature` | N/A | N/A |
 | `ADD.OFFER.SEQUENCED.001` | `bdd/add-offer-sequenced.feature` | `contracts/json-schema/add-offer-draft.schema.json` | N/A |
+| `APP.MODALITY.UNIFICATION.001` | `bdd/app-modality-unification.feature` | N/A | N/A |
+| `OFFERS.SEARCH.KEYBOARD.001` | `bdd/offers-search-keyboard.feature` | N/A | N/A |
+| `APP.SYMBOL.VOCABULARY.001` | `bdd/app-symbol-vocabulary.feature` | N/A | N/A |
+| `ADD.OFFER.PROGRESSIVE.DISCLOSURE.001` | `bdd/add-offer-progressive-disclosure.feature` | N/A | N/A |
+| `OFFERS.ACTION.UNDO.001` | `bdd/offers-action-undo.feature` | N/A | N/A |
+| `APP.LOCATION.UNAVAILABLE.001` | `bdd/app-location-unavailable.feature` | N/A | N/A |
+| `APP.HELP.CONTEXTUAL.001` | `bdd/app-help-contextual.feature` | N/A | N/A |

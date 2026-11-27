@@ -1,6 +1,15 @@
-import { platformTouchFloor } from '../utils/layout';
+import { keyboardAvoidanceBehavior, platformTouchFloor } from '../utils/layout';
 import type { RefObject } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useApp } from '../hooks/useApp';
 import { CoverageDistanceControl } from './CoverageDistanceControl';
 import { restoreFocus } from '../utils/focusReturn';
@@ -36,58 +45,70 @@ export function ImmersiveSearchOverlay({
 
   return (
     <NativeBottomSheet visible={visible} onClose={close}>
-        <View
-          accessibilityViewIsModal
-          style={[styles.sheet, { backgroundColor: palette.panel, borderColor: palette.border }]}
+      <KeyboardAvoidingView
+        behavior={keyboardAvoidanceBehavior(Platform.OS)}
+        style={styles.keyboardView}
+        testID="immersive-search-keyboard-view"
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          testID="immersive-search-scroll"
         >
-          <Text style={[styles.title, { color: palette.ink }]}>{t('offers.searchOffers')}</Text>
+          <View
+            accessibilityViewIsModal
+            style={[styles.sheet, { backgroundColor: palette.panel, borderColor: palette.border }]}
+          >
+            <Text style={[styles.title, { color: palette.ink }]}>{t('offers.searchOffers')}</Text>
 
-          <TextInput
-            accessibilityLabel={t('offers.searchPlaceholder')}
-            maxLength={queryMaxLength}
-            onChangeText={onChangeQuery}
-            onSubmitEditing={onSearch}
-            placeholder={t('offers.searchPlaceholder')}
-            placeholderTextColor={palette.inkMuted}
-            returnKeyType="search"
-            style={[styles.input, { backgroundColor: palette.card, borderColor: palette.border, color: palette.ink }]}
-            value={query}
-          />
+            <TextInput
+              accessibilityLabel={t('offers.searchPlaceholder')}
+              maxLength={queryMaxLength}
+              onChangeText={onChangeQuery}
+              onSubmitEditing={onSearch}
+              placeholder={t('offers.searchPlaceholder')}
+              placeholderTextColor={palette.inkMuted}
+              returnKeyType="search"
+              style={[styles.input, { backgroundColor: palette.card, borderColor: palette.border, color: palette.ink }]}
+              value={query}
+            />
 
-          <CoverageDistanceControl
-            onChange={onChangeRadius}
-            palette={palette}
-            radiusMeters={radiusMeters}
-            t={t}
-          />
+            <CoverageDistanceControl
+              onChange={onChangeRadius}
+              palette={palette}
+              radiusMeters={radiusMeters}
+              t={t}
+            />
 
-          <View style={styles.actions}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={close}
-              style={[styles.actionButton, { backgroundColor: palette.card, borderColor: palette.border }]}
-            >
-              <Text style={{ color: palette.ink, fontWeight: '700' }}>{t('common.cancel')}</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onSearch}
-              style={[styles.actionButton, { backgroundColor: palette.accent }]}
-            >
-              <Text style={{ color: palette.onAccent, fontWeight: '800' }}>{t('common.search')}</Text>
-            </Pressable>
+            <View style={styles.actions}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={close}
+                style={[styles.actionButton, { backgroundColor: palette.card, borderColor: palette.border }]}
+              >
+                <Text style={{ color: palette.ink, fontWeight: '700' }}>{t('common.cancel')}</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={onSearch}
+                style={[styles.actionButton, { backgroundColor: palette.accent }]}
+              >
+                <Text style={{ color: palette.onAccent, fontWeight: '800' }}>{t('common.search')}</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </NativeBottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    alignItems: 'center',
+  keyboardView: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 20,
+  },
+  scrollContent: {
+    paddingBottom: 24,
   },
   sheet: {
     borderRadius: 20,

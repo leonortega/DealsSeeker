@@ -8,7 +8,7 @@ Feature: Platform location provider access on Android
     And the platform provider has a current position
     When the Offers view resolves the location
     Then the platform position is used for search and map context
-    And no fallback notice is displayed
+    And no location-unavailable state is displayed
 
   Scenario: Emulator-injected position is used
     Given the Android emulator has a position set through its location controls
@@ -20,7 +20,7 @@ Feature: Platform location provider access on Android
     Given the platform provider has no fresh position and produces no update
     When the user selects the location retry action
     Then a plain-language failure status is shown within the bounded time
-    And the approximate-area results remain browsable
+    And the location-unavailable state remains visible with its retry action
 
   Scenario: Permission denied on Android
     Given foreground location permission is denied

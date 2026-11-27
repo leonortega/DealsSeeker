@@ -59,6 +59,7 @@ Scenario: Keyboard-safe layout in edit mode
 - The keyboard behavior shall not change the validation, submission, or coordinate-privacy rules.
 
 ## Related Specs
+- `OFFERS.SEARCH.KEYBOARD.001`
 - `ADD.OFFER.LAYOUT.001`
 - `ADD.OFFER.UX.001`
 - `ACCOUNT.AUTH.KEYBOARD.001`

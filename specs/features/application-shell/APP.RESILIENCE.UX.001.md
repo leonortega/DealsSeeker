@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Visible and recoverable offers search failure
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers View (standard and immersive presentations)
 - **Priority**: High
@@ -25,6 +25,7 @@ Ensure that a failed offers search is visible where the user is working and can 
 - `APP.RESILIENCE.UX.001-R5`: The error message shall use plain language and shall not expose an internal status code as the primary message.
 - `APP.RESILIENCE.UX.001-R6`: The error message and Retry label shall follow the active theme and localization.
 - `APP.RESILIENCE.UX.001-R7`: Feedback about other failed actions, such as favorites or votes, shall remain distinct from the search-failure state.
+- `APP.RESILIENCE.UX.001-R8`: A missing device position shall not be reported as a search failure; it shall be presented only as the no-position state defined in `APP.LOCATION.UNAVAILABLE.001`, and no location-bound search shall be retried until a position exists.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -57,6 +58,13 @@ Scenario: Favorite failure does not display the search-failure state
   When changing a favorite fails
   Then a favorite-specific message is displayed
   And the search-failure error state is not displayed
+
+Scenario: Missing position is not a search failure
+  Given no usable device position can be obtained
+  When discovery requires a location-bound search
+  Then the no-position state of APP.LOCATION.UNAVAILABLE.001 is displayed
+  And no search-failure error or Retry-search action is displayed
+  And no location-bound search is retried without a position
 ```
 
 ## Example Inputs/Outputs
@@ -68,6 +76,7 @@ Scenario: Favorite failure does not display the search-failure state
 - Repeated failures across multiple retries.
 - Error message text expanded by localization.
 - Dark theme active during the error state.
+- A search failure occurs while the no-position state is active: the no-position state remains the only failure presentation until a position exists.
 
 ## Non-Functional Constraints
 - The error state shall be visible without scrolling through the full offer list.
@@ -83,4 +92,5 @@ Scenario: Favorite failure does not display the search-failure state
 - `APP.THEME.001`
 - `APP.ACCESSIBILITY.UX.003`
 - `APP.LOCATION.FALLBACK.001`
+- `APP.LOCATION.UNAVAILABLE.001`
 - `APP.LIFECYCLE.001`

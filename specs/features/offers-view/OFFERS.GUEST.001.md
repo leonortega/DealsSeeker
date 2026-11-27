@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Read-Only Guest Discovery in Offers
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers View (standard and immersive presentations)
 - **Priority**: High
@@ -33,6 +33,7 @@ Let an unauthenticated user discover offers read-only, with contribution actions
 - `OFFERS.GUEST.001-R9`: A guest session shall not create or persist an authenticated user session and shall not access user-scoped data such as saved favorites or the user's own offers.
 - `OFFERS.GUEST.001-R10`: The Offers view shall not expose raw `lat` or `lng` values to a guest in either presentation.
 - `OFFERS.GUEST.001-R11`: An unfiltered empty result during guest discovery shall render the guidance defined in `OFFERS.EMPTY.001`.
+- `OFFERS.GUEST.001-R12`: When no usable device position is available, guest discovery shall not run a location-bound search or fabricate a map center, and shall present the no-position state defined in `APP.LOCATION.UNAVAILABLE.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -93,6 +94,15 @@ Scenario: Guest with no offers sees the unfiltered empty guidance
   Given a guest is on the Offers view with no query and no favorites filter active
   When a search completes with no offers
   Then the empty-state guidance shall be displayed in the current presentation
+
+Scenario: Guest with no position sees the no-position state
+  Given a guest is on the Offers view
+  And no usable device position can be obtained
+  When discovery requires a position
+  Then no location-bound search shall run
+  And no fallback map center shall be displayed
+  And the no-position state of APP.LOCATION.UNAVAILABLE.001 shall be displayed
+  And no raw latitude or longitude value shall be visible
 ```
 
 ## Example Inputs/Outputs
@@ -107,7 +117,7 @@ Scenario: Guest with no offers sees the unfiltered empty guidance
 - A direct link opens an offer detail while unauthenticated: the detail opens read-only with no sign-in requirement to view it.
 - `My Favorites` or another user-scoped destination is requested by a guest: sign-in is prompted rather than guest data being shown.
 - Localized guest-state and sign-in prompt labels expand beyond the English text without clipping.
-- Location resolution fails during guest discovery: the non-blocking error/empty state of `APP.LOCATION.FALLBACK.001` applies and navigation stays available.
+- Location resolution fails during guest discovery: no location-bound search runs and the no-position state of `APP.LOCATION.UNAVAILABLE.001` applies as defined in `APP.LOCATION.FALLBACK.001`; navigation stays available and no substitute coordinate is used.
 - The guest session is not restored as an authenticated session after an app relaunch.
 
 ## Non-Functional Constraints
@@ -129,5 +139,6 @@ Scenario: Guest with no offers sees the unfiltered empty guidance
 - `REPORTS.SUBMIT.001`
 - `OFFERS.NAV.ADD.001`
 - `APP.LOCATION.FALLBACK.001`
+- `APP.LOCATION.UNAVAILABLE.001`
 - `APP.ACCESSIBILITY.UX.001`
 - `APP.LOCALIZATION.001`

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Shared Offer Action Vocabulary and Visible Labels
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Offers View (immersive feed, offer cards, favorites and detail sheet)
 - **Priority**: Medium
@@ -27,6 +27,7 @@ Keep offer actions self-explanatory on a phone and identical across surfaces wit
 - `OFFERS.ACTIONS.LABELS.001-R7`: The canonical vocabulary shall be `Directions` (waypoint glyph), `Favorite` (heart glyph), `Comments` (speech-bubble glyph), `Available?` with thumbs-up and thumbs-down glyphs, and `Report` (flag glyph), in that order; the same label and glyph shall appear on every surface.
 - `OFFERS.ACTIONS.LABELS.001-R8`: No more than four actions shall be visible at once in an immersive action rail; every remaining action shall sit behind a single control visibly labelled `More` and shall keep its canonical order inside that control.
 - `OFFERS.ACTIONS.LABELS.001-R9`: No action shall change its label, glyph or relative order because of the surface that renders it.
+- `OFFERS.ACTIONS.LABELS.001-R10`: This canonical vocabulary governs the offer action rail only and is the sole exception to the platform symbol vocabulary; shell chrome and content glyphs outside the rail shall follow the one platform vocabulary defined by `APP.SYMBOL.VOCABULARY.001`, and a rail glyph shall not be reused as a second chrome vocabulary.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -61,6 +62,13 @@ Scenario: Immersive rail limits visible actions to four
   Then at most four actions are visible
   And the remaining actions sit behind one control labelled More
   And the actions inside More keep the canonical order
+
+Scenario: Offer rail is the sole exception to the platform symbol vocabulary
+  Given the offer action rail and shell chrome controls are rendered on both platforms
+  When their glyphs are displayed
+  Then the rail uses only this spec's canonical vocabulary
+  And the shell chrome uses the one platform symbol vocabulary
+  And no rail glyph is reused as a second chrome vocabulary
 ```
 
 ## Example Inputs/Outputs
@@ -79,6 +87,7 @@ Scenario: Immersive rail limits visible actions to four
 - A viewport with less than the minimum rail height.
 - An offer where some actions are unavailable — the order of the remaining actions does not change.
 - A localized label for `More` that is longer than the source text.
+- A chrome control outside the rail that appears to reuse a rail glyph; it follows the platform vocabulary instead.
 
 ## Non-Functional Constraints
 - The waypoint accent stays reserved for the active path and the primary action.
@@ -92,3 +101,5 @@ Scenario: Immersive rail limits visible actions to four
 - `APP.PERFORMANCE.001`
 - `OFFERS.LIST.ACTIONS.001`
 - `OFFERS.DETAIL.ACTIONS.001`
+- `APP.SYMBOL.VOCABULARY.001`
+- `APP.PLATFORM.CHROME.001`

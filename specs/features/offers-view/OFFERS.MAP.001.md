@@ -110,6 +110,7 @@ Scenario: No alternate renderer or provider switch is shown
 - Map updates shall stay consistent with current offer filter state.
 
 ## Related Specs
+- `APP.HELP.CONTEXTUAL.001`
 - `OFFERS.GUEST.001`
 - `OFFERS.SEARCH.001`
 - `APP.MAP.STACK.001`

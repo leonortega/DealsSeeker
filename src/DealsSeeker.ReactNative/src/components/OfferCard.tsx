@@ -98,8 +98,12 @@ function OfferCardRow({
             onError={() => setImageFailed(true)}
           />
         ) : (
-          <View style={styles.visualPlaceholder}>
-            <Text style={styles.visualEmoji}>{offer.imageUrls.length > 1 ? '▣' : '▤'}</Text>
+          <View
+            style={[styles.visualPlaceholder, { backgroundColor: palette.panel, borderColor: palette.border }]}
+          >
+            <Text style={[styles.visualPlaceholderLabel, { color: palette.inkMuted }]}>
+              {t('add.photoPlaceholder')}
+            </Text>
           </View>
         )}
         <View style={styles.badgeRow}>
@@ -287,17 +291,18 @@ const styles = StyleSheet.create({
     top: 0,
   },
   visualPlaceholder: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    borderWidth: 1,
     bottom: 0,
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     left: 0,
     position: 'absolute',
     right: 0,
     top: 0,
   },
-  visualEmoji: {
-    fontSize: 48,
-    opacity: 0.35,
+  visualPlaceholderLabel: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   badgeRow: {
     flexDirection: 'row',

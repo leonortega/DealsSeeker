@@ -11,13 +11,14 @@ import { selectionFeedback } from '../utils/haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { openDirections } from '../utils/maps';
 import { shorten } from '../utils/format';
-
-const fallbackLocation = { lat: 40.7128, lng: -74.006 };
+import { resolveEmulatorLocation } from '../utils/emulatorLocation';
 
 export function FavoritesScreen() {
   const { api, overlayRoute, palette, preferences, t } = useApp();
   const insets = useSafeAreaInsets();
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
+  const [locationUnavailable, setLocationUnavailable] = useState(false);
+  const [retryFailed, setRetryFailed] = useState(false);
   const { status, reportStatus: reportNotice } = useStatusNotice();
 
   function reportStatus(message: string | null) {
@@ -25,41 +26,55 @@ export function FavoritesScreen() {
     announceStatus(message);
   }
 
-  useEffect(() => {
-    if (overlayRoute?.name !== 'favorites') {
+  async function resolveLocation() {
+    const override = resolveEmulatorLocation();
+    if (override) {
+      return override;
+    }
+
+    try {
+      const permission = await Location.requestForegroundPermissionsAsync();
+      if (!permission.granted) {
+        return null;
+      }
+
+      const position = await Location.getCurrentPositionAsync({
+        accuracy: Location.LocationAccuracy.Balanced,
+      });
+      return { lat: position.coords.latitude, lng: position.coords.longitude };
+    } catch {
+      return null;
+    }
+  }
+
+  async function load(isRetry = false) {
+    const userLocation = await resolveLocation();
+    if (!userLocation) {
+      setOffers([]);
+      setLocationUnavailable(true);
+      setRetryFailed(isRetry);
       return;
     }
 
-    async function load() {
-      let userLocation = fallbackLocation;
+    setLocationUnavailable(false);
+    setRetryFailed(false);
+    try {
+      const response = await api.searchOffers({
+        query: '',
+        userLocation,
+        radiusMeters: 5000,
+        locale: preferences.language,
+        favoritesOnly: true,
+      });
+      setOffers(response.offers);
+    } catch {
+      reportStatus(t('favorites.loadFailed'));
+    }
+  }
 
-      try {
-        const permission = await Location.requestForegroundPermissionsAsync();
-        if (permission.granted) {
-          const position = await Location.getCurrentPositionAsync({
-            accuracy: Location.LocationAccuracy.Balanced,
-          });
-          userLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-        }
-      } catch {
-        userLocation = fallbackLocation;
-      }
-
-      try {
-        const response = await api.searchOffers({
-          query: '',
-          userLocation,
-          radiusMeters: 5000,
-          locale: preferences.language,
-          favoritesOnly: true,
-        });
-        setOffers(response.offers);
-      } catch {
-        reportStatus(t('favorites.loadFailed'));
-      }
+  useEffect(() => {
+    if (overlayRoute?.name !== 'favorites') {
+      return;
     }
 
     void load();
@@ -78,6 +93,33 @@ export function FavoritesScreen() {
 
     setOffers((current) => current.filter((item) => item.offerId !== offer.offerId));
     selectionFeedback();
+  }
+
+  if (locationUnavailable) {
+    return (
+      <View style={[styles.unavailableScreen, { backgroundColor: palette.background }]} testID="favorites-location-unavailable">
+        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <Text style={[styles.title, { color: palette.ink }]}>{t('favorites.title')}</Text>
+          <View accessible accessibilityRole="alert" style={styles.unavailableCopy}>
+            <Text style={[styles.unavailableTitle, { color: palette.ink }]}>{t('offers.locationUnavailable')}</Text>
+            <Text style={{ color: palette.inkMuted }}>
+              {retryFailed ? t('offers.locationRetryFailed') : t('offers.locationUnavailableHint')}
+            </Text>
+          </View>
+          <Pressable
+            accessibilityLabel={t('offers.retryLocation')}
+            accessibilityRole="button"
+            onPress={() => void load(true)}
+            style={[styles.retryButton, { backgroundColor: palette.panelAlt }]}
+            testID="favorites-location-retry"
+          >
+            <Text style={{ color: palette.ink, fontWeight: '700', textAlign: 'center' }}>
+              {t('offers.retryLocation')}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -179,5 +221,26 @@ const styles = StyleSheet.create({
   status: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  unavailableScreen: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+  },
+  retryButton: {
+    alignItems: 'center',
+    borderRadius: 18,
+    justifyContent: 'center',
+    minHeight: platformTouchFloor,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+  },
+  unavailableCopy: {
+    gap: 8,
+  },
+  unavailableTitle: {
+    fontSize: 18,
+    fontWeight: '800',
   },
 });

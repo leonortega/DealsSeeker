@@ -34,3 +34,10 @@ Feature: Visible labels for offer actions
     Then at most four actions are visible
     And the remaining actions sit behind one control labelled More
     And the actions inside More keep the canonical order
+
+  Scenario: Offer rail is the sole exception to the platform symbol vocabulary
+    Given the offer action rail and shell chrome controls are rendered on both platforms
+    When their glyphs are displayed
+    Then the rail uses only this vocabulary
+    And the shell chrome uses the one platform symbol vocabulary
+    And no rail glyph is reused as a second chrome vocabulary

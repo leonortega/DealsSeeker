@@ -25,3 +25,9 @@ Feature: First run to first value
     When the user activates its dismiss action
     Then the guidance closes
     And the offers feed remains fully usable
+
+  Scenario: Guidance uses the common sheet system
+    Given first-run guidance is about to be presented
+    When the guidance opens
+    Then it uses the same sheet system as other focused sub-tasks
+    And it follows the one dismissal path, single Back dispatch and focus-return rule of that system

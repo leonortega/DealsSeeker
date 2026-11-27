@@ -65,6 +65,7 @@ Scenario: Missing translation key falls back
 - Language switching should complete without app restart when supported by runtime.
 
 ## Related Specs
+- `APP.HELP.CONTEXTUAL.001`
 - `OFFERS.EMPTY.001`
 - `OFFERS.GUEST.001`
 - `APP.SHELL.001`

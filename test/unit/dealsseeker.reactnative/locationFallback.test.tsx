@@ -1,5 +1,4 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 
 const mockRequestPermission = jest.fn();
@@ -29,9 +28,12 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
       return mockImmersive;
     },
     closeImmersiveOffers: jest.fn(),
+    closeSheet: jest.fn(),
+    isAuthenticated: true,
     isPending: () => false,
     openAddOffer: jest.fn(),
     openImmersiveOffers: jest.fn(),
+    openSheet: jest.fn(),
     palette: {
       accent: '#b85c38',
       backdrop: '#121417',
@@ -60,7 +62,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferCommentsModa
   OfferCommentsModal: () => null,
 }));
 
-describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
+describe('location unavailable state (APP.LOCATION.FALLBACK.001 v2.0)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockImmersive = false;
@@ -70,90 +72,71 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
     mockSearchOffers.mockResolvedValue({ offers: [], businesses: [] });
   });
 
-  it('discloses an approximate area instead of the current area when permission is denied', async () => {
+  it('shows an honest location-unavailable state instead of an approximate area', async () => {
     await render(<OffersScreen />);
-    expect(await screen.findByText('offers.locationFallbackNotice')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'offers.useMyLocation' })).toBeTruthy();
-    expect(screen.queryByText('offers.location: offers.currentLocation')).toBeNull();
+
+    expect(await screen.findByText('offers.locationUnavailable')).toBeTruthy();
+    expect(screen.getByText('offers.locationUnavailableHint')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'offers.retry' })).toBeTruthy();
+    expect(screen.queryByText('offers.locationFallbackNotice')).toBeNull();
+    expect(screen.queryByText('offers.browseApproximateArea')).toBeNull();
   });
 
-  it('does not search the fallback area until the user explicitly chooses it', async () => {
+  it('never searches with a fabricated coordinate', async () => {
     await render(<OffersScreen />);
-    await screen.findByText('offers.locationFallbackNotice');
+    await screen.findByText('offers.locationUnavailable');
 
     expect(mockSearchOffers).not.toHaveBeenCalled();
-    await fireEvent.press(screen.getByRole('button', { name: 'offers.browseApproximateArea' }));
-
-    await waitFor(() => expect(mockSearchOffers).toHaveBeenCalled());
+    expect(screen.queryByText('40.7128')).toBeNull();
+    expect(screen.queryByText('-74.006')).toBeNull();
   });
 
-  it('uses the configured emulator location without a fallback notice', async () => {
+  it('uses the configured emulator location without an unavailable state', async () => {
     process.env['EXPO_PUBLIC_EMULATOR_LOCATION'] = '40.7128,-74.006';
     try {
       await render(<OffersScreen />);
 
       expect(await screen.findByText('offers.location: offers.currentLocation')).toBeTruthy();
-      expect(screen.queryByText('offers.locationFallbackNotice')).toBeNull();
+      expect(screen.queryByText('offers.locationUnavailable')).toBeNull();
       expect(mockRequestPermission).not.toHaveBeenCalled();
+      await waitFor(() => expect(mockSearchOffers).toHaveBeenCalled());
     } finally {
       delete process.env['EXPO_PUBLIC_EMULATOR_LOCATION'];
     }
   });
 
-  it('removes the notice and uses the resolved area after a successful retry', async () => {
+  it('clears the unavailable state and searches after a successful retry', async () => {
     await render(<OffersScreen />);
-    await screen.findByText('offers.locationFallbackNotice');
+    await screen.findByText('offers.locationUnavailable');
 
     mockRequestPermission.mockResolvedValue({ granted: true });
     mockReverseLocation.mockResolvedValue({ label: 'Central Station' });
-    await fireEvent.press(screen.getByRole('button', { name: 'offers.useMyLocation' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.retry' }));
 
-    await waitFor(() => expect(screen.queryByText('offers.locationFallbackNotice')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('offers.locationUnavailable')).toBeNull());
     expect(screen.getByText(/Central Station/)).toBeTruthy();
+    await waitFor(() => expect(mockSearchOffers).toHaveBeenCalled());
   });
 
-  it('reports a failed retry without removing the notice or results', async () => {
+  it('reports a failed retry while keeping the unavailable state', async () => {
     await render(<OffersScreen />);
-    await screen.findByText('offers.locationFallbackNotice');
+    await screen.findByText('offers.locationUnavailable');
 
     mockRequestPermission.mockResolvedValue({ granted: true });
     mockGetCurrentPosition.mockRejectedValue(new Error('no fix'));
-    await fireEvent.press(screen.getByRole('button', { name: 'offers.useMyLocation' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.retry' }));
 
     expect(await screen.findByText('offers.locationRetryFailed')).toBeTruthy();
-    expect(screen.getByText('offers.locationFallbackNotice')).toBeTruthy();
+    expect(screen.getByText('offers.locationUnavailable')).toBeTruthy();
     expect(mockSearchOffers).not.toHaveBeenCalled();
   });
 
-  it('keeps browsing when the approximate area is chosen', async () => {
-    mockSearchOffers.mockResolvedValue({
-      offers: [{ offerId: 'o1' }],
-      businesses: [],
-    });
-    await render(<OffersScreen />);
-    await screen.findByText('offers.locationFallbackNotice');
-
-    await fireEvent.press(screen.getByRole('button', { name: 'offers.browseApproximateArea' }));
-
-    await waitFor(() => expect(screen.queryByText('offers.locationFallbackNotice')).toBeNull());
-    expect(mockSearchOffers).toHaveBeenCalled();
-  });
-
-  it('paints the immersive content area behind state panels', async () => {
-    mockImmersive = true;
-    mockSearchOffers.mockRejectedValue(new Error('offline'));
-    await render(<OffersScreen />);
-    await screen.findByText('offers.locationFallbackNotice');
-    await fireEvent.press(screen.getByRole('button', { name: 'offers.browseApproximateArea' }));
-
-    expect(await screen.findByText('offers.searchFailed')).toBeTruthy();
-    expect(StyleSheet.flatten(screen.getByTestId('immersive-content').props.style).backgroundColor).toBe('#121417');
-  });
-
-  it('shows the same disclosure in the immersive presentation', async () => {
+  it('shows the same honest state in the immersive presentation', async () => {
     mockImmersive = true;
     await render(<OffersScreen />);
-    expect(await screen.findByText('offers.locationFallbackNotice')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'offers.useMyLocation' })).toBeTruthy();
+
+    expect(await screen.findByText('offers.locationUnavailable')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'offers.retry' })).toBeTruthy();
+    expect(screen.queryByText('offers.browseApproximateArea')).toBeNull();
   });
 });

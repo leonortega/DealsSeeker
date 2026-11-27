@@ -63,3 +63,9 @@ Feature: Add Offer layout required controls
   Scenario: Explicit cancel action is present
     Given the user navigates to Add Offer view
     Then an explicit Cancel action is visible
+
+  Scenario: Contextual help is reachable while contributing an offer
+    Given the user is on the Add Offer view
+    When the user asks why a location must be confirmed
+    Then the single help surface opens with the location topic first
+    And all entered contribution data is preserved

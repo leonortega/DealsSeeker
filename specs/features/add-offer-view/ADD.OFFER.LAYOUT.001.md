@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer View Layout Composition
-- **Version**: `v2.4`
+- **Version**: `v2.5`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -35,6 +35,7 @@ Define required UI blocks for add-offer data entry in both create and edit modes
 - `ADD.OFFER.LAYOUT.001-R16`: The tag section shall display a short hint that tapping a selected tag removes it. Related tags shall appear as opt-in suggestions with an explicit acceptance control, and no note shall state that related tags are added automatically, following `ADD.OFFER.TAGS.SUGGESTIONS.001`. No word-detection guidance text shall be displayed above the detected words.
 - `ADD.OFFER.LAYOUT.001-R17`: In edit mode, when the owned offer draft cannot be loaded, the system shall show a recoverable error state that blocks submission and offers `Retry` and `Cancel` actions.
 - `ADD.OFFER.LAYOUT.001-R18`: The view shall expose an explicit `Cancel` action following `ADD.OFFER.EXIT.001`.
+- `ADD.OFFER.LAYOUT.001-R19`: The view shall offer a contextual help affordance that opens the same help surface with the contributing-an-offer topic first, as defined in `APP.HELP.CONTEXTUAL.001`, without leaving Add Offer, discarding the in-progress draft, or exposing raw coordinates.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -94,6 +95,14 @@ Scenario: Edit draft load failure blocks submission
 Scenario: Explicit cancel action is present
   Given the user opens Add Offer view
   Then an explicit Cancel action is visible
+
+Scenario: Contextual help opens from Add Offer
+  Given the user is in Add Offer with a draft in progress
+  When the user selects its contextual help affordance
+  Then the same help surface opens with contributing an offer shown first
+  And the user remains in Add Offer with the draft unchanged
+  And no raw coordinate value is displayed
+  And dismissing help returns focus to the affordance
 ```
 
 ## Example Inputs/Outputs
@@ -104,6 +113,7 @@ Scenario: Explicit cancel action is present
 - No camera capability still shows upload area and alternative gallery path.
 - If the target owned offer cannot be loaded for edit, the system shall show a recoverable error state and not submit changes.
 - Required-content validation applies in both create mode and edit mode before save.
+- Contextual help opened while a draft is in progress leaves the draft unchanged on dismissal.
 
 ## Non-Functional Constraints
 - Layout remains usable on mobile portrait screens.
@@ -129,3 +139,5 @@ Scenario: Explicit cancel action is present
 - `ADD.OFFER.INPUT.BOUNDS.001`
 - `ADD.OFFER.VISUAL.HIERARCHY.001`
 - `ADD.OFFER.TABLET.LAYOUT.001`
+- `APP.HELP.CONTEXTUAL.001`
+- `APP.HELP.001`

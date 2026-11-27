@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import * as Location from 'expo-location';
 import { FavoritesScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/FavoritesScreen';
 import { OfferReportSheet } from '../../../src/DealsSeeker.ReactNative/src/components/OfferReportSheet';
 import { SuggestionsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/SuggestionsScreen';
@@ -68,11 +69,21 @@ const offer = {
 } as never;
 
 describe('FavoritesScreen', () => {
+  const requestPermission = Location.requestForegroundPermissionsAsync as jest.Mock;
+  const getPosition = Location.getCurrentPositionAsync as jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockOverlayRoute = { name: 'favorites' };
+    requestPermission.mockResolvedValue({ granted: true });
+    getPosition.mockResolvedValue({ coords: { latitude: 10.25, longitude: -20.5 } });
     mockSearchOffers.mockResolvedValue({ offers: [offer] });
     mockSetOfferFavorite.mockResolvedValue({ success: true });
+    delete process.env['EXPO_PUBLIC_EMULATOR_LOCATION'];
+  });
+
+  afterEach(() => {
+    delete process.env['EXPO_PUBLIC_EMULATOR_LOCATION'];
   });
 
   it('renders nothing outside the favorites overlay', async () => {
@@ -116,6 +127,83 @@ describe('FavoritesScreen', () => {
     const scroll = screen.getByTestId('favorites-scroll');
     expect(scroll.props.data).toEqual([expect.objectContaining({ offerId: 'o1' })]);
     expect(typeof scroll.props.renderItem).toBe('function');
+  });
+
+  it('does not search a fabricated coordinate when permission is denied', async () => {
+    requestPermission.mockResolvedValue({ granted: false });
+
+    await render(<FavoritesScreen />);
+
+    expect(await screen.findByText('offers.locationUnavailable')).toBeTruthy();
+    expect(screen.getByText('offers.locationUnavailableHint')).toBeTruthy();
+    expect(screen.getByTestId('favorites-location-unavailable')).toBeTruthy();
+    expect(mockSearchOffers).not.toHaveBeenCalled();
+  });
+
+  it('keeps the screen mounted with one retry action when the lookup fails', async () => {
+    getPosition.mockRejectedValue(new Error('provider unavailable'));
+
+    await render(<FavoritesScreen />);
+
+    expect(await screen.findByText('offers.locationUnavailable')).toBeTruthy();
+    expect(screen.getAllByText('offers.retryLocation')).toHaveLength(1);
+    expect(screen.getByTestId('favorites-location-retry')).toBeTruthy();
+    expect(screen.queryByText('Main Street Cafe')).toBeNull();
+    expect(mockSearchOffers).not.toHaveBeenCalled();
+  });
+
+  it('runs the favorites search after a successful retry', async () => {
+    requestPermission.mockResolvedValue({ granted: false });
+    await render(<FavoritesScreen />);
+    await screen.findByText('offers.locationUnavailable');
+
+    requestPermission.mockResolvedValue({ granted: true });
+    getPosition.mockResolvedValue({ coords: { latitude: 12.5, longitude: -33.25 } });
+    await fireEvent.press(screen.getByTestId('favorites-location-retry'));
+
+    expect(await screen.findByText('Main Street Cafe')).toBeTruthy();
+    expect(mockSearchOffers).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userLocation: { lat: 12.5, lng: -33.25 },
+        favoritesOnly: true,
+      })
+    );
+    expect(screen.queryByText('offers.locationUnavailable')).toBeNull();
+  });
+
+  it('keeps the unavailable state with a failure message after a failed retry', async () => {
+    requestPermission.mockResolvedValue({ granted: false });
+    await render(<FavoritesScreen />);
+    await screen.findByText('offers.locationUnavailable');
+
+    await fireEvent.press(screen.getByTestId('favorites-location-retry'));
+
+    expect(await screen.findByText('offers.locationRetryFailed')).toBeTruthy();
+    expect(screen.getByText('offers.locationUnavailable')).toBeTruthy();
+    expect(screen.getByTestId('favorites-location-retry')).toBeTruthy();
+    expect(mockSearchOffers).not.toHaveBeenCalled();
+  });
+
+  it('honors an explicit developer location override', async () => {
+    process.env['EXPO_PUBLIC_EMULATOR_LOCATION'] = '10.5,-20.25';
+    requestPermission.mockResolvedValue({ granted: false });
+
+    await render(<FavoritesScreen />);
+
+    expect(await screen.findByText('Main Street Cafe')).toBeTruthy();
+    expect(mockSearchOffers).toHaveBeenCalledWith(
+      expect.objectContaining({ userLocation: { lat: 10.5, lng: -20.25 } })
+    );
+    expect(screen.queryByText('offers.locationUnavailable')).toBeNull();
+    expect(requestPermission).not.toHaveBeenCalled();
+  });
+
+  it('exposes no raw coordinates in the unavailable state', async () => {
+    requestPermission.mockResolvedValue({ granted: false });
+    await render(<FavoritesScreen />);
+    await screen.findByText('offers.locationUnavailable');
+
+    expect(screen.queryByText(/40\.7128|-74\.006|10\.25|-20\.5/)).toBeNull();
   });
 });
 

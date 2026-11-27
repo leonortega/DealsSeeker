@@ -1,5 +1,5 @@
 import { BackHandler, StyleSheet, Text } from 'react-native';
-import { act, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { NativeBottomSheet } from '../../../src/DealsSeeker.ReactNative/src/components/NativeBottomSheet';
 
 const mockOpenSheet = jest.fn();
@@ -16,6 +16,10 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
 describe('NativeBottomSheet', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('registers an open sheet and releases it on unmount', async () => {
@@ -55,13 +59,9 @@ describe('NativeBottomSheet', () => {
     expect(StyleSheet.flatten(sheet.props.backgroundStyle).backgroundColor).toBe('#293a35');
   });
 
-  it('closes on system Back while visible', async () => {
+  it('leaves system Back to the native sheet lifecycle instead of a per-sheet handler', async () => {
+    const addEventListener = jest.spyOn(BackHandler, 'addEventListener');
     const onClose = jest.fn();
-    let handler: (() => boolean) | undefined;
-    jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_event, backHandler) => {
-      handler = backHandler as () => boolean;
-      return { remove: jest.fn() };
-    });
 
     await render(
       <NativeBottomSheet visible onClose={onClose}>
@@ -69,9 +69,9 @@ describe('NativeBottomSheet', () => {
       </NativeBottomSheet>
     );
 
-    expect(handler?.()).toBe(true);
+    expect(addEventListener).not.toHaveBeenCalled();
+    await fireEvent(screen.getByTestId('native-bottom-sheet'), 'close');
     expect(onClose).toHaveBeenCalledTimes(1);
-    jest.restoreAllMocks();
   });
 
   it('renders nothing while hidden', async () => {

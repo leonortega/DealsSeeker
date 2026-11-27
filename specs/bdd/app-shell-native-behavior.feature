@@ -159,3 +159,16 @@ Feature: Native navigation behavior with brand chrome
     When the user starts a predictive Back gesture
     Then the platform's progressive preview is still shown
     And the confirmation resolves after the gesture completes
+
+  Scenario: Chrome and content glyphs use one platform vocabulary
+    Given shell chrome and content glyphs are rendered on iOS and Android
+    When the controls are displayed
+    Then each platform shall use exactly one symbol vocabulary for those glyphs
+    And matching controls shall keep identical accessible names on both platforms
+
+  Scenario: Focused sub-tasks use sheets and destinations use native routes
+    Given a focused sub-task and a full-screen destination are available
+    When each is opened
+    Then the sub-task shall use the single sheet system
+    And the destination shall use a native route
+    And one Back dispatch and one focus-return rule shall apply to both

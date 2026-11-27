@@ -6,7 +6,7 @@ const mockSearchOffers = jest.fn();
 
 jest.mock('expo-location', () => ({
   LocationAccuracy: { Balanced: 3 },
-  getCurrentPositionAsync: jest.fn(),
+  getCurrentPositionAsync: jest.fn().mockResolvedValue({ coords: { latitude: 40.7128, longitude: -74.006 } }),
   requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ granted: false }),
 }));
 
@@ -22,7 +22,10 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     clearReportDraft: jest.fn(),
     closeImmersiveOffers: jest.fn(),
     immersiveOffers: true,
+    closeSheet: jest.fn(),
+    isAuthenticated: true,
     isPending: () => false,
+    openSheet: jest.fn(),
     openAddOffer: jest.fn(),
     openImmersiveOffers: jest.fn(),
     palette: {
@@ -57,11 +60,10 @@ describe('immersive recovery panel placement', () => {
 
   it('lays the recovery panel out below the top controls (APP.POLISH.UX.001-R14)', async () => {
     await render(<OffersScreen />);
-    await fireEvent.press(screen.getByRole('button', { name: 'offers.browseApproximateArea' }));
 
     const overlay = await screen.findByTestId('immersive-state-overlay');
     expect(StyleSheet.flatten(overlay.props.style)).toMatchObject({ position: 'absolute' });
     expect(StyleSheet.flatten(overlay.props.style).top).toBeGreaterThan(0);
-    expect(screen.getByText('offers.searchFailed')).toBeTruthy();
+    expect(screen.getByText('offers.locationUnavailable')).toBeTruthy();
   });
 });

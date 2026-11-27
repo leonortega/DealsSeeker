@@ -1,10 +1,11 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { AccessibilityInfo, StyleSheet } from 'react-native';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { AccessibilityInfo, Platform, StyleSheet } from 'react-native';
 import { RegisterScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/RegisterScreen';
 import { AddOfferScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
 import { OfferDetailModal } from '../../../src/DealsSeeker.ReactNative/src/components/OfferDetailModal';
 import { ImmersiveSearchOverlay } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveSearchOverlay';
 import { ImmersiveFeedTabs } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveFeedTabs';
+import * as layout from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
 
 const mockRegisterUser = jest.fn();
 const mockLogin = jest.fn();
@@ -107,6 +108,8 @@ describe('accessible contribution and auth surfaces (APP.ACCESSIBILITY.UX.002)',
   it('offers a labelled accessible action to set the pin at the map center', async () => {
     await render(<AddOfferScreen />);
     await screen.findByText('add.currentLocationUnavailable');
+    // The pin action belongs to the Place step, which is mounted only when active.
+    await fireEvent.press(screen.getByTestId('add-step-next'));
     const action = screen.getByRole('button', { name: 'add.setPinAtCenter' });
     await fireEvent.press(action);
     expect(await screen.findByText(/add\.pinnedLocation/)).toBeTruthy();
@@ -130,6 +133,30 @@ describe('accessible contribution and auth surfaces (APP.ACCESSIBILITY.UX.002)',
     expect(screen.getByRole('radio', { name: '1500 m' }).props.accessibilityState).toEqual({ selected: true });
     expect(screen.getByRole('button', { name: 'common.cancel' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'common.search' })).toBeTruthy();
+  });
+
+  it('keeps labelled search controls reachable inside the keyboard-avoiding body', async () => {
+    const behaviorSpy = jest.spyOn(layout, 'keyboardAvoidanceBehavior');
+    await render(
+      <ImmersiveSearchOverlay
+        visible
+        query=""
+        radiusMeters={1500}
+        onChangeQuery={jest.fn()}
+        onChangeRadius={jest.fn()}
+        onSearch={jest.fn()}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(behaviorSpy).toHaveBeenCalledWith(Platform.OS);
+    behaviorSpy.mockRestore();
+
+    const keyboardView = screen.getByTestId('immersive-search-keyboard-view');
+    expect(within(keyboardView).getByLabelText('offers.searchPlaceholder')).toBeTruthy();
+    expect(within(keyboardView).getByRole('button', { name: 'common.cancel' })).toBeTruthy();
+    expect(within(keyboardView).getByRole('button', { name: 'common.search' })).toBeTruthy();
+    expect(screen.getByTestId('immersive-search-scroll').props.keyboardShouldPersistTaps).toBe('handled');
   });
 
   it('caps the immersive search input at 200 characters', async () => {

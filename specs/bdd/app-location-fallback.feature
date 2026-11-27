@@ -1,50 +1,64 @@
-Feature: Honest fallback-location disclosure and recovery
-  As a deal hunter on a device without a usable location
-  I want to know when results are for an approximate area and be able to retry
-  So that I never mistake a fallback city for offers near me
+Feature: No location-bound search without a usable position
+  As a deal hunter without a usable device position
+  I want the app to stop instead of guessing where I am
+  So that I am never shown offers or a map center for a place I did not choose
 
-  Scenario: Denied location requires an explicit browse choice
+  Scenario: Denied permission runs no location-bound search
     Given the user has denied location permission
-    When the Offers view loads
-    Then the area is not labelled as the user's current location
-    And a notice explains that an approximate area is available
-    And the notice offers a retry action and an explicit browse action
-    And no fallback results are displayed before the browse choice
+    And no developer location override is configured
+    When the Offers view resolves the location
+    Then no location-bound offers search is run
+    And no approximate-area or substitute-area results are shown
 
-  Scenario: Choosing the approximate area shows its offers
-    Given the approximate-area notice is displayed
-    When the user chooses to browse the approximate area
-    Then offers for that area are displayed
-    And the notice is dismissed
+  Scenario: Lookup failure runs no location-bound search
+    Given location permission is granted
+    And the position lookup fails
+    When the Offers view resolves the location
+    Then no location-bound offers search is run
+    And the single no-position state of APP.LOCATION.UNAVAILABLE.001 is displayed
 
-  Scenario: Retrying location removes the notice on success
-    Given the approximate-area notice is displayed
+  Scenario: No fallback map center is displayed
+    Given no usable position can be obtained
+    When the Offers view prepares its map context
+    Then no fallback map center is fabricated or displayed
+    And no substitute coordinate is used for the map or the search
+
+  Scenario: No action offers to browse a substitute area
+    Given the no-position state is displayed
+    When the user reviews its actions
+    Then a retry action is available
+    And no action to browse an approximate or substitute area is available
+
+  Scenario: Retry obtains a position and the search runs
+    Given the no-position state is displayed
     When the user selects the retry action
-    And device location is obtained
-    Then the notice is no longer displayed
-    And the area label describes the resolved location
+    And a usable device position is obtained
+    Then a location-bound offers search runs with that position
+    And the no-position state is replaced by the results
 
-  Scenario: Retrying location reports a failure without changing results
-    Given the approximate-area notice is displayed
+  Scenario: Retry still fails and the no-position state remains
+    Given the no-position state is displayed
     When the user selects the retry action
-    And device location cannot be obtained
-    Then a plain-language failure status is shown
-    And the notice and its actions remain available
-    And the displayed offers remain browsable
+    And no position can be obtained
+    Then a plain-language failure is shown
+    And the no-position state and its retry action remain available
+    And no results for a substitute area are displayed
 
-  Scenario: Dismissing the notice keeps the results
-    Given the approximate-area notice is displayed
-    When the user dismisses the notice
-    Then the offers remain displayed
-    And the notice is not displayed again for that same location result
+  Scenario: Explicit developer override is still honored
+    Given an explicit developer location override is configured
+    And the device cannot provide a position
+    When the Offers view resolves the location
+    Then a location-bound search runs with the override
+    And the no-position state is not displayed
 
-  Scenario: Immersive feed discloses the fallback area
-    Given the immersive offers feed is active
-    And device location cannot be obtained
-    When the feed loads
-    Then the approximate-area notice and its actions are available
+  Scenario: Presentation change keeps the same behavior
+    Given the no-position state is displayed in the standard Offers view
+    When the user switches to the immersive feed
+    Then no location-bound search is run
+    And no fallback map center is displayed
+    And the same no-position state is shown
 
-  Scenario: Fallback notice does not expose coordinates
-    Given the approximate-area notice is displayed
-    When the notice and area label are shown
+  Scenario: No raw coordinates are exposed
+    Given no usable position can be obtained
+    When the no-position state and its area label are displayed
     Then no raw latitude or longitude value is visible

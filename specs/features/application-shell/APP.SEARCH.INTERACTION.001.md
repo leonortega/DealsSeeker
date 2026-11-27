@@ -80,6 +80,7 @@ Scenario: Lookup errors are recoverable
 - The progress indication shall be scoped to the affected content and shall not disable unrelated interactions.
 
 ## Related Specs
+- `OFFERS.SEARCH.KEYBOARD.001`
 - `OFFERS.SEARCH.001`
 - `OFFERS.SEARCH.SMART.001`
 - `APP.SHELL.001`

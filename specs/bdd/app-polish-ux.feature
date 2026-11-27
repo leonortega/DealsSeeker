@@ -32,8 +32,14 @@ Feature: Design-system conformance and dialog recovery
 
   Scenario: Keyboard and cutouts do not hide controls
     Given the on-screen keyboard is open or the device has a bottom cutout
-    When the user edits the last field of a form
-    Then the field and the primary action remain visible
+    When the user edits the last field of a form or a sheet input
+    Then the field, its primary action and the sheet's primary action remain visible
+
+  Scenario: Keyboard avoidance does not swallow taps
+    Given a sheet is visible with the on-screen keyboard open
+    When the user taps a visible sheet control
+    Then the tap reaches that control
+    And no visible control is skipped by the keyboard-avoidance behavior
 
   Scenario: Search and filter controls are pills
     Given the standard or immersive Offers view is displayed

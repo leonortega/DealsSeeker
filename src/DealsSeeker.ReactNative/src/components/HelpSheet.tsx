@@ -13,16 +13,23 @@ const TOPICS = [
   'help.favorites',
 ] as const;
 
+export type HelpTopic = (typeof TOPICS)[number];
+
 export function HelpSheet({
   visible,
   onClose,
   returnFocusRef,
+  topic,
 }: {
   visible: boolean;
   onClose: () => void;
   returnFocusRef?: RefObject<unknown>;
+  topic?: HelpTopic;
 }) {
   const { palette, t } = useApp();
+  const orderedTopics: readonly HelpTopic[] = topic
+    ? [topic, ...TOPICS.filter((item) => item !== topic)]
+    : TOPICS;
 
   function close() {
     onClose();
@@ -38,7 +45,7 @@ export function HelpSheet({
         >
           <Text style={[styles.title, { color: palette.ink }]}>{t('help.title')}</Text>
           <ScrollView style={styles.list}>
-            {TOPICS.map((topic) => (
+            {orderedTopics.map((topic) => (
               <View key={topic} style={styles.topic}>
                 <Text style={[styles.topicTitle, { color: palette.ink }]}>{t(`${topic}.title`)}</Text>
                 <Text style={[styles.topicBody, { color: palette.inkMuted }]}>{t(`${topic}.body`)}</Text>

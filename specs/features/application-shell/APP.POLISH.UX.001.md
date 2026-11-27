@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Design-system conformance and dialog recovery
-- **Version**: `v1.7`
+- **Version**: `v1.8`
 - **Status**: Approved
 - **Context/View**: Application shell, Offers View, My Account, Add Offer, Suggestions, Reports
 - **Priority**: Low
@@ -20,7 +20,7 @@ Close the remaining design-system and recovery gaps without changing the establi
 - `APP.POLISH.UX.001-R1`: Embedded map surfaces shall use colors from the active palette and shall not introduce an accent color outside that palette.
 - `APP.POLISH.UX.001-R2`: Tapping outside a dialog's content shall dismiss the dialog when dismissing it cannot lose user input.
 - `APP.POLISH.UX.001-R3`: A success confirmation shall remain perceivable until the user has had an opportunity to read it before a view transition occurs.
-- `APP.POLISH.UX.001-R4`: On platforms that resize the window for the keyboard, text entry shall remain visible while editing.
+- `APP.POLISH.UX.001-R4`: On platforms that resize the window for the keyboard, text entry and its primary action shall remain visible while editing, including inside a visible sheet, and a tap on a visible control shall reach that control rather than being swallowed by keyboard avoidance, as defined by `OFFERS.SEARCH.KEYBOARD.001`.
 - `APP.POLISH.UX.001-R5`: The bottommost control in a scrollable view shall not be hidden by display cutouts or system bars.
 - `APP.POLISH.UX.001-R6`: Equivalent controls in different views shall use the same placeholder treatment and the same primary-action shape.
 - `APP.POLISH.UX.001-R7`: Error status messages shall be visually distinguishable from neutral and success messages, while their meaning shall also be conveyed by text.
@@ -52,8 +52,14 @@ Scenario: Success is seen before navigation
 
 Scenario: Keyboard and cutouts do not hide controls
   Given the on-screen keyboard is open or the device has a bottom cutout
-  When the user edits the last field of a form
-  Then the field and the primary action remain visible
+  When the user edits the last field of a form or a sheet input
+  Then the field, its primary action and the sheet's primary action remain visible
+
+Scenario: Keyboard avoidance does not swallow taps
+  Given a sheet is visible with the on-screen keyboard open
+  When the user taps a visible sheet control
+  Then the tap reaches that control
+  And no visible control is skipped by the keyboard-avoidance behavior
 
 Scenario: Search and filter controls are pills
   Given the standard or immersive Offers view is displayed
@@ -93,8 +99,9 @@ Scenario: Standard Offers view has no scroll indicators
 ## Edge Cases
 - A map rendered inside an already bordered panel shall not add a second border.
 - A dialog with unsaved input (scrim tap must not discard it).
-- A very small viewport with a tall keyboard.
+- A very small viewport with a tall keyboard and a suggestion strip.
 - A localized success message longer than the source text.
+- A sheet input under a tall keyboard where the primary action would otherwise be clipped.
 
 ## Non-Functional Constraints
 - These changes shall preserve the pinned design world and shall not introduce a wide desktop reflow.
@@ -108,3 +115,5 @@ Scenario: Standard Offers view has no scroll indicators
 - `REPORTS.SUBMIT.001`
 - `ADD.OFFER.LAYOUT.001`
 - `ADD.OFFER.UX.001`
+- `OFFERS.SEARCH.KEYBOARD.001`
+- `APP.BOTTOM_SHEET.001`

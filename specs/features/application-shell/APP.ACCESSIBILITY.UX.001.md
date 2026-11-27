@@ -121,6 +121,7 @@ Scenario: iOS accessibility text size reflows labels
 - Reflowing a caption shall not change the control's action or accessible name.
 
 ## Related Specs
+- `APP.HELP.CONTEXTUAL.001`
 - `APP.THEME.001`
 - `OFFERS.ACTIONS.LABELS.001`
 - `APP.TYPOGRAPHY.001`

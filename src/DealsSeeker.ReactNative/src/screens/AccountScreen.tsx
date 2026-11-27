@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { avatarEmoji } from '../utils/avatars';
 import { shorten } from '../utils/format';
 import { platformTouchFloor } from '../utils/layout';
+import { PlatformTabIcon } from '../components/PlatformTabIcon';
 
 const themeOptions: Array<{ mode: ThemeMode; labelKey: string }> = [
   { mode: 'system', labelKey: 'nav.systemTheme' },
@@ -172,7 +173,7 @@ export function AccountScreen() {
             onPress={() => void setLanguage(preferences.language === 'en' ? 'es' : 'en')}
           >
             <Text style={{ color: palette.ink }}>{preferences.language.toUpperCase()}</Text>
-            <Text style={[styles.chevron, { color: palette.inkMuted }]}>›</Text>
+            <PlatformTabIcon color={palette.inkMuted} name="chevronForward" size={18} />
           </Pressable>
           <Pressable
             accessibilityLabel={preferences.navigationMode === 'car' ? t('nav.car') : t('nav.pedestrian')}
@@ -184,7 +185,7 @@ export function AccountScreen() {
             <Text style={{ color: palette.ink }}>
               {preferences.navigationMode === 'car' ? t('nav.car') : t('nav.pedestrian')}
             </Text>
-            <Text style={[styles.chevron, { color: palette.inkMuted }]}>›</Text>
+            <PlatformTabIcon color={palette.inkMuted} name="chevronForward" size={18} />
           </Pressable>
         </View>
       </View>
@@ -316,10 +317,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-  },
-  chevron: {
-    fontSize: 18,
-    fontWeight: '700',
   },
   choice: {
     alignItems: 'center',

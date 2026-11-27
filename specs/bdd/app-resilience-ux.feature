@@ -38,3 +38,9 @@ Feature: Visible and recoverable offers search failure
     When a subsequent search fails
     Then the error message is displayed
     And the previous offers remain visible
+
+  Scenario: Missing position is not a search failure
+    Given device location is unavailable and no explicit override exists
+    When the Offers view resolves the current position
+    Then no location-bound search is executed
+    And a location-unavailable state with a retry action is displayed

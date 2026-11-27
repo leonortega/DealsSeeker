@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Developer Location Override for Emulators
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell, Offers View
 - **Priority**: Low
@@ -20,9 +20,9 @@ Let an emulator use a configured development position when the platform cannot p
 ## Requirements
 - `APP.LOCATION.DEV.001-R1`: When a valid developer location value is configured, the system shall use it in place of device geolocation.
 - `APP.LOCATION.DEV.001-R2`: The developer location value shall not be part of tracked configuration and shall not affect release builds.
-- `APP.LOCATION.DEV.001-R3`: With the override active, the system shall not display the approximate-area fallback notice and shall describe the resolved area instead.
+- `APP.LOCATION.DEV.001-R3`: With the override active, the system shall run a location-bound search with that position and shall not display the no-position state defined in `APP.LOCATION.UNAVAILABLE.001`.
 - `APP.LOCATION.DEV.001-R4`: The override shall not change search, coverage radius, map markers or coordinate-privacy behavior.
-- `APP.LOCATION.DEV.001-R5`: A missing or malformed override shall be ignored and device geolocation shall be used as defined in `APP.LOCATION.FALLBACK.001`.
+- `APP.LOCATION.DEV.001-R5`: A missing or malformed override shall be ignored; device geolocation shall be attempted, and if no usable position is then available the no-location-bound-search behavior of `APP.LOCATION.FALLBACK.001` shall apply.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -31,14 +31,15 @@ Scenario: Emulator uses the configured developer location
   And the device cannot provide a position
   When the Offers view loads
   Then the configured location shall be used for search and map context
-  And the approximate-area notice shall not be displayed
+  And the no-position state shall not be displayed
   And the area label shall describe the resolved location
 
-Scenario: Malformed override falls back to device location
+Scenario: Malformed override is ignored
   Given the developer location value is malformed
   When the Offers view loads
   Then the override shall be ignored
   And device geolocation shall be attempted
+  And no location-bound search shall run if no position is obtained
 
 Scenario: Override does not change discovery behavior
   Given a valid developer location is configured
@@ -49,7 +50,7 @@ Scenario: Override does not change discovery behavior
 
 ## Example Inputs/Outputs
 - Example input: `EXPO_PUBLIC_EMULATOR_LOCATION=40.7128,-74.006` on an emulator with no GPS fix.
-- Expected output: Offers load for that area with no fallback notice.
+- Expected output: Offers load for that area with no location-unavailable state displayed.
 
 ## Edge Cases
 - One or both coordinates missing or non-numeric.
@@ -61,6 +62,7 @@ Scenario: Override does not change discovery behavior
 
 ## Related Specs
 - `APP.LOCATION.FALLBACK.001`
+- `APP.LOCATION.UNAVAILABLE.001`
 - `APP.LOCATION.DEVICE.001`
 - `OFFERS.SEARCH.001`
 - `OFFERS.MAP.001`

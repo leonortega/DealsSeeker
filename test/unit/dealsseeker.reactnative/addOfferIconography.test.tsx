@@ -82,6 +82,8 @@ describe('Add Offer control labels (ADD.OFFER.ICONOGRAPHY.001)', () => {
 
   it('renders tag chips without a trailing removal glyph', async () => {
     await render(<AddOfferScreen />);
+    await fireEvent.press(screen.getByTestId('add-step-next'));
+    await fireEvent.press(screen.getByTestId('add-step-next'));
     await fireEvent.changeText(screen.getByPlaceholderText('Describe the offer'), 'fresh coffee ');
     await screen.findByText('coffee');
 

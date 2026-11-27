@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 
 const mockVote = jest.fn();
@@ -15,8 +15,8 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/utils/haptics', () => ({
 
 jest.mock('expo-location', () => ({
   LocationAccuracy: { Balanced: 3 },
-  getCurrentPositionAsync: jest.fn(),
-  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ granted: false }),
+  getCurrentPositionAsync: jest.fn().mockResolvedValue({ coords: { latitude: 40.7128, longitude: -74.006 } }),
+  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ granted: true }),
 }));
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
@@ -31,7 +31,10 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     closeImmersiveOffers: jest.fn(),
     immersiveOffers: true,
     isAuthenticated: true,
+    closeSheet: jest.fn(),
+    isAuthenticated: true,
     isPending: () => false,
+    openSheet: jest.fn(),
     openAddOffer: jest.fn(),
     openImmersiveOffers: jest.fn(),
     palette: {
@@ -110,32 +113,47 @@ describe('immersive action feedback (OFFERS.UX.002)', () => {
   });
 
   it('applies favorite and vote outcomes without re-running the search', async () => {
+    jest.useFakeTimers();
     await render(<OffersScreen />);
-    await chooseFallbackArea();
     await waitFor(() => expect(mockSearchOffers).toHaveBeenCalledTimes(1));
 
     await fireEvent.press(screen.getByRole('button', { name: 'favorite' }));
     await fireEvent.press(screen.getByRole('button', { name: 'vote' }));
 
-    await waitFor(() => expect(mockSuccessFeedback).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      jest.advanceTimersByTime(4300);
+    });
+    expect(mockVote).toHaveBeenCalledTimes(1);
     expect(mockSearchOffers).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
   });
 
   it('shows a confirmation when a vote succeeds', async () => {
+    jest.useFakeTimers();
     await render(<OffersScreen />);
-    await chooseFallbackArea();
     await fireEvent.press(screen.getByRole('button', { name: 'vote' }));
     expect(await screen.findByText('offers.feedbackRegistered')).toBeTruthy();
+
+    await act(async () => {
+      jest.advanceTimersByTime(4300);
+    });
     expect(mockSuccessFeedback).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
   });
 
-  it('shows a failure message when a vote is rejected', async () => {
+  it('shows a failure message when a vote is rejected after the undo window', async () => {
+    jest.useFakeTimers();
     mockVote.mockResolvedValue({ success: false, message: 'Conflict' });
     await render(<OffersScreen />);
-    await chooseFallbackArea();
     await fireEvent.press(screen.getByRole('button', { name: 'vote' }));
+    expect(await screen.findByText('offers.feedbackRegistered')).toBeTruthy();
+
+    await act(async () => {
+      jest.advanceTimersByTime(4300);
+    });
     expect(await screen.findByText('offers.voteFailed')).toBeTruthy();
     expect(mockSuccessFeedback).not.toHaveBeenCalled();
+    jest.useRealTimers();
   });
 
   it('confirms a successful favorite toggle and stays silent on failure', async () => {
@@ -150,14 +168,17 @@ describe('immersive action feedback (OFFERS.UX.002)', () => {
   });
 
   it('replaces earlier feedback with the latest outcome', async () => {
+    jest.useFakeTimers();
     await render(<OffersScreen />);
-    await chooseFallbackArea();
     await fireEvent.press(screen.getByRole('button', { name: 'vote' }));
     expect(await screen.findByText('offers.feedbackRegistered')).toBeTruthy();
 
     mockVote.mockResolvedValue({ success: false, message: 'Conflict' });
     await fireEvent.press(screen.getByRole('button', { name: 'vote' }));
-    await waitFor(() => expect(screen.queryByText('offers.feedbackRegistered')).toBeNull());
+    await act(async () => {
+      jest.advanceTimersByTime(4300);
+    });
     expect(await screen.findByText('offers.voteFailed')).toBeTruthy();
+    jest.useRealTimers();
   });
 });

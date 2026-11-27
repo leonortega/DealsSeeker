@@ -36,3 +36,9 @@ Feature: Authentication input affordances
     When the email and password inputs are rendered
     Then the email input exposes username autofill metadata
     And the password input exposes current-password or new-password metadata as appropriate
+
+  Scenario: Contextual help is reachable at the sign-in guard
+    Given a guest attempts a contribution
+    When the user asks why an account is required
+    Then the single help surface opens with the account topic first
+    And the guest remains in the current context

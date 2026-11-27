@@ -22,3 +22,9 @@ Feature: Report bottom sheet matching comments
     When the user swipes the sheet down
     Then the sheet closes without submitting
     And the offer list remains unchanged
+
+  Scenario: Contextual help is reachable from the report decision
+    Given the user is preparing a report
+    When the user asks why reporting matters
+    Then the single help surface opens with the reporting topic first
+    And the report draft remains unchanged

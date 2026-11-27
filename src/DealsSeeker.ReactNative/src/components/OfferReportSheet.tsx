@@ -9,6 +9,7 @@ import { restoreFocus } from '../utils/focusReturn';
 import { successFeedback } from '../utils/haptics';
 import { statusColor } from '../utils/statusNotice';
 import { NativeBottomSheet } from './NativeBottomSheet';
+import { HelpSheet } from './HelpSheet';
 
 const messageMaxLength = 120;
 
@@ -25,6 +26,7 @@ export function OfferReportSheet({ draft, visible, onClose, returnFocusRef }: Of
   const [reportedAtUtc, setReportedAtUtc] = useState(new Date().toISOString());
   const { status, statusTone, reportStatus: reportNotice } = useStatusNotice();
   const [submitted, setSubmitted] = useState(false);
+  const [helpVisible, setHelpVisible] = useState(false);
   const apiRef = useRef(api);
   const tRef = useRef(t);
   apiRef.current = api;
@@ -103,6 +105,13 @@ export function OfferReportSheet({ draft, visible, onClose, returnFocusRef }: Of
           <Text numberOfLines={2} style={[styles.title, { color: palette.ink }]}>
             {t('reports.title')}
           </Text>
+          <Pressable
+            accessibilityLabel={t('common.why')}
+            accessibilityRole="button"
+            onPress={() => setHelpVisible(true)}
+          >
+            <Text style={{ color: palette.accentText, fontWeight: '800' }}>{t('common.why')}</Text>
+          </Pressable>
         </View>
 
         <Text style={[styles.offerName, { color: palette.inkMuted }]}>{draft.offer.businessName}</Text>
@@ -147,6 +156,7 @@ export function OfferReportSheet({ draft, visible, onClose, returnFocusRef }: Of
           </Pressable>
         )}
       </View>
+      <HelpSheet onClose={() => setHelpVisible(false)} topic="help.report" visible={helpVisible} />
     </NativeBottomSheet>
   );
 }

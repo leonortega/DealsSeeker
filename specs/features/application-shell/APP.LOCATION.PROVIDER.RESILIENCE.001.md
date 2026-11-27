@@ -76,6 +76,7 @@ Scenario: No alternate provider is attempted
 - A "no results" outcome shall never be surfaced as a provider failure, so clients can distinguish empty results from an outage.
 
 ## Related Specs
+- `APP.LOCATION.UNAVAILABLE.001`
 - `APP.VALIDATION.001`
 - `APP.MAP.STACK.001`
 - `APP.CONFIG.MAPS.001`

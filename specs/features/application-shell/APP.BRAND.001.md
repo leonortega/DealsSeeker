@@ -116,6 +116,7 @@ Scenario: Splash uses the stacked lockup with black copy
 - The logo set shall be authored once and reused; no placeholder brand artwork shall remain in the application.
 
 ## Related Specs
+- `APP.SYMBOL.VOCABULARY.001`
 - `APP.TYPOGRAPHY.001`
 - `APP.PLATFORM.CHROME.001`
 - `APP.SHELL.001`

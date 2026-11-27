@@ -66,6 +66,7 @@ Scenario: Repeated navigation stays deterministic
 - No new dependency shall be added solely for focus management.
 
 ## Related Specs
+- `APP.MODALITY.UNIFICATION.001`
 - `APP.ACCESSIBILITY.UX.002`
 - `APP.ACCESSIBILITY.UX.003`
 - `APP.SHELL.002`

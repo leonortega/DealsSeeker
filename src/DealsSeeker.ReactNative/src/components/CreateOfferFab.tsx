@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet } from 'react-native';
 import type { Palette } from '../utils/theme';
-import { NavIcon } from './NavIcon';
+import { PlatformTabIcon } from './PlatformTabIcon';
 
 export function CreateOfferFab({
   label,
@@ -25,7 +25,7 @@ export function CreateOfferFab({
       onPress={onPress}
       style={[styles.fab, { backgroundColor: palette.accent, shadowColor: palette.shadow }]}
     >
-      <NavIcon color={palette.onAccent} name="create" />
+      <PlatformTabIcon color={palette.onAccent} name="create" />
     </Pressable>
   );
 }

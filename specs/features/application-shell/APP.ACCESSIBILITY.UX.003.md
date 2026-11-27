@@ -75,6 +75,8 @@ Scenario: Success is perceivable before navigation
 - Announcements shall be brief and shall not repeat on every render.
 
 ## Related Specs
+- `APP.HELP.CONTEXTUAL.001`
+- `OFFERS.ACTION.UNDO.001`
 - `APP.ACCESSIBILITY.UX.002`
 - `APP.RESILIENCE.UX.001`
 - `ADD.OFFER.LAYOUT.001`

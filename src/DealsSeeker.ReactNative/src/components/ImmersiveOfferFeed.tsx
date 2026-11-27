@@ -33,6 +33,7 @@ import { OFFER_ACTION_LABEL_KEYS } from './OfferActionVocabulary';
 import { ImmersiveFeedTab, ImmersiveFeedTabs } from './ImmersiveFeedTabs';
 import { ImmersiveSearchOverlay } from './ImmersiveSearchOverlay';
 import { OfferTopBar } from './OfferTopBar';
+import { PlatformTabIcon } from './PlatformTabIcon';
 
 export const NARROW_BREAKPOINT = 768;
 
@@ -142,8 +143,8 @@ interface ImmersiveOfferFeedProps {
   returnFocusRef?: RefObject<unknown>;
 }
 
-function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string; placeholderSymbol: string }) {
-  const { palette } = useApp();
+function ImmersiveOfferImage({ imageUrl }: { imageUrl: string }) {
+  const { palette, t } = useApp();
   const imageUri = useOfferImageUri(imageUrl);
   const canRenderImage = Boolean(imageUri) && !isSvgImageUri(imageUri);
   const [imageFailed, setImageFailed] = useState(false);
@@ -167,7 +168,13 @@ function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string
         { alignItems: 'center', backgroundColor: palette.backdrop, justifyContent: 'center' },
       ]}
     >
-      <Text style={{ color: immersiveInk, fontSize: 76, opacity: 0.45 }}>{placeholderSymbol}</Text>
+      <View
+        style={[styles.placeholderPanel, { backgroundColor: palette.panel, borderColor: palette.border }]}
+      >
+        <Text style={[styles.placeholderLabel, { color: palette.inkMuted }]}>
+          {t('add.photoPlaceholder')}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -298,12 +305,12 @@ function ImmersiveOfferPage({
         >
           {images.map((imageUrl, index) => (
             <View key={`photo-${index}`} style={{ height: carouselHeight, width: carouselWidth }}>
-              <ImmersiveOfferImage imageUrl={imageUrl} placeholderSymbol="▣" />
+              <ImmersiveOfferImage imageUrl={imageUrl} />
             </View>
           ))}
         </View>
       ) : (
-        <ImmersiveOfferImage imageUrl={images[0] ?? offer.imageUrl} placeholderSymbol="▤" />
+        <ImmersiveOfferImage imageUrl={images[0] ?? offer.imageUrl} />
       )}
 
       <View pointerEvents="none" style={styles.overlay} />
@@ -420,7 +427,7 @@ function ImmersiveOfferPage({
           <View pointerEvents="box-none" style={styles.immersivePhotoNav}>
             {showPhotoArrows ? (
               <Pressable accessibilityLabel={t('offers.previousImage')} accessibilityRole="button" onPress={showPreviousImage} style={styles.immersivePhotoNavButton}>
-                <Text style={styles.immersivePhotoNavLabel}>‹</Text>
+                <PlatformTabIcon color={immersiveInk} name="chevronBackward" size={24} />
               </Pressable>
             ) : null}
             <View style={styles.immersivePhotoDots}>
@@ -441,7 +448,7 @@ function ImmersiveOfferPage({
             </View>
             {showPhotoArrows ? (
               <Pressable accessibilityLabel={t('offers.nextImage')} accessibilityRole="button" onPress={showNextImage} style={styles.immersivePhotoNavButton}>
-                <Text style={styles.immersivePhotoNavLabel}>›</Text>
+                <PlatformTabIcon color={immersiveInk} name="chevronForward" size={24} />
               </Pressable>
             ) : null}
           </View>
@@ -657,6 +664,18 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
+  placeholderPanel: {
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 16,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  placeholderLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   photoTrack: {
     flexDirection: 'row',
     left: 0,
@@ -855,11 +874,6 @@ const styles = StyleSheet.create({
     height: platformTouchFloor,
     justifyContent: 'center',
     width: platformTouchFloor,
-  },
-  immersivePhotoNavLabel: {
-    color: immersiveInk,
-    fontSize: 20,
-    fontWeight: '700',
   },
   immersivePhotoDots: {
     alignItems: 'center',

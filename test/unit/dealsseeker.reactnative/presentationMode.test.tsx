@@ -13,8 +13,8 @@ const mockCloseImmersiveOffers = jest.fn();
 
 jest.mock('expo-location', () => ({
   LocationAccuracy: { Balanced: 3 },
-  getCurrentPositionAsync: jest.fn(),
-  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ granted: false }),
+  getCurrentPositionAsync: jest.fn().mockResolvedValue({ coords: { latitude: 40.7128, longitude: -74.006 } }),
+  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ granted: true }),
 }));
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
@@ -29,7 +29,10 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     closeImmersiveOffers: mockCloseImmersiveOffers,
     immersiveOffers: mockImmersiveOffers,
     isAuthenticated: true,
+    closeSheet: jest.fn(),
+    isAuthenticated: true,
     isPending: () => mockIsPending,
+    openSheet: jest.fn(),
     loadingCount: mockLoadingCount,
     openAddOffer: jest.fn(),
     openImmersiveOffers: mockOpenImmersiveOffers,

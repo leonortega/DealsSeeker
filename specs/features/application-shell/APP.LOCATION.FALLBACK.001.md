@@ -1,99 +1,122 @@
 # Spec: `APP.LOCATION.FALLBACK.001`
 
 ## Metadata
-- **Title**: Honest fallback-location disclosure and recovery
-- **Version**: `v1.2`
+- **Title**: No location-bound search without a usable position
+- **Version**: `v2.0`
 - **Status**: Approved
 - **Context/View**: Application shell, Offers View (standard and immersive presentations)
 - **Priority**: High
 
 ## Purpose
-Never present a fallback location as the user's current area; disclose it, allow a retry, and keep browsing available.
+When no usable device position and no explicit developer override exist, do not search a substitute area or fabricate a map center; show only the honest no-position state defined in `APP.LOCATION.UNAVAILABLE.001`.
+
+## Supersedes / scope note
+Version 2.0 removes the former approximate-area fallback and its explicit "browse this area" choice. There is no substitute area to disclose, keep, or browse. This spec owns the prohibition on a location-bound search and on fabricated location context; the shared presentation of the no-position condition is owned by `APP.LOCATION.UNAVAILABLE.001`.
 
 ## Preconditions
 - The user is on the Offers view.
-- Device location may be unavailable because permission was denied, the lookup failed, or no position could be obtained.
+- No usable device position can be obtained.
+- No explicit developer override from `APP.LOCATION.DEV.001` is configured.
 
 ## Trigger
-- The Offers view resolves the user's location before searching.
+- The Offers view resolves the user's position before running a location-bound search.
 
 ## Requirements
-- `APP.LOCATION.FALLBACK.001-R1`: When device location cannot be obtained, the system shall not label the fallback area as the user's current location.
-- `APP.LOCATION.FALLBACK.001-R2`: The system shall display a plain-language notice stating that the displayed offers are for an approximate area rather than the user's actual location.
-- `APP.LOCATION.FALLBACK.001-R3`: The notice shall offer an action that retries obtaining device location.
-- `APP.LOCATION.FALLBACK.001-R4`: The notice shall be dismissible, and dismissing it shall not remove the displayed offers.
-- `APP.LOCATION.FALLBACK.001-R5`: The notice and its actions shall be available in both the standard and immersive presentations.
-- `APP.LOCATION.FALLBACK.001-R6`: When device location is obtained, the notice shall not be displayed and the area label shall describe the resolved location.
-- `APP.LOCATION.FALLBACK.001-R7`: The notice shall be announced to assistive technology.
-- `APP.LOCATION.FALLBACK.001-R8`: Raw coordinate values shall not appear in the notice or the area label.
-- `APP.LOCATION.FALLBACK.001-R9`: The notice shall be localizable and shall hold in both themes.
-- `APP.LOCATION.FALLBACK.001-R10`: If a retry does not obtain a position, the system shall show a plain-language failure status while keeping the notice, its actions, and the displayed offers available.
-- `APP.LOCATION.FALLBACK.001-R11`: The system shall not search the fallback area until the user explicitly chooses to browse it; a failed or denied lookup shall leave no fallback results displayed.
+- `APP.LOCATION.FALLBACK.001-R1`: When neither a usable device position nor an explicit developer override is available, the system shall not run a location-bound offers search.
+- `APP.LOCATION.FALLBACK.001-R2`: Under the same condition, the system shall not fabricate, select, cache, or display any fallback map center or substitute coordinate.
+- `APP.LOCATION.FALLBACK.001-R3`: Under the same condition, the system shall present exactly one no-position state, as defined in `APP.LOCATION.UNAVAILABLE.001`, with a retry action and no option to browse a substitute area.
+- `APP.LOCATION.FALLBACK.001-R4`: Permission denial, a disabled provider, a lookup failure, and a timeout shall each lead to that same no-position state; no distinct approximate-area state shall exist.
+- `APP.LOCATION.FALLBACK.001-R5`: When a usable device position or an explicit developer override becomes available, the system shall run the location-bound search with that position in place of the no-position state.
+- `APP.LOCATION.FALLBACK.001-R6`: If a retry does not obtain a position, the system shall remain in the no-position state, show a plain-language failure, and keep the retry action available.
+- `APP.LOCATION.FALLBACK.001-R7`: No area label shown during the no-position state shall describe a substitute or approximate area as the user's current location.
+- `APP.LOCATION.FALLBACK.001-R8`: Raw coordinate values shall not appear in the no-position state or in any associated area label.
+- `APP.LOCATION.FALLBACK.001-R9`: The behavior shall be identical in the standard and immersive Offers presentations.
+- `APP.LOCATION.FALLBACK.001-R10`: The no-position state and its retry action shall be localizable and shall hold in both themes.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
-Scenario: Denied location requires an explicit browse choice
+Scenario: Denied permission runs no location-bound search
   Given the user has denied location permission
-  When the Offers view loads
-  Then the area is not labelled as the user's current location
-  And a notice explains that an approximate area is available
-  And the notice offers a retry action and an explicit browse action
-  And no fallback results are displayed before the browse choice
+  And no developer location override is configured
+  When the Offers view resolves the location
+  Then no location-bound offers search is run
+  And no approximate-area or substitute-area results are shown
 
-Scenario: Choosing the approximate area shows its offers
-  Given the approximate-area notice is displayed
-  When the user chooses to browse the approximate area
-  Then offers for that area are displayed
-  And the notice is dismissed
+Scenario: Lookup failure runs no location-bound search
+  Given location permission is granted
+  And the position lookup fails
+  When the Offers view resolves the location
+  Then no location-bound offers search is run
+  And the single no-position state of APP.LOCATION.UNAVAILABLE.001 is displayed
 
-Scenario: Retrying location removes the notice on success
-  Given the approximate-area notice is displayed
+Scenario: No fallback map center is displayed
+  Given no usable position can be obtained
+  When the Offers view prepares its map context
+  Then no fallback map center is fabricated or displayed
+  And no substitute coordinate is used for the map or the search
+
+Scenario: No action offers to browse a substitute area
+  Given the no-position state is displayed
+  When the user reviews its actions
+  Then a retry action is available
+  And no action to browse an approximate or substitute area is available
+
+Scenario: Retry obtains a position and the search runs
+  Given the no-position state is displayed
   When the user selects the retry action
-  And device location is obtained
-  Then the notice is no longer displayed
-  And the area label describes the resolved location
+  And a usable device position is obtained
+  Then a location-bound offers search runs with that position
+  And the no-position state is replaced by the results
 
-Scenario: Retrying location reports a failure without changing results
-  Given the approximate-area notice is displayed
+Scenario: Retry still fails and the no-position state remains
+  Given the no-position state is displayed
   When the user selects the retry action
-  And device location cannot be obtained
-  Then a plain-language failure status shall be shown
-  And the notice and its actions shall remain available
-  And the displayed offers shall remain browsable
+  And no position can be obtained
+  Then a plain-language failure is shown
+  And the no-position state and its retry action remain available
+  And no results for a substitute area are displayed
 
-Scenario: Dismissing the notice keeps the results
-  Given the approximate-area notice is displayed
-  When the user dismisses the notice
-  Then the offers remain displayed
-  And the notice is not displayed again for that same location result
+Scenario: Explicit developer override is still honored
+  Given an explicit developer location override is configured
+  And the device cannot provide a position
+  When the Offers view resolves the location
+  Then a location-bound search runs with the override
+  And the no-position state is not displayed
 
-Scenario: Immersive feed discloses the fallback area
-  Given the immersive offers feed is active
-  And device location cannot be obtained
-  When the feed loads
-  Then the approximate-area notice and its actions are available
+Scenario: Presentation change keeps the same behavior
+  Given the no-position state is displayed in the standard Offers view
+  When the user switches to the immersive feed
+  Then no location-bound search is run
+  And no fallback map center is displayed
+  And the same no-position state is shown
 
-Scenario: Fallback notice does not expose coordinates
-  Given the approximate-area notice is displayed
-  When the notice and area label are shown
+Scenario: No raw coordinates are exposed
+  Given no usable position can be obtained
+  When the no-position state and its area label are displayed
   Then no raw latitude or longitude value is visible
 ```
 
 ## Example Inputs/Outputs
-- Example input: location permission denied, fallback coordinates used for search.
-- Expected output: "Showing offers for an approximate area rather than your current location." with Retry and dismiss actions; no numeric coordinates.
+- Example input: location permission denied, no developer override configured.
+- Expected output: no offers search issued, no map center drawn, one "Location unavailable" state with a Try again action and no numeric coordinates.
+- Example input: the user retries and a device position becomes available.
+- Expected output: a location-bound search runs for the resolved position and the no-position state is replaced by results.
 
 ## Edge Cases
-- The reverse lookup of the fallback coordinates returns no label.
-- The user retries while still denied permission.
-- The notice is dismissed and the presentation mode changes.
-- Localized notice text longer than the source text.
+- The position lookup fails after permission was granted.
+- A previously cached or remembered position exists but is not usable as a current position.
+- The explicit developer override is configured while the device has no position.
+- The presentation mode changes while the no-position state is displayed.
+- The localized retry label is longer than the source text.
 - Large text scaling on a phone-sized screen.
 
 ## Non-Functional Constraints
-- The notice shall not block access to the offers or the primary actions.
+- No substitute coordinate shall be persisted or reused for a later search.
+- No "approximate area" or "browse this area" wording shall be presented.
+- The no-position state shall not block navigation to other destinations.
 
 ## Related Specs
+- `APP.LOCATION.UNAVAILABLE.001`
 - `OFFERS.GUEST.001`
 - `APP.LOCATION.QUERY.001`
 - `APP.RESILIENCE.UX.001`

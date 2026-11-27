@@ -70,3 +70,10 @@ Feature: Search offers in Offers view
     Given the standard or immersive search input is displayed
     When the user pastes 250 characters into the search input
     Then the input holds exactly 200 characters
+
+  Scenario: Immersive search sheet keeps input and action above the keyboard
+    Given the immersive search sheet is open
+    And the on-screen keyboard is open
+    When the search input is focused
+    Then the input and the primary search action remain visible above the keyboard
+    And taps on visible sheet controls reach those controls

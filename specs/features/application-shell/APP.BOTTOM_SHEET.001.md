@@ -2,13 +2,13 @@
 
 ## Metadata
 - **Title**: Native Bottom-Sheet Behavior for Overlays
-- **Version**: `v1.4`
+- **Version**: `v2.0`
 - **Status**: Approved
 - **Context/View**: Application Shell, Offers overlays
 - **Priority**: Low
 
 ## Purpose
-Give the application's modal overlays native bottom-sheet interaction — drag, snap and swipe dismissal — while keeping all visible content brand-styled and identical on both platforms.
+Give the application's focused sub-tasks one native bottom-sheet interaction — drag, snap and swipe dismissal — keep their input usable above the on-screen keyboard, and keep all visible content brand-styled and identical on both platforms.
 
 ## Preconditions
 - The user has opened an overlay surface (help, offer detail, comments or search).
@@ -30,6 +30,8 @@ Give the application's modal overlays native bottom-sheet interaction — drag, 
 - `APP.BOTTOM_SHEET.001-R10`: While a sheet is open, its surface and backdrop shall render above all presenting-view chrome, including headers, presentation switches, filters and transient status banners.
 - `APP.BOTTOM_SHEET.001-R11`: System Back while a sheet is open shall dismiss the sheet through its normal dismissal path and shall not affect the underlying view.
 - `APP.BOTTOM_SHEET.001-R12`: While a sheet is open, the native bottom navigation and its Create action shall not render above the sheet, and every sheet control including its primary action shall remain visible and reachable.
+- `APP.BOTTOM_SHEET.001-R13`: While a sheet is visible, the focused text input and the sheet's primary action shall stay above the on-screen keyboard or IME, and a tap on any visible sheet control shall be delivered to that control rather than swallowed by the keyboard-avoidance behavior, as defined by `OFFERS.SEARCH.KEYBOARD.001`.
+- `APP.BOTTOM_SHEET.001-R14`: This sheet system shall be the only modality used for focused sub-tasks; no sub-task shall introduce a separate full-screen modal or a second overlay pattern, as defined by `APP.MODALITY.UNIFICATION.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -91,11 +93,32 @@ Scenario: Sheet controls are not covered by the native bottom navigation
   When an overlay sheet opens
   Then the footer and its Create action shall not be displayed above the sheet
   And every sheet control including its primary action shall remain visible and tappable
+
+Scenario: A visible sheet keeps its input and primary action above the keyboard
+  Given a sheet with a text input is visible
+  And the on-screen keyboard is open
+  When the input is focused
+  Then the input and the primary action remain visible above the keyboard
+  And the sheet keeps its snap points and brand styling
+
+Scenario: Taps reach sheet controls while the keyboard is open
+  Given a sheet is visible with the on-screen keyboard open
+  When the user taps a visible sheet control
+  Then the tap is delivered to that control
+  And no tap is swallowed by keyboard avoidance
+
+Scenario: Every focused sub-task uses the one sheet system
+  Given help, detail, comments, search and first-run guidance are available
+  When each is opened
+  Then each uses this sheet system
+  And none introduces a separate full-screen modal or a second overlay pattern
 ```
 
 ## Example Inputs/Outputs
 - Example input: open Help and drag the sheet down.
 - Expected output: Help closes through its normal dismissal path; no visual restyle.
+- Example input: open the immersive search sheet and focus its input while the keyboard is shown.
+- Expected output: the input and primary search action stay above the keyboard and taps reach them.
 
 ## Edge Cases
 - A drag that ends before the dismissal threshold — the sheet returns to its snap point.
@@ -103,12 +126,15 @@ Scenario: Sheet controls are not covered by the native bottom navigation
 - Large text sizes where content exceeds one snap point.
 - A sheet opened while another overlay is already visible.
 - A sheet opened while the native bottom navigation is visible, in either presentation, with a long localized label.
+- A tall keyboard with a suggestion strip on a short viewport — the input and primary action remain visible and the snap points do not change.
+- A sub-task opened while a native route is displayed — it still uses this sheet system and does not become a full-screen modal.
 
 ## Non-Functional Constraints
-- Sheet visuals shall remain brand-defined; the library shall provide behavior only.
+- Sheet behavior shall remain platform-native; sheet visuals shall stay brand-defined.
 - No new visual component library shall be adopted beyond the sheet behavior dependency.
 
 ## Related Specs
+- `APP.HELP.CONTEXTUAL.001`
 - `APP.SHELL.002`
 - `OFFERS.FILTER.SIMPLIFICATION.001`
 - `APP.SHELL.003`
@@ -118,3 +144,9 @@ Scenario: Sheet controls are not covered by the native bottom navigation
 - `REPORTS.SHEET.001`
 - `APP.HELP.001`
 - `OFFERS.NAV.ADD.002`
+- `APP.MODALITY.UNIFICATION.001`
+- `OFFERS.SEARCH.KEYBOARD.001`
+- `APP.POLISH.UX.001`
+- `APP.PLATFORM.CHROME.001`
+- `APP.ONBOARD.001`
+- `OFFERS.SEARCH.001`

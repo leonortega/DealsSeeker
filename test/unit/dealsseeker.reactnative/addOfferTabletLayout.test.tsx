@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { AddOfferScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
 
 let mockColumns = 1;
@@ -66,6 +66,8 @@ describe('Add Offer tablet composition (ADD.OFFER.TABLET.LAYOUT.001)', () => {
   it('uses two columns on native tablet width with each control once', async () => {
     mockColumns = 2;
     await render(<AddOfferScreen />);
+    await fireEvent.press(screen.getByTestId('add-step-next'));
+    await fireEvent.press(screen.getByTestId('add-step-next'));
 
     expect(screen.getByTestId('add-offer-tablet-columns')).toBeTruthy();
     expect(screen.getByTestId('add-offer-column-primary')).toBeTruthy();

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offer Detail Actions, Status Mirroring and Explicit Completion
-- **Version**: `v0.3`
+- **Version**: `v0.4`
 - **Status**: Approved
 - **Context/View**: Offer Detail View
 - **Priority**: Medium
@@ -18,7 +18,7 @@ Keep detail interactions consistent with the offer card while mirroring status a
 - User taps offer image or selects the directions action.
 
 ## Requirements
-- `OFFERS.DETAIL.ACTIONS.001-R1`: Tapping the offer image shall open a full-screen image viewer.
+- `OFFERS.DETAIL.ACTIONS.001-R1`: Tapping the offer image shall open an image viewer in the shell's single sheet system; no separate full-screen modal shall be introduced.
 - `OFFERS.DETAIL.ACTIONS.001-R2`: Full-screen image viewer shall preserve host-surface zoom gestures when the active platform supports them.
 - `OFFERS.DETAIL.ACTIONS.001-R3`: Offer detail view shall include a directions button.
 - `OFFERS.DETAIL.ACTIONS.001-R4`: Directions button text shall reflect the user-selected travel mode.
@@ -27,6 +27,7 @@ Keep detail interactions consistent with the offer card while mirroring status a
 - `OFFERS.DETAIL.ACTIONS.001-R7`: The detail sheet shall mirror any promoted or reported badge shown on the offer card or feed row, and shall show the same reported warning when the offer is reported.
 - `OFFERS.DETAIL.ACTIONS.001-R8`: Actions in the detail sheet shall use the canonical vocabulary defined by `OFFERS.ACTIONS.LABELS.001` with the same label, glyph and relative order as on the card and feed.
 - `OFFERS.DETAIL.ACTIONS.001-R9`: Completing an action in the detail sheet shall not automatically close the sheet or navigate away; the sheet shall remain until the user selects an explicit completion control such as `Done` or `Close`.
+- `OFFERS.DETAIL.ACTIONS.001-R10`: The image viewer shall use the common sheet system and shall share its single Back dispatch and focus-return behavior with the other offer overlays, as defined by `APP.MODALITY.UNIFICATION.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -59,19 +60,22 @@ Scenario: Detail actions stay on the sheet until an explicit completion control
 ```
 
 ## Example Inputs/Outputs
-- Example input: Tap the detail image on a zoom-capable host surface, then perform a native zoom gesture in the full-screen viewer.
-- Expected output: The full-screen viewer opens immediately, preserves the host surface zoom gesture, and scales the image while the directions action remains available for the configured travel mode.
+- Example input: Tap the detail image on a zoom-capable host surface, then perform a native zoom gesture in the sheet image viewer.
+- Expected output: The viewer opens in the common sheet immediately, preserves the host surface zoom gesture, and scales the image while the directions action remains available for the configured travel mode.
 - Example input: Open the detail sheet for a reported and promoted offer.
 - Expected output: Both badges and the reported warning appear in the sheet as they did on the feed row.
+- Example input: Invoke system Back while the image viewer is open over the detail sheet.
+- Expected output: the viewer is dismissed through the common sheet path and focus returns to the tapped image.
 
 ## Edge Cases
 - Invalid location disables directions button with visible unavailable state.
-- Multi-photo offers open full-screen viewer at selected photo index.
+- Multi-photo offers open the sheet image viewer at the selected photo index.
 - An offer whose status changes while the sheet is open — the mirrored badges follow the offer's current status.
 - A reported offer whose warning is longer than the source text at large text sizes.
+- Back is invoked while the image viewer and the detail sheet are both open; one invocation dismisses only the topmost sheet.
 
 ## Non-Functional Constraints
-- Full-screen viewer open and gesture response should feel immediate.
+- Image viewer open and gesture response should feel immediate.
 
 ## Related Specs
 - `OFFERS.MAP.001`
@@ -84,3 +88,5 @@ Scenario: Detail actions stay on the sheet until an explicit completion control
 - `APP.PERFORMANCE.001`
 - `OFFERS.ACTIONS.LABELS.001`
 - `OFFERS.LIST.ACTIONS.001`
+- `APP.MODALITY.UNIFICATION.001`
+- `APP.BOTTOM_SHEET.001`

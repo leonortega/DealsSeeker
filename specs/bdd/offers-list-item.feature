@@ -57,3 +57,33 @@ Feature: Offer list item content and actions
     When the user completes an inline availability vote
     Then the feed stays on the current destination
     And the row remains visible until the user explicitly navigates or closes it
+
+  Scenario: Vote success offers one undo within the status dwell
+    Given an authenticated user has not voted on an offer row
+    When the user casts a thumbs up vote and it succeeds
+    Then a status message is shown with at most one Undo action
+    And the counters reflect the optimistic vote
+
+  Scenario: Vote undo leaves no recorded vote
+    Given a thumbs up vote is shown with an Undo action
+    When the user selects Undo before the dwell ends
+    Then the counters and the user's vote state are restored
+    And no vote is submitted for that action
+
+  Scenario: A user may vote again after undo
+    Given a thumbs up vote was undone within its dwell
+    When the same user casts a thumbs down vote on that offer
+    Then the new vote is accepted
+    And no duplicate vote is recorded
+
+  Scenario: Favorite toggle can be undone from the row
+    Given an authenticated user toggles a favorite from an offer row
+    When the success status is shown
+    Then at most one Undo action is presented on the status surface
+    And selecting it restores the prior favorite state
+
+  Scenario: Undo does not add a row action or expose coordinates
+    Given an offer row has a successful vote status with an Undo action
+    When the row and status surface are rendered
+    Then the row still shows at most four actions
+    And no raw latitude or longitude values are displayed

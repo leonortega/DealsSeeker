@@ -85,6 +85,7 @@ Scenario: Failed lookup keeps the draft location
 - Search and reverse caching shall be bounded in size and lifetime so stale addresses do not persist indefinitely.
 
 ## Related Specs
+- `APP.LOCATION.UNAVAILABLE.001`
 - `APP.SEARCH.INTERACTION.001`
 - `APP.LOCATION.PROVIDER.RESILIENCE.001`
 - `APP.MAP.STACK.001`

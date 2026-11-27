@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Report Bottom Sheet Matching Comments
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Reports, Offers overlays
 - **Priority**: Medium
@@ -24,6 +24,7 @@ Give report submission the same look, feel and interaction model as the offer co
 - `REPORTS.SHEET.001-R4`: A successful submission shall show confirmable feedback, then close the sheet and return to Offers as defined in `APP.SHELL.001-R7`.
 - `REPORTS.SHEET.001-R5`: Dismissing the sheet shall not change the offer or its report state.
 - `REPORTS.SHEET.001-R6`: The behavior shall be identical in both presentations, themes and supported languages.
+- `REPORTS.SHEET.001-R7`: The report surface shall offer a contextual help affordance that opens the same help surface with the reporting topic first, as defined in `APP.HELP.CONTEXTUAL.001`, without closing the report surface, submitting the draft, or leaving the Offers view.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -46,6 +47,13 @@ Scenario: Dismissing the report sheet
   When the user swipes the sheet down
   Then the sheet closes without submitting
   And the offer list remains unchanged
+
+Scenario: Contextual help opens from the report sheet
+  Given the report sheet is open with a partially written message
+  When the user selects its contextual help affordance
+  Then the same help surface opens with reporting an offer shown first
+  And the report sheet and its message remain open
+  And dismissing help returns focus to the affordance
 ```
 
 ## Example Inputs/Outputs
@@ -57,6 +65,7 @@ Scenario: Dismissing the report sheet
 - Failed submission while the sheet stays open.
 - Sheet dismissed while the submit request is in flight.
 - Large text and long localized labels.
+- Contextual help opened while the report draft is partially written.
 
 ## Non-Functional Constraints
 - No new visual component library shall be added; reuse the comments sheet styling pattern.
@@ -66,3 +75,5 @@ Scenario: Dismissing the report sheet
 - `REPORTS.OFFER.PREFILL.001`
 - `APP.BOTTOM_SHEET.001`
 - `OFFERS.DETAIL.ACTIONS.001`
+- `APP.HELP.CONTEXTUAL.001`
+- `APP.HELP.001`

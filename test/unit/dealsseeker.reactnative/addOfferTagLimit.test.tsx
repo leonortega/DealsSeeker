@@ -50,6 +50,11 @@ jest.mock('expo-location', () => ({
 }));
 
 
+async function goToDetails() {
+  await fireEvent.press(screen.getByTestId('add-step-next'));
+  await fireEvent.press(screen.getByTestId('add-step-next'));
+}
+
 describe('Add Offer tag limit (ADD.OFFER.TAG.LIMIT.001)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -61,6 +66,7 @@ describe('Add Offer tag limit (ADD.OFFER.TAG.LIMIT.001)', () => {
 
   it('keeps description-derived tags without auto-adding suggestions', async () => {
     await render(<AddOfferScreen />);
+    await goToDetails();
     const input = screen.getByPlaceholderText('add.descriptionPlaceholder');
     let value = '';
     for (const word of words.split(' ')) {
@@ -75,6 +81,7 @@ describe('Add Offer tag limit (ADD.OFFER.TAG.LIMIT.001)', () => {
 
   it('caps each automatic tag at 40 normalized characters', async () => {
     await render(<AddOfferScreen />);
+    await goToDetails();
     const input = screen.getByPlaceholderText('add.descriptionPlaceholder');
 
     await fireEvent.changeText(input, `${'x'.repeat(50)} `);
@@ -94,6 +101,8 @@ describe('Add Offer tag limit (ADD.OFFER.TAG.LIMIT.001)', () => {
     });
 
     await render(<AddOfferScreen />);
+    await waitFor(() => expect(mockGetMyOfferDraft).toHaveBeenCalled());
+    await goToDetails();
     await waitFor(() => expect(screen.getAllByTestId('add-tag-chip').length).toBeGreaterThan(0));
 
     expect(screen.getAllByTestId('add-tag-chip')).toHaveLength(10);
@@ -110,6 +119,8 @@ describe('Add Offer tag limit (ADD.OFFER.TAG.LIMIT.001)', () => {
       location: null,
     });
     await render(<AddOfferScreen />);
+    await waitFor(() => expect(mockGetMyOfferDraft).toHaveBeenCalled());
+    await goToDetails();
     await waitFor(() => expect(screen.getAllByTestId('add-tag-chip')).toHaveLength(10));
 
     await fireEvent.press(screen.getByText('prefilled'));
@@ -128,6 +139,7 @@ describe('Add Offer tag limit (ADD.OFFER.TAG.LIMIT.001)', () => {
 
     await render(<AddOfferScreen />);
     await fireEvent.press(screen.getByText('add.upload'));
+    await goToDetails();
 
     const description = screen.getByPlaceholderText('add.descriptionPlaceholder');
     let value = '';
@@ -136,12 +148,14 @@ describe('Add Offer tag limit (ADD.OFFER.TAG.LIMIT.001)', () => {
       await fireEvent.changeText(description, value);
     }
 
+    await fireEvent.press(screen.getByTestId('add-step-back'));
     const location = screen.getByPlaceholderText('add.locationSearch');
     await fireEvent.changeText(location, 'main');
     await waitFor(() => expect(mockSearchLocations).toHaveBeenCalled());
     await screen.findByText('Main Street');
     await fireEvent.press(screen.getByText('Main Street'));
     await fireEvent.press(screen.getByText('add.confirmLocation'));
+    await fireEvent.press(screen.getByTestId('add-step-next'));
 
     await fireEvent.press(screen.getByText('add.submitCreate'));
 

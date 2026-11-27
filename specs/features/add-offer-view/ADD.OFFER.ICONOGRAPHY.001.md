@@ -65,6 +65,7 @@ Scenario: Labels follow the active language
 - This spec does not change validation, submission, or coordinate-privacy behavior.
 
 ## Related Specs
+- `APP.SYMBOL.VOCABULARY.001`
 - `ADD.OFFER.LAYOUT.001`
 - `ADD.OFFER.KEYBOARD.001`
 - `APP.LOCALIZATION.001`

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Offer Favorites and My Favorites View
-- **Version**: `v0.4`
+- **Version**: `v0.5`
 - **Status**: Approved
 - **Context/View**: Offers View
 - **Priority**: High
@@ -28,6 +28,7 @@ Allow users to save offers and manage them from a dedicated favorites section.
 - `OFFERS.FAVORITES.001-R8`: Each item in `My Favorites` shall provide a directions action that opens navigation for the offer location using the configured travel mode.
 - `OFFERS.FAVORITES.001-R9`: Unauthenticated access to `My Favorites` shall redirect to `Login`.
 - `OFFERS.FAVORITES.001-R10`: The My Favorites view shall use the same panel, card, and button styling as other views such as the Suggestions view (panel wrapper, rounded cards, and consistent button styling).
+- `OFFERS.FAVORITES.001-R11`: My Favorites shall never run a search with a fabricated or substitute coordinate; when no usable position is available, it shall show no results and present the no-position state defined in `APP.LOCATION.UNAVAILABLE.001`, leaving the saved set unchanged.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -60,6 +61,15 @@ Scenario: Unauthenticated user opens My Favorites
   Given the user is not authenticated
   When the user opens My Favorites
   Then the Login view shall be displayed
+
+Scenario: My Favorites never searches with a fabricated coordinate
+  Given an authenticated user has saved offers
+  And no usable device position can be obtained
+  When the user opens My Favorites
+  Then no location-bound search shall run with a fabricated or substitute coordinate
+  And no saved offers shall be listed as results for a substitute area
+  And the no-position state of APP.LOCATION.UNAVAILABLE.001 shall be displayed
+  And no raw latitude or longitude value shall be visible
 ```
 
 ## Example Inputs/Outputs
@@ -70,12 +80,14 @@ Scenario: Unauthenticated user opens My Favorites
 - Save/unsave failures show recoverable error and preserve last confirmed state.
 - Duplicate saves for same offer/user are idempotent.
 - An empty favorites set shows a non-error empty state.
+- A stale or remembered position shall not be used to populate My Favorites when no current position is available.
 
 ## Non-Functional Constraints
 - Favorite toggling should provide immediate UI feedback.
 
 ## Related Specs
 - `OFFERS.GUEST.001`
+- `APP.LOCATION.UNAVAILABLE.001`
 - `APP.LIST.VIRTUALIZATION.001`
 - `OFFERS.GRID.CARDS.001`
 - `ACCOUNT.PROFILE.001`

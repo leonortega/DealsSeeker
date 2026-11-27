@@ -54,6 +54,15 @@ jest.mock('expo-location', () => ({
 }));
 
 
+async function goToPlace() {
+  await fireEvent.press(screen.getByTestId('add-step-next'));
+}
+
+async function goToDetails() {
+  await fireEvent.press(screen.getByTestId('add-step-next'));
+  await fireEvent.press(screen.getByTestId('add-step-next'));
+}
+
 async function fillValidDraft() {
   mockLaunchImageLibraryAsync.mockResolvedValue({
     canceled: false,
@@ -70,7 +79,7 @@ async function fillValidDraft() {
     ],
   });
   await fireEvent.press(screen.getByText('add.upload'));
-  await fireEvent.changeText(screen.getByPlaceholderText('add.descriptionPlaceholder'), 'fresh coffee ');
+  await goToPlace();
   mockSearchLocations.mockResolvedValue([{ label: 'Main Street', position: { lat: 1, lng: 2 } }]);
   mockIsPending = false;
   await fireEvent.changeText(screen.getByPlaceholderText('add.locationSearch'), 'main');
@@ -78,6 +87,8 @@ async function fillValidDraft() {
   await screen.findByText('Main Street');
   await fireEvent.press(screen.getByText('Main Street'));
   await fireEvent.press(screen.getByText('add.confirmLocation'));
+  await fireEvent.press(screen.getByTestId('add-step-next'));
+  await fireEvent.changeText(screen.getByPlaceholderText('add.descriptionPlaceholder'), 'fresh coffee ');
 }
 
 describe('Add Offer lifecycle (impeccable pass)', () => {
@@ -109,6 +120,7 @@ describe('Add Offer lifecycle (impeccable pass)', () => {
     mockIsPending = true;
 
     await render(<AddOfferScreen />);
+    await goToPlace();
     fireEvent.changeText(screen.getByPlaceholderText('add.locationSearch'), 'main');
     await waitFor(() => expect(mockSearchLocations).toHaveBeenCalled());
 
@@ -117,6 +129,7 @@ describe('Add Offer lifecycle (impeccable pass)', () => {
 
   it('shows a no-results message when a lookup returns nothing', async () => {
     await render(<AddOfferScreen />);
+    await goToPlace();
     fireEvent.changeText(screen.getByPlaceholderText('add.locationSearch'), 'main');
 
     expect(await screen.findByText('add.noLocationResults', {}, { timeout: 2000 })).toBeTruthy();
@@ -126,6 +139,7 @@ describe('Add Offer lifecycle (impeccable pass)', () => {
     mockSearchLocations.mockRejectedValueOnce(new Error('offline')).mockResolvedValue([]);
 
     await render(<AddOfferScreen />);
+    await goToPlace();
     fireEvent.changeText(screen.getByPlaceholderText('add.locationSearch'), 'main');
 
     expect(await screen.findByText('add.locationSearchFailed', {}, { timeout: 2000 })).toBeTruthy();
@@ -135,6 +149,7 @@ describe('Add Offer lifecycle (impeccable pass)', () => {
 
   it('exposes real disabled state on the location toggle controls', async () => {
     await render(<AddOfferScreen />);
+    await goToPlace();
     await screen.findByText('add.currentLocationUnavailable');
 
     expect(screen.getByLabelText('add.editLocation').props.accessibilityState.disabled).toBe(true);
@@ -157,6 +172,7 @@ describe('Add Offer lifecycle (impeccable pass)', () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     await render(<AddOfferScreen />);
     await screen.findByText('add.currentLocationUnavailable');
+    await goToDetails();
     await fireEvent.changeText(screen.getByPlaceholderText('add.descriptionPlaceholder'), 'fresh coffee');
 
     fireEvent.press(screen.getByText('add.cancel'));
@@ -176,7 +192,7 @@ describe('Add Offer lifecycle (impeccable pass)', () => {
 
   it('shows the inline note explaining automatic tag addition', async () => {
     await render(<AddOfferScreen />);
-    await screen.findByText('add.currentLocationUnavailable');
+    await goToDetails();
     expect(screen.getByText('add.tagsAutoHint')).toBeTruthy();
   });
 

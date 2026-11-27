@@ -73,6 +73,7 @@ Scenario: Coordinate privacy is preserved
 - Feedback shall not require a separate dismissal action to continue editing.
 
 ## Related Specs
+- `ADD.OFFER.PROGRESSIVE.DISCLOSURE.001`
 - `ADD.OFFER.LAYOUT.001`
 - `ADD.OFFER.LOCATION.001`
 - `ADD.OFFER.DESCRIPTION.TAGS.001`

@@ -1,8 +1,24 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { Alert, StyleSheet } from 'react-native';
+import { Alert, Platform, StyleSheet } from 'react-native';
 import { OfferCard } from '../../../src/DealsSeeker.ReactNative/src/components/OfferCard';
 import { AccountScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AccountScreen';
 import { platformTouchFloor } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
+
+jest.mock('@expo/vector-icons', () => {
+  const React = require('react');
+  const { Text } = require('react-native');
+  const glyph = (prefix: string) => ({ name, ...props }: { name: string }) =>
+    React.createElement(Text, { ...props, testID: `${prefix}-${name}` });
+  return { Ionicons: glyph('ionicon'), MaterialIcons: glyph('materialicon') };
+});
+
+function setPlatform(os: 'ios' | 'android') {
+  (Platform as unknown as { OS: string }).OS = os;
+}
+
+function glyphs(id: string | RegExp) {
+  return screen.getAllByTestId(id, { includeHiddenElements: true });
+}
 
 let mockActiveTab = 'account';
 let mockPreferences = { language: 'en', navigationMode: 'pedestrian', themeMode: 'light', themeWorld: 'tangerine' };
@@ -89,11 +105,21 @@ describe('AccountScreen', () => {
     mockDeleteOffer.mockResolvedValue({ success: true });
   });
 
-  it('shows a change affordance on each settings control', async () => {
+  it('shows a platform chevron on each settings control', async () => {
+    setPlatform('ios');
     await render(<AccountScreen />);
 
-    expect(screen.getAllByText('›')).toHaveLength(2);
+    expect(glyphs('ionicon-chevron-forward-outline')).toHaveLength(2);
+    expect(screen.queryByText('›')).toBeNull();
     expect(screen.queryByText('app.title')).toBeNull();
+  });
+
+  it('uses Material chevrons on Android', async () => {
+    setPlatform('android');
+    await render(<AccountScreen />);
+
+    expect(glyphs('materialicon-chevron-right')).toHaveLength(2);
+    expect(screen.queryByText('›')).toBeNull();
   });
 
   it('bounds the email to two lines so no fragment is stranded', async () => {
@@ -254,9 +280,17 @@ describe('OfferCard', () => {
     expect(screen.getAllByText('500 m').length).toBeGreaterThan(0);
   });
 
+  it('renders a labelled neutral panel instead of placeholder art', async () => {
+    await renderCard();
+
+    expect(screen.getByText('add.photoPlaceholder')).toBeTruthy();
+    expect(screen.queryByText('▤')).toBeNull();
+    expect(screen.queryByText('▣')).toBeNull();
+  });
+
   it('opens the detail view from the visual', async () => {
     await renderCard();
-    await fireEvent.press(screen.getByText('▤'));
+    await fireEvent.press(screen.getByLabelText('offers.openDetail'));
     expect(callbacks.onOpenDetail).toHaveBeenCalledWith(expect.objectContaining({ offerId: 'o1' }));
   });
 
@@ -313,12 +347,12 @@ describe('OfferCard', () => {
   it('renders the canonical actions with glyphs in the canonical order', async () => {
     await renderCard();
 
-    const order = screen.getAllByTestId(/^offer-card-action-/u).map((node) => node.props.testID);
+    const order = glyphs(/^offer-card-action-/u).map((node) => node.props.testID);
     expect(order).toEqual([
       'offer-card-action-directions',
       'offer-card-action-favorite',
       'offer-card-action-comments',
     ]);
-    expect(screen.getAllByTestId('offer-action-glyph').length).toBeGreaterThanOrEqual(3);
+    expect(glyphs('offer-action-glyph').length).toBeGreaterThanOrEqual(3);
   });
 });

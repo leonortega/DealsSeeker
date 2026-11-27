@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Login View and Authentication
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Login View
 - **Priority**: High
@@ -26,6 +26,7 @@ Allow an existing user to authenticate from Login view and enter the app flow.
 - `ACCOUNT.AUTH.LOGIN.001-R6`: The `Login` view shall provide an explicit `Browse nearby without an account` entry point that starts the read-only guest session defined in `OFFERS.GUEST.001` without creating an authenticated session.
 - `ACCOUNT.AUTH.LOGIN.001-R7`: When sign-in was entered from a guest contribution prompt, successful login shall return the user to the prior Offers context, restoring the search query, coverage radius, presentation mode and any open offer as defined in `OFFERS.GUEST.001`.
 - `ACCOUNT.AUTH.LOGIN.001-R8`: If sign-in from that prompt is cancelled or fails, the system shall keep the guest session active and restore the preserved context.
+- `ACCOUNT.AUTH.LOGIN.001-R9`: The sign-in guard for a gated contribution shall offer a contextual help affordance that opens the same help surface with the topic for that action first, as defined in `APP.HELP.CONTEXTUAL.001`, without leaving the sign-in prompt or losing the preserved Offers context.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -67,6 +68,13 @@ Scenario: Cancelled or failed login from a guest prompt preserves the guest cont
   When the user cancels the prompt or submits invalid credentials
   Then the guest session shall remain active
   And the query, radius, presentation mode and open offer shall be unchanged
+
+Scenario: Sign-in guard offers contextual help
+  Given a sign-in guard is shown for a gated contribution action
+  When the user selects its contextual help affordance
+  Then the same help surface opens with the topic for that action shown first
+  And the sign-in prompt and preserved Offers context remain unchanged
+  And dismissing help returns focus to the affordance
 ```
 
 ## Example Inputs/Outputs
@@ -82,6 +90,7 @@ Scenario: Cancelled or failed login from a guest prompt preserves the guest cont
 - Locked or disabled accounts should not be authenticated.
 - A guest sign-in prompt dismissed with the back gesture shall leave the guest context unchanged.
 - Sign-in entered directly from Login (not from a guest prompt) shall still navigate to `Offers`.
+- Contextual help opened from the sign-in guard leaves the preserved Offers context unchanged on dismissal.
 
 ## Non-Functional Constraints
 - Login outcome should be returned promptly and not block the UI.
@@ -96,3 +105,5 @@ Scenario: Cancelled or failed login from a guest prompt preserves the guest cont
 - `ACCOUNT.AUTH.KEYBOARD.001`
 - `OFFERS.GUEST.001`
 - `OFFERS.EMPTY.001`
+- `APP.HELP.CONTEXTUAL.001`
+- `APP.HELP.001`

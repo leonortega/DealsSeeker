@@ -32,3 +32,10 @@ Feature: Offer favorites and My Favorites section
     Given the user is not authenticated
     When the user opens My Favorites
     Then the Login view is shown
+
+  Scenario: My Favorites never searches with a fabricated coordinate
+    Given the user opens My Favorites
+    And device location is unavailable and no explicit override exists
+    When the favorites list loads
+    Then no offer search is executed with a substitute coordinate
+    And the location-unavailable state is displayed

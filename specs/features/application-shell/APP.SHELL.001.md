@@ -263,6 +263,7 @@ Scenario: One stable loading indicator in the feed
 - Blocking loading animation should be lightweight and consistent across light/dark themes.
 
 ## Related Specs
+- `APP.HELP.CONTEXTUAL.001`
 - `APP.BRAND.001`
 - `APP.SHELL.005`
 - `APP.API.CONNECTIVITY.001`

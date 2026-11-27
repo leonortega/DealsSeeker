@@ -1,11 +1,15 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { ImmersiveActionCaption } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveActionGlyphs';
 import { ImmersiveFeedTabs } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveFeedTabs';
 import { ImmersiveOfferFeed } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveOfferFeed';
+import { ImmersiveSearchOverlay } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveSearchOverlay';
+import * as layout from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
+    openSheet: jest.fn(),
+    closeSheet: jest.fn(),
     palette: {
       accent: '#b85c38',
       accentMuted: '#e9c9b8',
@@ -42,6 +46,52 @@ const offer = {
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useOfferImageUri', () => ({
   useOfferImageUri: () => 'https://example.com/offer.png',
 }));
+
+describe('immersive search sheet keyboard avoidance (OFFERS.SEARCH.KEYBOARD.001)', () => {
+  async function renderSearchSheet() {
+    return await render(
+      <ImmersiveSearchOverlay
+        visible
+        query=""
+        radiusMeters={1500}
+        onChangeQuery={jest.fn()}
+        onChangeRadius={jest.fn()}
+        onSearch={jest.fn()}
+        onClose={jest.fn()}
+      />
+    );
+  }
+
+  it('keeps the input and both actions inside a platform keyboard-avoiding view', async () => {
+    const behaviorSpy = jest.spyOn(layout, 'keyboardAvoidanceBehavior');
+    try {
+      await renderSearchSheet();
+      expect(behaviorSpy).toHaveBeenCalledWith(Platform.OS);
+    } finally {
+      behaviorSpy.mockRestore();
+    }
+
+    const keyboardView = screen.getByTestId('immersive-search-keyboard-view');
+    expect(within(keyboardView).getByLabelText('offers.searchPlaceholder')).toBeTruthy();
+    expect(within(keyboardView).getByRole('button', { name: 'common.search' })).toBeTruthy();
+    expect(within(keyboardView).getByRole('button', { name: 'common.cancel' })).toBeTruthy();
+  });
+
+  it('persists taps through the scrollable sheet body while the keyboard is open', async () => {
+    await renderSearchSheet();
+
+    const scroll = screen.getByTestId('immersive-search-scroll');
+    expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
+    expect(within(scroll).getByRole('button', { name: 'common.search' })).toBeTruthy();
+  });
+
+  it('preserves the sheet snap points and the 200-character input limit', async () => {
+    await renderSearchSheet();
+
+    expect(screen.getByTestId('native-bottom-sheet').props.snapPoints).toEqual(['65%', '90%']);
+    expect(screen.getByLabelText('offers.searchPlaceholder').props.maxLength).toBe(200);
+  });
+});
 
 describe('immersive chrome over the fixed dark backdrop', () => {
   it('renders feed tab labels in a light color even when the light theme is active', async () => {
@@ -145,7 +195,7 @@ describe('immersive chrome over the fixed dark backdrop', () => {
     const image = screen.getByTestId('offer-image');
     await act(async () => image.props.onError());
 
-    expect(screen.getByText('▤')).toBeTruthy();
+    expect(screen.getByText('add.photoPlaceholder')).toBeTruthy();
   });
 
   it('expands a truncated description when More is pressed', async () => {

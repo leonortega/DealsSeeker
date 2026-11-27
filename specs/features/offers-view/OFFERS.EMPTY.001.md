@@ -104,6 +104,7 @@ Scenario: Filtered no-results still uses the clear-filters state
 - No raw `lat` or `lng` value shall be exposed at any point in this state.
 
 ## Related Specs
+- `APP.HELP.CONTEXTUAL.001`
 - `OFFERS.UX.001`
 - `OFFERS.FEED.IMMERSIVE.001`
 - `OFFERS.SEARCH.001`

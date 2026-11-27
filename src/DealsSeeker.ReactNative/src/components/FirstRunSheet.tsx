@@ -1,49 +1,50 @@
+import type { RefObject } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { platformTouchFloor } from '../utils/layout';
 import { landmarkFontFamily } from '../utils/typography';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { restoreFocus } from '../utils/focusReturn';
+import { NativeBottomSheet } from './NativeBottomSheet';
 
-export function FirstRunSheet({ visible, onDismiss }: { visible: boolean; onDismiss: () => void }) {
+export function FirstRunSheet({
+  visible,
+  onDismiss,
+  returnFocusRef,
+}: {
+  visible: boolean;
+  onDismiss: () => void;
+  returnFocusRef?: RefObject<unknown>;
+}) {
   const { palette, t } = useApp();
 
-  if (!visible) {
-    return null;
+  function close() {
+    onDismiss();
+    restoreFocus(returnFocusRef);
   }
 
   return (
-    <Modal animationType="fade" transparent visible={visible} onRequestClose={onDismiss}>
-      <Pressable
-        accessible={false}
-        style={[styles.backdrop, { backgroundColor: palette.overlay }]}
-        onPress={onDismiss}
+    <NativeBottomSheet visible={visible} onClose={close}>
+      <View
+        accessibilityViewIsModal
+        testID="first-run-sheet"
+        style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}
       >
-        <View
-          accessibilityViewIsModal
-          style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}
+        <Text style={[styles.title, { color: palette.ink }]}>{t('onboarding.title')}</Text>
+        <Text style={[styles.body, { color: palette.inkMuted }]}>{t('onboarding.body')}</Text>
+        <Pressable
+          accessibilityLabel={t('onboarding.gotIt')}
+          accessibilityRole="button"
+          onPress={close}
+          style={[styles.action, { backgroundColor: palette.accent }]}
         >
-          <Text style={[styles.title, { color: palette.ink }]}>{t('onboarding.title')}</Text>
-          <Text style={[styles.body, { color: palette.inkMuted }]}>{t('onboarding.body')}</Text>
-          <Pressable
-            accessibilityLabel={t('onboarding.gotIt')}
-            accessibilityRole="button"
-            onPress={onDismiss}
-            style={[styles.action, { backgroundColor: palette.accent }]}
-          >
-            <Text style={[styles.actionLabel, { color: palette.onAccent }]}>{t('onboarding.gotIt')}</Text>
-          </Pressable>
-        </View>
-      </Pressable>
-    </Modal>
+          <Text style={[styles.actionLabel, { color: palette.onAccent }]}>{t('onboarding.gotIt')}</Text>
+        </Pressable>
+      </View>
+    </NativeBottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
   sheet: {
     borderRadius: 24,
     borderWidth: 1,

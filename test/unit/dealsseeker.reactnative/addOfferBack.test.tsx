@@ -48,6 +48,11 @@ jest.mock('expo-location', () => ({
 }));
 
 
+async function goToDetails() {
+  await fireEvent.press(screen.getByTestId('add-step-next'));
+  await fireEvent.press(screen.getByTestId('add-step-next'));
+}
+
 describe('Add Offer system Back (ADD.OFFER.EXIT.001-R8)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -83,6 +88,7 @@ describe('Add Offer system Back (ADD.OFFER.EXIT.001-R8)', () => {
 
     await render(<AddOfferScreen onDismissGuard={registerGuard} />);
     await screen.findByText('add.currentLocationUnavailable');
+    await goToDetails();
     await fireEvent.changeText(screen.getByPlaceholderText('add.descriptionPlaceholder'), 'fresh coffee');
 
     expect(guard).toBeDefined();
@@ -101,6 +107,7 @@ describe('Add Offer system Back (ADD.OFFER.EXIT.001-R8)', () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     await render(<AddOfferScreen />);
     await screen.findByText('add.currentLocationUnavailable');
+    await goToDetails();
     await fireEvent.changeText(screen.getByPlaceholderText('add.descriptionPlaceholder'), 'fresh coffee');
 
     let consumed = false;

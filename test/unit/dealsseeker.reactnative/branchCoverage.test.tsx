@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { useReduceMotion } from '../../../src/DealsSeeker.ReactNative/src/hooks/useReduceMotion';
 import { useApp } from '../../../src/DealsSeeker.ReactNative/src/hooks/useApp';
 import { focusHandle, restoreFocus } from '../../../src/DealsSeeker.ReactNative/src/utils/focusReturn';
+import { keyboardAvoidanceBehavior } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
 
 describe('useReduceMotion', () => {
   afterEach(() => jest.restoreAllMocks());
@@ -51,6 +52,13 @@ describe('focus helpers', () => {
 
     expect(setFocus).not.toHaveBeenCalled();
     setFocus.mockRestore();
+  });
+});
+
+describe('keyboard avoidance by platform', () => {
+  it('pads on iOS and resizes content height on Android', () => {
+    expect(keyboardAvoidanceBehavior('ios')).toBe('padding');
+    expect(keyboardAvoidanceBehavior('android')).toBe('height');
   });
 });
 

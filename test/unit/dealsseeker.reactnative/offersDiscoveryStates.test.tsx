@@ -7,8 +7,8 @@ const mockOpenAddOffer = jest.fn();
 
 jest.mock('expo-location', () => ({
   LocationAccuracy: { Balanced: 3 },
-  getCurrentPositionAsync: jest.fn(),
-  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ granted: false }),
+  getCurrentPositionAsync: jest.fn().mockResolvedValue({ coords: { latitude: 40.7128, longitude: -74.006 } }),
+  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ granted: true }),
 }));
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
@@ -21,7 +21,10 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
       voteOfferAvailability: jest.fn(),
     },
     immersiveOffers: false,
+    closeSheet: jest.fn(),
+    isAuthenticated: true,
     isPending: () => false,
+    openSheet: jest.fn(),
     openAddOffer: mockOpenAddOffer,
     palette: {
       accent: '#b85c38',

@@ -60,3 +60,22 @@ Feature: Native bottom-sheet behavior for overlays
     When an overlay sheet opens
     Then the footer and its Create action are not displayed above the sheet
     And every sheet control including its primary action remains visible and tappable
+
+  Scenario: A visible sheet keeps its input and primary action above the keyboard
+    Given a sheet with a text input is visible
+    And the on-screen keyboard is open
+    When the input is focused
+    Then the input and the primary action remain visible above the keyboard
+    And the sheet keeps its snap points and brand styling
+
+  Scenario: Taps reach sheet controls while the keyboard is open
+    Given a sheet is visible with the on-screen keyboard open
+    When the user taps a visible sheet control
+    Then the tap is delivered to that control
+    And no tap is swallowed by keyboard avoidance
+
+  Scenario: Every focused sub-task uses the one sheet system
+    Given help, detail, comments, search and first-run guidance are available
+    When each is opened
+    Then each uses this sheet system
+    And none introduces a separate full-screen modal or a second overlay pattern

@@ -75,6 +75,7 @@ Scenario: In-flight request across a lifecycle transition
 - Full restoration after a low-memory process restart is out of scope here; it needs durable storage of view state and is deferred to a separate capability spec.
 
 ## Related Specs
+- `APP.HELP.CONTEXTUAL.001`
 - `APP.SHELL.001`
 - `APP.SHELL.002`
 - `APP.SHELL.003`

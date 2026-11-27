@@ -773,6 +773,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
           testID={columns === 2 ? 'add-offer-tablet-columns' : undefined}
         >
           <View style={styles.column} testID="add-offer-column-primary">
+        {activeStep === 'photo' ? (
         <View testID="add-step-photo" style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.images')}</Text>
           {fieldErrors.photo ? (
@@ -864,7 +865,9 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
             </View>
           ) : null}
         </View>
+        ) : null}
 
+        {activeStep === 'place' ? (
         <View testID="add-step-place" style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.location')}</Text>
           {fieldErrors.location ? (
@@ -1009,9 +1012,11 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
             </Pressable>
           </View>
         </View>
+        ) : null}
 
           </View>
           <View style={styles.column} testID="add-offer-column-secondary">
+        {activeStep === 'details' ? (
         <View testID="add-step-details" style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.description')}</Text>
           {fieldErrors.description ? (
@@ -1125,6 +1130,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
             ))}
           </View>
         </View>
+        ) : null}
 
         <View style={styles.stepNav}>
           <Pressable
@@ -1151,17 +1157,19 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
           </Pressable>
         </View>
 
-        <Pressable
-          accessibilityLabel={editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
-          accessibilityRole="button"
-          testID="add-submit-button"
-          style={[styles.submitButton, { backgroundColor: palette.accent }]}
-          onPress={() => void submit()}
-        >
-          <Text style={[styles.submitLabel, { color: palette.onAccent }]}>
-            {editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
-          </Text>
-        </Pressable>
+        {activeStep === 'details' ? (
+          <Pressable
+            accessibilityLabel={editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
+            accessibilityRole="button"
+            testID="add-submit-button"
+            style={[styles.submitButton, { backgroundColor: palette.accent }]}
+            onPress={() => void submit()}
+          >
+            <Text style={[styles.submitLabel, { color: palette.onAccent }]}>
+              {editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
+            </Text>
+          </Pressable>
+        ) : null}
         {submitted ? (
           <View testID="add-success" style={styles.successPanel}>
             <Text

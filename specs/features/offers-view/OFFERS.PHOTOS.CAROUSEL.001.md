@@ -51,6 +51,8 @@ Scenario: Offer detail shows swipeable carousel
 - Carousel swipe should remain smooth on common mobile devices.
 
 ## Related Specs
+- `APP.MODALITY.UNIFICATION.001`
+- `APP.SYMBOL.VOCABULARY.001`
 - `OFFERS.GUEST.001`
 - `ADD.OFFER.IMAGE.001`
 - `OFFERS.IMAGE.RENDERING.001`
