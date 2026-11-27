@@ -255,8 +255,21 @@ describe('OfferCard', () => {
     expect(callbacks.onReport).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps maintenance actions behind a labelled card disclosure', async () => {
+    await renderCard();
+
+    const disclosure = screen.getByRole('button', { name: 'offers.cardMoreActions' });
+    expect(disclosure).toBeTruthy();
+    expect(screen.queryByLabelText('offers.action.available 3')).toBeNull();
+
+    await fireEvent.press(disclosure);
+    expect(screen.getByLabelText('offers.action.available 3')).toBeTruthy();
+    expect(screen.getByLabelText('offers.report')).toBeTruthy();
+  });
+
   it('submits positive and negative availability votes', async () => {
     await renderCard();
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.cardMoreActions' }));
     await fireEvent.press(screen.getByLabelText('offers.action.available 3'));
     await fireEvent.press(screen.getByLabelText('offers.action.unavailable 1'));
     expect(callbacks.onVote).toHaveBeenNthCalledWith(1, expect.anything(), 1);

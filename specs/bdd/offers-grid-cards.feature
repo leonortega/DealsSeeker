@@ -15,6 +15,13 @@ Feature: Compact responsive offer grid cards
     Then image framing stays visually consistent
     And the column count adjusts responsively
 
+  Scenario: Maintenance actions sit behind a labelled control
+    Given an offer card is displayed
+    When the card actions are rendered
+    Then only the three primary actions are visible
+    And availability voting and reporting are reachable through one labelled control
+    And the entries inside it carry text labels
+
   Scenario: Card actions stack on a narrow mobile viewport
     Given offers are available on a narrow mobile viewport
     And an offer has localized action labels longer than one word

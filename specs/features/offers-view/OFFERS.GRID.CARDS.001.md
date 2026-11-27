@@ -21,7 +21,7 @@ Define a compact responsive offer-card layout with consistent visual structure a
 - `OFFERS.GRID.CARDS.001-R2`: Cards shall keep a consistent visual structure across supported screen sizes, including a stable image frame and content section.
 - `OFFERS.GRID.CARDS.001-R3`: The grid shall be responsive and adjust columns by viewport width.
 - `OFFERS.GRID.CARDS.001-R4`: Card content shall remain readable in compact form without breaking layout.
-- `OFFERS.GRID.CARDS.001-R5`: Card actions and state indicators required by related specs shall remain visible in the compact card layout.
+- `OFFERS.GRID.CARDS.001-R5`: Card actions and state indicators required by related specs shall remain reachable in the compact card layout; the three primary actions (favorite, directions, comments) stay visible and availability voting and reporting sit behind one visibly labelled disclosure.
 - `OFFERS.GRID.CARDS.001-R6`: On a narrow mobile viewport, the card's primary actions (favorite, directions, and comments) shall be stacked vertically with each action occupying the full card width, so localized labels wrap at word boundaries and do not break mid-word.
 
 ## Acceptance Criteria (BDD)
@@ -37,6 +37,13 @@ Scenario: Grid adapts to screen size
   When the user switches between small and large screen widths
   Then card image framing shall remain visually consistent
   And the number of columns shall adjust responsively
+
+Scenario: Maintenance actions sit behind a labelled control
+  Given an offer card is displayed
+  When the card actions are rendered
+  Then only the three primary actions are visible
+  And availability voting and reporting are reachable through one labelled control
+  And the entries inside it carry text labels
 
 Scenario: Card actions stack on a narrow mobile viewport
   Given offers are available on a narrow mobile viewport
