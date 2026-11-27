@@ -413,8 +413,12 @@ export function OffersScreen() {
   if (immersiveOffers) {
     return (
       <View style={[styles.immersiveWrapper, { backgroundColor: palette.backdrop }]} testID="immersive-content">
-        {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
-        {renderStatePanel()}
+        {locationFallback || renderStatePanel() ? (
+          <View pointerEvents="box-none" style={styles.immersiveStateOverlay} testID="immersive-state-overlay">
+            {locationFallback && !locationNoticeDismissed ? fallbackNotice : null}
+            {renderStatePanel()}
+          </View>
+        ) : null}
         {status ? (
           <View pointerEvents="box-none" style={styles.feedbackToast}>
             <Text
@@ -629,6 +633,13 @@ const styles = StyleSheet.create({
   },
   immersiveWrapper: {
     flex: 1,
+  },
+  immersiveStateOverlay: {
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 120,
+    zIndex: 3,
   },
   heroRow: {
     alignItems: 'center',
