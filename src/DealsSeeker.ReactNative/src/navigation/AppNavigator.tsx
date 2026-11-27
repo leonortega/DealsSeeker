@@ -49,10 +49,13 @@ function MainView() {
   useDestinationFocus(containerRef, activeTab, overlayRoute, t);
   const immersiveFeedVisible = immersiveOffers && activeTab === 'offers';
 
+  const lastActiveTab = useRef<MainTab | null>(null);
+
   useEffect(() => {
-    if (activeTab) {
-      navigation.navigate(activeTab as never);
+    if (activeTab && lastActiveTab.current && activeTab !== lastActiveTab.current) {
+      (navigation.navigate as (...args: unknown[]) => void)('Main', { screen: activeTab });
     }
+    lastActiveTab.current = activeTab;
   }, [activeTab, navigation]);
 
   useEffect(() => {

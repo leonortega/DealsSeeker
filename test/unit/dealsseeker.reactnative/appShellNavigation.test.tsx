@@ -126,7 +126,7 @@ describe('native shell Back handling', () => {
       view.rerender(<AppNavigator />);
     });
 
-    expect(mockNavigate).toHaveBeenCalledWith('reports');
+    expect(mockNavigate).toHaveBeenCalledWith('Main', { screen: 'reports' });
   });
 
   it('starts on the Offers feed', async () => {

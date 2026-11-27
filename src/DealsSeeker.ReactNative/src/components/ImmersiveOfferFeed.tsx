@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   },
   rightRail: {
     alignItems: 'center',
-    bottom: 20,
+    bottom: 140,
     gap: 12,
     position: 'absolute',
     right: 10,
@@ -654,7 +654,7 @@ const styles = StyleSheet.create({
   morePanel: {
     borderWidth: 1,
     borderRadius: 18,
-    bottom: 100,
+    bottom: 220,
     gap: 8,
     padding: 10,
     position: 'absolute',

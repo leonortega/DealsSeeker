@@ -584,5 +584,6 @@ Final verification: `npm test` 75 suites / 443 tests, `npm run typecheck` clean,
 - **Card density**: `OFFERS.GRID.CARDS.001` R5 — only favorite/directions/comments are visible; availability votes and report sit behind a labelled card disclosure.
 - **Context churn**: volatile loading/sheet/pending state moved to `AppStatusContext` with `useAppStatus`; the app context value identity stays stable when those change.
 - **Coverage**: branch coverage raised from 75.2% to 77.2% with client error-path, hook/focus and immersive-feed tests; still below the 80% target.
-- **Not completed**: device E2E (standing user request to skip), iOS simulator / physical-device captures (no iOS or hardware available), VoiceOver sign-off, and deeper native-control adoption (a separate approved redesign after `APP.SHELL.002` v1.2).
+- **Deeper platform chrome**: `APP.PLATFORM.CHROME.001` v1.0 approved and implemented. The shell now uses the platform-native tab bar with MaterialIcons on Android / Ionicons (SF-style) on iOS, native stack headers for overlay destinations, and a Create FAB moved out of the tab bar. Verified on `emulator-5554`: native Material tab bar, tangerine active tint, no FAB/action-rail collision, native `Add Offer` header with back affordance.
+- **Not completed**: device E2E (standing user request to skip), iOS simulator / physical-device captures (no iOS or hardware available), and VoiceOver sign-off.
 
