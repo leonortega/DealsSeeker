@@ -3,16 +3,16 @@ function motionOptions(reduceMotion: boolean) {
 }
 
 export function stackScreenOptions(reduceMotion = false) {
-  return { headerShown: false as const, ...motionOptions(reduceMotion) };
+  return { headerShown: true as const, ...motionOptions(reduceMotion) };
 }
 
 export function tabScreenOptions() {
-  return { headerShown: false } as const;
+  return { headerShown: false as const };
 }
 
 export function modalScreenOptions(os: string, reduceMotion = false) {
   return {
-    headerShown: false as const,
+    headerShown: true as const,
     presentation: os === 'ios' ? ('formSheet' as const) : ('modal' as const),
     gestureEnabled: true,
     ...motionOptions(reduceMotion),

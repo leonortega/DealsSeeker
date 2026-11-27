@@ -96,7 +96,10 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar', ()
   const { View: MockView } = require('react-native');
   return { AppFooterBar: () => <MockView testID="app-footer-bar" /> };
 });
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/CreateOfferFab', () => ({ CreateOfferFab: () => null }));
+jest.mock('../../../src/DealsSeeker.ReactNative/src/components/CreateOfferFab', () => {
+  const { View: MockView } = require('react-native');
+  return { CreateOfferFab: () => <MockView testID="create-offer-fab" /> };
+});
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/LoadingOverlay', () => ({ LoadingOverlay: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/NavIcon', () => ({ NavIcon: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/screens/AccountScreen', () => ({ AccountScreen: () => null }));
@@ -148,15 +151,15 @@ describe('native shell Back handling', () => {
     expect(mockCloseImmersiveOffers).toHaveBeenCalledTimes(1);
   });
 
-  it('hides the branded footer while a sheet is open (APP.BOTTOM_SHEET.001-R12)', async () => {
+  it('hides the Create action while a sheet is open (APP.PLATFORM.CHROME.001-R5)', async () => {
     const view = await render(<AppNavigator />);
-    expect(screen.getByTestId('app-footer-bar')).toBeTruthy();
+    expect(screen.getByTestId('create-offer-fab')).toBeTruthy();
 
     mockSheetCount = 1;
     await act(async () => {
       view.rerender(<AppNavigator />);
     });
 
-    expect(screen.queryByTestId('app-footer-bar')).toBeNull();
+    expect(screen.queryByTestId('create-offer-fab')).toBeNull();
   });
 });

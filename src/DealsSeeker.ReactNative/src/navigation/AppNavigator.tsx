@@ -3,24 +3,22 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, useNavigation, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { AppFooterBar } from '../components/AppFooterBar';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CreateOfferFab } from '../components/CreateOfferFab';
 import { LoadingOverlay } from '../components/LoadingOverlay';
-import { NavIcon } from '../components/NavIcon';
+import { PlatformTabIcon, type PlatformTabIconName } from '../components/PlatformTabIcon';
 import { useApp } from '../hooks/useApp';
 import { useAppStatus } from '../hooks/useAppStatus';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { useDestinationFocus } from '../hooks/useDestinationFocus';
 import type { MainTab } from '../api/types';
-import { resolveFooterColors } from '../utils/theme';
 import { AccountScreen } from '../screens/AccountScreen';
 import { AddOfferScreen } from '../screens/AddOfferScreen';
 import { FavoritesScreen } from '../screens/FavoritesScreen';
 import { OffersScreen } from '../screens/OffersScreen';
 import { SuggestionsScreen } from '../screens/SuggestionsScreen';
 import { modalScreenOptions, stackScreenOptions, tabScreenOptions } from './shellOptions';
-import { MAIN_TAB_DESTINATIONS, resolveTabFromRoute } from './tabs';
+import { MAIN_TAB_DESTINATIONS } from './tabs';
 
 export type RootStackParamList = {
   Main: undefined;
@@ -33,63 +31,29 @@ type MainTabParamList = Record<MainTab, undefined>;
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 
-function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
-  const { activeTab, immersiveOffers, openAddOffer, openTab, palette, t } = useApp();
-  const { sheetCount } = useAppStatus();
-  const selectedTab = resolveTabFromRoute(String(state.routes[state.index]?.name ?? ''));
-  const lastNavTab = useRef<MainTab | null>(selectedTab);
-  const footer = resolveFooterColors(palette);
-
-  useEffect(() => {
-    if (selectedTab && selectedTab !== lastNavTab.current) {
-      lastNavTab.current = selectedTab;
-      openTab(selectedTab);
-      return;
-    }
-    if (activeTab && activeTab !== selectedTab) {
-      navigation.navigate(activeTab);
-    }
-  }, [activeTab, navigation, openTab, selectedTab]);
-
-  if (sheetCount > 0) {
-    return null;
-  }
-
-  return (
-    <AppFooterBar
-      palette={palette}
-      fullWidth={!(immersiveOffers && activeTab === 'offers')}
-      items={MAIN_TAB_DESTINATIONS.map((destination) => {
-        const active = activeTab === destination.name;
-        return {
-          key: destination.name,
-          icon: <NavIcon color={active ? footer.accent : footer.inkMuted} name={destination.icon} />,
-          label: t(destination.labelKey),
-          onPress: () => {
-            openTab(destination.name);
-            navigation.navigate(destination.name);
-          },
-          active,
-        };
-      })}
-      createAction={
-        <CreateOfferFab
-          label={t('nav.createOffer')}
-          onPress={() => openAddOffer()}
-          palette={palette}
-        />
-      }
-    />
-  );
-}
-
 function MainView() {
-  const { activeTab, closeImmersiveOffers, immersiveOffers, overlayRoute, palette, t } = useApp();
+  const {
+    activeTab,
+    closeImmersiveOffers,
+    immersiveOffers,
+    openAddOffer,
+    openTab,
+    overlayRoute,
+    palette,
+    t,
+  } = useApp();
+  const { sheetCount } = useAppStatus();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const containerRef = useRef<ComponentRef<typeof View>>(null);
   useDestinationFocus(containerRef, activeTab, overlayRoute, t);
   const immersiveFeedVisible = immersiveOffers && activeTab === 'offers';
+
+  useEffect(() => {
+    if (activeTab) {
+      navigation.navigate(activeTab as never);
+    }
+  }, [activeTab, navigation]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (event) => {
@@ -117,14 +81,33 @@ function MainView() {
       >
         <Tabs.Navigator
           initialRouteName="offers"
-          tabBar={(props) => <BrandedTabBar {...props} />}
-          screenOptions={tabScreenOptions()}
+          screenOptions={{
+            ...tabScreenOptions(),
+            tabBarActiveTintColor: palette.accent,
+            tabBarInactiveTintColor: palette.inkMuted,
+          }}
         >
-          <Tabs.Screen name="account" component={AccountScreen} />
-          <Tabs.Screen name="suggestions" component={SuggestionsScreen} />
-          <Tabs.Screen name="offers" component={OffersScreen} />
+          {MAIN_TAB_DESTINATIONS.map((destination) => (
+            <Tabs.Screen
+              key={destination.name}
+              listeners={{ tabPress: () => openTab(destination.name) }}
+              name={destination.name}
+              component={destination.name === 'account' ? AccountScreen : destination.name === 'suggestions' ? SuggestionsScreen : OffersScreen}
+              options={{
+                tabBarLabel: t(destination.labelKey),
+                tabBarIcon: ({ color, size }) => (
+                  <PlatformTabIcon color={color} name={destination.name as PlatformTabIconName} size={size} />
+                ),
+              }}
+            />
+          ))}
         </Tabs.Navigator>
       </View>
+      {sheetCount === 0 ? (
+        <View style={[styles.createSlot, { bottom: insets.bottom + 76 }]}>
+          <CreateOfferFab label={t('nav.createOffer')} onPress={() => openAddOffer()} palette={palette} />
+        </View>
+      ) : null}
       <LoadingOverlay />
     </View>
   );
@@ -159,7 +142,7 @@ function DismissSync({
 }
 
 export function AppNavigator() {
-  const { closeOverlay, overlayRoute } = useApp();
+  const { closeOverlay, overlayRoute, t } = useApp();
   const reduceMotion = useReduceMotion();
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
   const lastOverlay = useRef<string | null>(null);
@@ -195,8 +178,11 @@ export function AppNavigator() {
   return (
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator screenOptions={stackScreenOptions(reduceMotion)}>
-        <Stack.Screen name="Main" component={MainView} />
-        <Stack.Screen name="AddOffer" options={modalScreenOptions(Platform.OS, reduceMotion)}>
+        <Stack.Screen name="Main" component={MainView} options={{ headerShown: false }} />
+        <Stack.Screen
+          name="AddOffer"
+          options={{ ...modalScreenOptions(Platform.OS, reduceMotion), title: t('add.title') }}
+        >
           {() => (
             <>
               <DismissSync onDismiss={syncDismiss} canDismiss={() => dismissGuard.current()} />
@@ -208,7 +194,10 @@ export function AppNavigator() {
             </>
           )}
         </Stack.Screen>
-        <Stack.Screen name="Favorites" options={stackScreenOptions(reduceMotion)}>
+        <Stack.Screen
+          name="Favorites"
+          options={{ ...stackScreenOptions(reduceMotion), title: t('favorites.title') }}
+        >
           {() => (
             <>
               <DismissSync onDismiss={syncDismiss} />
@@ -235,5 +224,10 @@ const styles = StyleSheet.create({
   },
   offersContent: {
     paddingHorizontal: 0,
+  },
+  createSlot: {
+    alignItems: 'flex-end',
+    position: 'absolute',
+    right: 16,
   },
 });
