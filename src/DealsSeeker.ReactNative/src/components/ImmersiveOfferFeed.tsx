@@ -87,6 +87,78 @@ function ImmersiveOfferImage({ imageUrl, placeholderSymbol }: { imageUrl: string
   );
 }
 
+function ImmersiveSecondaryActions({
+  offer,
+  onReport,
+  onVote,
+  showCaptions,
+}: {
+  offer: OfferItemDto;
+  onReport: (offer: OfferItemDto) => void;
+  onVote: (offer: OfferItemDto, vote: OfferAvailabilityVoteType) => void;
+  showCaptions: boolean;
+}) {
+  const { palette, t } = useApp();
+
+  return (
+    <>
+      <Pressable
+        accessibilityLabel={t('offers.action.report')}
+        accessibilityRole="button"
+        testID="offer-report-button"
+        style={styles.railAction}
+        onPress={() => onReport(offer)}
+      >
+        <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
+          <ImmersiveActionIconGlyph kind="report" />
+        </View>
+        {showCaptions ? (
+          <ImmersiveActionCaption label={t('offers.action.report')} />
+        ) : (
+          <Text style={[styles.morePanelLabel, { color: immersiveInk }]}>{t('offers.action.report')}</Text>
+        )}
+      </Pressable>
+      <Pressable
+        accessibilityLabel={t('offers.action.available')}
+        accessibilityRole="button"
+        testID="offer-available-button"
+        accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
+        disabled={offer.hasCurrentUserVoted}
+        style={[styles.railAction, offer.hasCurrentUserVoted && styles.disabled]}
+        onPress={() => onVote(offer, 1)}
+      >
+        <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
+          <ImmersiveActionIconGlyph kind="votePositive" />
+        </View>
+        <Text style={[styles.railCount, { color: immersiveInkMuted }]}>{offer.positiveAvailabilityCount}</Text>
+        {showCaptions ? (
+          <ImmersiveActionCaption label={t('offers.action.available')} />
+        ) : (
+          <Text style={[styles.morePanelLabel, { color: immersiveInk }]}>{t('offers.action.available')}</Text>
+        )}
+      </Pressable>
+      <Pressable
+        accessibilityLabel={t('offers.action.unavailable')}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
+        disabled={offer.hasCurrentUserVoted}
+        style={[styles.railAction, offer.hasCurrentUserVoted && styles.disabled]}
+        onPress={() => onVote(offer, 2)}
+      >
+        <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
+          <ImmersiveActionIconGlyph kind="voteNegative" />
+        </View>
+        <Text style={[styles.railCount, { color: immersiveInkMuted }]}>{offer.negativeAvailabilityCount}</Text>
+        {showCaptions ? (
+          <ImmersiveActionCaption label={t('offers.action.unavailable')} />
+        ) : (
+          <Text style={[styles.morePanelLabel, { color: immersiveInk }]}>{t('offers.action.unavailable')}</Text>
+        )}
+      </Pressable>
+    </>
+  );
+}
+
 function ImmersiveOfferPage({
   offer,
   showCaptions,
@@ -114,6 +186,7 @@ function ImmersiveOfferPage({
   const hasMultipleImages = images.length > 1;
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
+  const [actionsExpanded, setActionsExpanded] = useState(false);
   const [pageWidth, setPageWidth] = useState(0);
   const [pageHeight, setPageHeight] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
@@ -193,6 +266,7 @@ function ImmersiveOfferPage({
     selectedImageIndexRef.current = 0;
     setSelectedImageIndex(0);
     setDragOffset(0);
+    setActionsExpanded(false);
   }, [offer.offerId]);
 
   return (
@@ -257,49 +331,32 @@ function ImmersiveOfferPage({
           </View>
           {showCaptions ? <ImmersiveActionCaption label={t('offers.action.directions')} /> : null}
         </Pressable>
-        <View style={styles.railDivider} />
-        <Pressable
-          accessibilityLabel={t('offers.action.report')}
-          accessibilityRole="button"
-          testID="offer-report-button"
-          style={styles.railAction}
-          onPress={() => onReport(offer)}
-        >
-          <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
-            <ImmersiveActionIconGlyph kind="report" />
-          </View>
-          {showCaptions ? <ImmersiveActionCaption label={t('offers.action.report')} /> : null}
-        </Pressable>
-        <Pressable
-          accessibilityLabel={t('offers.action.available')}
-          accessibilityRole="button"
-          testID="offer-available-button"
-          accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
-          disabled={offer.hasCurrentUserVoted}
-          style={[styles.railAction, offer.hasCurrentUserVoted && styles.disabled]}
-          onPress={() => onVote(offer, 1)}
-        >
-          <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
-            <ImmersiveActionIconGlyph kind="votePositive" />
-          </View>
-          <Text style={[styles.railCount, { color: immersiveInkMuted }]}>{offer.positiveAvailabilityCount}</Text>
-          {showCaptions ? <ImmersiveActionCaption label={t('offers.action.available')} /> : null}
-        </Pressable>
-        <Pressable
-          accessibilityLabel={t('offers.action.unavailable')}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
-          disabled={offer.hasCurrentUserVoted}
-          style={[styles.railAction, offer.hasCurrentUserVoted && styles.disabled]}
-          onPress={() => onVote(offer, 2)}
-        >
-          <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
-            <ImmersiveActionIconGlyph kind="voteNegative" />
-          </View>
-          <Text style={[styles.railCount, { color: immersiveInkMuted }]}>{offer.negativeAvailabilityCount}</Text>
-          {showCaptions ? <ImmersiveActionCaption label={t('offers.action.unavailable')} /> : null}
-        </Pressable>
+        {showCaptions ? (
+          <>
+            <View style={styles.railDivider} />
+            <ImmersiveSecondaryActions offer={offer} onReport={onReport} onVote={onVote} showCaptions />
+          </>
+        ) : (
+          <Pressable
+            accessibilityLabel={t('offers.action.more')}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: actionsExpanded }}
+            onPress={() => setActionsExpanded((current) => !current)}
+            style={styles.railAction}
+            testID="offer-more-actions"
+          >
+            <View style={[styles.railButton, { backgroundColor: palette.panel }]}>
+              <Text style={{ color: palette.ink, fontSize: 20, fontWeight: '700' }}>…</Text>
+            </View>
+            <ImmersiveActionCaption label={t('offers.action.more')} />
+          </Pressable>
+        )}
       </View>
+      {!showCaptions && actionsExpanded ? (
+        <View style={[styles.morePanel, { backgroundColor: palette.panel, borderColor: palette.border }]}>
+          <ImmersiveSecondaryActions offer={offer} onReport={onReport} onVote={onVote} showCaptions={false} />
+        </View>
+      ) : null}
 
       <View style={styles.bottomOverlay}>
         {hasMultipleImages ? (
@@ -593,6 +650,20 @@ const styles = StyleSheet.create({
   },
   rightRailWithCaptions: {
     right: 16,
+  },
+  morePanel: {
+    borderWidth: 1,
+    borderRadius: 18,
+    bottom: 100,
+    gap: 8,
+    padding: 10,
+    position: 'absolute',
+    right: 84,
+    zIndex: 4,
+  },
+  morePanelLabel: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   bottomOverlay: {
     bottom: 16,

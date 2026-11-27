@@ -75,6 +75,10 @@ describe('immersive chrome over the fixed dark backdrop', () => {
       />
     );
 
+    const more = screen.queryByRole('button', { name: 'offers.action.more' });
+    if (more) {
+      await fireEvent.press(more);
+    }
     expect(StyleSheet.flatten(screen.getByText('2').props.style).color).toBe('#c6d0c9');
   });
 
