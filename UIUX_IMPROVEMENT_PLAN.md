@@ -556,8 +556,8 @@ Add bidirectional `Related Specs` links: `APP.BOTTOM_SHEET.001` ↔ `APP.SHELL.0
 - Do not "fix" `APP.SHELL.002-R9` platform parity, the narrow-screen title rule, or sheet Close semantics without an explicit product decision and a spec amendment.
 - Refinement only — preserve "The Trail Map"; no new accent, no wide reflow, no redesign.
 - Coordinate privacy and EN/ES localization stay mandatory.
-- **Open decision 1:** keep identical iOS/Android UI (`APP.SHELL.002-R9`) or adopt platform conventions? Blocks any HIG/Material conformance work.
-- **Open decision 2:** approve the Cycle L filter simplification before planning its spec.
+- **Decision 1 (closed 2026-11-26):** the user chose *adopt platform conventions*. `APP.SHELL.002` v1.2 amends R9 to allow native interaction affordances while keeping brand visuals identical, and R11 requires platform-native press feedback and touch floors. Deeper native-control adoption remains a separate redesign.
+- **Decision 2 (closed 2026-11-26):** the user approved the Cycle L simplification for both presentations; `OFFERS.FILTER.SIMPLIFICATION.001` v1.1 is Approved and implemented.
 
 ### 10.12 Suggested execution order
 
@@ -565,9 +565,15 @@ G → H → I → J → K → M, with L only after a decision. Each cycle: spec 
 
 ### 10.13 Execution status (2026-11-26)
 
-Cycles **G, H, I, J, K and L are complete**, each with its approved spec/BDD, RED→GREEN TDD evidence in `.impeccable/tdd/`, and checkpoint commits on `dev`. Cycle L was approved by the user for both presentations; its picker expands inline rather than opening a nested sheet (`OFFERS.FILTER.SIMPLIFICATION.001` v1.1). Cycle M verification performed after L: `npm test` 70 suites / 417 tests, `npm run typecheck` clean; the post-K coverage run was 82.41% statements / 75.23% branches / 82.13% functions / 82.20% lines.
+Cycles **G, H, I, J, K, L and M are complete**. Each implementation cycle has its approved spec/BDD, RED→GREEN TDD evidence in `.impeccable/tdd/`, and checkpoint commits on `dev`. All items from the previous outstanding list are closed:
 
-Device E2E was intentionally not run at the user's request. The P0 sheet/footer occlusion was verified manually on `emulator-5554` before and after the fix; the 150%-text and serif-rendering captures remain outstanding. Re-running the formal `critique` / `audit` scores is still pending; fixes closed the original P0 and the P1 text-scaling, typography, virtualization and palette findings, but no new score has been recorded.
+- Formal re-score: critique **28/40 (Good)** and native audit **15/20 (Good)**, archived at `.impeccable/critique/2026-11-26-plan-closeout.md` and `.impeccable/audit/2026-11-26-plan-closeout.md`.
+- Visual captures: serif rendering at 100% text and footer/type behavior at 150% text were captured on `emulator-5554`. A forced-caption capture proved six captioned rail actions collide with the chrome, so captions remain omitted when measured space is short, with AT labels retained.
+- `AppContext` value is memoized across unrelated renders (`appContext.test.tsx` identity guard).
+- Add Offer photos are capped at four and encoded at quality 0.5 (`ADD.OFFER.IMAGE.SIZE.001`).
+- Native splash now has a dark-appearance background variant (`APP.THEME.001-R12`).
+- Immersive no-results/fallback panels render below the top controls (`APP.POLISH.UX.001-R14`).
+- Platform-parity decision closed in favour of platform affordances with unchanged brand visuals (`APP.SHELL.002` v1.2).
 
-Open follow-ups carried forward: `AppContext` provider-value churn, base64 photo capping in Add Offer, theme-aware native splash background, the static white splash, the no-results state panel rendering above the absolute top bar, and the two open decisions in §10.11 (platform parity in `APP.SHELL.002-R9`; no new decision needed for L).
+Final verification: `npm test` 73 suites / 425 tests, `npm run typecheck` clean, coverage 82.4% statements / 75.2% branches / 82.1% functions / 82.2% lines. Device E2E was intentionally not run at the user's request. Newly recorded P2 follow-ups (icon-only rail redesign, explicit browse-area choice after location denial, offer-card action density, context split, iOS/device captures) are outside the original plan scope and are documented in the re-score reports.
 
