@@ -30,3 +30,9 @@ Feature: Authentication input affordances
     Then the password input shall hold exactly 200 characters
     When the user is on Register and pastes a display name longer than 80 characters
     Then the display name input shall hold exactly 80 characters
+
+  Scenario: Auth inputs expose autofill metadata
+    Given the user is on Login or Register
+    When the email and password inputs are rendered
+    Then the email input exposes username autofill metadata
+    And the password input exposes current-password or new-password metadata as appropriate

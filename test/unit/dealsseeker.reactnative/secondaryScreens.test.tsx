@@ -132,8 +132,7 @@ describe('SuggestionsScreen', () => {
     expect(screen.queryByText('suggestions.title')).toBeNull();
   });
 
-  it('submits a trimmed suggestion, shows success, then returns to Offers', async () => {
-    jest.useFakeTimers();
+  it('submits a trimmed suggestion, keeps success visible, then returns via Done', async () => {
     await render(<SuggestionsScreen />);
     expect(screen.queryByText('app.title')).toBeNull();
     await fireEvent.changeText(screen.getByPlaceholderText('suggestions.message'), '  More deals please  ');
@@ -146,28 +145,19 @@ describe('SuggestionsScreen', () => {
     expect(await screen.findByText('suggestions.success')).toBeTruthy();
     expect(mockSuccessFeedback).toHaveBeenCalledTimes(1);
     expect(mockOpenTab).not.toHaveBeenCalled();
-    await act(async () => {
-      jest.advanceTimersByTime(1000);
-    });
+    await fireEvent.press(screen.getByTestId('suggestions-done'));
     expect(mockOpenTab).toHaveBeenCalledWith('offers');
-    jest.useRealTimers();
   });
 
-  it('cancels the pending Offers redirect when the user leaves before it fires', async () => {
+  it('does not auto-navigate after a successful suggestion', async () => {
     jest.useFakeTimers();
-    const view = await render(<SuggestionsScreen />);
+    await render(<SuggestionsScreen />);
     await fireEvent.changeText(screen.getByPlaceholderText('suggestions.message'), 'More deals please');
     await fireEvent.press(screen.getByText('suggestions.submit'));
     await waitFor(() => expect(mockSubmitSuggestion).toHaveBeenCalled());
-
-    mockActiveTab = 'account';
     await act(async () => {
-      view.rerender(<SuggestionsScreen />);
+      jest.advanceTimersByTime(5000);
     });
-    await act(async () => {
-      jest.advanceTimersByTime(1000);
-    });
-
     expect(mockOpenTab).not.toHaveBeenCalled();
     jest.useRealTimers();
   });
@@ -250,25 +240,23 @@ describe('OfferReportSheet', () => {
     expect(mockSubmitReport).not.toHaveBeenCalled();
   });
 
-  it('submits, shows success, then closes and returns to Offers', async () => {
-    jest.useFakeTimers();
+  it('submits, keeps success visible, then closes via Done', async () => {
     await render(<OfferReportSheet draft={mockReportDraft} onClose={onClose} visible />);
     await fireEvent.changeText(screen.getByPlaceholderText('reports.message'), 'Closed down');
     await fireEvent.press(screen.getByText('reports.submit'));
 
     await waitFor(() => expect(mockSubmitReport).toHaveBeenCalled());
-    expect(mockClearReportDraft).toHaveBeenCalled();
     expect(await screen.findByText('reports.success')).toBeTruthy();
     expect(mockSuccessFeedback).toHaveBeenCalledTimes(1);
-    await act(async () => {
-      jest.advanceTimersByTime(1000);
-    });
+    expect(onClose).not.toHaveBeenCalled();
+    expect(mockOpenTab).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('report-done'));
+    expect(mockClearReportDraft).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(mockOpenTab).toHaveBeenCalledWith('offers');
-    jest.useRealTimers();
   });
 
-  it('cancels the redirect when the sheet unmounts before the dwell ends', async () => {
+  it('does not auto-navigate when the sheet unmounts after a successful report', async () => {
     jest.useFakeTimers();
     const view = await render(<OfferReportSheet draft={mockReportDraft} onClose={onClose} visible />);
     await fireEvent.changeText(screen.getByPlaceholderText('reports.message'), 'Closed down');
@@ -279,7 +267,7 @@ describe('OfferReportSheet', () => {
       view.unmount();
     });
     await act(async () => {
-      jest.advanceTimersByTime(1000);
+      jest.advanceTimersByTime(5000);
     });
 
     expect(mockOpenTab).not.toHaveBeenCalled();

@@ -1,3 +1,4 @@
+import { platformTouchFloor } from '../utils/layout';
 import { landmarkFontFamily } from '../utils/typography';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -93,7 +94,9 @@ export function RegisterScreen() {
         <TextInput
           accessibilityLabel={t('auth.email')}
           autoCapitalize="none"
+          autoComplete="username"
           keyboardType="email-address"
+          textContentType="username"
           maxLength={emailMaxLength}
           onChangeText={(value) => setEmail(value.slice(0, emailMaxLength))}
           placeholder={t('auth.email')}
@@ -103,7 +106,9 @@ export function RegisterScreen() {
         />
         <TextInput
           accessibilityLabel={t('auth.password')}
+          autoComplete="new-password"
           maxLength={passwordMaxLength}
+          textContentType="newPassword"
           onChangeText={(value) => setPassword(value.slice(0, passwordMaxLength))}
           placeholder={t('auth.password')}
           placeholderTextColor={palette.inkMuted}
@@ -154,6 +159,6 @@ const styles = StyleSheet.create({
   visibilityToggle: {
     alignSelf: 'flex-start',
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
   },
 });

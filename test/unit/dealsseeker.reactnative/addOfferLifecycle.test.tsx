@@ -180,7 +180,7 @@ describe('Add Offer lifecycle (impeccable pass)', () => {
     expect(screen.getByText('add.tagsAutoHint')).toBeTruthy();
   });
 
-  it('holds a success-toned confirmation for three seconds before closing', async () => {
+  it('holds a success-toned confirmation until an explicit completion control (ADD.OFFER.UX.001-R5)', async () => {
     await render(<AddOfferScreen />);
     await screen.findByText('add.currentLocationUnavailable');
     await fillValidDraft();
@@ -192,8 +192,10 @@ describe('Add Offer lifecycle (impeccable pass)', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 500));
     expect(mockCloseOverlay).not.toHaveBeenCalled();
+    expect(screen.getByText('add.created')).toBeTruthy();
 
-    await waitFor(() => expect(mockCloseOverlay).toHaveBeenCalledTimes(1), { timeout: 5000 });
+    await fireEvent.press(screen.getByTestId('add-view-offer'));
+    expect(mockCloseOverlay).toHaveBeenCalledTimes(1);
     expect(mockOpenTab).toHaveBeenCalledWith('offers');
   });
 });

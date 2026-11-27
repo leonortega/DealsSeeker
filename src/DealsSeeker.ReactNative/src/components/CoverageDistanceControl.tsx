@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { platformTouchFloor } from '../utils/layout';
 import type { Palette } from '../utils/theme';
 
 export const COVERAGE_DISTANCE_OPTIONS = [500, 1000, 1500, 2500, 5000];
@@ -37,7 +38,11 @@ export function CoverageDistanceControl({
         </Text>
       </Pressable>
       {expanded ? (
-        <View style={[styles.options, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <View
+          accessibilityLabel={t('offers.radius')}
+          accessibilityRole="radiogroup"
+          style={[styles.options, { backgroundColor: palette.card, borderColor: palette.border }]}
+        >
           {COVERAGE_DISTANCE_OPTIONS.map((option) => {
             const selected = option === radiusMeters;
             return (
@@ -72,7 +77,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     justifyContent: 'center',
-    minHeight: 48,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
@@ -92,7 +97,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 999,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },

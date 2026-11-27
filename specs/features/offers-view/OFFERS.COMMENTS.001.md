@@ -117,6 +117,7 @@ Scenario: Comment body counter tracks typing and stops at 120
 - The comments section shall remain usable on narrow viewports.
 
 ## Related Specs
+- `OFFERS.GUEST.001`
 - `APP.TEXTCOUNTER.001`
 - `ACCOUNT.PROFILE.AVATAR.001`
 - `OFFERS.COMMENTS.PAGINATION.001`

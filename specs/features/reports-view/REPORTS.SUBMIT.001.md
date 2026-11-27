@@ -23,7 +23,7 @@ Allow an authenticated user to submit a generic report from the Reports section,
 - `REPORTS.SUBMIT.001-R4`: The Reports view shall prefill the current authenticated `userId` and a UTC report date/time value.
 - `REPORTS.SUBMIT.001-R5`: The report message shall be required for submission.
 - `REPORTS.SUBMIT.001-R6`: The report payload shall submit message, optional offerId, authenticated userId, and report date/time.
-- `REPORTS.SUBMIT.001-R7`: After a successful report submission response, the system shall redirect the user to `Offers`.
+- `REPORTS.SUBMIT.001-R7`: After a successful report submission response, the system shall present an explicit completion control that returns the user to `Offers`; it shall not navigate on a timer.
 - `REPORTS.SUBMIT.001-R8`: Unauthenticated access to Reports shall redirect to `Login`.
 - `REPORTS.SUBMIT.001-R9`: The submit action shall remain visible and operable while the on-screen keyboard is open.
 - `REPORTS.SUBMIT.001-R10`: The report message input shall display a live counter in `<current>/120` form and shall accept at most 120 characters, as specified in `APP.TEXTCOUNTER.001`.
@@ -36,7 +36,7 @@ Scenario: Authenticated user reports an offer
   When the report overlay opens and the user submits a non-empty message
   Then the offer preview shall be displayed
   And the payload shall include message, offer identifier, authenticated userId, and report date/time
-  And after a successful response the system shall close the overlay and redirect to Offers
+  And after a successful response the confirmation remains visible and an explicit Done control returns to Offers
 
 Scenario: No standalone Reports entry point
   Given the shared footer is displayed
@@ -59,7 +59,7 @@ Scenario: Report message counter tracks typing and stops at 120
 
 ## Example Inputs/Outputs
 - Example input: report message submitted from an offer's Report action.
-- Expected output: report is accepted with userId and UTC report timestamp, then the app redirects to `Offers`.
+- Expected output: report is accepted with userId and UTC report timestamp, the confirmation stays visible, and an explicit Done control returns to `Offers`.
 
 ## Edge Cases
 - Message is blank; submission is rejected and Reports remains visible.
@@ -69,6 +69,7 @@ Scenario: Report message counter tracks typing and stops at 120
 - Reports view should be immediately available after navigation from menu or legacy alias.
 
 ## Related Specs
+- `OFFERS.GUEST.001`
 - `APP.TEXTCOUNTER.001`
 - `APP.SHELL.001`
 - `REPORTS.SHEET.001`

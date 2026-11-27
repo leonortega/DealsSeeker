@@ -1,3 +1,4 @@
+import { platformTouchFloor } from '../utils/layout';
 import { landmarkFontFamily } from '../utils/typography';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 28,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 20,
   },
   actionLabel: {

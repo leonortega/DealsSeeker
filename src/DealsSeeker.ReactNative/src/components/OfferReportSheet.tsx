@@ -24,7 +24,7 @@ export function OfferReportSheet({ draft, visible, onClose, returnFocusRef }: Of
   const [message, setMessage] = useState('');
   const [reportedAtUtc, setReportedAtUtc] = useState(new Date().toISOString());
   const { status, statusTone, reportStatus: reportNotice } = useStatusNotice();
-  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const apiRef = useRef(api);
   const tRef = useRef(t);
   apiRef.current = api;
@@ -46,17 +46,14 @@ export function OfferReportSheet({ draft, visible, onClose, returnFocusRef }: Of
     }
     setMessage(draft.initialMessage);
     setReportedAtUtc(draft.reportedAtUtc);
+    setSubmitted(false);
   }, [visible, draft]);
 
-  useEffect(
-    () => () => {
-      if (redirectTimer.current) {
-        clearTimeout(redirectTimer.current);
-        redirectTimer.current = null;
-      }
-    },
-    []
-  );
+  function finish() {
+    clearReportDraft();
+    close();
+    openTab('offers');
+  }
 
   async function submit() {
     if (!draft) {
@@ -84,14 +81,9 @@ export function OfferReportSheet({ draft, visible, onClose, returnFocusRef }: Of
       }
 
       setMessage('');
-      clearReportDraft();
+      setSubmitted(true);
       reportStatus(tRef.current('reports.success'), 'success');
       successFeedback();
-      redirectTimer.current = setTimeout(() => {
-        redirectTimer.current = null;
-        close();
-        openTab('offers');
-      }, 900);
     } catch {
       reportStatus(tRef.current('reports.failed'), 'error');
     }
@@ -130,11 +122,30 @@ export function OfferReportSheet({ draft, visible, onClose, returnFocusRef }: Of
         />
         <Text style={{ color: palette.inkMuted, textAlign: 'right' }}>{`${message.length}/${messageMaxLength}`}</Text>
 
-        {status ? <Text style={[styles.status, { color: statusColor(palette, statusTone) }]}>{status}</Text> : null}
+        {status && !submitted ? (
+          <Text style={[styles.status, { color: statusColor(palette, statusTone) }]}>{status}</Text>
+        ) : null}
 
-        <Pressable style={[styles.publishButton, { backgroundColor: palette.accent }]} onPress={() => void submit()}>
-          <Text style={[styles.publishLabel, { color: palette.onAccent }]}>{t('reports.submit')}</Text>
-        </Pressable>
+        {submitted ? (
+          <View testID="report-success" style={styles.success}>
+            <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.success ?? palette.accent }]}>
+              {t('reports.success')}
+            </Text>
+            <Pressable
+              accessibilityLabel={t('common.done')}
+              accessibilityRole="button"
+              onPress={finish}
+              style={[styles.publishButton, { backgroundColor: palette.accent }]}
+              testID="report-done"
+            >
+              <Text style={[styles.publishLabel, { color: palette.onAccent }]}>{t('common.done')}</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable style={[styles.publishButton, { backgroundColor: palette.accent }]} onPress={() => void submit()}>
+            <Text style={[styles.publishLabel, { color: palette.onAccent }]}>{t('reports.submit')}</Text>
+          </Pressable>
+        )}
       </View>
     </NativeBottomSheet>
   );
@@ -179,6 +190,9 @@ const styles = StyleSheet.create({
   status: {
     fontSize: 13,
     fontWeight: '700',
+  },
+  success: {
+    gap: 10,
   },
   publishButton: {
     borderRadius: 16,

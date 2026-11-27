@@ -66,4 +66,22 @@ describe('labelled action disclosure (OFFERS.ACTIONS.LABELS.001-R2)', () => {
     expect(screen.getByText('offers.action.available')).toBeTruthy();
     expect(screen.getByText('offers.action.unavailable')).toBeTruthy();
   });
+
+  it('reflows every caption into the labelled disclosure at large text sizes', async () => {
+    await renderFeed();
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.action.more' }));
+
+    expect(screen.getByText('offers.action.directions')).toBeTruthy();
+    expect(screen.getByText('offers.action.favorite')).toBeTruthy();
+    expect(screen.getByText('offers.action.comments')).toBeTruthy();
+  });
+
+  it('keeps the disclosure itself visibly labelled while the controls stay tappable', async () => {
+    await renderFeed();
+    const more = screen.getByRole('button', { name: 'offers.action.more' });
+
+    expect(screen.getByText('offers.action.more')).toBeTruthy();
+    await fireEvent.press(more);
+    expect(screen.getAllByRole('button').length).toBeGreaterThanOrEqual(6);
+  });
 });

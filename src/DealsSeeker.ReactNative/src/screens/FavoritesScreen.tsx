@@ -1,3 +1,4 @@
+import { platformTouchFloor } from '../utils/layout';
 import { landmarkFontFamily } from '../utils/typography';
 import { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     flex: 1,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 12,
     paddingVertical: 12,
   },

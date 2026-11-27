@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Authentication Input Affordances
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: My Account (Login and Register)
 - **Priority**: Medium
@@ -26,6 +26,7 @@ Make email and password entry self-describing on mobile without changing authent
 - `ACCOUNT.AUTH.INPUT.001-R7`: The email input shall accept at most 254 characters on both Login and Register.
 - `ACCOUNT.AUTH.INPUT.001-R8`: The password input shall accept at most 200 characters on both Login and Register.
 - `ACCOUNT.AUTH.INPUT.001-R9`: The Register display name input shall accept at most 80 characters.
+- `ACCOUNT.AUTH.INPUT.001-R10`: The email and password inputs shall expose platform autofill metadata for username and for current or new password so that password managers can offer stored or generated credentials.
 
 ## Acceptance Criteria (BDD)
 ```gherkin

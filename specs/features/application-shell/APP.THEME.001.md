@@ -95,6 +95,7 @@ Scenario: Immersive metadata stays legible in the light theme
 - Theme switching should not cause perceptible layout jank.
 
 ## Related Specs
+- `OFFERS.EMPTY.001`
 - `APP.SHELL.001`
 - `APP.THEME.002`
 - `APP.THEME.003`

@@ -32,3 +32,9 @@ Feature: Accessible control semantics across contribution, account, and feedback
     When a labelled control is rendered
     Then its accessibility label is expressed in the active language
     And its role and state are unchanged
+
+  Scenario: Mutually exclusive options are announced as a group
+    Given a settings surface with mutually exclusive options
+    When assistive technology traverses those options
+    Then the options are exposed inside a labelled group
+    And each option exposes its selected state

@@ -59,7 +59,7 @@ describe('Add Offer tag limit (ADD.OFFER.TAG.LIMIT.001)', () => {
     mockSearchLocations.mockResolvedValue([{ label: 'Main Street', position: { lat: 1, lng: 2 } }]);
   });
 
-  it('caps automatic tags at ten and shows the limit hint', async () => {
+  it('keeps description-derived tags without auto-adding suggestions', async () => {
     await render(<AddOfferScreen />);
     const input = screen.getByPlaceholderText('add.descriptionPlaceholder');
     let value = '';
@@ -68,8 +68,9 @@ describe('Add Offer tag limit (ADD.OFFER.TAG.LIMIT.001)', () => {
       await fireEvent.changeText(input, value);
     }
 
-    await waitFor(() => expect(screen.getAllByTestId('add-tag-chip')).toHaveLength(10));
+    await waitFor(() => expect(screen.getAllByTestId('add-tag-chip')).toHaveLength(4));
     expect(screen.getByText('add.tagsLimitHint')).toBeTruthy();
+    expect(screen.getByTestId('add-suggestions')).toBeTruthy();
   });
 
   it('caps each automatic tag at 40 normalized characters', async () => {

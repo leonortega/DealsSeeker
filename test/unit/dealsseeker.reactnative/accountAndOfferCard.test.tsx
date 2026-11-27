@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { Alert } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import { OfferCard } from '../../../src/DealsSeeker.ReactNative/src/components/OfferCard';
 import { AccountScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AccountScreen';
+import { platformTouchFloor } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
 
 let mockActiveTab = 'account';
 let mockPreferences = { language: 'en', navigationMode: 'pedestrian', themeMode: 'light', themeWorld: 'tangerine' };
@@ -179,6 +180,23 @@ describe('AccountScreen', () => {
     expect(mockOpenAddOffer).toHaveBeenCalledWith('o1');
   });
 
+  it('gives account controls the platform touch floor', async () => {
+    await render(<AccountScreen />);
+    await screen.findByText('Tester');
+
+    const controls = [
+      screen.getByRole('button', { name: 'account.logout' }),
+      screen.getByRole('radio', { name: 'theme.tangerine' }),
+      screen.getByRole('radio', { name: 'nav.lightTheme' }),
+      screen.getByRole('button', { name: 'nav.language' }),
+      screen.getByText('account.editOffer').parent,
+      screen.getByText('account.removeOffer').parent,
+    ];
+    for (const control of controls) {
+      expect(StyleSheet.flatten(control.props.style).minHeight).toBeGreaterThanOrEqual(platformTouchFloor);
+    }
+  });
+
   it('removes an offer after confirmation', async () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
       buttons?.[1]?.onPress?.();
@@ -290,5 +308,17 @@ describe('OfferCard', () => {
   it('uses authored glyphs instead of emoji for vote actions', async () => {
     await renderCard();
     expect(screen.queryAllByText(/[👍👎]/)).toHaveLength(0);
+  });
+
+  it('renders the canonical actions with glyphs in the canonical order', async () => {
+    await renderCard();
+
+    const order = screen.getAllByTestId(/^offer-card-action-/u).map((node) => node.props.testID);
+    expect(order).toEqual([
+      'offer-card-action-directions',
+      'offer-card-action-favorite',
+      'offer-card-action-comments',
+    ]);
+    expect(screen.getAllByTestId('offer-action-glyph').length).toBeGreaterThanOrEqual(3);
   });
 });

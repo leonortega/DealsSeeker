@@ -220,9 +220,17 @@ export function resolveFooterColors(palette: Palette) {
   };
 }
 
-export function resolveShellChrome(immersive: boolean, palette: Palette) {
+export type ShellSurface = 'standard' | 'immersive' | 'auth' | 'splash';
+
+/** Status bar chrome follows the rendered surface, never a global immersive flag. */
+export function resolveRouteChrome(surface: ShellSurface, palette: Palette) {
+  const immersive = surface === 'immersive';
   return {
     background: immersive ? palette.backdrop : palette.background,
     statusBarStyle: immersive || palette.mode === 'dark' ? ('light' as const) : ('dark' as const),
   };
+}
+
+export function resolveShellChrome(immersive: boolean, palette: Palette) {
+  return resolveRouteChrome(immersive ? 'immersive' : 'standard', palette);
 }

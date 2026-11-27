@@ -48,7 +48,7 @@ Scenario: Tablet composition preserves behavior
 - Example input: 390-unit-wide phone viewport.
 - Expected output: single scrolling column, identical to today.
 - Example input: 1024-unit-wide tablet viewport.
-- Expected output: two side-by-side columns with the same panels and a 44pt-or-larger touch floor.
+- Expected output: two side-by-side columns with the same panels and a platform-appropriate touch floor (44pt iOS, 48dp Android).
 
 ## Edge Cases
 - Width exactly at the tablet breakpoint.

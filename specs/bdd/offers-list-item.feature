@@ -45,3 +45,15 @@ Feature: Offer list item content and actions
     When the user selects the offer item destination action
     Then directions open for that location
     And the configured travel mode is selected
+
+  Scenario: Row actions match the canonical vocabulary
+    Given the same offer appears in the list, in the feed and in favorites
+    When each row's action area is rendered
+    Then the same labels, glyphs and relative order are used on every surface
+    And any overflow sits behind a single control labelled More
+
+  Scenario: Inline action does not force navigation
+    Given an offer row is displayed in the feed
+    When the user completes an inline availability vote
+    Then the feed stays on the current destination
+    And the row remains visible until the user explicitly navigates or closes it

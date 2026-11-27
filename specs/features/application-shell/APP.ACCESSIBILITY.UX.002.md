@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Accessible control semantics across contribution, account, and feedback surfaces
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application shell, My Account, Add Offer, Suggestions, Reports, Offers detail and comments
 - **Priority**: High
@@ -25,6 +25,7 @@ Make every interactive control perceivable and understandable to assistive techn
 - `APP.ACCESSIBILITY.UX.002-R5`: A control with a visual selected, checked, or disabled state shall expose the equivalent accessibility state.
 - `APP.ACCESSIBILITY.UX.002-R6`: Navigation links shall be announced as links, and actions shall be announced as actions.
 - `APP.ACCESSIBILITY.UX.002-R7`: These requirements shall hold in both themes and for localized labels longer than the source text.
+- `APP.ACCESSIBILITY.UX.002-R8`: A set of mutually exclusive options shall be exposed to assistive technology as a labelled group whose members expose their selected state.
 
 ## Acceptance Criteria (BDD)
 ```gherkin

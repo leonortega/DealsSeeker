@@ -1,35 +1,14 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
 import type { MainTab } from '../api/types';
 
-const REDIRECT_DELAY_MS = 900;
-
+/**
+ * Returns to Offers only when the caller invokes it from an explicit user action.
+ * No timer is involved: success confirmations stay put until the user decides to leave.
+ */
 export function useDelayedOffersRedirect(
-  activeTab: MainTab,
-  screenTab: MainTab,
+  _activeTab: MainTab,
+  _screenTab: MainTab,
   openTab: (tab: MainTab) => void
 ) {
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (activeTab !== screenTab && timer.current) {
-      clearTimeout(timer.current);
-      timer.current = null;
-    }
-  }, [activeTab, screenTab]);
-
-  useEffect(
-    () => () => {
-      if (timer.current) {
-        clearTimeout(timer.current);
-      }
-    },
-    []
-  );
-
-  return useCallback(() => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-    }
-    timer.current = setTimeout(() => openTab('offers'), REDIRECT_DELAY_MS);
-  }, [openTab]);
+  return useCallback(() => openTab('offers'), [openTab]);
 }

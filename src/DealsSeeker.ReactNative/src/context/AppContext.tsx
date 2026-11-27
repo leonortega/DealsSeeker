@@ -26,6 +26,8 @@ import { translate } from '../utils/translations';
 import { resolveTheme } from '../utils/theme';
 import { DEFAULT_AVATAR_ID } from '../utils/avatars';
 
+const STARTUP_SAFETY_CAP_MS = 800;
+
 type AuthScreen = 'login' | 'register';
 type OverlayRoute =
   | { name: 'add-offer'; offerId?: string }
@@ -40,6 +42,9 @@ interface AppContextValue {
   session: AuthSessionDto | null;
   sessionNotice: string | null;
   isAuthenticated: boolean;
+  guestMode: boolean;
+  enterGuestMode: () => void;
+  exitGuestMode: () => void;
   preferences: UserPreferences;
   palette: ReturnType<typeof resolveTheme>;
   reportDraft: OfferReportDraft | null;
@@ -94,6 +99,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     language: resolveDeviceLanguage(),
   });
   const [authScreen, setAuthScreen] = useState<AuthScreen>('login');
+  const [guestMode, setGuestMode] = useState(false);
   const [activeTab, setActiveTab] = useState<MainTab>('offers');
   const [overlayRoute, setOverlayRoute] = useState<OverlayRoute>(null);
   // Approved default per OFFERS.MODE.SWITCH.001-R4 and OFFERS.FEED.IMMERSIVE.001-R43.
@@ -165,30 +171,41 @@ export function AppProvider({ children }: PropsWithChildren) {
     [session?.accessToken, handleUnauthorized]
   );
 
+  const refreshProfile = useCallback(async () => {
+    try {
+      const profile = await apiBase.getMyProfile();
+      if (!profile) {
+        await handleUnauthorized();
+        return;
+      }
+      setCachedProfile(profile);
+      setAvatarId(profile.avatarId ?? DEFAULT_AVATAR_ID);
+    } catch {
+      // A transient failure must not discard a valid session.
+    }
+  }, [apiBase, handleUnauthorized]);
+
   useEffect(() => {
     if (!bootstrapped || !session?.accessToken) {
       return;
     }
 
     const subscription = AppState.addEventListener('change', (nextState) => {
-      if (nextState !== 'active') {
-        return;
+      if (nextState === 'active') {
+        void refreshProfile();
       }
-
-      void (async () => {
-        try {
-          const profile = await apiBase.getMyProfile();
-          if (!profile) {
-            await handleUnauthorized();
-          }
-        } catch {
-          // A transient failure must not discard a valid session.
-        }
-      })();
     });
 
     return () => subscription.remove();
-  }, [apiBase, bootstrapped, handleUnauthorized, session?.accessToken]);
+  }, [bootstrapped, refreshProfile, session?.accessToken]);
+
+  // Profile-dependent controls settle after the first frame instead of holding it up.
+  useEffect(() => {
+    if (!bootstrapped || !session?.accessToken) {
+      return;
+    }
+    void refreshProfile();
+  }, [bootstrapped, refreshProfile, session?.accessToken]);
 
   const api: ReturnType<typeof createDealsSeekerApi> = useMemo(
     () => ({
@@ -250,43 +267,34 @@ export function AppProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     let isMounted = true;
+    let capTimer: ReturnType<typeof setTimeout> | null = null;
 
     async function bootstrap() {
-      const splashDelay = new Promise((resolve) => setTimeout(resolve, 2000));
       const deviceLanguage = resolveDeviceLanguage();
-      const storedSession = await loadSession<AuthSessionDto>();
-      let activeSession = storedSession;
-      let profileAvatarId: string | null = null;
+      const safetyCap = new Promise<null>((resolve) => {
+        capTimer = setTimeout(() => resolve(null), STARTUP_SAFETY_CAP_MS);
+      });
+      const readiness = (async () => {
+        const storedSession = await loadSession<AuthSessionDto>();
+        const loadedPreferences = await loadPreferences(deviceLanguage, storedSession?.userId);
+        return { storedSession, loadedPreferences };
+      })();
 
-      if (storedSession?.accessToken) {
-        try {
-          const profileApi = createDealsSeekerApi({
-            baseUrl: apiConfig.baseUrl,
-            getAccessToken: () => storedSession.accessToken,
-          });
-          const profile = await profileApi.getMyProfile();
-          if (!profile) {
-            activeSession = null;
-            await clearSession();
-          } else {
-            profileAvatarId = profile.avatarId;
-          }
-        } catch {
-          activeSession = null;
-          await clearSession();
-        }
+      const outcome = await Promise.race([
+        readiness.then((result) => ({ ...result, timedOut: false })),
+        safetyCap.then(() => ({ storedSession: null, loadedPreferences: null, timedOut: true })),
+      ]);
+
+      if (capTimer) {
+        clearTimeout(capTimer);
       }
-
-      const loadedPreferences = await loadPreferences(deviceLanguage, activeSession?.userId);
-      await splashDelay;
-
       if (!isMounted) {
         return;
       }
 
-      setSessionState(activeSession);
-      setPreferences(loadedPreferences);
-      setAvatarId(profileAvatarId ?? DEFAULT_AVATAR_ID);
+      setSessionState(outcome.storedSession ?? null);
+      setPreferences(outcome.loadedPreferences ?? { ...DEFAULT_PREFERENCES, language: deviceLanguage });
+      setAvatarId(DEFAULT_AVATAR_ID);
       setAuthScreen('login');
       setActiveTab('offers');
       setBootstrapped(true);
@@ -296,6 +304,9 @@ export function AppProvider({ children }: PropsWithChildren) {
 
     return () => {
       isMounted = false;
+      if (capTimer) {
+        clearTimeout(capTimer);
+      }
     };
   }, []);
 
@@ -303,6 +314,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     await saveSession(nextSession);
     const nextPreferences = await loadPreferences(resolveDeviceLanguage(), nextSession.userId);
     setSessionState(nextSession);
+    setGuestMode(false);
     setSessionNotice(null);
     setPreferences(nextPreferences);
     try {
@@ -327,6 +339,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     } finally {
       await clearSession();
       setSessionState(null);
+      setGuestMode(false);
       setSessionNotice(null);
       setCachedProfile(null);
       setOverlayRoute(null);
@@ -375,6 +388,12 @@ export function AppProvider({ children }: PropsWithChildren) {
     session,
     sessionNotice,
     isAuthenticated: Boolean(session?.accessToken),
+    guestMode,
+    enterGuestMode: () => setGuestMode(true),
+    exitGuestMode: () => {
+      setGuestMode(false);
+      setAuthScreen('login');
+    },
     preferences,
     palette: resolveTheme(
       preferences.themeMode,
@@ -431,6 +450,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     bootstrapped,
     session,
     sessionNotice,
+    guestMode,
     preferences,
     systemScheme,
     reportDraft,

@@ -1,3 +1,4 @@
+import { platformTouchFloor } from '../utils/layout';
 import { landmarkFontFamily } from '../utils/typography';
 import { type ElementRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, SectionList, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
@@ -39,7 +40,7 @@ const searchDebounceMs = 300;
 const queryMaxLength = 200;
 
 export function OffersScreen() {
-  const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, runOperation, setReportDraft, t } =
+  const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, isAuthenticated, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, runOperation, setReportDraft, t } =
     useApp();
   const { width: viewportWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -322,7 +323,23 @@ export function OffersScreen() {
     );
   }
 
+  function requireSession(): boolean {
+    if (isAuthenticated) {
+      return true;
+    }
+    setActionStatus(t('auth.signInToContribute'), 'error');
+    return false;
+  }
+
   function renderStatePanel() {
+    if (state.kind === 'empty') {
+      return panel(t('offers.emptyTitle'), t('offers.emptyHint'), t('offers.createFirstOffer'), () => {
+        if (requireSession()) {
+          openAddOffer();
+        }
+      });
+    }
+
     if (state.kind === 'search-error') {
       return panel(t('offers.searchFailed'), t('offers.searchFailedHint'), t('offers.retry'), () => void search());
     }
@@ -352,6 +369,9 @@ export function OffersScreen() {
   );
 
   async function toggleFavorite(offer: OfferItemDto) {
+    if (!requireSession()) {
+      return;
+    }
     setActionStatus(null);
     const nextFavorite = !offer.isFavorite;
     const result = await api.setOfferFavorite(offer.offerId, { isFavorite: nextFavorite });
@@ -381,6 +401,9 @@ export function OffersScreen() {
   }
 
   async function vote(offer: OfferItemDto, voteType: OfferAvailabilityVoteType) {
+    if (!requireSession()) {
+      return;
+    }
     setActionStatus(null);
     const result = await api.voteOfferAvailability(offer.offerId, { vote: voteType });
     if (!result.success) {
@@ -415,6 +438,9 @@ export function OffersScreen() {
   }
 
   function openOfferComments(offer: OfferItemDto) {
+    if (!requireSession()) {
+      return;
+    }
     setDetailOffer(null);
     setCommentsOffer(offer);
   }
@@ -459,7 +485,7 @@ export function OffersScreen() {
             setRadiusMeters(nextRadius);
             void search(query, nextRadius, favoritesOnly);
           }}
-          onReport={setReportDraft}
+          onReport={(offer) => { if (requireSession()) { setReportDraft(offer); } }}
           onSearch={(nextQuery) => {
             setQuery(nextQuery);
             searchDebounced(nextQuery, radiusMeters, favoritesOnly);
@@ -605,7 +631,7 @@ export function OffersScreen() {
             onDirections={openOfferDirections}
             onFavorite={toggleFavorite}
             onOpenDetail={setDetailOffer}
-            onReport={setReportDraft}
+            onReport={(offer) => { if (requireSession()) { setReportDraft(offer); } }}
             onVote={vote}
             query={query}
           />
@@ -676,9 +702,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 999,
     borderWidth: 1,
-    height: 44,
+    height: platformTouchFloor,
     justifyContent: 'center',
-    width: 44,
+    width: platformTouchFloor,
   },
   fallbackNotice: {
     borderRadius: 12,
@@ -701,7 +727,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     flex: 1,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 14,
   },
   fallbackButtonLabel: {

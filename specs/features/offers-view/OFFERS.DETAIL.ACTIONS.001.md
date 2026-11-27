@@ -1,14 +1,14 @@
 # Spec: `OFFERS.DETAIL.ACTIONS.001`
 
 ## Metadata
-- **Title**: Offer Detail Image Zoom and Configured Directions Action
-- **Version**: `v0.2`
+- **Title**: Offer Detail Actions, Status Mirroring and Explicit Completion
+- **Version**: `v0.3`
 - **Status**: Approved
 - **Context/View**: Offer Detail View
 - **Priority**: Medium
 
 ## Purpose
-Enhance offer detail interactions with full-screen image zoom and direct navigation using the configured travel mode.
+Keep detail interactions consistent with the offer card while mirroring status and letting the user decide when to leave.
 
 ## Preconditions
 - User opened an offer detail view.
@@ -24,6 +24,9 @@ Enhance offer detail interactions with full-screen image zoom and direct navigat
 - `OFFERS.DETAIL.ACTIONS.001-R4`: Directions button text shall reflect the user-selected travel mode.
 - `OFFERS.DETAIL.ACTIONS.001-R5`: Selecting the directions button shall launch the device default maps application with the configured travel mode and offer destination preloaded.
 - `OFFERS.DETAIL.ACTIONS.001-R6`: If native maps application is unavailable, the system shall use browser fallback for directions while preserving the configured travel mode when supported by the provider.
+- `OFFERS.DETAIL.ACTIONS.001-R7`: The detail sheet shall mirror any promoted or reported badge shown on the offer card or feed row, and shall show the same reported warning when the offer is reported.
+- `OFFERS.DETAIL.ACTIONS.001-R8`: Actions in the detail sheet shall use the canonical vocabulary defined by `OFFERS.ACTIONS.LABELS.001` with the same label, glyph and relative order as on the card and feed.
+- `OFFERS.DETAIL.ACTIONS.001-R9`: Completing an action in the detail sheet shall not automatically close the sheet or navigate away; the sheet shall remain until the user selects an explicit completion control such as `Done` or `Close`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -40,15 +43,32 @@ Scenario: User opens directions from offer detail
   When the user taps the directions button
   Then default maps application shall open in car mode for that offer location
   And the directions button text shall reflect car directions
+
+Scenario: Status badges and reported warning are mirrored into the sheet
+  Given an offer carries a promoted badge and a reported badge with its warning on the feed row
+  When the user opens the detail sheet for that offer
+  Then the promoted and reported badges are shown in the sheet
+  And the reported warning is shown with the same wording as on the feed row
+
+Scenario: Detail actions stay on the sheet until an explicit completion control
+  Given the user is on the detail sheet for an offer
+  When the user completes an inline action such as a vote or a report
+  Then the sheet remains open
+  And no automatic navigation occurs
+  And an explicit Done or Close control ends the interaction
 ```
 
 ## Example Inputs/Outputs
 - Example input: Tap the detail image on a zoom-capable host surface, then perform a native zoom gesture in the full-screen viewer.
 - Expected output: The full-screen viewer opens immediately, preserves the host surface zoom gesture, and scales the image while the directions action remains available for the configured travel mode.
+- Example input: Open the detail sheet for a reported and promoted offer.
+- Expected output: Both badges and the reported warning appear in the sheet as they did on the feed row.
 
 ## Edge Cases
 - Invalid location disables directions button with visible unavailable state.
 - Multi-photo offers open full-screen viewer at selected photo index.
+- An offer whose status changes while the sheet is open — the mirrored badges follow the offer's current status.
+- A reported offer whose warning is longer than the source text at large text sizes.
 
 ## Non-Functional Constraints
 - Full-screen viewer open and gesture response should feel immediate.
@@ -61,3 +81,6 @@ Scenario: User opens directions from offer detail
 - `APP.ACCESSIBILITY.UX.002`
 - `APP.ACCESSIBILITY.UX.003`
 - `APP.CONTEXT_MENU.001`
+- `APP.PERFORMANCE.001`
+- `OFFERS.ACTIONS.LABELS.001`
+- `OFFERS.LIST.ACTIONS.001`

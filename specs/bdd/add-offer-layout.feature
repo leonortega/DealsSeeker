@@ -9,18 +9,19 @@ Feature: Add Offer layout required controls
     Then an image upload area with photo icon is visible
     And a description input field is visible
     And a current tag list section is visible
-    And no suggested tags section is displayed
+    And the required blocks are grouped into the Photo, Place and Details steps
     And location information is visible
     And a location search input is visible
     And location suggestions appear while typing from the 3rd character
     And a mini map location preview is visible
     And Confirm Location and Edit Location are visible below the mini map
 
-  Scenario: Successful add-offer submit redirects to Offers
+  Scenario: Successful add-offer submit waits for explicit completion
     Given the user is in Add Offer view with valid data
     When the user presses Create Offer
     And the create-offer request succeeds with no errors
-    Then the app redirects to Offers view
+    Then View offer and Done controls are shown
+    And no redirect occurs until one of them is selected
 
   Scenario: Edit Offer view shows edit title and prefilled data
     Given the user opens Add Offer view in edit mode for a user-owned offer
@@ -29,11 +30,12 @@ Feature: Add Offer layout required controls
     And the existing description, tags, images, and location are shown
     And the mini map shows the stored offer location
 
-  Scenario: Successful edit-offer submit redirects to My Account
+  Scenario: Successful edit-offer submit waits for explicit completion
     Given the user is in Edit Offer view with valid updated data
     When the user presses Edit Offer
     And the edit-offer request succeeds with no errors
-    Then the app redirects to My Account view
+    Then View offer and Done controls are shown
+    And no redirect occurs until one of them is selected
 
   Scenario: Save is blocked when required offer content is missing
     Given the user is in Add Offer view
@@ -42,13 +44,13 @@ Feature: Add Offer layout required controls
     Then the create-offer request is not sent
     And a validation error state is shown
 
-  Scenario: Tag section shows the removal and auto-tag hints
+  Scenario: Tag section shows removal hint and opt-in suggestions
     Given the user navigates to Add Offer view
-    When the tag section loads
+    When the tag section loads with description-derived tags
     Then a hint states that tapping a selected tag removes it
-    And a brief note states that related tags are added automatically
+    And related tags are offered with an explicit acceptance control
+    And no note states that related tags are added automatically
     And no word-detection guidance text is displayed
-    And no Suggested Tags section is displayed
 
   Scenario: Edit draft load failure blocks submission
     Given the user opens Add Offer view in edit mode for a user-owned offer

@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react-native';
 import { StyleSheet, View } from 'react-native';
-import { AppFooterBar } from '../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar';
+import { AppFooterBar, footerBarAppearance } from '../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar';
+import { platformTouchFloor } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
+import { resolveTheme } from '../../../src/DealsSeeker.ReactNative/src/utils/theme';
 import { ImmersiveOfferFeed } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveOfferFeed';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 import type { OfferItemDto } from '../../../src/DealsSeeker.ReactNative/src/api/types';
@@ -102,12 +104,22 @@ describe('touch target and label floors', () => {
     expect(styleOf(screen.getByText('👤')).color).toBe('#ff8a65');
   });
 
-  it('keeps footer labels on one line while bounding text scaling', async () => {
+  it('exposes the authored night footer surface to the native tab bar', () => {
+    const appearance = footerBarAppearance(resolveTheme('dark', 'dark', 'tangerine'));
+    expect(appearance).toEqual({
+      backgroundColor: '#121417',
+      borderColor: '#71717a',
+      activeTintColor: '#ff8a65',
+      inactiveTintColor: '#a1a1aa',
+    });
+  });
+
+  it('lets footer labels wrap and follow the system reading size', async () => {
     await render(<AppFooterBar items={footerItems} />);
 
     const label = screen.getByText('Suggestions');
-    expect(label.props.numberOfLines).toBe(1);
-    expect(label.props.maxFontSizeMultiplier).toBeGreaterThan(1);
+    expect(label.props.numberOfLines).toBeUndefined();
+    expect(label.props.maxFontSizeMultiplier).toBeUndefined();
     expect(styleOf(label).fontSize).toBeGreaterThanOrEqual(10);
   });
 
@@ -149,12 +161,12 @@ describe('touch target and label floors', () => {
     expect(styleOf(wrapper as never).alignSelf).toBe('center');
   });
 
-  it('gives every footer tab a 44-unit touch target', async () => {
+  it('gives every footer tab the platform touch floor', async () => {
     await render(<AppFooterBar items={footerItems} />);
 
     for (const item of footerItems) {
       const tab = screen.getByRole('button', { name: item.label });
-      expect(styleOf(tab).minHeight).toBeGreaterThanOrEqual(44);
+      expect(styleOf(tab).minHeight).toBeGreaterThanOrEqual(platformTouchFloor);
     }
   });
 
@@ -173,11 +185,11 @@ describe('touch target and label floors', () => {
     expect(styleOf(screen.getByText('Account')).fontSize).toBeGreaterThanOrEqual(10);
   });
 
-  it('gives the coverage control a 48-unit touch target without showing five chips', async () => {
+  it('gives the coverage control the platform touch floor without showing five chips', async () => {
     await render(<OffersScreen />);
 
     const control = await screen.findByRole('button', { name: /1500 m/ });
-    expect(styleOf(control).minHeight).toBeGreaterThanOrEqual(48);
+    expect(styleOf(control).minHeight).toBeGreaterThanOrEqual(platformTouchFloor);
     expect(screen.queryByRole('button', { name: '500 m' })).toBeNull();
   });
 
@@ -221,5 +233,9 @@ describe('touch target and label floors', () => {
     );
 
     expect(styleOf(screen.getByRole('button', { name: 'offers.search' })).width).toBeGreaterThanOrEqual(44);
+  });
+
+  it('keeps the iOS touch floor at 44 units', () => {
+    expect(platformTouchFloor).toBe(44);
   });
 });

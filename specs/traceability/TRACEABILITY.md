@@ -119,3 +119,7 @@
 | `APP.CONTEXT_MENU.001` | `bdd/offer-long-press-actions.feature` | N/A | N/A |
 | `APP.BOTTOM_SHEET.001` | `bdd/app-bottom-sheet.feature` | N/A | N/A |
 | `APP.NATIVE_MAP.001` | `bdd/native-map.feature` | N/A | N/A |
+| `OFFERS.GUEST.001` | `bdd/offers-guest.feature`, `bdd/app-shell.feature` | N/A | N/A |
+| `OFFERS.EMPTY.001` | `bdd/offers-empty.feature`, `bdd/offers-ux.feature` | N/A | N/A |
+| `APP.PERFORMANCE.001` | `bdd/app-performance.feature` | N/A | N/A |
+| `ADD.OFFER.SEQUENCED.001` | `bdd/add-offer-sequenced.feature` | `contracts/json-schema/add-offer-draft.schema.json` | N/A |

@@ -12,7 +12,7 @@ Feature: Image panel action hierarchy in Add Offer view
     Given at least one photo is attached
     When the image panel renders
     Then reorder and remove actions use a quieter treatment than Take Photo and Upload
-    And every action remains at least 44pt tall
+    And every action meets the platform touch floor
 
   Scenario: Quiet treatment survives themes
     Given the app is in dark appearance

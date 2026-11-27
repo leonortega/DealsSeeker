@@ -60,6 +60,7 @@ Scenario: Headers and empty states remain in place
 - No new list dependency is introduced.
 
 ## Related Specs
+- `OFFERS.EMPTY.001`
 - `OFFERS.FEED.STABILITY.001`
 - `OFFERS.GRID.CARDS.001`
 - `ACCOUNT.PROFILE.001`

@@ -1,10 +1,25 @@
 import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { platformTouchFloor } from '../utils/layout';
 import type { Palette } from '../utils/theme';
 import { resolveFooterColors, resolveTheme } from '../utils/theme';
 
 /**
- * Shared bottom navigation used by both the standard and immersive views.
+ * The authored night-footer surface is shared with the native tab bar so the
+ * compact bar and the expanded navigation rail keep the same brand treatment.
+ */
+export function footerBarAppearance(palette: Palette) {
+  const footer = resolveFooterColors(palette);
+  return {
+    backgroundColor: footer.surface,
+    borderColor: footer.border,
+    activeTintColor: footer.accent,
+    inactiveTintColor: footer.inkMuted,
+  };
+}
+
+/**
+ * Shared bottom navigation used by the standard and immersive views.
  * Its night surface is derived from the selected palette world.
  */
 export interface FooterItem {
@@ -49,11 +64,7 @@ export function AppFooterBar({
           <Text style={[styles.icon, { color: item.active ? footer.accent : footer.inkMuted }]}>
             {item.icon}
           </Text>
-          <Text
-            maxFontSizeMultiplier={1.2}
-            numberOfLines={1}
-            style={[styles.label, { color: item.active ? footer.ink : footer.inkMuted }]}
-          >
+          <Text style={[styles.label, { color: item.active ? footer.ink : footer.inkMuted }]}>
             {item.label}
           </Text>
         </Pressable>
@@ -81,9 +92,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 18,
     flex: 1,
+    flexShrink: 1,
     gap: 4,
     justifyContent: 'center',
-    minHeight: 68,
+    minHeight: Math.max(68, platformTouchFloor),
+    minWidth: platformTouchFloor,
     paddingHorizontal: 2,
     paddingVertical: 8,
   },
@@ -99,7 +112,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: -0.5,
-    lineHeight: 14,
     textAlign: 'center',
   },
   createSlot: {

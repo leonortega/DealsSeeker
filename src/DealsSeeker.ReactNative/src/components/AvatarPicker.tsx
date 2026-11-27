@@ -1,3 +1,4 @@
+import { platformTouchFloor } from '../utils/layout';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
 import { AVATAR_OPTIONS } from '../utils/avatars';
@@ -46,9 +47,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 16,
     borderWidth: 1,
-    height: 44,
+    height: platformTouchFloor,
     justifyContent: 'center',
-    width: 44,
+    width: platformTouchFloor,
   },
   emoji: {
     fontSize: 22,

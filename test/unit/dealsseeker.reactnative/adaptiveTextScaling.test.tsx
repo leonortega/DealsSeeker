@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { AppFooterBar } from '../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar';
 import { PresentationModeSwitch } from '../../../src/DealsSeeker.ReactNative/src/components/PresentationModeSwitch';
 import type { Palette } from '../../../src/DealsSeeker.ReactNative/src/utils/theme';
@@ -17,8 +18,8 @@ const palette = {
   footerActive: '#5a2e20',
 } as Palette;
 
-describe('chrome text scaling', () => {
-  it('bounds footer label scaling so a long label cannot wrap mid-word', async () => {
+describe('chrome text scaling (APP.TYPOGRAPHY.001-R5 / APP.ACCESSIBILITY.UX.001-R9)', () => {
+  it('lets footer labels grow past a 1.2x cap and wrap', async () => {
     await render(
       <AppFooterBar
         items={[{ key: 'suggestions', label: 'Suggestions', onPress: jest.fn() }]}
@@ -27,11 +28,12 @@ describe('chrome text scaling', () => {
     );
 
     const label = screen.getByText('Suggestions');
-    expect(label.props.maxFontSizeMultiplier).toBeGreaterThan(1);
-    expect(label.props.numberOfLines).toBe(1);
+    expect(label.props.maxFontSizeMultiplier).toBeUndefined();
+    expect(label.props.numberOfLines).toBeUndefined();
+    expect(StyleSheet.flatten(label.props.style).flexShrink).toBeGreaterThan(0);
   });
 
-  it('bounds presentation switch label scaling', async () => {
+  it('lets presentation switch labels grow with the system reading size', async () => {
     await render(
       <PresentationModeSwitch
         feedLabel="Feed"
@@ -42,6 +44,8 @@ describe('chrome text scaling', () => {
       />
     );
 
-    expect(screen.getByText('Feed').props.maxFontSizeMultiplier).toBeGreaterThan(1);
+    const label = screen.getByText('Feed');
+    expect(label.props.maxFontSizeMultiplier).toBeUndefined();
+    expect(label.props.numberOfLines).toBeUndefined();
   });
 });

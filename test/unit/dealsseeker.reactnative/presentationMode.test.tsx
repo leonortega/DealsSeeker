@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
+import { platformTouchFloor } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
 
 let mockImmersiveOffers = false;
 let mockIsPending = false;
@@ -27,6 +28,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     },
     closeImmersiveOffers: mockCloseImmersiveOffers,
     immersiveOffers: mockImmersiveOffers,
+    isAuthenticated: true,
     isPending: () => mockIsPending,
     loadingCount: mockLoadingCount,
     openAddOffer: jest.fn(),
@@ -69,11 +71,11 @@ describe('presentation mode switch', () => {
     expect(screen.queryByText('app.loading')).toBeNull();
   });
 
-  it('does not show an empty-state card when a search returns no offers', async () => {
+  it('shows the authored empty-state guidance when a search returns no offers', async () => {
     await render(<OffersScreen />);
 
-    expect(screen.queryByText('offers.emptyTitle')).toBeNull();
-    expect(screen.queryByText('offers.createFirstOffer')).toBeNull();
+    expect(screen.getByText('offers.emptyTitle')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'offers.createFirstOffer' })).toBeTruthy();
     expect(screen.getByTestId('offers-scroll')).toBeTruthy();
   });
 
@@ -175,7 +177,10 @@ describe('presentation mode switch', () => {
 
     const topActions = screen.getByRole('button', { name: 'common.help' }).parent;
     expect(StyleSheet.flatten(topActions.props.style)).toMatchObject({ flexDirection: 'row', gap: 8 });
-    expect(StyleSheet.flatten(topActions.children[0].props.style)).toMatchObject({ height: 44, width: 44 });
+    expect(StyleSheet.flatten(topActions.children[0].props.style)).toMatchObject({
+      height: platformTouchFloor,
+      width: platformTouchFloor,
+    });
     expect(screen.queryByRole('button', { name: 'offers.search' })).toBeNull();
   });
 

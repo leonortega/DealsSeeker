@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Immersive Vertical Full-Screen Main Page Feed
-- **Version**: `v2.3`
+- **Version**: `v2.4`
 - **Status**: Approved
 - **Context/View**: Offers View (Main Page)
 - **Priority**: High
@@ -10,8 +10,8 @@
 ## Navigation restructure (v2.0)
 The following navigation-related requirements are superseded by `OFFERS.MODE.SWITCH.001`, `APP.SHELL.001` and `OFFERS.NAV.ADD.001`: R4–R7, R16–R35, R42–R45 and R53. The immersive feed no longer has a static left navigation panel or a footer mode button; both presentations share one bottom navigation, presentation is chosen in the Offers controls, and Add Offer is opened from a single floating action button. All non-navigation requirements (feed paging, photo carousel, overlays, theme, privacy, states) remain in force.
 
-## Header removal (v2.1)
-No global application header is rendered in any standard view, per `APP.SHELL.005`. The immersive top bar and its controls are unchanged.
+## Header policy (v2.4)
+Standard top-level views use the platform-native header, per the revised `APP.SHELL.005`. The immersive presentation keeps only its own top bar and remains headerless; its controls are unchanged.
 
 ## Purpose
 Define a new main-page browsing experience that presents offers as a vertical, full-screen, one-offer-per-viewport immersive feed, with application identity and discovery controls on the left, offer actions on the right, and offer text/tags in the lower-left description area.
@@ -39,7 +39,7 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R39`: When expanded, associated tags shall be displayed as inline text prefixed with the `#` symbol.
 - `OFFERS.FEED.IMMERSIVE.001-R11`: Promoted offers shall remain visually labeled on their feed page.
 - `OFFERS.FEED.IMMERSIVE.001-R12`: Reported offers shall retain their reported visual indicator and demotion behavior.
-- `OFFERS.FEED.IMMERSIVE.001-R13`: When no offers are available, the system shall keep the feed surface uncluttered and shall not render an empty-state message instead of feed pages.
+- `OFFERS.FEED.IMMERSIVE.001-R13`: When no offers are available, the system shall keep the feed surface uncluttered and shall present the guidance state defined by `OFFERS.EMPTY.001` instead of blank feed pages.
 - `OFFERS.FEED.IMMERSIVE.001-R14`: The view shall not expose raw `lat` or `lng` values to users.
 - `OFFERS.FEED.IMMERSIVE.001-R15`: The feed shall remain scrollable and responsive on small mobile screens.
 - `OFFERS.FEED.IMMERSIVE.001-R16`: The immersive feed shall be opened from the shared bottom footer view button labeled `New view` / `Nueva vista` with a ⭐ glyph; no new-view button shall be rendered in the Offers hero area.
@@ -266,7 +266,7 @@ Scenario: Left panel text and contained offer image
 Scenario: Empty feed state
   Given no offers are available
   When the main page loads
-  Then no empty-state message shall be displayed
+  Then guidance to add the first offer or widen the search area is displayed in the feed
 ```
 
 ## Example Inputs/Outputs
@@ -277,7 +277,7 @@ Scenario: Empty feed state
 - Offers with missing images still render a full-screen page with placeholder visual.
 - Very long descriptions remain truncated until expanded.
 - Promoted and reported indicators remain visible in the overlay and/or side rail.
-- An empty offer result leaves the feed surface uncluttered.
+- An empty offer result shows the authored guidance state without blocking navigation.
 - Devices without a reported safe-area inset still clear the status area using a minimum top offset.
 - A vertical swipe over a multi-photo offer scrolls the feed without changing the displayed photo.
 - Offer text overlays remain readable over both light and dark offer images while their background stays transparent.
@@ -309,6 +309,9 @@ Scenario: Empty feed state
 - `APP.LOCALIZATION.001`
 - `OFFERS.COMMENTS.001`
 - `OFFERS.UX.001`
+- `OFFERS.EMPTY.001`
+- `OFFERS.GUEST.001`
+- `APP.PLATFORM.CHROME.001`
 - `APP.RESILIENCE.UX.001`
 - `APP.ACCESSIBILITY.UX.001`
 - `OFFERS.MODE.SWITCH.001`

@@ -5,8 +5,8 @@ describe('native shell navigation options', () => {
     expect(stackScreenOptions()).toEqual({ headerShown: true });
   });
 
-  it('keeps standard tab screens headerless so no second title bar is added', () => {
-    expect(tabScreenOptions()).toEqual({ headerShown: false });
+  it('shows a platform-native header on standard tab screens', () => {
+    expect(tabScreenOptions()).toEqual({ headerShown: true });
   });
 
   it('uses a native sheet on iOS and a full-screen modal on Android', () => {

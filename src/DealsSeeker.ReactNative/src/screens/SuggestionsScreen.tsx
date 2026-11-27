@@ -1,3 +1,4 @@
+import { platformTouchFloor } from '../utils/layout';
 import { landmarkFontFamily } from '../utils/typography';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -19,7 +20,8 @@ export function SuggestionsScreen() {
   const [message, setMessage] = useState('');
   const [contact, setContact] = useState('');
   const { status, statusTone, reportStatus: reportNotice } = useStatusNotice();
-  const redirectAfterSuccess = useDelayedOffersRedirect(activeTab, 'suggestions', openTab);
+  const [submitted, setSubmitted] = useState(false);
+  const returnToOffers = useDelayedOffersRedirect(activeTab, 'suggestions', openTab);
 
   function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
     reportNotice(message, tone);
@@ -43,9 +45,9 @@ export function SuggestionsScreen() {
 
     setMessage('');
     setContact('');
+    setSubmitted(true);
     reportStatus(t('suggestions.success'));
     successFeedback();
-    redirectAfterSuccess();
   }
 
   return (
@@ -93,10 +95,29 @@ export function SuggestionsScreen() {
         >
           <Text style={[styles.buttonLabel, { color: palette.onAccent }]}>{t('suggestions.submit')}</Text>
         </Pressable>
-        {status ? (
+        {status && !submitted ? (
           <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
             {status}
           </Text>
+        ) : null}
+        {submitted ? (
+          <View testID="suggestions-success" style={styles.success}>
+            <Text
+              accessibilityLiveRegion="polite"
+              style={[styles.status, { color: palette.success ?? palette.accent }]}
+            >
+              {t('suggestions.success')}
+            </Text>
+            <Pressable
+              accessibilityLabel={t('common.done')}
+              accessibilityRole="button"
+              onPress={returnToOffers}
+              style={[styles.button, { backgroundColor: palette.accent }]}
+              testID="suggestions-done"
+            >
+              <Text style={[styles.buttonLabel, { color: palette.onAccent }]}>{t('common.done')}</Text>
+            </Pressable>
+          </View>
         ) : null}
       </View>
       </ScrollView>
@@ -146,7 +167,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 28,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingVertical: 15,
   },
   buttonLabel: {
@@ -157,5 +178,8 @@ const styles = StyleSheet.create({
   status: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  success: {
+    gap: 10,
   },
 });

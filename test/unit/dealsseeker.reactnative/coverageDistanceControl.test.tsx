@@ -1,5 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { CoverageDistanceControl } from '../../../src/DealsSeeker.ReactNative/src/components/CoverageDistanceControl';
+import { Platform, StyleSheet } from 'react-native';
+
+Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' });
+
+const { CoverageDistanceControl } =
+  require('../../../src/DealsSeeker.ReactNative/src/components/CoverageDistanceControl') as typeof import('../../../src/DealsSeeker.ReactNative/src/components/CoverageDistanceControl');
+const { platformTouchFloor } =
+  require('../../../src/DealsSeeker.ReactNative/src/utils/layout') as typeof import('../../../src/DealsSeeker.ReactNative/src/utils/layout');
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/NativeBottomSheet', () => {
   const { View: MockView } = require('react-native');
@@ -31,5 +38,27 @@ describe('CoverageDistanceControl (OFFERS.FILTER.SIMPLIFICATION.001)', () => {
 
     await fireEvent.press(screen.getByRole('radio', { name: '500 m' }));
     expect(onChange).toHaveBeenCalledWith(500);
+  });
+
+  it('gives the chip and every radius option the platform touch floor', async () => {
+    await render(<CoverageDistanceControl radiusMeters={1500} onChange={jest.fn()} palette={palette} t={t} />);
+    await fireEvent.press(screen.getByRole('button', { name: /1500 m/ }));
+
+    expect(StyleSheet.flatten(screen.getByRole('button', { name: /1500 m/ }).props.style).minHeight).toBeGreaterThanOrEqual(platformTouchFloor);
+    for (const option of ['500 m', '1000 m', '1500 m', '2500 m', '5000 m']) {
+      expect(StyleSheet.flatten(screen.getByRole('radio', { name: option }).props.style).minHeight).toBeGreaterThanOrEqual(platformTouchFloor);
+    }
+  });
+
+  it('uses the 48-unit Android touch floor', async () => {
+    expect(platformTouchFloor).toBe(48);
+
+    await render(<CoverageDistanceControl radiusMeters={1500} onChange={jest.fn()} palette={palette} t={t} />);
+    await fireEvent.press(screen.getByRole('button', { name: /1500 m/ }));
+
+    expect(StyleSheet.flatten(screen.getByRole('button', { name: /1500 m/ }).props.style).minHeight).toBeGreaterThanOrEqual(48);
+    for (const option of ['500 m', '1000 m']) {
+      expect(StyleSheet.flatten(screen.getByRole('radio', { name: option }).props.style).minHeight).toBeGreaterThanOrEqual(48);
+    }
   });
 });

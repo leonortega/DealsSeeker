@@ -60,7 +60,7 @@ describe('primary offer action (OFFERS.UX.002-R8)', () => {
     );
 
     const directions = screen.getByTestId('rail-primary-action');
-    const comments = screen.getByTestId('rail-secondary-action');
+    const comments = screen.getAllByTestId('rail-secondary-action')[0];
     expect(StyleSheet.flatten(directions.props.style).backgroundColor).toBe('#b85c38');
     expect(StyleSheet.flatten(comments.props.style).backgroundColor).toBe('#fff9f0');
   });

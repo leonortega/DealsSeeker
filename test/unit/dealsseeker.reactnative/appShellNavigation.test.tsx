@@ -1,10 +1,13 @@
 import { act, render, screen } from '@testing-library/react-native';
+import { BackHandler } from 'react-native';
 
 const listeners: Record<string, Array<(event: { preventDefault: () => void }) => void>> = {};
 const mockCloseImmersiveOffers = jest.fn();
+const mockCloseOverlay = jest.fn();
 const mockNavigate = jest.fn();
 let mockActiveTab = 'offers';
 let mockSheetCount = 0;
+let mockTabScreenOptions: Record<string, { title?: string; headerShown?: boolean }> = {};
 
 jest.mock('@react-navigation/native', () => ({
   NavigationContainer: ({ children }: { children: React.ReactNode }) => children,
@@ -47,7 +50,18 @@ jest.mock('@react-navigation/bottom-tabs', () => ({
         </>
       );
     },
-    Screen: ({ component: Component }: { component: () => React.ReactNode }) => <Component />,
+    Screen: ({
+      component: Component,
+      name,
+      options,
+    }: {
+      component: () => React.ReactNode;
+      name: string;
+      options: { title?: string; headerShown?: boolean };
+    }) => {
+      mockTabScreenOptions[name] = options;
+      return <Component />;
+    },
   }),
 }));
 
@@ -73,7 +87,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
     activeTab: mockActiveTab,
     closeImmersiveOffers: mockCloseImmersiveOffers,
-    closeOverlay: jest.fn(),
+    closeOverlay: mockCloseOverlay,
     immersiveOffers: true,
     openAddOffer: jest.fn(),
     openTab: jest.fn(),
@@ -94,7 +108,15 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar', () => {
   const { View: MockView } = require('react-native');
-  return { AppFooterBar: () => <MockView testID="app-footer-bar" /> };
+  return {
+    AppFooterBar: () => <MockView testID="app-footer-bar" />,
+    footerBarAppearance: () => ({
+      backgroundColor: '#121417',
+      borderColor: '#d7c9b5',
+      activeTintColor: '#b85c38',
+      inactiveTintColor: '#5f6d63',
+    }),
+  };
 });
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/CreateOfferFab', () => {
   const { View: MockView } = require('react-native');
@@ -116,6 +138,7 @@ describe('native shell Back handling', () => {
     mockActiveTab = 'offers';
     mockSheetCount = 0;
     tabNavigatorProps = {};
+    mockTabScreenOptions = {};
     Object.keys(listeners).forEach((key) => delete listeners[key]);
   });
 
@@ -161,5 +184,31 @@ describe('native shell Back handling', () => {
     });
 
     expect(screen.queryByTestId('create-offer-fab')).toBeNull();
+  });
+
+  it('resolves overlay dismissal through native navigation, not a hardware Back handler', async () => {
+    const addEventListener = jest
+      .spyOn(BackHandler, 'addEventListener')
+      .mockImplementation(() => ({ remove: jest.fn() }));
+
+    await render(<AppNavigator />);
+    expect(addEventListener).not.toHaveBeenCalled();
+
+    const preventDefault = jest.fn();
+    await act(async () => {
+      listeners.beforeRemove.forEach((handler) => handler({ preventDefault }));
+    });
+    expect(mockCloseOverlay).toHaveBeenCalledTimes(2);
+
+    addEventListener.mockRestore();
+  });
+
+  it('titles native tab headers from the route and keeps the immersive feed headerless', async () => {
+    await render(<AppNavigator />);
+
+    expect(mockTabScreenOptions.account.title).toBe('nav.account');
+    expect(mockTabScreenOptions.suggestions.title).toBe('nav.suggestions');
+    expect(mockTabScreenOptions.offers.title).toBe('nav.offers');
+    expect(mockTabScreenOptions.offers.headerShown).toBe(false);
   });
 });

@@ -46,10 +46,10 @@
 | Self-terminating final word | A final word ending in a non-alphanumeric symbol such as `%` is tagged immediately | Covers `50%` without a delimiter or an editing-finish event; no partial-word junk |
 | Detected words list | Exclude words already in the tag list | Removing a tag restores its word to the detected words list |
 | Description cleared | Clear selected tags and auto-tag tracking state | Prevent stale tag state when text is erased |
-| Suggested tags section | Not displayed | Auto-add happens silently per `ADD.OFFER.TAGS.SUGGESTIONS.001` |
+| Suggested tags section | Displayed as opt-in suggestions per `ADD.OFFER.TAGS.SUGGESTIONS.001` | Nothing is added without an explicit user action |
 | Suggestion source | Only description-derived tags | Auto-added suggestion tags do not seed further suggestions |
-| Suggestion auto-add | Related tags of 3+ normalized characters are added automatically | Shorter suggestions are ignored |
-| Suggestion chain | One level only | No chaining from auto-added suggestion tags |
+| Suggestion opt-in | Related tags of 3+ normalized characters are offered with an explicit Add action | Shorter suggestions are ignored |
+| Suggestion chain | One level only | No chaining from accepted suggestion tags |
 | Suggestion language | Use selected app language | Fallback to default language resources |
 
 ## Offer Photos and Rendering Rules (`ADD.OFFER.IMAGE.001`, `OFFERS.IMAGE.RENDERING.001`, `OFFERS.PHOTOS.CAROUSEL.001`)

@@ -2,13 +2,13 @@
 
 ## Metadata
 - **Title**: Recoverable no-results and empty discovery states
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Offers View (standard and immersive presentations)
 - **Priority**: High
 
 ## Purpose
-Keep an empty discovery result quiet in the unfiltered case, while still explaining filtered no-results and offering a way to clear them.
+Explain filtered no-results with a clear recovery action, and defer the unfiltered no-offers guidance state to `OFFERS.EMPTY.001`.
 
 ## Preconditions
 - User is in the Offers view.
@@ -20,8 +20,8 @@ Keep an empty discovery result quiet in the unfiltered case, while still explain
 ## Requirements
 - `OFFERS.UX.001-R1`: When a search returns no offers while a query or a favorites filter is active, the system shall display a message stating that no offers matched and an action to clear the active filters.
 - `OFFERS.UX.001-R2`: Selecting the clear-filters action shall reset the query and the favorites filter, keep the current coverage radius, and re-run the search.
-- `OFFERS.UX.001-R3`: When a search returns no offers and no query or favorites filter is active, the system shall not display an empty-state card; the Offers controls and map shall remain usable without a creation prompt.
-- `OFFERS.UX.001-R5`: The filtered no-results state shall be presented in the standard Offers view; the immersive feed shall keep its own uncluttered empty surface.
+- `OFFERS.UX.001-R3`: When a search returns no offers and no query or favorites filter is active, the system shall render the guidance state defined by `OFFERS.EMPTY.001`; it shall not leave a blank surface.
+- `OFFERS.UX.001-R5`: The filtered no-results state shall be presented in the standard Offers view; the immersive presentation's unfiltered guidance shall follow `OFFERS.EMPTY.001`.
 - `OFFERS.UX.001-R6`: The message and action labels shall follow the active theme and localization.
 
 ## Acceptance Criteria (BDD)
@@ -41,28 +41,31 @@ Scenario: Clearing filters re-runs the search with the current radius
   And a new search is executed using the 1000 meter radius
   And available offers are displayed
 
-Scenario: No offers at all shows no empty-state card
+Scenario: No offers at all shows the authored guidance state
   Given the user is on the Offers view
   And no query or favorites filter is active
   When a search completes with no offers
-  Then no empty-state message or creation prompt is displayed
+  Then guidance to add the first offer or widen the search area is displayed
   And the Offers controls and map remain usable
 
-Scenario: Immersive feed keeps an uncluttered empty surface
+Scenario: Immersive feed shows guidance instead of a blank surface
   Given the immersive offers feed is active
   When a search completes with no offers
-  Then no empty-state message is displayed in the feed
+  Then guidance to add the first offer or widen the search area is displayed in the feed
 ```
 
 ## Example Inputs/Outputs
 - Example input: query `coffee`, search returns zero offers.
 - Expected output: "No offers matched the current filters." plus a "Clear filters" action.
+- Example input: no query, search returns zero offers.
+- Expected output: "No offers nearby yet" with "Be the first to add an offer near you" and a widening action.
 
 ## Edge Cases
 - Favorites-only filter active with no matching favorites.
 - Empty result while the coverage radius is at its maximum.
 - Localized labels expand beyond the English text without clipping.
-- An unfiltered empty result leaves no message in either presentation.
+- An unfiltered empty result is presented in both standard and immersive views without blocking navigation.
+- A guest user sees the same guidance with contribution actions gated by sign-in.
 
 ## Non-Functional Constraints
 - The recovery action shall be reachable with a single activation on a phone-sized screen.
@@ -70,6 +73,8 @@ Scenario: Immersive feed keeps an uncluttered empty surface
 ## Related Specs
 - `OFFERS.SEARCH.001`
 - `OFFERS.FEED.IMMERSIVE.001`
+- `OFFERS.EMPTY.001`
+- `OFFERS.GUEST.001`
 - `OFFERS.NAV.ADD.001`
 - `APP.LOCALIZATION.001`
 - `APP.THEME.001`

@@ -1,4 +1,5 @@
 import { MAIN_TAB_DESTINATIONS, resolveTabFromRoute } from '../../../src/DealsSeeker.ReactNative/src/navigation/tabs';
+import { resolveTabBarPosition } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
 
 describe('native tab destinations', () => {
   it('exposes the three branded sections in the spec order', () => {
@@ -17,5 +18,12 @@ describe('native tab destinations', () => {
 
   it('ignores unknown routes', () => {
     expect(resolveTabFromRoute('AddOffer')).toBeNull();
+  });
+
+  it('uses a bottom bar at compact width and a rail at tablet width (APP.SHELL.002-R10)', () => {
+    expect(resolveTabBarPosition(390)).toBe('bottom');
+    expect(resolveTabBarPosition(719)).toBe('bottom');
+    expect(resolveTabBarPosition(720)).toBe('left');
+    expect(resolveTabBarPosition(1024)).toBe('left');
   });
 });

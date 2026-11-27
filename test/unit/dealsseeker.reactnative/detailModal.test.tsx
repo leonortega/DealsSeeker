@@ -15,8 +15,12 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
       accentMuted: '#e9c9b8',
       border: '#d7c9b5',
       card: '#fffdf8',
+      danger: '#8d2f2f',
+      highlight: '#0d7a5f',
       ink: '#1f3128',
       inkMuted: '#5f6d63',
+      onDanger: '#ffffff',
+      onHighlight: '#ffffff',
       overlay: 'rgba(22,30,28,0.52)',
       panel: '#fff9f0',
     },
@@ -134,6 +138,32 @@ describe('OfferDetailModal', () => {
     await fireEvent(surface, 'responderTerminate', touches([90, 90]));
 
     expect(screen.getAllByText('1 / 2').length).toBeGreaterThan(0);
+  });
+
+  it('mirrors promoted and reported badges plus the reported warning (OFFERS.DETAIL.ACTIONS.001-R7)', async () => {
+    await render(
+      <OfferDetailModal
+        offer={{ ...offer, isPromoted: true, isReported: true }}
+        onClose={mockOnClose}
+        onDirections={mockOnDirections}
+        onFavorite={mockOnFavorite}
+        onComments={mockOnComments}
+        visible
+      />
+    );
+
+    expect(screen.getByTestId('offer-detail-badges')).toBeTruthy();
+    expect(screen.getByText('offers.promoted')).toBeTruthy();
+    expect(screen.getByText('offers.reported')).toBeTruthy();
+    expect(screen.getByText('offers.reportedWarning')).toBeTruthy();
+  });
+
+  it('keeps the sheet open after an inline action until an explicit dismissal', async () => {
+    await renderModal();
+    await fireEvent.press(screen.getByText('offers.favorite'));
+
+    expect(screen.getByTestId('offer-detail-sheet')).toBeTruthy();
+    expect(mockOnClose).not.toHaveBeenCalled();
   });
 
   it('disables photo navigation for a single-image offer', async () => {

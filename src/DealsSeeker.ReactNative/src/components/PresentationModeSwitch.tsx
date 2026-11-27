@@ -35,10 +35,7 @@ export function PresentationModeSwitch({ feedLabel, mapLabel, onChange, palette,
             onPress={() => onChange(option.key)}
             style={[styles.segment, { backgroundColor: selected ? palette.accent : palette.panel }]}
           >
-            <Text
-              maxFontSizeMultiplier={1.2}
-              style={[styles.label, { color: selected ? palette.onAccent : palette.ink }]}
-            >
+            <Text style={[styles.label, { color: selected ? palette.onAccent : palette.ink }]}>
               {option.label}
             </Text>
           </Pressable>
@@ -60,13 +57,16 @@ const styles = StyleSheet.create({
   segment: {
     alignItems: 'center',
     borderRadius: 999,
+    flexShrink: 1,
     justifyContent: 'center',
     minHeight: platformTouchFloor,
     minWidth: 66,
     paddingHorizontal: 12,
   },
   label: {
+    flexShrink: 1,
     fontSize: 14,
     fontWeight: '800',
+    textAlign: 'center',
   },
 });

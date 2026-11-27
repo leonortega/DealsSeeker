@@ -15,3 +15,16 @@ Feature: Offer detail interactions for zoom and directions
     When the user taps the directions button
     Then the device default maps app opens
     And car mode is requested for that destination
+
+  Scenario: Status badges and reported warning are mirrored into the sheet
+    Given an offer carries a promoted badge and a reported badge with its warning on the feed row
+    When the user opens the detail sheet for that offer
+    Then the promoted and reported badges are shown in the sheet
+    And the reported warning is shown with the same wording as on the feed row
+
+  Scenario: Detail actions stay on the sheet until an explicit completion control
+    Given the user is on the detail sheet for an offer
+    When the user completes an inline action such as a vote or a report
+    Then the sheet remains open
+    And no automatic navigation occurs
+    And an explicit Done or Close control ends the interaction

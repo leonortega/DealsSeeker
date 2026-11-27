@@ -5,15 +5,23 @@ import { BackNavigationHandler } from './src/components/BackNavigationHandler';
 import { LoadingOverlay } from './src/components/LoadingOverlay';
 import { AppProvider } from './src/context/AppContext';
 import { useApp } from './src/hooks/useApp';
-import { resolveShellChrome } from './src/utils/theme';
+import { resolveRouteChrome } from './src/utils/theme';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { RegisterScreen } from './src/screens/RegisterScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
 
 function AppStatusBar() {
-  const { immersiveOffers, palette } = useApp();
-  const chrome = resolveShellChrome(immersiveOffers, palette);
+  const { activeTab, bootstrapped, guestMode, immersiveOffers, isAuthenticated, palette } = useApp();
+  const surface =
+    !bootstrapped
+      ? 'splash'
+      : !isAuthenticated && !guestMode
+        ? 'auth'
+        : immersiveOffers && activeTab === 'offers'
+          ? 'immersive'
+          : 'standard';
+  const chrome = resolveRouteChrome(surface, palette);
 
   const barStyle = chrome.statusBarStyle === 'light' ? 'light-content' : 'dark-content';
 
@@ -32,13 +40,13 @@ function AuthRoot() {
 }
 
 function AppRoot() {
-  const { bootstrapped, isAuthenticated } = useApp();
+  const { bootstrapped, guestMode, isAuthenticated } = useApp();
 
   if (!bootstrapped) {
     return <SplashScreen />;
   }
 
-  return isAuthenticated ? <AppNavigator /> : <AuthRoot />;
+  return isAuthenticated || guestMode ? <AppNavigator /> : <AuthRoot />;
 }
 
 export default function App() {

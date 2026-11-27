@@ -1,3 +1,4 @@
+import { platformTouchFloor } from './layout';
 import { StyleSheet } from 'react-native';
 
 export const authFormStyles = StyleSheet.create({
@@ -23,7 +24,7 @@ export const authFormStyles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 28,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingVertical: 15,
   },
   primaryButtonLabel: {
@@ -36,7 +37,7 @@ export const authFormStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     textAlign: 'center',
   },
   status: {

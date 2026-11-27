@@ -74,6 +74,8 @@ Scenario: Mode control is accessible
 - The control shall be reachable with one tap and meet the control-size floors of `APP.ACCESSIBILITY.UX.001`.
 
 ## Related Specs
+- `OFFERS.EMPTY.001`
+- `OFFERS.GUEST.001`
 - `OFFERS.FILTER.SIMPLIFICATION.001`
 - `APP.BRAND.001`
 - `APP.SHELL.005`

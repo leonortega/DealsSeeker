@@ -1,3 +1,4 @@
+import { platformTouchFloor } from '../utils/layout';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Palette } from '../utils/theme';
 
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     borderRadius: 28,
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     justifyContent: 'center',
     marginTop: 4,
     paddingHorizontal: 20,

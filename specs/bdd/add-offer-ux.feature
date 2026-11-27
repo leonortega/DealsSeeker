@@ -3,21 +3,22 @@ Feature: Clear contribution flow feedback
   I want clear feedback while creating an offer
   So that I can complete a valid offer without guessing what failed
 
-  Scenario: Missing required content is explained at the point of action
+  Scenario: Missing required content is explained at each field
     Given the user is in the Add Offer view
-    And a required item such as photo, description, tag, or location is missing
+    And the photo, description, tag, and location items are all missing
     When the user attempts to submit
     Then the request is not sent
-    And each missing item is identified with guidance to correct it
+    And a validation message is attached to each missing item's own field
+    And no single aggregated paragraph replaces the field-level messages
     And entered data is preserved
 
-  Scenario: Successful contribution confirms the outcome
+  Scenario: Successful contribution waits for an explicit completion control
     Given the user submitted a valid offer
     When the create-offer request succeeds
     Then the app confirms the offer was created
     And the confirmation uses a success visual tone distinct from errors
-    And the confirmation remains perceivable for at least 3 seconds
-    And the user is returned to the Offers view after the confirmation is perceivable
+    And the confirmation stays visible until the user selects View offer or Done
+    And no timer navigates away or closes the view
 
   Scenario: Feedback is announced
     Given a validation error or a success confirmation is shown

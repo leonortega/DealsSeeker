@@ -97,6 +97,7 @@ Scenario: Client input stops at the contract maximum
 - Error messages shall be human-readable and free of internal implementation details.
 
 ## Related Specs
+- `OFFERS.EMPTY.001`
 - `APP.RATE.LIMIT.001`
 - `APP.LOCATION.PROVIDER.RESILIENCE.001`
 - `APP.RESPONSE.CONDITIONAL.001`

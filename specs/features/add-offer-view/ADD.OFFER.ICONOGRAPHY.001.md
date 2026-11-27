@@ -56,12 +56,12 @@ Scenario: Labels follow the active language
 
 ## Edge Cases
 - A localized label longer than the available button width.
-- Large text sizes where the label wraps inside a 44pt control.
+- Large text sizes where the label wraps inside a platform-floor control.
 - Many selected tags with long names.
 - Edit mode with prefilled images and tags.
 
 ## Non-Functional Constraints
-- Touch targets shall remain at least 44pt tall.
+- Touch targets shall meet the platform floor: 44pt on iOS and 48dp on Android.
 - This spec does not change validation, submission, or coordinate-privacy behavior.
 
 ## Related Specs

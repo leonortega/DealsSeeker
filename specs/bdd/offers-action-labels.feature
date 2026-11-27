@@ -21,3 +21,16 @@ Feature: Visible labels for offer actions
     Then secondary actions sit behind one visibly labelled control
     And its entries carry text labels and remain independently tappable
     And every action remains labelled for assistive technology
+
+  Scenario: One vocabulary across all offer surfaces
+    Given an offer appears on a card, in the feed, in favorites and in the detail sheet
+    When the actions are rendered on each surface
+    Then Directions, Favorite, Comments, Available? and Report use the same label and glyph everywhere
+    And the actions appear in the same relative order on every surface
+
+  Scenario: Immersive rail limits visible actions to four
+    Given an offer exposes more than four actions in the immersive rail
+    When the rail is rendered
+    Then at most four actions are visible
+    And the remaining actions sit behind one control labelled More
+    And the actions inside More keep the canonical order

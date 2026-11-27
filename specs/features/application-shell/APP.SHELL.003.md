@@ -52,7 +52,7 @@ Scenario: Favorites uses native stack behavior
   When the user closes Favorites with system back
   Then native pop behavior shall return to the previous view
   And brand-styled content shall remain visible
-  And no global application header shall be displayed
+  And the platform-native header for the standard view shall be displayed
 
 Scenario: No foreign close control appears in the brand UI
   Given an overlay destination is open

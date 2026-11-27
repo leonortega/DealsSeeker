@@ -94,6 +94,7 @@ Scenario: Fallback notice does not expose coordinates
 - The notice shall not block access to the offers or the primary actions.
 
 ## Related Specs
+- `OFFERS.GUEST.001`
 - `APP.LOCATION.QUERY.001`
 - `APP.RESILIENCE.UX.001`
 - `APP.LOCATION.DEV.001`

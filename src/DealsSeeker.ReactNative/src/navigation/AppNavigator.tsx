@@ -1,16 +1,18 @@
 import { useEffect, useRef, type ComponentRef } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, useNavigation, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CreateOfferFab } from '../components/CreateOfferFab';
+import { footerBarAppearance } from '../components/AppFooterBar';
 import { LoadingOverlay } from '../components/LoadingOverlay';
 import { PlatformTabIcon, type PlatformTabIconName } from '../components/PlatformTabIcon';
 import { useApp } from '../hooks/useApp';
 import { useAppStatus } from '../hooks/useAppStatus';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { useDestinationFocus } from '../hooks/useDestinationFocus';
+import { resolveTabBarPosition } from '../utils/layout';
 import type { MainTab } from '../api/types';
 import { AccountScreen } from '../screens/AccountScreen';
 import { AddOfferScreen } from '../screens/AddOfferScreen';
@@ -44,6 +46,8 @@ function MainView() {
   } = useApp();
   const { sheetCount } = useAppStatus();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const footer = footerBarAppearance(palette);
   const navigation = useNavigation();
   const containerRef = useRef<ComponentRef<typeof View>>(null);
   useDestinationFocus(containerRef, activeTab, overlayRoute, t);
@@ -86,8 +90,15 @@ function MainView() {
           initialRouteName="offers"
           screenOptions={{
             ...tabScreenOptions(),
-            tabBarActiveTintColor: palette.accent,
-            tabBarInactiveTintColor: palette.inkMuted,
+            tabBarPosition: resolveTabBarPosition(width),
+            tabBarStyle: {
+              backgroundColor: footer.backgroundColor,
+              borderColor: footer.borderColor,
+            },
+            tabBarActiveTintColor: footer.activeTintColor,
+            tabBarInactiveTintColor: footer.inactiveTintColor,
+            headerStyle: { backgroundColor: palette.background },
+            headerTintColor: palette.ink,
           }}
         >
           {MAIN_TAB_DESTINATIONS.map((destination) => (
@@ -97,10 +108,12 @@ function MainView() {
               name={destination.name}
               component={destination.name === 'account' ? AccountScreen : destination.name === 'suggestions' ? SuggestionsScreen : OffersScreen}
               options={{
+                title: t(destination.labelKey),
                 tabBarLabel: t(destination.labelKey),
                 tabBarIcon: ({ color, size }) => (
                   <PlatformTabIcon color={color} name={destination.name as PlatformTabIconName} size={size} />
                 ),
+                headerShown: destination.name === 'offers' ? !immersiveFeedVisible : undefined,
               }}
             />
           ))}

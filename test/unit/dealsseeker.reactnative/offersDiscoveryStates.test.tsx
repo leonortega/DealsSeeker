@@ -96,11 +96,13 @@ describe('Offers discovery states', () => {
     expect(input.props.value).toHaveLength(200);
   });
 
-  it('keeps the Offers controls usable when no offers exist', async () => {
+  it('shows authored guidance instead of a blank surface when no offers exist', async () => {
     await render(<OffersScreen />);
+    await chooseFallbackArea();
 
-    expect(screen.queryByText('offers.emptyTitle')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'offers.createFirstOffer' })).toBeNull();
+    expect(await screen.findByText('offers.emptyTitle')).toBeTruthy();
+    expect(screen.getByText('offers.emptyHint')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'offers.createFirstOffer' })).toBeTruthy();
     expect(screen.getByPlaceholderText('offers.searchPlaceholder')).toBeTruthy();
   });
 });

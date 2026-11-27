@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v2.7`
+- **Version**: `v2.8`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -12,6 +12,9 @@ Requirement R3 is superseded by `OFFERS.MODE.SWITCH.001`: the startup default is
 
 ## Header removal (v2.1)
 The global application header is no longer rendered in any standard view. Requirements R15, R16, R20 and R29 are retired in favor of `APP.SHELL.005`; their BDD scenarios and header-specific edge cases are removed from this spec. The shared bottom footer remains the sole navigation surface as before.
+
+## Guest discovery (v2.8)
+Requirement R2 now offers a read-only `Browse nearby without an account` path alongside `Login` when no authenticated session exists. The guest session's scope, contribution gating and context-preserving sign-in are defined by `OFFERS.GUEST.001` and `ACCOUNT.AUTH.LOGIN.001`; the unfiltered no-offers guidance available to guests is defined by `OFFERS.EMPTY.001`.
 
 ## Purpose
 Define global app sections and startup landing behavior based on session state.
@@ -26,12 +29,12 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R0`: The system shall be a mobile application named `DealsSeeker`.
 - `APP.SHELL.001-R1`: The system shall provide the main navigation sections: `My Account`, `Offers`, `Suggestions`.
 - `APP.SHELL.001-R23`: Reporting shall be reachable only from an offer's Report action and shall open as an offer-scoped overlay; no `Reports` destination shall appear in the shared footer.
-- `APP.SHELL.001-R2`: When there is no active authenticated session, the first view at startup shall be `Login`.
+- `APP.SHELL.001-R2`: When there is no active authenticated session, the first interactive view at startup shall offer both a `Login` entry point and an explicit read-only `Browse nearby without an account` entry point; neither path shall be the only available option.
 - `APP.SHELL.001-R3`: When there is an active authenticated session, the first view at startup shall be `Offers`, with the `Feed` presentation selected by default as defined in `OFFERS.MODE.SWITCH.001`.
-- `APP.SHELL.001-R4`: After successful login or successful user creation, the system shall navigate to `Offers`.
+- `APP.SHELL.001-R4`: After successful login or successful user creation, the system shall navigate to `Offers`, or shall return to the prior Offers context when sign-in was entered from a guest contribution prompt, as defined in `ACCOUNT.AUTH.LOGIN.001`.
 - `APP.SHELL.001-R5`: The system shall persist authenticated session state on device so the user is not required to login again on every app launch.
-- `APP.SHELL.001-R6`: On app access with a persisted session, the system shall validate session activity; if the session is expired/invalid, the session shall be cleared and startup view shall be `Login`.
-- `APP.SHELL.001-R7`: After successful submission in `Suggestions` or `Reports` view (no errors), the system shall redirect to `Offers` view.
+- `APP.SHELL.001-R6`: On app access with a persisted session, the system shall validate session activity; if the session is expired/invalid, the session shall be cleared and startup shall offer the `Login` and `Browse nearby without an account` entry points defined in R2.
+- `APP.SHELL.001-R7`: After successful submission in `Suggestions` or `Reports` view (no errors), the system shall present an explicit completion control that returns the user to `Offers` view; it shall not navigate on a timer.
 - `APP.SHELL.001-R8`: The My Account view shall include quick controls to change app language and app theme.
 - `APP.SHELL.001-R9`: Language/theme changes made in My Account shall apply instantly in the current view.
 - `APP.SHELL.001-R10`: On application startup, the system shall display a branded splash screen for approximately 2 seconds before showing the first interactive view.
@@ -40,7 +43,7 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R13`: While the blocking loading state is visible, user interaction with the underlying view shall be prevented.
 - `APP.SHELL.001-R14`: The blocking loading state shall be dismissed automatically when all pending required operations complete.
 - `APP.SHELL.001-R17`: On Android, the system back gesture or back button shall close an open overlay or sheet first; when no overlay is open and the active view is not Offers, it shall return to the Offers view.
-- `APP.SHELL.001-R18`: When the Offers view is active and no overlay is open, the Android system back gesture or back button shall ask the user to confirm exiting; the application shall leave only after the user confirms. When unauthenticated, the authentication view shall use the same exit confirmation because Offers is not available.
+- `APP.SHELL.001-R18`: When the Offers view is active and no overlay is open, the Android system back gesture or back button shall ask the user to confirm exiting; the application shall leave only after the user confirms. When unauthenticated, the startup entry view and the read-only guest Offers session shall use the same exit confirmation on Android.
 - `APP.SHELL.001-R19`: Back navigation shall preserve view context that the destination view restores on entry, including the offers search query and radius when returning to the offers feed.
 - `APP.SHELL.001-R21`: All views shall present the same bottom footer navigation with My Account (👤), Suggestions, Create, Offers (💲) and a view button in that order. At most one footer option shall be highlighted at a time, and the view button shall never be highlighted. Opening an overlay shall highlight only the option that opened it.
 - `APP.SHELL.001-R22`: The view button shall use ⭐ with the label `New view` when the standard view is selected and 🗺️ with the label `Map mode` when the immersive view is selected; selecting it shall change the selected view mode and shall display the offers view in the newly selected mode, even when the user was on another view such as Suggestions. The view button shall never be highlighted.
@@ -52,16 +55,20 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R28`: On a mobile viewport, each footer option label shall wrap to at most two centered lines beneath its icon instead of being truncated with an ellipsis.
 - `APP.SHELL.001-R30`: From the moment the Offers view becomes visible after startup, a blocking loading state shall be shown until the initial search completes; it shall then be replaced by offers or by the no-offers message.
 - `APP.SHELL.001-R31`: Only one loading indicator shall be visible at a time, rendered by the shell at a fixed root-level position; the Offers view shall not mount its own overlay, no inline progress indicator shall run, and the indicator shall not change position between loading stages.
+- `APP.SHELL.001-R32`: Selecting `Browse nearby without an account` shall begin a read-only guest session scoped to the discovery behaviors of `OFFERS.GUEST.001`; no authenticated user session shall be created.
+- `APP.SHELL.001-R33`: While in a guest session, contribution actions — adding an offer, favoriting, voting, commenting and reporting — shall be gated behind sign-in as defined in `OFFERS.GUEST.001`, and attempting one shall prompt sign-in without discarding the current query, coverage radius, presentation mode or open offer.
+- `APP.SHELL.001-R34`: The guest session state shall be plainly indicated in the Offers view, shall not be restored as an authenticated session after relaunch, and shall not expose raw `lat` or `lng` values.
+- `APP.SHELL.001-R35`: A guest shall have access to the unfiltered no-offers guidance of `OFFERS.EMPTY.001` in both the standard and immersive presentations.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
-Scenario: App starts on Login without active session
+Scenario: App starts with sign-in and guest-browse choices without active session
   Given the application is installed and launchable
   And there is no active authenticated session
   When the user opens the application
   Then the app identity shall be DealsSeeker mobile application
   And the main navigation shall display My Account, Offers, and Suggestions
-  And the Login view shall be the first visible view
+  And the first interactive view shall offer both a Login entry point and a read-only "Browse nearby without an account" entry point
 
 Scenario: App starts on Offers with active session
   Given the application is installed and launchable
@@ -70,26 +77,45 @@ Scenario: App starts on Offers with active session
   Then the Offers section shall be the first visible view
   And the immersive full-screen offers feed shall be presented
 
-Scenario: App starts on Login when persisted session is expired
+Scenario: Guest browse starts a read-only session at Offers
+  Given the application is installed and launchable
+  And there is no active authenticated session
+  When the user selects "Browse nearby without an account" at startup
+  Then the read-only Offers view shall be the first visible view
+  And no authenticated user session shall be created
+  And the guest state shall be plainly indicated
+
+Scenario: Guest contribution prompts sign-in without losing context
+  Given a guest is viewing Offers with an active query and coverage radius
+  When the guest attempts to favorite, vote, comment, report or add an offer
+  Then a sign-in prompt shall be shown
+  And the query, coverage radius, presentation mode and open offer shall be preserved
+
+Scenario: Sign-in from a guest context returns to the prior context
+  Given a guest was prompted to sign in from an Offers context with an active query
+  When the guest signs in successfully
+  Then the prior Offers context shall be restored as defined in `ACCOUNT.AUTH.LOGIN.001`
+
+Scenario: App starts with sign-in and guest-browse choices when persisted session is expired
   Given the application is installed and launchable
   And there is a persisted authenticated session on device
   And that persisted session is expired or invalid
   When the user opens the application
   Then the persisted session shall be cleared
-  And the Login view shall be the first visible view
+  And the first interactive view shall offer both the Login and the read-only "Browse nearby without an account" entry points
 
-Scenario: Suggestions and offer report success submissions redirect to Offers
+Scenario: Suggestions and offer report success offer explicit completion
   Given the authenticated user is in Suggestions view or in an offer-scoped Reports overlay
   When the user submits the form
   And the submit response is successful with no errors
-  Then the success confirmation shall remain perceivable before the redirect
-  And the system shall redirect the user to Offers view
+  Then the success confirmation shall remain perceivable
+  And an explicit completion control shall return the user to Offers view
 
-Scenario: User leaves before the delayed success redirect
-  Given a successful submission has produced a confirmation and a pending delayed redirect
-  When the user navigates to another destination before that redirect occurs
-  Then the pending redirect shall be cancelled
-  And the user's chosen destination shall remain visible
+Scenario: Success confirmation is not dismissed by a timer
+  Given a successful submission has produced a confirmation
+  When the user waits without taking an action
+  Then the confirmation shall remain visible
+  And no automatic navigation shall occur
 
 Scenario: No view button is displayed in the Offers hero
   Given the authenticated user is on the Offers view without an open overlay
@@ -215,12 +241,16 @@ Scenario: One stable loading indicator in the feed
 
 ## Example Inputs/Outputs
 - Example input: App launch with no active session.
-- Expected output: `Login` view rendered first.
+- Expected output: a first interactive view offering both `Login` and `Browse nearby without an account`.
 - Example input: App launch with active session.
 - Expected output: `Offers` view rendered first.
+- Example input: Unauthenticated user selects `Browse nearby without an account`.
+- Expected output: read-only Offers view rendered with a plain guest indication and no authenticated session.
 
 ## Edge Cases
-- Persisted session token is invalid or expired at startup; first view shall be `Login`.
+- Persisted session token is invalid or expired at startup; startup shall offer `Login` and `Browse nearby without an account`.
+- A guest dismisses a sign-in prompt; the read-only session and the prior Offers context shall remain intact.
+- A guest signs in later from `My Account`; return-context behavior shall follow `ACCOUNT.AUTH.LOGIN.001`.
 - Multiple concurrent required requests shall keep the blocking loading state visible until all complete.
 - If a request fails, the blocking loading state shall still be dismissed and the error state shall remain interactive.
 - Repeated back invocations shall walk back through visited views and shall not close the application while a previous in-app view remains.
@@ -255,3 +285,5 @@ Scenario: One stable loading indicator in the feed
 - `APP.SHELL.002`
 - `APP.SHELL.003`
 - `APP.SHELL.004`
+- `OFFERS.GUEST.001`
+- `OFFERS.EMPTY.001`

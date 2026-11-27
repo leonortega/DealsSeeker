@@ -1,3 +1,4 @@
+import { platformTouchFloor } from '../utils/layout';
 import type { RefObject } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },

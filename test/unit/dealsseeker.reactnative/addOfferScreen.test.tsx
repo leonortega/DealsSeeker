@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
 import { AddOfferScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
 
 let mockOverlayRoute: { name: string; offerId?: string } | null = { name: 'add-offer' };
@@ -64,17 +64,55 @@ describe('AddOfferScreen', () => {
     expect(screen.getByText('add.location')).toBeTruthy();
   });
 
-  it('blocks submission and lists every missing required field', async () => {
+  it('blocks submission and attaches a message to each missing field', async () => {
     await render(<AddOfferScreen />);
     await screen.findByText('add.currentLocationUnavailable');
 
     await fireEvent.press(screen.getByText('add.submitCreate'));
 
-    const status = screen.getByText(/add.photoRequired/);
-    expect(status.props.children).toContain('add.validationDescription');
-    expect(status.props.children).toContain('add.validationTags');
-    expect(status.props.children).toContain('add.validationLocation');
+    expect(screen.getByTestId('add-error-photo')).toBeTruthy();
+    expect(screen.getByTestId('add-error-description')).toBeTruthy();
+    expect(screen.getByTestId('add-error-tags')).toBeTruthy();
+    expect(screen.getByTestId('add-error-location')).toBeTruthy();
     expect(mockCreateOffer).not.toHaveBeenCalled();
+  });
+
+  it('presents the three named steps with visible progress (ADD.OFFER.SEQUENCED.001-R1/R2)', async () => {
+    await render(<AddOfferScreen />);
+
+    expect(screen.getAllByText('add.step.photo').length).toBeGreaterThan(0);
+    expect(screen.getByText('add.step.place')).toBeTruthy();
+    expect(screen.getByText('add.step.details')).toBeTruthy();
+    expect(screen.getByTestId('add-step-progress')).toBeTruthy();
+    expect(screen.getByTestId('add-steps-remaining').props.children).toContain(2);
+  });
+
+  it('moves between steps with explicit Next and Back without discarding data', async () => {
+    await render(<AddOfferScreen />);
+    await fireEvent.changeText(screen.getByPlaceholderText('add.descriptionPlaceholder'), 'coffee and tea');
+
+    await fireEvent.press(screen.getByTestId('add-step-next'));
+    expect(screen.getByTestId('add-active-step').props.children).toBe('add.step.place');
+
+    await fireEvent.press(screen.getByTestId('add-step-back'));
+    expect(screen.getByTestId('add-active-step').props.children).toBe('add.step.photo');
+    expect(screen.getByPlaceholderText('add.descriptionPlaceholder').props.value).toBe('coffee and tea');
+  });
+
+  it('offers related tags as opt-in suggestions with an explicit Add action', async () => {
+    await render(<AddOfferScreen />);
+    await fireEvent.changeText(screen.getByPlaceholderText('add.descriptionPlaceholder'), 'coffee ');
+
+    expect(screen.getByText('add.suggestionsTitle')).toBeTruthy();
+    expect(screen.getByText('cafe')).toBeTruthy();
+    const hasCafeChip = () =>
+      screen.queryAllByTestId('add-tag-chip').some((chip) => within(chip).queryByText('cafe') !== null);
+    expect(hasCafeChip()).toBe(false);
+
+    const addControls = screen.getAllByTestId('add-suggestion-add');
+    const cafeIndex = addControls.findIndex((control) => control.props.accessibilityLabel?.includes('cafe'));
+    await fireEvent.press(addControls[cafeIndex]);
+    expect(hasCafeChip()).toBe(true);
   });
 
   it('uses the edit title when editing an owned offer', async () => {

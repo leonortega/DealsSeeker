@@ -1,12 +1,14 @@
+import { platformTouchFloor } from '../utils/layout';
 import { landmarkFontFamily } from '../utils/typography';
 import { Image, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { useApp } from '../hooks/useApp';
 import { isSvgImageUri } from '../utils/images';
 import { immersiveInk } from '../utils/theme';
 import { ImmersiveActionIconGlyph } from './ImmersiveActionGlyphs';
+import { OfferActionGlyph, OFFER_ACTION_GLYPHS } from './OfferActionVocabulary';
 import { formatDistanceMeters, shorten } from '../utils/format';
 
 interface OfferCardProps {
@@ -22,16 +24,22 @@ interface OfferCardProps {
 
 function HighlightedDescription({ description, query }: { description: string; query: string }) {
   const { palette } = useApp();
-  const words = Array.from(
-    new Set(query.split(/\s+/u).map((word) => word.trim()).filter(Boolean))
+  const words = useMemo(
+    () => Array.from(new Set(query.split(/\s+/u).map((word) => word.trim()).filter(Boolean))),
+    [query]
   );
+  const reduced = useMemo(() => shorten(description), [description]);
+  const parts = useMemo(() => {
+    if (words.length === 0) {
+      return [reduced];
+    }
+    const pattern = words.map((word) => word.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')).join('|');
+    return reduced.split(new RegExp(`(${pattern})`, 'giu'));
+  }, [reduced, words]);
 
   if (words.length === 0) {
-    return <Text style={[styles.description, { color: palette.ink }]}>{shorten(description)}</Text>;
+    return <Text style={[styles.description, { color: palette.ink }]}>{reduced}</Text>;
   }
-
-  const reduced = shorten(description);
-  const parts = reduced.split(new RegExp(`(${words.map((word) => word.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')).join('|')})`, 'giu'));
 
   return (
     <Text style={[styles.description, { color: palette.ink }]}>
@@ -141,32 +149,46 @@ function OfferCardRow({
 
         <View style={[styles.actions, stackActions && styles.actionsStacked]}>
           <Pressable
+            testID="offer-card-action-directions"
+            accessibilityLabel={preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+            accessibilityRole="button"
+            style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.accentMuted }]}
+            onPress={() => onDirections(offer)}
+          >
+            <OfferActionGlyph
+              glyph={OFFER_ACTION_GLYPHS.directions}
+              prominent
+              testID="offer-action-glyph"
+            />
+            <Text style={[styles.actionLabel, { color: palette.accentText }]}>
+              {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+            </Text>
+          </Pressable>
+          <Pressable
+            testID="offer-card-action-favorite"
             accessibilityLabel={t('offers.favorite')}
             accessibilityRole="button"
             accessibilityState={{ selected: offer.isFavorite }}
             style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: offer.isFavorite ? palette.accentMuted : palette.panel }]}
             onPress={() => onFavorite(offer)}
           >
+            <OfferActionGlyph
+              active={offer.isFavorite}
+              glyph={OFFER_ACTION_GLYPHS.favorite}
+              testID="offer-action-glyph"
+            />
             <Text style={[styles.actionLabel, { color: offer.isFavorite ? palette.accentText : palette.ink }]}>
               {t('offers.favorite')}
             </Text>
           </Pressable>
           <Pressable
-            accessibilityLabel={preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
-            accessibilityRole="button"
-            style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.panel }]}
-            onPress={() => onDirections(offer)}
-          >
-            <Text style={[styles.actionLabel, { color: palette.ink }]}>
-              {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
-            </Text>
-          </Pressable>
-          <Pressable
+            testID="offer-card-action-comments"
             accessibilityLabel={t('offers.action.comments')}
             accessibilityRole="button"
             style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.panel }]}
             onPress={() => onComments(offer)}
           >
+            <OfferActionGlyph glyph={OFFER_ACTION_GLYPHS.comments} testID="offer-action-glyph" />
             <Text style={[styles.actionLabel, { color: palette.ink }]}>{t('offers.action.comments')}</Text>
           </Pressable>
         </View>
@@ -225,7 +247,10 @@ function OfferCardRow({
               style={[styles.voteButton, { backgroundColor: palette.panel }]}
               onPress={() => onReport(offer)}
             >
-              <Text style={{ color: palette.ink }}>{t('offers.report')}</Text>
+              <View style={styles.voteContent}>
+                <ImmersiveActionIconGlyph kind={OFFER_ACTION_GLYPHS.report} />
+                <Text style={{ color: palette.ink }}>{t('offers.report')}</Text>
+              </View>
             </Pressable>
             </View>
           </View>
@@ -352,8 +377,9 @@ const styles = StyleSheet.create({
   actionButton: {
     alignItems: 'center',
     borderRadius: 14,
+    gap: 4,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
@@ -383,7 +409,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 12,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 10,
     paddingVertical: 10,
   },

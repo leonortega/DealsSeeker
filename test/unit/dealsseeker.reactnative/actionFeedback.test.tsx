@@ -30,6 +30,7 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     },
     closeImmersiveOffers: jest.fn(),
     immersiveOffers: true,
+    isAuthenticated: true,
     isPending: () => false,
     openAddOffer: jest.fn(),
     openImmersiveOffers: jest.fn(),

@@ -1,3 +1,4 @@
+import { platformTouchFloor } from '../utils/layout';
 import { landmarkFontFamily } from '../utils/typography';
 import { immersiveInk } from '../utils/theme';
 import React, { type RefObject, useEffect, useRef, useState } from 'react';
@@ -24,6 +25,7 @@ import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { resolveMotionPreferences } from '../utils/motion';
 import { restoreFocus } from '../utils/focusReturn';
 import { NativeBottomSheet } from './NativeBottomSheet';
+import { OfferActionGlyph, OFFER_ACTION_GLYPHS } from './OfferActionVocabulary';
 import { formatDistanceMeters } from '../utils/format';
 
 interface OfferDetailModalProps {
@@ -396,10 +398,25 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
             </Pressable>
           </View>
 
+          <View testID="offer-detail-badges" style={styles.badges}>
+            {offer.isPromoted ? (
+              <View style={[styles.badge, { backgroundColor: palette.highlight }]}>
+                <Text style={[styles.badgeLabel, { color: palette.onHighlight }]}>{t('offers.promoted')}</Text>
+              </View>
+            ) : null}
+            {offer.isReported ? (
+              <View style={[styles.badge, { backgroundColor: palette.danger }]}>
+                <Text style={[styles.badgeLabel, { color: palette.onDanger }]}>{t('offers.reported')}</Text>
+              </View>
+            ) : null}
+          </View>
           <Text style={[styles.description, { color: palette.ink }]}>{offer.description}</Text>
           <Text style={[styles.meta, { color: palette.inkMuted }]}>
             {t('offers.distance')}: {formatDistanceMeters(offer.distanceMeters)}
           </Text>
+          {offer.isReported ? (
+            <Text style={[styles.warning, { color: palette.danger }]}>{t('offers.reportedWarning')}</Text>
+          ) : null}
 
           <View style={styles.tags}>
             {offer.tags.map((tag) => (
@@ -410,15 +427,41 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
           </View>
 
           <View style={styles.actions}>
-            <Pressable style={[styles.actionButton, { backgroundColor: palette.panel }]} onPress={() => onFavorite(offer)}>
-              <Text style={{ color: palette.ink }}>{t('offers.favorite')}</Text>
-            </Pressable>
-            <Pressable style={[styles.actionButton, { backgroundColor: palette.accentMuted }]} onPress={() => onDirections(offer)}>
+            <Pressable
+              accessibilityLabel={t('offers.action.directions')}
+              accessibilityRole="button"
+              testID="offer-detail-action-directions"
+              style={[styles.actionButton, { backgroundColor: palette.accentMuted }]}
+              onPress={() => onDirections(offer)}
+            >
+              <OfferActionGlyph glyph={OFFER_ACTION_GLYPHS.directions} prominent testID="offer-detail-action-glyph" />
               <Text style={{ color: palette.accentText }}>
                 {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
               </Text>
             </Pressable>
-            <Pressable style={[styles.actionButton, { backgroundColor: palette.panel }]} onPress={() => onComments(offer)}>
+            <Pressable
+              accessibilityLabel={t('offers.favorite')}
+              accessibilityRole="button"
+              accessibilityState={{ selected: offer.isFavorite }}
+              testID="offer-detail-action-favorite"
+              style={[styles.actionButton, { backgroundColor: palette.panel }]}
+              onPress={() => onFavorite(offer)}
+            >
+              <OfferActionGlyph
+                active={offer.isFavorite}
+                glyph={OFFER_ACTION_GLYPHS.favorite}
+                testID="offer-detail-action-glyph"
+              />
+              <Text style={{ color: palette.ink }}>{t('offers.favorite')}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityLabel={t('offers.action.comments')}
+              accessibilityRole="button"
+              testID="offer-detail-action-comments"
+              style={[styles.actionButton, { backgroundColor: palette.panel }]}
+              onPress={() => onComments(offer)}
+            >
+              <OfferActionGlyph glyph={OFFER_ACTION_GLYPHS.comments} testID="offer-detail-action-glyph" />
               <Text style={{ color: palette.ink }}>{t('offers.action.comments')}</Text>
             </Pressable>
           </View>
@@ -515,8 +558,8 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     flexShrink: 0,
     justifyContent: 'center',
-    minHeight: 44,
-    minWidth: 44,
+    minHeight: platformTouchFloor,
+    minWidth: platformTouchFloor,
     paddingVertical: 4,
   },
   close: {
@@ -536,9 +579,9 @@ const styles = StyleSheet.create({
   galleryButton: {
     alignItems: 'center',
     borderRadius: 999,
-    height: 44,
+    height: platformTouchFloor,
     justifyContent: 'center',
-    width: 44,
+    width: platformTouchFloor,
   },
   galleryButtonDisabled: {
     opacity: 0.35,
@@ -599,9 +642,9 @@ const styles = StyleSheet.create({
   fullscreenNavButton: {
     alignItems: 'center',
     borderRadius: 999,
-    height: 44,
+    height: platformTouchFloor,
     justifyContent: 'center',
-    width: 44,
+    width: platformTouchFloor,
   },
   fullscreenCounter: {
     bottom: 16,
@@ -635,13 +678,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
+  badges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  badge: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  badgeLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  warning: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   actions: {
     flexDirection: 'row',
     gap: 10,
   },
   actionButton: {
+    alignItems: 'center',
     borderRadius: 16,
     flex: 1,
+    gap: 4,
     paddingHorizontal: 14,
     paddingVertical: 14,
   },

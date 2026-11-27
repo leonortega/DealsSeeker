@@ -29,7 +29,7 @@ Give the application's modal overlays native bottom-sheet interaction — drag, 
 - `APP.BOTTOM_SHEET.001-R9`: An overlay sheet shall not render a separate Close button that duplicates the native handle and swipe dismissal; dismissal shall remain available through the native affordance and to assistive technology.
 - `APP.BOTTOM_SHEET.001-R10`: While a sheet is open, its surface and backdrop shall render above all presenting-view chrome, including headers, presentation switches, filters and transient status banners.
 - `APP.BOTTOM_SHEET.001-R11`: System Back while a sheet is open shall dismiss the sheet through its normal dismissal path and shall not affect the underlying view.
-- `APP.BOTTOM_SHEET.001-R12`: While a sheet is open, the branded footer navigation and its Create action shall not render above the sheet, and every sheet control including its primary action shall remain visible and reachable.
+- `APP.BOTTOM_SHEET.001-R12`: While a sheet is open, the native bottom navigation and its Create action shall not render above the sheet, and every sheet control including its primary action shall remain visible and reachable.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -86,8 +86,8 @@ Scenario: System Back dismisses an open sheet
   Then the sheet shall close through its normal dismissal path
   And the underlying view shall remain unchanged
 
-Scenario: Sheet controls are not covered by the branded footer
-  Given the branded footer is visible on an authenticated view
+Scenario: Sheet controls are not covered by the native bottom navigation
+  Given the native bottom navigation is visible on an authenticated view
   When an overlay sheet opens
   Then the footer and its Create action shall not be displayed above the sheet
   And every sheet control including its primary action shall remain visible and tappable
@@ -102,7 +102,7 @@ Scenario: Sheet controls are not covered by the branded footer
 - Rapid repeated drags — dismissal runs once.
 - Large text sizes where content exceeds one snap point.
 - A sheet opened while another overlay is already visible.
-- A sheet opened while the branded footer is visible, in either presentation, with a long localized footer label.
+- A sheet opened while the native bottom navigation is visible, in either presentation, with a long localized label.
 
 ## Non-Functional Constraints
 - Sheet visuals shall remain brand-defined; the library shall provide behavior only.

@@ -1,3 +1,4 @@
+import { platformTouchFloor } from '../utils/layout';
 import { landmarkFontFamily } from '../utils/typography';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -44,7 +45,8 @@ interface LocationSearchResult {
 const maxPhotos = 4;
 const minAutoTagLength = 3;
 const maxTagLength = 40;
-const successDwellMs = 3000;
+const stepOrder = ['photo', 'place', 'details'] as const;
+type AddOfferStep = (typeof stepOrder)[number];
 const descriptionMaxLength = 500;
 const locationQueryMaxLength = 120;
 
@@ -141,6 +143,9 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
   const [locationResults, setLocationResults] = useState<LocationSearchResult[]>([]);
   const [mapCenter, setMapCenter] = useState<GeoPoint | null>(null);
   const [suggestionsSuppressed, setSuggestionsSuppressed] = useState(true);
+  const [activeStep, setActiveStep] = useState<AddOfferStep>('photo');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
   const { status, statusTone, reportStatus: reportNotice } = useStatusNotice();
   const [loadFailed, setLoadFailed] = useState(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
@@ -150,7 +155,6 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
   const locationSearchRequest = useAbortableRequest();
   const locationSearchSequence = useRef(0);
   const pinSequence = useRef(0);
-  const navigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const discardPromptOpen = useRef(false);
   const dismissApproved = useRef(false);
   const tagLimitNotified = useRef(false);
@@ -161,15 +165,6 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
     tags.length > 0 ||
     locationConfirmed ||
     (location !== null && location.source !== 'auto');
-
-  useEffect(
-    () => () => {
-      if (navigationTimer.current) {
-        clearTimeout(navigationTimer.current);
-      }
-    },
-    []
-  );
 
   useEffect(() => {
     if (!isVisible) {
@@ -262,6 +257,9 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
 
     async function loadDraft() {
       reportStatus(null);
+      setActiveStep('photo');
+      setFieldErrors({});
+      setSubmitted(false);
       setLoadFailed(false);
 
       if (editingOfferId) {
@@ -402,21 +400,6 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       locationSearchRequest.abort();
     };
   }, [isVisible, locationConfirmed, locationQuery, suggestionsSuppressed, searchAttempt]);
-
-  useEffect(() => {
-    if (!isVisible) {
-      return;
-    }
-
-    const candidates = getSuggestedTags(seedTags, preferences.language).filter(
-      (tag) => normalizeTag(tag).length >= minAutoTagLength
-    );
-    candidates.forEach((tag) => {
-      if (!tags.includes(tag) && !dismissedTags.includes(tag)) {
-        addTag(tag, 'suggestion');
-      }
-    });
-  }, [isVisible, seedTags, tags, dismissedTags, preferences.language]);
 
   useEffect(() => {
     if (tags.length < maxDraftTags) {
@@ -671,22 +654,22 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
   }
 
   function validate(currentTags: string[] = tags) {
-    const errors: string[] = [];
+    const errors: Record<string, string> = {};
     if (images.length === 0) {
-      errors.push(t('add.photoRequired'));
+      errors.photo = t('add.photoRequired');
     }
     if (!description.trim()) {
-      errors.push(t('add.validationDescription'));
+      errors.description = t('add.validationDescription');
     }
     if (currentTags.length === 0) {
-      errors.push(t('add.validationTags'));
+      errors.tags = t('add.validationTags');
     }
     if (!location || !locationConfirmed) {
-      errors.push(t('add.validationLocation'));
+      errors.location = t('add.validationLocation');
     }
 
-    reportStatus(errors.join(' '), 'error');
-    return errors.length === 0;
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   }
 
   async function submit() {
@@ -716,10 +699,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       }
 
       reportStatus(t('add.updated'), 'success');
-      navigationTimer.current = setTimeout(() => {
-        closeOverlay();
-        openTab('account');
-      }, successDwellMs);
+      setSubmitted(true);
       return;
     }
 
@@ -731,14 +711,18 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
     }
 
     reportStatus(t('add.created'), 'success');
-    navigationTimer.current = setTimeout(() => {
-      closeOverlay();
-      openTab('offers');
-    }, successDwellMs);
+    setSubmitted(true);
   }
 
   const detectedWords = extractWords(description).filter((word) => !tags.includes(normalizeTag(word)));
+  const tagSuggestions = getSuggestedTags(seedTags, preferences.language).filter(
+    (tag) =>
+      normalizeTag(tag).length >= minAutoTagLength &&
+      !tags.includes(tag) &&
+      !dismissedTags.includes(tag)
+  );
   const previewImage = images[selectedImageIndex];
+  const activeStepIndex = stepOrder.indexOf(activeStep);
 
   return (
     <KeyboardAvoidingView
@@ -764,13 +748,38 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
           </Pressable>
         </View>
 
+        <View testID="add-step-progress" style={styles.stepProgress}>
+          {stepOrder.map((step, index) => (
+            <Text
+              key={step}
+              testID={index === activeStepIndex ? 'add-active-step' : undefined}
+              style={[
+                styles.stepLabel,
+                index === activeStepIndex
+                  ? { backgroundColor: palette.accent, color: palette.onAccent }
+                  : { backgroundColor: palette.panel, color: palette.inkMuted },
+              ]}
+            >
+              {t(`add.step.${step}`)}
+            </Text>
+          ))}
+          <Text testID="add-steps-remaining" style={[styles.stepRemaining, { color: palette.inkMuted }]}>
+            {stepOrder.length - activeStepIndex - 1} {t('add.stepsRemaining')}
+          </Text>
+        </View>
+
         <View
           style={columns === 2 ? styles.tabletRow : styles.stack}
           testID={columns === 2 ? 'add-offer-tablet-columns' : undefined}
         >
           <View style={styles.column} testID="add-offer-column-primary">
-        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <View testID="add-step-photo" style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.images')}</Text>
+          {fieldErrors.photo ? (
+            <Text accessibilityLiveRegion="polite" testID="add-error-photo" style={[styles.fieldError, { color: palette.danger }]}>
+              {fieldErrors.photo}
+            </Text>
+          ) : null}
           <View style={[styles.imageStage, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
             {previewImage?.previewUri ? (
               <Image source={{ uri: previewImage.previewUri }} style={styles.previewImage} />
@@ -856,8 +865,13 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
           ) : null}
         </View>
 
-        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <View testID="add-step-place" style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.location')}</Text>
+          {fieldErrors.location ? (
+            <Text accessibilityLiveRegion="polite" testID="add-error-location" style={[styles.fieldError, { color: palette.danger }]}>
+              {fieldErrors.location}
+            </Text>
+          ) : null}
           <Text style={{ color: palette.inkMuted }}>
             {t('add.currentAddress')}: {location?.label ?? t('add.locationUnavailable')}
           </Text>
@@ -998,8 +1012,13 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
 
           </View>
           <View style={styles.column} testID="add-offer-column-secondary">
-        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <View testID="add-step-details" style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.description')}</Text>
+          {fieldErrors.description ? (
+            <Text accessibilityLiveRegion="polite" testID="add-error-description" style={[styles.fieldError, { color: palette.danger }]}>
+              {fieldErrors.description}
+            </Text>
+          ) : null}
           <TextInput
             accessibilityLabel={t('add.description')}
             maxLength={descriptionMaxLength}
@@ -1059,6 +1078,39 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
           <Text style={{ color: palette.inkMuted }}>{t('add.tagsHint')}</Text>
           <Text style={{ color: palette.inkMuted }}>{t('add.tagsAutoHint')}</Text>
           <Text style={{ color: palette.inkMuted }}>{t('add.tagsLimitHint')}</Text>
+          {fieldErrors.tags ? (
+            <Text accessibilityLiveRegion="polite" testID="add-error-tags" style={[styles.fieldError, { color: palette.danger }]}>
+              {fieldErrors.tags}
+            </Text>
+          ) : null}
+          {tagSuggestions.length > 0 ? (
+            <View testID="add-suggestions" style={styles.suggestionSection}>
+              <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.suggestionsTitle')}</Text>
+              {tagSuggestions.map((tag) => (
+                <View key={tag} testID="add-suggestion" style={styles.suggestionRow}>
+                  <Text style={{ color: palette.ink, flex: 1 }}>{tag}</Text>
+                  <Pressable
+                    accessibilityLabel={`${t('add.suggestionAdd')} ${tag}`}
+                    accessibilityRole="button"
+                    onPress={() => addTag(tag, 'suggestion')}
+                    style={styles.suggestionAction}
+                    testID="add-suggestion-add"
+                  >
+                    <Text style={{ color: palette.accentText }}>{t('add.suggestionAdd')}</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityLabel={`${t('add.suggestionDismiss')} ${tag}`}
+                    accessibilityRole="button"
+                    onPress={() => setDismissedTags((current) => [...current, tag])}
+                    style={styles.suggestionAction}
+                    testID="add-suggestion-dismiss"
+                  >
+                    <Text style={{ color: palette.inkMuted }}>{t('add.suggestionDismiss')}</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+          ) : null}
           <View style={styles.wordGrid}>
             {tags.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('add.noTags')}</Text> : null}
             {tags.map((tag) => (
@@ -1074,6 +1126,31 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
           </View>
         </View>
 
+        <View style={styles.stepNav}>
+          <Pressable
+            accessibilityLabel={t('add.step.back')}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: activeStepIndex === 0 }}
+            disabled={activeStepIndex === 0}
+            onPress={() => setActiveStep((current) => stepOrder[Math.max(0, stepOrder.indexOf(current) - 1)])}
+            style={[styles.stepNavButton, { backgroundColor: palette.panel }]}
+            testID="add-step-back"
+          >
+            <Text style={{ color: palette.ink }}>{t('add.step.back')}</Text>
+          </Pressable>
+          <Pressable
+            accessibilityLabel={t('add.step.next')}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: activeStepIndex === stepOrder.length - 1 }}
+            disabled={activeStepIndex === stepOrder.length - 1}
+            onPress={() => setActiveStep((current) => stepOrder[Math.min(stepOrder.length - 1, stepOrder.indexOf(current) + 1)])}
+            style={[styles.stepNavButton, { backgroundColor: palette.accentMuted }]}
+            testID="add-step-next"
+          >
+            <Text style={{ color: palette.accentText }}>{t('add.step.next')}</Text>
+          </Pressable>
+        </View>
+
         <Pressable
           accessibilityLabel={editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
           accessibilityRole="button"
@@ -1085,7 +1162,44 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
             {editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
           </Text>
         </Pressable>
-        {status ? (
+        {submitted ? (
+          <View testID="add-success" style={styles.successPanel}>
+            <Text
+              accessibilityLiveRegion="polite"
+              style={[styles.status, { color: palette.success ?? palette.accent }]}
+            >
+              {t(editingOfferId ? 'add.updated' : 'add.created')}
+            </Text>
+            {!editingOfferId ? (
+              <Pressable
+                accessibilityLabel={t('add.viewOffer')}
+                accessibilityRole="button"
+                onPress={() => {
+                  closeOverlay();
+                  openTab('offers');
+                }}
+                style={[styles.stepNavButton, { backgroundColor: palette.accentMuted }]}
+                testID="add-view-offer"
+              >
+                <Text style={{ color: palette.accentText }}>{t('add.viewOffer')}</Text>
+              </Pressable>
+            ) : null}
+            <Pressable
+              accessibilityLabel={t('common.done')}
+              accessibilityRole="button"
+              onPress={() => {
+                closeOverlay();
+                if (editingOfferId) {
+                  openTab('account');
+                }
+              }}
+              style={[styles.stepNavButton, { backgroundColor: palette.panel }]}
+              testID="add-done"
+            >
+              <Text style={{ color: palette.ink }}>{t('common.done')}</Text>
+            </Pressable>
+          </View>
+        ) : status ? (
           <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
             {status}
           </Text>
@@ -1183,7 +1297,7 @@ const styles = StyleSheet.create({
   },
   inlineAction: {
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 8,
   },
   searchFeedback: {
@@ -1196,7 +1310,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     flex: 1,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 12,
     paddingVertical: 13,
   },
@@ -1206,7 +1320,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 0,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
@@ -1228,7 +1342,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
@@ -1248,7 +1362,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
@@ -1264,5 +1378,60 @@ const styles = StyleSheet.create({
   status: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  stepProgress: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  stepLabel: {
+    borderRadius: 999,
+    fontSize: 13,
+    fontWeight: '800',
+    minHeight: 36,
+    overflow: 'hidden',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  stepRemaining: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginLeft: 'auto',
+  },
+  stepNav: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  stepNavButton: {
+    alignItems: 'center',
+    borderRadius: 999,
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: platformTouchFloor,
+    paddingVertical: 12,
+  },
+  fieldError: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  suggestionSection: {
+    gap: 8,
+  },
+  suggestionRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  suggestionAction: {
+    alignItems: 'center',
+    borderRadius: 12,
+    justifyContent: 'center',
+    minHeight: platformTouchFloor,
+    minWidth: 56,
+    paddingHorizontal: 10,
+  },
+  successPanel: {
+    gap: 10,
   },
 });

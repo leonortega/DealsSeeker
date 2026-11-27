@@ -19,7 +19,7 @@ Make the two photo-entry actions the clear next step in the image panel without 
 ## Requirements
 - `ADD.OFFER.VISUAL.HIERARCHY.001-R1`: The photo-entry actions shall carry more visual weight than the reorder and remove actions.
 - `ADD.OFFER.VISUAL.HIERARCHY.001-R2`: Reorder and remove actions shall use a quieter treatment than the photo-entry actions while remaining clearly tappable.
-- `ADD.OFFER.VISUAL.HIERARCHY.001-R3`: Every image-panel action shall keep a touch target of at least 44pt.
+- `ADD.OFFER.VISUAL.HIERARCHY.001-R3`: Every image-panel action shall keep a touch target of at least 44pt on iOS and 48dp on Android.
 - `ADD.OFFER.VISUAL.HIERARCHY.001-R4`: The treatment shall use existing palette roles and shall not make terracotta a background for a secondary action.
 
 ## Acceptance Criteria (BDD)

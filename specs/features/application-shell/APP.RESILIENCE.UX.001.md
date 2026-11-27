@@ -73,6 +73,7 @@ Scenario: Favorite failure does not display the search-failure state
 - The error state shall be visible without scrolling through the full offer list.
 
 ## Related Specs
+- `OFFERS.EMPTY.001`
 - `APP.API.CONNECTIVITY.001`
 - `APP.SEARCH.INTERACTION.001`
 - `OFFERS.SEARCH.001`

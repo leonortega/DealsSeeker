@@ -55,8 +55,8 @@ Feature: Native bottom-sheet behavior for overlays
     Then the sheet closes through its normal dismissal path
     And the underlying view remains unchanged
 
-  Scenario: Sheet controls are not covered by the branded footer
-    Given the branded footer is visible on an authenticated view
+  Scenario: Sheet controls are not covered by the native bottom navigation
+    Given the native bottom navigation is visible on an authenticated view
     When an overlay sheet opens
     Then the footer and its Create action are not displayed above the sheet
     And every sheet control including its primary action remains visible and tappable

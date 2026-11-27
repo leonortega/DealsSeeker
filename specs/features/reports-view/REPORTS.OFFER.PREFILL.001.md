@@ -25,7 +25,7 @@ Ensure report creation from Offers list carries full context into report overlay
 - `REPORTS.OFFER.PREFILL.001-R5`: The report draft shall include report date/time.
 - `REPORTS.OFFER.PREFILL.001-R6`: The report draft shall include a prefilled text message created at report-button press time.
 - `REPORTS.OFFER.PREFILL.001-R7`: On report submission from report overlay, the system shall submit message, offerId, userId, and report date/time.
-- `REPORTS.OFFER.PREFILL.001-R8`: After a successful report submission response (no errors), the system shall redirect to `Offers` view.
+- `REPORTS.OFFER.PREFILL.001-R8`: After a successful report submission response (no errors), the system shall present an explicit completion control that returns to `Offers` view; it shall not navigate on a timer.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -45,7 +45,7 @@ Scenario: Submit report with prefilled context
   When the user submits the report
   Then report payload shall include message, offerId, userId, and report date/time
   And report submission shall complete successfully
-  And the system shall redirect the user to Offers view
+  And an explicit completion control returns the user to Offers view
 ```
 
 ## Example Inputs/Outputs

@@ -3,9 +3,15 @@ import { render, screen } from '@testing-library/react-native';
 
 let mockReduceMotion = false;
 let mockTopInset = 0;
+let mockWidth = 390;
+let mockImmersiveOffers = false;
 
 const mockStackScreenOptions = jest.fn(() => ({ headerShown: false }));
 const mockModalScreenOptions = jest.fn(() => ({ headerShown: false }));
+
+jest.spyOn(require('react-native'), 'useWindowDimensions').mockImplementation(
+  () => ({ width: mockWidth, height: 844, scale: 2, fontScale: 1 })
+);
 
 jest.mock('@react-navigation/native', () => ({
   NavigationContainer: ({ children }: { children: React.ReactNode }) => children,
@@ -22,27 +28,45 @@ jest.mock('@react-navigation/native', () => ({
     selector({ routes: [{ name: 'offers' }], index: 0 }),
 }));
 
+let mockTabNavigatorProps: { screenOptions?: Record<string, unknown> } = {};
+let mockTabScreenOptions: Record<string, Record<string, unknown>> = {};
+
 jest.mock('@react-navigation/bottom-tabs', () => ({
   createBottomTabNavigator: () => ({
     Navigator: ({
       children,
       tabBar,
+      ...props
     }: {
       children: React.ReactNode;
       tabBar?: (args: {
         state: { routes: Array<{ name: string }>; index: number };
         navigation: { navigate: () => void };
       }) => React.ReactNode;
-    }) => (
-      <>
-        {children}
-        {tabBar?.({
-          state: { routes: [{ name: 'offers' }], index: 0 },
-          navigation: { navigate: jest.fn() },
-        })}
-      </>
-    ),
-    Screen: ({ component: Component }: { component: () => React.ReactNode }) => <Component />,
+    }) => {
+      mockTabNavigatorProps = props as { screenOptions?: Record<string, unknown> };
+      return (
+        <>
+          {children}
+          {tabBar?.({
+            state: { routes: [{ name: 'offers' }], index: 0 },
+            navigation: { navigate: jest.fn() },
+          })}
+        </>
+      );
+    },
+    Screen: ({
+      component: Component,
+      name,
+      options,
+    }: {
+      component: () => React.ReactNode;
+      name: string;
+      options: Record<string, unknown>;
+    }) => {
+      mockTabScreenOptions[name] = options;
+      return <Component />;
+    },
   }),
 }));
 
@@ -66,7 +90,7 @@ jest.mock('@react-navigation/native-stack', () => ({
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/navigation/shellOptions', () => ({
   stackScreenOptions: (...args: unknown[]) => mockStackScreenOptions(...(args as [])),
-  tabScreenOptions: () => ({ headerShown: false }),
+  tabScreenOptions: () => ({ headerShown: true }),
   modalScreenOptions: (...args: unknown[]) => mockModalScreenOptions(...(args as [])),
 }));
 
@@ -84,15 +108,17 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     activeTab: 'offers',
     closeImmersiveOffers: jest.fn(),
     closeOverlay: jest.fn(),
-    immersiveOffers: false,
+    immersiveOffers: mockImmersiveOffers,
     openAddOffer: jest.fn(),
     openTab: jest.fn(),
     overlayRoute: null,
     palette: {
       accent: '#b85c38',
+      backdrop: '#121417',
       background: '#f4efe6',
       border: '#d7c9b5',
       card: '#fffdf8',
+      footerActive: '#5a2e20',
       ink: '#1f3128',
       inkMuted: '#5f6d63',
       panel: '#fff9f0',
@@ -101,7 +127,15 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   }),
 }));
 
-jest.mock('../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar', () => ({ AppFooterBar: () => null }));
+jest.mock('../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar', () => ({
+  AppFooterBar: () => null,
+  footerBarAppearance: (palette: { backdrop: string; border: string; accent: string; inkMuted: string }) => ({
+    backgroundColor: palette.backdrop,
+    borderColor: palette.border,
+    activeTintColor: palette.accent,
+    inactiveTintColor: palette.inkMuted,
+  }),
+}));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/CreateOfferFab', () => ({ CreateOfferFab: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/LoadingOverlay', () => ({ LoadingOverlay: () => null }));
 jest.mock('../../../src/DealsSeeker.ReactNative/src/components/NavIcon', () => ({ NavIcon: () => null }));
@@ -117,6 +151,10 @@ describe('native shell platform behavior', () => {
   beforeEach(() => {
     mockReduceMotion = false;
     mockTopInset = 0;
+    mockWidth = 390;
+    mockImmersiveOffers = false;
+    mockTabNavigatorProps = {};
+    mockTabScreenOptions = {};
     mockStackScreenOptions.mockClear();
     mockModalScreenOptions.mockClear();
   });
@@ -143,5 +181,40 @@ describe('native shell platform behavior', () => {
     await render(<AppNavigator />);
 
     expect(StyleSheet.flatten(screen.getByTestId('app-shell-root').props.style).paddingTop).toBe(24);
+  });
+
+  it('uses a bottom tab bar at compact width and a navigation rail at tablet width', async () => {
+    await render(<AppNavigator />);
+    expect(mockTabNavigatorProps.screenOptions?.tabBarPosition).toBe('bottom');
+
+    mockWidth = 900;
+    await render(<AppNavigator />);
+    expect(mockTabNavigatorProps.screenOptions?.tabBarPosition).toBe('left');
+  });
+
+  it('paints the native tab surface with the authored night footer palette', async () => {
+    await render(<AppNavigator />);
+
+    const options = mockTabNavigatorProps.screenOptions ?? {};
+    expect(StyleSheet.flatten(options.tabBarStyle)).toMatchObject({
+      backgroundColor: '#121417',
+      borderColor: '#d7c9b5',
+    });
+    expect(options.tabBarActiveTintColor).toBe('#b85c38');
+    expect(options.tabBarInactiveTintColor).toBe('#5f6d63');
+  });
+
+  it('shows a native header with each destination title and hides it for the immersive feed', async () => {
+    await render(<AppNavigator />);
+
+    expect(mockTabNavigatorProps.screenOptions?.headerShown).toBe(true);
+    expect(mockTabScreenOptions.account.title).toBe('nav.account');
+    expect(mockTabScreenOptions.suggestions.title).toBe('nav.suggestions');
+    expect(mockTabScreenOptions.offers.title).toBe('nav.offers');
+    expect(mockTabScreenOptions.offers.headerShown).toBe(true);
+
+    mockImmersiveOffers = true;
+    await render(<AppNavigator />);
+    expect(mockTabScreenOptions.offers.headerShown).toBe(false);
   });
 });

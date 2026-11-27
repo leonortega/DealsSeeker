@@ -3,12 +3,12 @@ Feature: Application shell and session-aware landing
   I want consistent app navigation on startup
   So that I can access all sections quickly
 
-  Scenario: App starts at Login when no session exists
+  Scenario: App starts with sign-in and guest-browse choices when no session exists
     Given the DealsSeeker mobile application is launchable
     And there is no active authenticated session
     When the user starts the application
     Then the main navigation shows My Account, Offers, and Suggestions
-    And Login is the first visible view
+    And the first interactive view offers both Login and a read-only "Browse nearby without an account" entry point
 
   Scenario: App starts at Offers when session exists
     Given the DealsSeeker mobile application is launchable
@@ -17,13 +17,32 @@ Feature: Application shell and session-aware landing
     Then Offers is the first visible view
     And the Feed presentation is selected in the Offers controls
 
-  Scenario: App starts at Login when persisted session is expired
+  Scenario: Guest browse starts a read-only session at Offers
+    Given the DealsSeeker mobile application is launchable
+    And there is no active authenticated session
+    When the user selects "Browse nearby without an account" at startup
+    Then the read-only Offers view is the first visible view
+    And no authenticated user session is created
+    And the guest state is plainly indicated
+
+  Scenario: Guest contribution prompts sign-in without losing context
+    Given a guest is viewing Offers with an active query and coverage radius
+    When the guest attempts to favorite, vote, comment, report or add an offer
+    Then a sign-in prompt is shown
+    And the query, coverage radius, presentation mode and open offer are preserved
+
+  Scenario: Sign-in from a guest context returns to the prior context
+    Given a guest was prompted to sign in from an Offers context with an active query
+    When the guest signs in successfully
+    Then the prior Offers context is restored
+
+  Scenario: App starts with sign-in and guest-browse choices when persisted session is expired
     Given the DealsSeeker mobile application is launchable
     And there is a persisted authenticated session on device
     And the persisted session is expired
     When the user starts the application
     Then the persisted session is cleared
-    And Login is the first visible view
+    And the first interactive view offers both Login and the read-only "Browse nearby without an account" entry point
 
   Scenario: Suggestions and offer report successful submit redirects to Offers
     Given the user is authenticated

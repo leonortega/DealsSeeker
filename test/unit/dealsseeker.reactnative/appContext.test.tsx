@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { AppState } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import { AppProvider } from '../../../src/DealsSeeker.ReactNative/src/context/AppContext';
@@ -104,6 +105,39 @@ describe('AppProvider', () => {
     expect(context?.authScreen).toBe('login');
     expect(context?.activeTab).toBe('offers');
     expect(context?.immersiveOffers).toBe(true);
+  });
+
+  it('shows the first frame as soon as local readiness resolves, without a two-second splash wait', async () => {
+    await render(<AppProvider><Probe /></AppProvider>);
+
+    expect(context?.bootstrapped).toBe(true);
+  });
+
+  it('does not block the first frame on the profile request (APP.PERFORMANCE.001-R3)', async () => {
+    mockLoadSession.mockResolvedValue(session);
+    mockApi.getMyProfile.mockImplementation(() => new Promise(() => {}));
+
+    await render(<AppProvider><Probe /></AppProvider>);
+
+    expect(context?.bootstrapped).toBe(true);
+    expect(context?.isAuthenticated).toBe(true);
+  });
+
+  it('releases startup with a safety cap strictly under one second when readiness stalls', async () => {
+    mockLoadSession.mockImplementation(() => new Promise(() => {}));
+    await render(<AppProvider><Probe /></AppProvider>);
+
+    await act(async () => {
+      jest.advanceTimersByTime(500);
+      await Promise.resolve();
+    });
+    expect(context?.bootstrapped).toBe(false);
+
+    await act(async () => {
+      jest.advanceTimersByTime(400);
+      await Promise.resolve();
+    });
+    expect(context?.bootstrapped).toBe(true);
   });
 
   it('keeps the context value identity stable across parent re-renders', async () => {
@@ -226,6 +260,28 @@ describe('AppProvider', () => {
 
     expect(context).toBe(first);
     expect(status?.sheetCount).toBe(1);
+  });
+
+  it('does not re-render memoized offer rows when volatile status changes (APP.PERFORMANCE.001-R4)', async () => {
+    const rowRenders = jest.fn();
+    const MemoizedRow = memo(() => {
+      const { palette } = useApp();
+      rowRenders();
+      return null;
+    });
+
+    await render(
+      <AppProvider>
+        <Probe />
+        <MemoizedRow />
+      </AppProvider>
+    );
+    const before = rowRenders.mock.calls.length;
+
+    await act(() => context?.openSheet());
+    await act(async () => context?.api.searchOffers({} as never));
+
+    expect(rowRenders).toHaveBeenCalledTimes(before);
   });
 
   it('tracks nested overlay sheets so the create action can stay hidden', async () => {

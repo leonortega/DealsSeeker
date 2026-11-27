@@ -9,6 +9,31 @@ Feature: Account management for user lifecycle
     When the user selects the Create User link
     Then the Create User view is shown
 
+  Scenario: Login view offers a read-only guest browse entry point
+    Given the user is not authenticated
+    And the user is on Login view
+    When the user selects "Browse nearby without an account"
+    Then the read-only Offers view is shown
+    And no authenticated session is created
+
+  Scenario: Guest sign-in returns to the prior Offers context
+    Given a guest was prompted to sign in from Offers with query "coffee", a 1000 meter radius, the immersive presentation and offer "off-100" open
+    When the user submits valid login credentials
+    Then the guest session ends and an authenticated session begins
+    And the immersive presentation, the query, the radius and offer "off-100" are restored
+
+  Scenario: Failed guest sign-in preserves the guest context
+    Given a guest was prompted to sign in from Offers with an active query
+    When the user submits invalid login credentials
+    Then the guest session remains active
+    And the query, radius, presentation mode and open offer are unchanged
+
+  Scenario: Cancelled guest sign-in preserves the guest context
+    Given a guest was prompted to sign in from Offers with an active query
+    When the user cancels the sign-in prompt
+    Then the guest session remains active
+    And the query, radius, presentation mode and open offer are unchanged
+
   Scenario: User creates a new account with valid data
     Given the user is not authenticated
     When the user submits valid create-account data
@@ -41,11 +66,11 @@ Feature: Account management for user lifecycle
     Then the user is not required to login again
     And the Offers view is shown
 
-  Scenario: Expired persisted session redirects to Login
+  Scenario: Expired persisted session leads to the sign-in and guest-browse choices
     Given the user has an expired persisted session on device
     When the user launches the app
     Then the expired session is cleared
-    And the Login view is shown
+    And the first interactive view offers both Login and the read-only "Browse nearby without an account" entry point
 
   Scenario: Authenticated user opens My Account
     Given the user is authenticated
@@ -93,3 +118,4 @@ Feature: Account management for user lifecycle
     Given the user is not authenticated
     When the user opens the My Account section
     Then the Login view is shown
+    And the read-only guest browse entry point is available

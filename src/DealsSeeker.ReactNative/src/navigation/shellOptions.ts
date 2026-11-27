@@ -7,7 +7,7 @@ export function stackScreenOptions(reduceMotion = false) {
 }
 
 export function tabScreenOptions() {
-  return { headerShown: false as const };
+  return { headerShown: true as const };
 }
 
 export function modalScreenOptions(os: string, reduceMotion = false) {

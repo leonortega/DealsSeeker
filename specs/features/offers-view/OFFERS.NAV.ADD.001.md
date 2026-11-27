@@ -59,6 +59,8 @@ Scenario: Create action is docked without covering content
 - Navigation transition should complete without blocking the UI.
 
 ## Related Specs
+- `OFFERS.GUEST.001`
+- `OFFERS.EMPTY.001`
 - `ADD.OFFER.LAYOUT.001`
 - `OFFERS.FEED.IMMERSIVE.001`
 - `OFFERS.NAV.ADD.002`

@@ -10,6 +10,7 @@ import { statusColor, type StatusTone } from '../utils/statusNotice';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { avatarEmoji } from '../utils/avatars';
 import { shorten } from '../utils/format';
+import { platformTouchFloor } from '../utils/layout';
 
 const themeOptions: Array<{ mode: ThemeMode; labelKey: string }> = [
   { mode: 'system', labelKey: 'nav.systemTheme' },
@@ -119,7 +120,7 @@ export function AccountScreen() {
         <Text style={[styles.panelTitle, { color: palette.ink }]}>{t('account.settings')}</Text>
         <View style={styles.settingGroup}>
           <Text style={[styles.settingLabel, { color: palette.inkMuted }]}>{t('settings.world')}</Text>
-          <View style={styles.row}>
+          <View accessibilityLabel={t('settings.world')} accessibilityRole="radiogroup" style={styles.row}>
             {themeWorlds.map(({ world, labelKey }) => {
               const selected = preferences.themeWorld === world;
               return (
@@ -142,7 +143,7 @@ export function AccountScreen() {
         </View>
         <View style={styles.settingGroup}>
           <Text style={[styles.settingLabel, { color: palette.inkMuted }]}>{t('settings.theme')}</Text>
-          <View style={styles.row}>
+          <View accessibilityLabel={t('settings.theme')} accessibilityRole="radiogroup" style={styles.row}>
             {themeOptions.map(({ mode, labelKey }) => {
               const selected = preferences.themeMode === mode;
               return (
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     borderRadius: 14,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
@@ -327,7 +328,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
     justifyContent: 'center',
-    minHeight: 48,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
@@ -350,7 +351,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 12,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },

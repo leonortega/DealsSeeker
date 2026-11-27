@@ -1,3 +1,4 @@
+import { platformTouchFloor } from '../utils/layout';
 import { landmarkFontFamily } from '../utils/typography';
 import { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -11,7 +12,7 @@ const emailMaxLength = 254;
 const passwordMaxLength = 200;
 
 export function LoginScreen() {
-  const { api, palette, sessionNotice, setSession, showRegister, t } = useApp();
+  const { api, enterGuestMode, palette, sessionNotice, setSession, showRegister, t } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -62,7 +63,9 @@ export function LoginScreen() {
         <TextInput
           accessibilityLabel={t('auth.email')}
           autoCapitalize="none"
+          autoComplete="username"
           keyboardType="email-address"
+          textContentType="username"
           maxLength={emailMaxLength}
           onChangeText={(value) => setEmail(value.slice(0, emailMaxLength))}
           placeholder={t('auth.email')}
@@ -72,7 +75,9 @@ export function LoginScreen() {
         />
         <TextInput
           accessibilityLabel={t('auth.password')}
+          autoComplete="current-password"
           maxLength={passwordMaxLength}
+          textContentType="password"
           onChangeText={(value) => setPassword(value.slice(0, passwordMaxLength))}
           placeholder={t('auth.password')}
           placeholderTextColor={palette.inkMuted}
@@ -103,6 +108,13 @@ export function LoginScreen() {
         </Pressable>
         <Pressable accessibilityLabel={t('auth.createAccountLink')} accessibilityRole="link" onPress={showRegister}>
           <Text style={[authFormStyles.link, { color: palette.accentText }]}>{t('auth.createAccountLink')}</Text>
+        </Pressable>
+        <Pressable
+          accessibilityLabel={t('auth.browseGuest')}
+          accessibilityRole="button"
+          onPress={enterGuestMode}
+        >
+          <Text style={[authFormStyles.link, { color: palette.accentText }]}>{t('auth.browseGuest')}</Text>
         </Pressable>
         {displayedStatus ? (
           <Text accessibilityLiveRegion="polite" style={[authFormStyles.status, { color: palette.danger }]}>
@@ -144,6 +156,6 @@ const styles = StyleSheet.create({
   visibilityToggle: {
     alignSelf: 'flex-start',
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
   },
 });

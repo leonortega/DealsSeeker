@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { platformTouchFloor } from '../utils/layout';
 import type { Palette } from '../utils/theme';
 import { landmarkFontFamily } from '../utils/typography';
 import { NavIcon } from './NavIcon';
@@ -91,12 +92,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 999,
     borderWidth: 1,
-    height: 44,
+    height: platformTouchFloor,
     justifyContent: 'center',
-    width: 44,
+    width: platformTouchFloor,
   },
   searchSlot: {
-    height: 44,
-    width: 44,
+    height: platformTouchFloor,
+    width: platformTouchFloor,
   },
 });
