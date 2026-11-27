@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { platformTouchFloor } from '../utils/layout';
 import { immersiveInk, immersiveInkMuted, immersivePhotoNav } from '../utils/theme';
 
 export type ImmersiveFeedTab = 'favorites' | 'viewAll';
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
     gap: 4,
     justifyContent: 'center',
     maxWidth: 110,
-    minHeight: 44,
+    minHeight: platformTouchFloor,
   },
   tabLabel: {
     fontSize: 13,

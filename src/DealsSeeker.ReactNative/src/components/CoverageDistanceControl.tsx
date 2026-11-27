@@ -25,6 +25,7 @@ export function CoverageDistanceControl({
   return (
     <View style={styles.wrapper}>
       <Pressable
+        android_ripple={{ color: palette.accent }}
         accessibilityLabel={`${t('offers.coverageDistance')}: ${radiusMeters} m`}
         accessibilityRole="button"
         onPress={() => setExpanded((current) => !current)}
@@ -41,6 +42,7 @@ export function CoverageDistanceControl({
             const selected = option === radiusMeters;
             return (
               <Pressable
+                android_ripple={{ color: palette.accent }}
                 accessibilityLabel={`${option} m`}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}

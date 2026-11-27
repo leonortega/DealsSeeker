@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { platformTouchFloor } from '../utils/layout';
 import type { Palette } from '../utils/theme';
 
 export type PresentationMode = 'feed' | 'map';
@@ -26,6 +27,7 @@ export function PresentationModeSwitch({ feedLabel, mapLabel, onChange, palette,
         const selected = option.key === value;
         return (
           <Pressable
+            android_ripple={{ color: palette.accentMuted }}
             key={option.key}
             accessibilityLabel={option.label}
             accessibilityRole="tab"
@@ -59,7 +61,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 999,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     minWidth: 66,
     paddingHorizontal: 12,
   },

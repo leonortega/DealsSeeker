@@ -38,6 +38,7 @@ export function AppFooterBar({
     >
       {items.map((item) => (
         <Pressable
+          android_ripple={{ color: palette.accentMuted }}
           key={item.key}
           accessibilityLabel={item.label}
           accessibilityRole="button"

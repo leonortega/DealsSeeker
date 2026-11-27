@@ -16,6 +16,7 @@ import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { isSvgImageUri, resolveOfferImageUri } from '../utils/images';
 import { formatDistanceMeters, shorten } from '../utils/format';
 import { resolveFeedRestoreIndex } from '../utils/feedPosition';
+import { platformTouchFloor } from '../utils/layout';
 import { openDirections } from '../utils/maps';
 import {
   immersiveDivider,
@@ -567,7 +568,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 16,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: platformTouchFloor,
     minWidth: 52,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -683,9 +684,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: immersivePhotoNav,
     borderRadius: 999,
-    height: 44,
+    height: platformTouchFloor,
     justifyContent: 'center',
-    width: 44,
+    width: platformTouchFloor,
   },
   immersivePhotoNavLabel: {
     color: immersiveInk,

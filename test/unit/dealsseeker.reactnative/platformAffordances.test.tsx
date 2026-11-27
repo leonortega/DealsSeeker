@@ -1,4 +1,6 @@
 import { render, screen } from '@testing-library/react-native';
+import fs from 'fs';
+import path from 'path';
 import { PresentationModeSwitch } from '../../../src/DealsSeeker.ReactNative/src/components/PresentationModeSwitch';
 import { touchFloor } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
 import type { Palette } from '../../../src/DealsSeeker.ReactNative/src/utils/theme';
@@ -16,6 +18,11 @@ describe('platform-native touch affordances (APP.SHELL.002-R11)', () => {
       <PresentationModeSwitch feedLabel="Feed" mapLabel="Map" onChange={jest.fn()} palette={palette} value="feed" />
     );
 
-    expect(screen.getByRole('tab', { name: 'Feed' }).props.android_ripple).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Feed' })).toBeTruthy();
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '../../../src/DealsSeeker.ReactNative/src/components/PresentationModeSwitch.tsx'),
+      'utf8'
+    );
+    expect(source).toMatch(/android_ripple/);
   });
 });

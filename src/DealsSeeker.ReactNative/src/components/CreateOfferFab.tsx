@@ -19,6 +19,7 @@ export function CreateOfferFab({
 
   return (
     <Pressable
+      android_ripple={{ color: palette.onAccent }}
       accessibilityLabel={label}
       accessibilityRole="button"
       onPress={onPress}
