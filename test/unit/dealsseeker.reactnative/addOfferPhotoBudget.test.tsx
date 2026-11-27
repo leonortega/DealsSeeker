@@ -53,7 +53,7 @@ describe('Add Offer photo budget (ADD.OFFER.IMAGE.SIZE.001)', () => {
 
     await waitFor(() => expect(mockLaunchImageLibraryAsync).toHaveBeenCalled());
     expect(mockLaunchImageLibraryAsync).toHaveBeenCalledWith(
-      expect.objectContaining({ quality: 0.5, selectionLimit: 3 })
+      expect.objectContaining({ quality: 0.5, selectionLimit: 4 })
     );
   });
 });

@@ -40,7 +40,7 @@ interface LocationSearchResult {
   position: { lat: number; lng: number };
 }
 
-const maxPhotos = 8;
+const maxPhotos = 4;
 const minAutoTagLength = 3;
 const maxTagLength = 40;
 const successDwellMs = 3000;
@@ -589,7 +589,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
     const result = await ImagePicker.launchCameraAsync({
       base64: true,
       mediaTypes: ['images'],
-      quality: 0.7,
+      quality: 0.5,
     });
 
     if (result.canceled || !result.assets.length) {
@@ -617,7 +617,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       base64: true,
       mediaTypes: ['images'],
       orderedSelection: true,
-      quality: 0.7,
+      quality: 0.5,
       selectionLimit: maxPhotos - images.length,
     });
 
