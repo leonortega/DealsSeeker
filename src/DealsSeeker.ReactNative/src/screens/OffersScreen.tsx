@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
 import { getDevicePositionAsync } from '../utils/deviceLocation';
 import { OfferAvailabilityVoteType, OfferItemDto, SearchOffersResponse } from '../api/types';
+import { CoverageDistanceControl } from '../components/CoverageDistanceControl';
 import { ImmersiveOfferFeed, NARROW_BREAKPOINT } from '../components/ImmersiveOfferFeed';
 import { ImmersiveFeedTab } from '../components/ImmersiveFeedTabs';
 import { NativeMapPreview } from '../components/NativeMapPreview';
@@ -34,7 +35,6 @@ import { resolveEmulatorLocation } from '../utils/emulatorLocation';
 import { restoreFocus } from '../utils/focusReturn';
 
 const fallbackLocation = { lat: 40.7128, lng: -74.006 };
-const radiusOptions = [500, 1000, 1500, 2500, 5000];
 const searchDebounceMs = 300;
 const queryMaxLength = 200;
 
@@ -526,27 +526,15 @@ export function OffersScreen() {
             value={query}
           />
           <View style={styles.filterRow}>
-            {radiusOptions.map((option) => (
-              <Pressable
-                key={option}
-                accessibilityLabel={`${option} m`}
-                accessibilityRole="button"
-                accessibilityState={{ selected: option === radiusMeters }}
-                style={[
-                  styles.radiusChip,
-                  {
-                    backgroundColor: option === radiusMeters ? palette.accentMuted : palette.panel,
-                    borderColor: palette.border,
-                  },
-                ]}
-                onPress={() => {
-                  setRadiusMeters(option);
-                  void search(query, option, favoritesOnly);
-                }}
-              >
-                <Text style={{ color: option === radiusMeters ? palette.accentText : palette.ink }}>{option} m</Text>
-              </Pressable>
-            ))}
+            <CoverageDistanceControl
+              onChange={(option) => {
+                setRadiusMeters(option);
+                void search(query, option, favoritesOnly);
+              }}
+              palette={palette}
+              radiusMeters={radiusMeters}
+              t={t}
+            />
           </View>
           <View style={styles.actionRow}>
             <Pressable style={[styles.actionButton, { backgroundColor: palette.accent }]} onPress={() => void search()}>
@@ -730,13 +718,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-  },
-  radiusChip: {
-    borderRadius: 999,
-    borderWidth: 1,
-    minHeight: 48,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
   },
   actionRow: {
     flexDirection: 'row',

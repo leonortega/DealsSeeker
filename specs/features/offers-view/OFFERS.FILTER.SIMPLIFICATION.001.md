@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Single Coverage-Distance Control
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers View (standard map presentation and immersive search sheet)
 - **Priority**: Medium
@@ -64,7 +64,7 @@ Scenario: Assistive technology reads the current distance
 - Closing the picker without choosing.
 
 ## Non-Functional Constraints
-- No new picker dependency; reuse the existing bottom-sheet behavior.
+- No new picker dependency; the expanded options stay within the presenting surface rather than opening a nested sheet.
 - The waypoint accent remains reserved for the active path; the selected distance keeps its muted fill and accent text.
 - Localized labels and EN/ES parity are preserved.
 

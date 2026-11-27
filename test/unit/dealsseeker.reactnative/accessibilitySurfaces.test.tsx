@@ -125,7 +125,9 @@ describe('accessible contribution and auth surfaces (APP.ACCESSIBILITY.UX.002)',
       />
     );
     expect(screen.getByTestId('native-bottom-sheet')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /1500 m/ }).props.accessibilityState).toEqual({ selected: true });
+    const coverage = screen.getByRole('button', { name: /1500 m/ });
+    await fireEvent.press(coverage);
+    expect(screen.getByRole('radio', { name: '1500 m' }).props.accessibilityState).toEqual({ selected: true });
     expect(screen.getByRole('button', { name: 'common.cancel' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'common.search' })).toBeTruthy();
   });

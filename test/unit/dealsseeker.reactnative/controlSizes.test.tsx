@@ -118,10 +118,10 @@ describe('touch target and label floors', () => {
     expect(styleOf(input).borderRadius).toBe(999);
   });
 
-  it('keeps the selected radius chip legible against the muted fill', async () => {
+  it('keeps the selected coverage value legible against the muted fill', async () => {
     await render(<OffersScreen />);
 
-    expect(styleOf(screen.getByText('1500 m')).color).toBe('#8a5a00');
+    expect(styleOf(screen.getByText(/1500 m/)).color).toBe('#8a5a00');
   });
 
   it('reserves scroll space for the floating action below the search controls', async () => {
@@ -173,11 +173,12 @@ describe('touch target and label floors', () => {
     expect(styleOf(screen.getByText('Account')).fontSize).toBeGreaterThanOrEqual(10);
   });
 
-  it('gives coverage radius chips a 48-unit touch target', async () => {
+  it('gives the coverage control a 48-unit touch target without showing five chips', async () => {
     await render(<OffersScreen />);
 
-    const chip = await screen.findByRole('button', { name: '500 m' });
-    expect(styleOf(chip).minHeight).toBeGreaterThanOrEqual(48);
+    const control = await screen.findByRole('button', { name: /1500 m/ });
+    expect(styleOf(control).minHeight).toBeGreaterThanOrEqual(48);
+    expect(screen.queryByRole('button', { name: '500 m' })).toBeNull();
   });
 
   it('gives the immersive search control a 44-unit touch target', async () => {
