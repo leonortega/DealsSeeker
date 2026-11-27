@@ -115,6 +115,7 @@ Scenario: Search query stops at its contract maximum
 - Search response should feel immediate for typical local datasets.
 
 ## Related Specs
+- `OFFERS.FILTER.SIMPLIFICATION.001`
 - `OFFERS.SEARCH.SMART.001`
 - `OFFERS.SEARCH.PAGINATION.001`
 - `OFFERS.MAP.001`

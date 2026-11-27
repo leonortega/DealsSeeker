@@ -110,6 +110,7 @@ Scenario: Sheet controls are not covered by the branded footer
 
 ## Related Specs
 - `APP.SHELL.002`
+- `OFFERS.FILTER.SIMPLIFICATION.001`
 - `APP.SHELL.003`
 - `APP.HAPTICS.001`
 - `OFFERS.DETAIL.ACTIONS.001`
