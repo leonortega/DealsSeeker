@@ -60,6 +60,7 @@ Scenario: Save is blocked when no photo is attached
 - Image metadata should be available for validation (file type, size, dimensions).
 
 ## Related Specs
+- `ADD.OFFER.IMAGE.SIZE.001`
 - `ADD.OFFER.LOCATION.001`
 - `ADD.OFFER.LAYOUT.001`
 - `OFFERS.PHOTOS.CAROUSEL.001`

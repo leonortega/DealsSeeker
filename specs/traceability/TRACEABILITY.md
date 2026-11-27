@@ -51,6 +51,7 @@
 | `OFFERS.ACTIONS.LABELS.001` | `bdd/offers-action-labels.feature` | N/A | N/A |
 | `APP.LIST.VIRTUALIZATION.001` | `bdd/app-list-virtualization.feature` | N/A | N/A |
 | `OFFERS.FILTER.SIMPLIFICATION.001` | `bdd/offers-filter-simplification.feature` | `contracts/json-schema/offer-search-request.schema.json` | N/A |
+| `ADD.OFFER.IMAGE.SIZE.001` | `bdd/add-offer-image-size.feature` | `contracts/json-schema/add-offer-draft.schema.json` | N/A |
 | `OFFERS.UX.002` | `bdd/offers-action-feedback.feature` | N/A | N/A |
 | `APP.ONBOARD.001` | `bdd/app-onboarding.feature` | N/A | N/A |
 | `ADD.OFFER.UX.001` | `bdd/add-offer-ux.feature` | `contracts/json-schema/add-offer-draft.schema.json` | `examples/add-offer/add-offer-draft.valid.json` |
