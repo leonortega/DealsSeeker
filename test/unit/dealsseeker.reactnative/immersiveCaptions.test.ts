@@ -10,6 +10,10 @@ describe('shouldShowImmersiveCaptions', () => {
   });
 
   it('keeps captions at the minimum rail height', () => {
-    expect(shouldShowImmersiveCaptions(640)).toBe(true);
+    expect(shouldShowImmersiveCaptions(560)).toBe(true);
+  });
+
+  it('omits captions when large text needs more room than the rail has', () => {
+    expect(shouldShowImmersiveCaptions(700, 1.5)).toBe(false);
   });
 });
