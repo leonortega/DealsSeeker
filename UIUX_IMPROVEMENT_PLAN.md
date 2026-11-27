@@ -575,5 +575,14 @@ Cycles **G, H, I, J, K, L and M are complete**. Each implementation cycle has it
 - Immersive no-results/fallback panels render below the top controls (`APP.POLISH.UX.001-R14`).
 - Platform-parity decision closed in favour of platform affordances with unchanged brand visuals (`APP.SHELL.002` v1.2).
 
-Final verification: `npm test` 73 suites / 425 tests, `npm run typecheck` clean, coverage 82.4% statements / 75.2% branches / 82.1% functions / 82.2% lines. Device E2E was intentionally not run at the user's request. Newly recorded P2 follow-ups (icon-only rail redesign, explicit browse-area choice after location denial, offer-card action density, context split, iOS/device captures) are outside the original plan scope and are documented in the re-score reports.
+Final verification: `npm test` 75 suites / 443 tests, `npm run typecheck` clean, coverage 84.2% statements / 77.2% branches / 84.2% functions / 84.1% lines. Device E2E was intentionally not run at the user's request.
+
+### 10.14 Post-closeout follow-up work (2026-11-26)
+
+- **Rail disclosure**: `OFFERS.ACTIONS.LABELS.001` v1.1 and a labelled More-actions control reveal report/votes when captions cannot fit; verified on emulator (accessibility tree exposes `More actions`, `report`, `available`, `No longer available`).
+- **Location trust**: `APP.LOCATION.FALLBACK.001` v1.2 — a denied/failed lookup no longer searches New York silently; the user chooses `Use my location` or `Browse this area` (EN/ES).
+- **Card density**: `OFFERS.GRID.CARDS.001` R5 — only favorite/directions/comments are visible; availability votes and report sit behind a labelled card disclosure.
+- **Context churn**: volatile loading/sheet/pending state moved to `AppStatusContext` with `useAppStatus`; the app context value identity stays stable when those change.
+- **Coverage**: branch coverage raised from 75.2% to 77.2% with client error-path, hook/focus and immersive-feed tests; still below the 80% target.
+- **Not completed**: device E2E (standing user request to skip), iOS simulator / physical-device captures (no iOS or hardware available), VoiceOver sign-off, and deeper native-control adoption (a separate approved redesign after `APP.SHELL.002` v1.2).
 
