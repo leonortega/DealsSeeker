@@ -103,6 +103,21 @@ describe('AppProvider', () => {
     expect(context?.immersiveOffers).toBe(true);
   });
 
+  it('keeps the context value identity stable across parent re-renders', async () => {
+    const view = await renderProvider();
+    const first = context;
+
+    await act(async () => {
+      view.rerender(
+        <AppProvider>
+          <Probe />
+        </AppProvider>
+      );
+    });
+
+    expect(context).toBe(first);
+  });
+
   it('restores a valid stored session and its profile avatar', async () => {
     mockLoadSession.mockResolvedValue(session);
     mockApi.getMyProfile.mockResolvedValue({ userId: 'u1', avatarId: 'avatar-2' });

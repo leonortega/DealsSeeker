@@ -102,10 +102,13 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [reportDraft, setReportDraftState] = useState<OfferReportDraft | null>(null);
   const [avatarId, setAvatarId] = useState<string>(DEFAULT_AVATAR_ID);
 
-  async function persistPreferences(nextPreferences: UserPreferences, nextUserId?: string | null) {
-    setPreferences(nextPreferences);
-    await savePreferences(nextPreferences, nextUserId ?? session?.userId);
-  }
+  const persistPreferences = useCallback(
+    async (nextPreferences: UserPreferences, nextUserId?: string | null) => {
+      setPreferences(nextPreferences);
+      await savePreferences(nextPreferences, nextUserId ?? session?.userId);
+    },
+    [session?.userId]
+  );
 
   const handleUnauthorized = useCallback(async () => {
     await clearSession();
@@ -291,7 +294,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     };
   }, []);
 
-  async function setSession(nextSession: AuthSessionDto) {
+  const setSession = useCallback(async (nextSession: AuthSessionDto) => {
     await saveSession(nextSession);
     const nextPreferences = await loadPreferences(resolveDeviceLanguage(), nextSession.userId);
     setSessionState(nextSession);
@@ -311,9 +314,9 @@ export function AppProvider({ children }: PropsWithChildren) {
     setActiveTab('offers');
     setImmersiveOffers(true);
     setOverlayRoute(null);
-  }
+  }, []);
 
-  async function logout() {
+  const logout = useCallback(async () => {
     try {
       await api.logout();
     } finally {
@@ -325,9 +328,9 @@ export function AppProvider({ children }: PropsWithChildren) {
       setActiveTab('offers');
       setAuthScreen('login');
     }
-  }
+  }, [api]);
 
-  async function saveAvatar(nextAvatarId: string) {
+  const saveAvatar = useCallback(async (nextAvatarId: string) => {
     const result = await api.setMyAvatar({ avatarId: nextAvatarId });
     if (result.success) {
       setAvatarId(nextAvatarId);
@@ -335,9 +338,9 @@ export function AppProvider({ children }: PropsWithChildren) {
     }
 
     return false;
-  }
+  }, [api]);
 
-  function setReportDraft(offer: OfferItemDto | null) {
+  const setReportDraft = useCallback((offer: OfferItemDto | null) => {
     if (!offer) {
       setReportDraftState(null);
       return;
@@ -357,9 +360,9 @@ export function AppProvider({ children }: PropsWithChildren) {
       reportedAtUtc: now,
       initialMessage,
     });
-  }
+  }, [preferences.language, session?.userId]);
 
-  const value: AppContextValue = {
+  const value: AppContextValue = useMemo(() => ({
     authScreen,
     overlayRoute,
     activeTab,
@@ -420,7 +423,33 @@ export function AppProvider({ children }: PropsWithChildren) {
     saveAvatar,
     setSession,
     logout,
-  };
+  }), [
+    authScreen,
+    overlayRoute,
+    activeTab,
+    bootstrapped,
+    session,
+    sessionNotice,
+    preferences,
+    systemScheme,
+    reportDraft,
+    loadingCount,
+    sheetCount,
+    openSheet,
+    closeSheet,
+    pendingOperations,
+    isPending,
+    runOperation,
+    api,
+    translateKey,
+    immersiveOffers,
+    setReportDraft,
+    persistPreferences,
+    avatarId,
+    saveAvatar,
+    setSession,
+    logout,
+  ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
