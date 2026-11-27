@@ -77,6 +77,16 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
     expect(screen.queryByText('offers.location: offers.currentLocation')).toBeNull();
   });
 
+  it('does not search the fallback area until the user explicitly chooses it', async () => {
+    await render(<OffersScreen />);
+    await screen.findByText('offers.locationFallbackNotice');
+
+    expect(mockSearchOffers).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.browseApproximateArea' }));
+
+    await waitFor(() => expect(mockSearchOffers).toHaveBeenCalled());
+  });
+
   it('uses the configured emulator location without a fallback notice', async () => {
     process.env['EXPO_PUBLIC_EMULATOR_LOCATION'] = '40.7128,-74.006';
     try {

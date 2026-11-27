@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Honest fallback-location disclosure and recovery
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Application shell, Offers View (standard and immersive presentations)
 - **Priority**: High
@@ -28,16 +28,23 @@ Never present a fallback location as the user's current area; disclose it, allow
 - `APP.LOCATION.FALLBACK.001-R8`: Raw coordinate values shall not appear in the notice or the area label.
 - `APP.LOCATION.FALLBACK.001-R9`: The notice shall be localizable and shall hold in both themes.
 - `APP.LOCATION.FALLBACK.001-R10`: If a retry does not obtain a position, the system shall show a plain-language failure status while keeping the notice, its actions, and the displayed offers available.
+- `APP.LOCATION.FALLBACK.001-R11`: The system shall not search the fallback area until the user explicitly chooses to browse it; a failed or denied lookup shall leave no fallback results displayed.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
-Scenario: Denied location discloses an approximate area
+Scenario: Denied location requires an explicit browse choice
   Given the user has denied location permission
   When the Offers view loads
   Then the area is not labelled as the user's current location
-  And a notice explains that the offers shown are for an approximate area
-  And the notice offers a retry action
-  And offers remain browsable
+  And a notice explains that an approximate area is available
+  And the notice offers a retry action and an explicit browse action
+  And no fallback results are displayed before the browse choice
+
+Scenario: Choosing the approximate area shows its offers
+  Given the approximate-area notice is displayed
+  When the user chooses to browse the approximate area
+  Then offers for that area are displayed
+  And the notice is dismissed
 
 Scenario: Retrying location removes the notice on success
   Given the approximate-area notice is displayed

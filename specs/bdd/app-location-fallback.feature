@@ -3,13 +3,19 @@ Feature: Honest fallback-location disclosure and recovery
   I want to know when results are for an approximate area and be able to retry
   So that I never mistake a fallback city for offers near me
 
-  Scenario: Denied location discloses an approximate area
+  Scenario: Denied location requires an explicit browse choice
     Given the user has denied location permission
     When the Offers view loads
     Then the area is not labelled as the user's current location
-    And a notice explains that the offers shown are for an approximate area
-    And the notice offers a retry action
-    And offers remain browsable
+    And a notice explains that an approximate area is available
+    And the notice offers a retry action and an explicit browse action
+    And no fallback results are displayed before the browse choice
+
+  Scenario: Choosing the approximate area shows its offers
+    Given the approximate-area notice is displayed
+    When the user chooses to browse the approximate area
+    Then offers for that area are displayed
+    And the notice is dismissed
 
   Scenario: Retrying location removes the notice on success
     Given the approximate-area notice is displayed
