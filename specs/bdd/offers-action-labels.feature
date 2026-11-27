@@ -15,8 +15,9 @@ Feature: Visible labels for offer actions
     Then each action is either visibly labelled or reachable through a visibly labelled disclosure
     And no label clips or overlaps another control
 
-  Scenario: Short viewport keeps actions tappable and labelled
+  Scenario: Short viewport uses a labelled disclosure
     Given the available vertical space is too short for action captions
-    When the action controls are rendered
-    Then captions are omitted
-    And every action remains independently tappable and labelled for assistive technology
+    When the action rail is rendered
+    Then secondary actions sit behind one visibly labelled control
+    And its entries carry text labels and remain independently tappable
+    And every action remains labelled for assistive technology

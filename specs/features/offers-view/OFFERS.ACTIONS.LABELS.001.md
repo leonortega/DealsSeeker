@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Visible Labels for Offer Actions
-- **Version**: `v1.0`
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Offers View (immersive feed and offer cards)
 - **Priority**: Medium
@@ -19,7 +19,7 @@ Keep offer actions self-explanatory on a phone without relying on memorized glyp
 
 ## Requirements
 - `OFFERS.ACTIONS.LABELS.001-R1`: In the default phone presentation, each offer action shall show a visible text label next to or beneath its glyph.
-- `OFFERS.ACTIONS.LABELS.001-R2`: When measured available space cannot hold captions without overlapping another control, captions may be omitted; every action shall remain independently tappable and labelled for assistive technology.
+- `OFFERS.ACTIONS.LABELS.001-R2`: When measured available space cannot hold captions without overlapping another control, the secondary actions shall be reachable through a single visibly labelled disclosure whose entries carry text labels; every action shall remain independently tappable and labelled for assistive technology.
 - `OFFERS.ACTIONS.LABELS.001-R3`: The directions action shall remain the only waypoint-accented primary action, as defined by `OFFERS.UX.002-R8`.
 - `OFFERS.ACTIONS.LABELS.001-R4`: Labels shall follow the system text size without clipping or overlapping adjacent controls.
 - `OFFERS.ACTIONS.LABELS.001-R5`: Every action shall keep its assistive-technology label regardless of whether the visible caption is shown.
@@ -38,11 +38,12 @@ Scenario: Large text keeps actions labelled
   Then each action is either visibly labelled or reachable through a visibly labelled disclosure
   And no label clips or overlaps another control
 
-Scenario: Short viewport keeps actions tappable and labelled
+Scenario: Short viewport uses a labelled disclosure
   Given the available vertical space is too short for action captions
-  When the action controls are rendered
-  Then captions are omitted
-  And every action remains independently tappable and labelled for assistive technology
+  When the action rail is rendered
+  Then secondary actions sit behind one visibly labelled control
+  And its entries carry text labels and remain independently tappable
+  And every action remains labelled for assistive technology
 ```
 
 ## Example Inputs/Outputs
