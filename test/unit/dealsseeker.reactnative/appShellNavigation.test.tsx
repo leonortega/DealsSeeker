@@ -131,6 +131,11 @@ describe('native shell Back handling', () => {
     expect(tabNavigatorProps.initialRouteName).toBe('offers');
   });
 
+  it('uses the platform-native tab bar instead of a custom footer', async () => {
+    await render(<AppNavigator />);
+    expect(tabNavigatorProps.tabBar).toBeUndefined();
+  });
+
   it('closes the immersive feed on system Back instead of leaving the app', async () => {
     await render(<AppNavigator />);
     const preventDefault = jest.fn();

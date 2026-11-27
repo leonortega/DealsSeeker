@@ -117,6 +117,7 @@ Scenario: Splash uses the stacked lockup with black copy
 
 ## Related Specs
 - `APP.TYPOGRAPHY.001`
+- `APP.PLATFORM.CHROME.001`
 - `APP.SHELL.001`
 - `APP.SHELL.005`
 - `OFFERS.FEED.RESPONSIVE.001`

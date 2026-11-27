@@ -7,8 +7,8 @@ Feature: Native navigation behavior with brand chrome
     Given the authenticated user is on a standard view
     When the user switches between footer destinations
     Then native navigation state and transitions shall handle the switch
-    And the night footer shall be the only visible navigation surface
-    And no platform-native header, tab bar or global application header shall be visible
+    And the platform-native tab bar shall be the only navigation surface
+    And no second global title bar shall be visible in a standard view
 
   Scenario: Destination state survives a native tab switch
     Given the user has an active offers search query and radius
@@ -33,7 +33,7 @@ Feature: Native navigation behavior with brand chrome
     Given the authenticated user is on the main shell
     When the user switches between sections using the branded footer
     Then the native tab navigator shall own the selected destination state
-    And the night footer shall be the only visible tab bar
+    And the platform-native tab bar shall be the only visible tab bar
     And selecting a footer destination shall restore that destination's view state
     And system Back shall follow the native tab back stack
 

@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Native Modal Behavior for Overlay Destinations
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -25,6 +25,7 @@ Define that overlay destinations use platform-native modal behavior while their 
 - `APP.SHELL.003-R5`: Cancelling a modal shall return the user to the underlying view with its state preserved; this includes the offers search query and radius.
 - `APP.SHELL.003-R6`: The Favorites destination shall use native stack push/pop behavior with brand-styled content, not modal behavior.
 - `APP.SHELL.003-R7`: No platform-native close control shall be added inside the brand UI beyond what the operating system itself provides.
+- `APP.SHELL.003-R8`: Overlay destinations shall use the platform-native stack header with a readable title and standard back affordance as defined by `APP.PLATFORM.CHROME.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -77,6 +78,7 @@ Scenario: No foreign close control appears in the brand UI
 
 ## Related Specs
 - `APP.SHELL.001`
+- `APP.PLATFORM.CHROME.001`
 - `APP.SHELL.005`
 - `APP.SHELL.002`
 - `APP.SHELL.004`

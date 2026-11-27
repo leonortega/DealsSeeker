@@ -19,7 +19,7 @@ Feature: Standard views without a global application header
     Given the authenticated user is on the standard Offers view
     When the view is rendered
     Then the presentation-mode control and the help control remain visible
-    And no global application header is displayed
+    And no second global application header is displayed in a standard view
 
   Scenario: Immersive top bar is unaffected
     Given the authenticated user is on the immersive offers feed

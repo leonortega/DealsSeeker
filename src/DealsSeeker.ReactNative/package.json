@@ -16,6 +16,7 @@
     "test:arch": "node ../../test/architecture/client/naming-conventions.cjs && depcruise --config ../../test/architecture/client/dependency-cruiser.config.cjs src"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@react-navigation/bottom-tabs": "^7.22.0",
     "@react-navigation/native": "^7.5.2",

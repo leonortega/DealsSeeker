@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Headerless Standard Views
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: Medium
@@ -18,11 +18,11 @@ Remove the global application header from standard views so each view presents o
 - A standard view is rendered.
 
 ## Requirements
-- `APP.SHELL.005-R1`: The system shall not display a global application header — a branded bar showing the application title and a section label — in any standard view.
+- `APP.SHELL.005-R1`: The system shall not display a second global application header in any standard view; overlay destinations may use the platform-native stack header defined by `APP.PLATFORM.CHROME.001`.
 - `APP.SHELL.005-R2`: Each standard view shall keep its own local heading where one is defined, and its content shall begin at that heading.
 - `APP.SHELL.005-R3`: The Offers view's local presentation-mode and help controls shall remain available as defined by `OFFERS.MODE.SWITCH.001` and `APP.HELP.001`.
 - `APP.SHELL.005-R4`: The immersive offers view's top bar and its controls shall remain available as defined by `OFFERS.FEED.RESPONSIVE.001`; this spec does not change the immersive presentation.
-- `APP.SHELL.005-R5`: Navigation shall remain available through the shared bottom footer as defined by `APP.SHELL.001`.
+- `APP.SHELL.005-R5`: Navigation shall remain available through the platform-native tab bar as defined by `APP.PLATFORM.CHROME.001`.
 - `APP.SHELL.005-R6`: Application identity on the splash and login views shall remain displayed and shall follow `APP.BRAND.001`.
 
 ## Acceptance Criteria (BDD)
@@ -72,6 +72,7 @@ Scenario: Application identity remains on splash and login
 - Removing the global header shall not change footer navigation, presentation switching, help or immersive controls.
 
 ## Related Specs
+- `APP.PLATFORM.CHROME.001`
 - `APP.BRAND.001`
 - `APP.SHELL.001`
 - `APP.SHELL.002`

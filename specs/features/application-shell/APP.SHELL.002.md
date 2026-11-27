@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Native Navigation Behavior with Brand Chrome
-- **Version**: `v1.2`
+- **Version**: `v1.3`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -19,7 +19,7 @@ Define that navigation structure and system interaction are delegated to native 
 
 ## Requirements
 - `APP.SHELL.002-R1`: The system shall use platform-native navigation containers for stack state, transitions, tab state and system gesture handling.
-- `APP.SHELL.002-R2`: Native navigation chrome shall be hidden; the branded footer shall remain the only visible navigation surface, and no global application header shall be rendered as defined by `APP.SHELL.005`.
+- `APP.SHELL.002-R2`: Standard views shall use the platform-native tab bar with brand tinting as defined by `APP.PLATFORM.CHROME.001`; a custom branded footer shall not be rendered over it, and no second global title bar shall be added to standard views.
 - `APP.SHELL.002-R3`: The visible destinations, their order and their labels shall remain as defined in `APP.SHELL.001`; this spec shall not introduce a new visible destination.
 - `APP.SHELL.002-R4`: The Create action shall remain a single floating action button and shall not become a tab destination.
 - `APP.SHELL.002-R5`: Feed/Map presentation switching shall remain inside the Offers view as defined by `OFFERS.MODE.SWITCH.001`.
@@ -99,6 +99,7 @@ Scenario: Brand UI is identical across platforms
 
 ## Related Specs
 - `APP.SHELL.001`
+- `APP.PLATFORM.CHROME.001`
 - `APP.TYPOGRAPHY.001`
 - `APP.BOTTOM_SHEET.001`
 - `APP.SHELL.005`
