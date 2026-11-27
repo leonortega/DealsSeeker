@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: System-Aware Theme with Manual Override
-- **Version**: `v0.4`
+- **Version**: `v0.5`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: Medium
@@ -28,6 +28,7 @@ Provide light and dark theme support aligned with device preference and user ove
 - `APP.THEME.001-R9`: Text and metadata drawn on the fixed immersive backdrop shall use a foreground that remains legible in both themes, regardless of the active theme's text color.
 - `APP.THEME.001-R10`: Every visible chrome color, including footer icons, immersive overlay text, badges and action counters, shall be derived from the active palette or its documented fixed-backdrop tokens.
 - `APP.THEME.001-R11`: The status bar shall follow the active theme and presentation so its content stays legible in light, dark and immersive surfaces.
+- `APP.THEME.001-R12`: The native startup surface shall provide a dark-appearance variant so a system-dark device does not flash a light surface before the app renders.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -63,6 +64,12 @@ Scenario: Chrome colors follow the active palette
   When an immersive offer, footer and status message are rendered
   Then their colors come from the active palette or its documented fixed-backdrop tokens
   And no unthemed literal is used for chrome
+
+Scenario: Startup surface follows system appearance
+  Given the device is set to dark appearance
+  When the native startup surface is shown
+  Then it uses a dark background variant
+  And the light appearance keeps its own background
 
 Scenario: Status bar follows the presentation
   Given the app is in a light, dark or immersive presentation

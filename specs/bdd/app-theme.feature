@@ -42,6 +42,12 @@ Feature: Theme behavior with system default and override
     Then their colors come from the active palette or its documented fixed-backdrop tokens
     And no unthemed literal is used for chrome
 
+  Scenario: Startup surface follows system appearance
+    Given the device is set to dark appearance
+    When the native startup surface is shown
+    Then it uses a dark background variant
+    And the light appearance keeps its own background
+
   Scenario: Status bar follows the presentation
     Given the app is in a light, dark or immersive presentation
     When the surface is rendered
