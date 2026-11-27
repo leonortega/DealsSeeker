@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Design-system conformance and dialog recovery
-- **Version**: `v1.6`
+- **Version**: `v1.7`
 - **Status**: Approved
 - **Context/View**: Application shell, Offers View, My Account, Add Offer, Suggestions, Reports
 - **Priority**: Low
@@ -30,6 +30,7 @@ Close the remaining design-system and recovery gaps without changing the establi
 - `APP.POLISH.UX.001-R11`: Embedded map surfaces shall be presented within a structurally rounded, 1px-bordered surface using the active palette; the map shall fill that surface edge-to-edge with no padding between the map and its border, and its content shall be clipped to the corner.
 - `APP.POLISH.UX.001-R12`: The standard Offers view shall not display scroll indicators while its content is scrolled.
 - `APP.POLISH.UX.001-R13`: Raised surfaces shall keep the single soft-shadow vocabulary on both platforms.
+- `APP.POLISH.UX.001-R14`: In the immersive presentation, recovery and empty-state panels shall render below the top controls and shall not obscure the presentation switch, search or help controls.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -66,6 +67,12 @@ Scenario: Embedded map uses the panel corner treatment
   Then it shall sit within a rounded, 1px-bordered surface using the active palette
   And the map shall meet the border with no padding gap
   And the map content shall be clipped to that surface's corners
+
+Scenario: Recovery panels sit below immersive top controls
+  Given the immersive offers feed shows a no-results or search-error state
+  When the view is rendered
+  Then the state panel appears below the presentation switch and search controls
+  And the top controls remain unobscured and reachable
 
 Scenario: Raised surfaces keep one soft shadow on both platforms
   Given an offer card and a primary action are displayed on iOS and Android

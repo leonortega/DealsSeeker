@@ -53,6 +53,12 @@ Feature: Design-system conformance and dialog recovery
     When the view content is scrolled
     Then no vertical or horizontal scroll indicator is displayed
 
+  Scenario: Recovery panels sit below immersive top controls
+    Given the immersive offers feed shows a no-results or search-error state
+    When the view is rendered
+    Then the state panel appears below the presentation switch and search controls
+    And the top controls remain unobscured and reachable
+
   Scenario: Raised surfaces keep one soft shadow on both platforms
     Given an offer card and a primary action are displayed on iOS and Android
     When the surfaces are rendered
