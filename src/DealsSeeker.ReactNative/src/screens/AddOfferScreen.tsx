@@ -23,6 +23,7 @@ import { GeoPoint, OfferImageDto, OfferLocationDto } from '../api/types';
 import { NativeMapPreview } from '../components/NativeMapPreview';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
+import { useAppStatus } from '../hooks/useAppStatus';
 import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
 import { statusColor, type StatusTone } from '../utils/statusNotice';
@@ -122,7 +123,8 @@ function dedupeLocationSearchResults(results: LocationSearchResult[]) {
 }
 
 export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: () => boolean) => void } = {}) {
-  const { api, closeOverlay, isPending, openTab, overlayRoute, palette, preferences, t } = useApp();
+  const { api, closeOverlay, openTab, overlayRoute, palette, preferences, t } = useApp();
+  const { isPending } = useAppStatus();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const columns = resolveAddOfferColumns(width);

@@ -2,6 +2,7 @@ import { AppState } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import { AppProvider } from '../../../src/DealsSeeker.ReactNative/src/context/AppContext';
 import { useApp } from '../../../src/DealsSeeker.ReactNative/src/hooks/useApp';
+import { useAppStatus } from '../../../src/DealsSeeker.ReactNative/src/hooks/useAppStatus';
 
 const mockDefaultPreferences = { themeMode: 'system', language: 'en', navigationMode: 'pedestrian' };
 const mockLoadSession = jest.fn();
@@ -51,9 +52,11 @@ jest.mock('expo-localization', () => ({
 let mockAppStateHandler: ((state: string) => void) | null = null;
 
 let context: ReturnType<typeof useApp> | null = null;
+let status: ReturnType<typeof useAppStatus> | null = null;
 
 function Probe() {
   context = useApp();
+  status = useAppStatus();
   return null;
 }
 
@@ -215,23 +218,33 @@ describe('AppProvider', () => {
     expect(context?.immersiveOffers).toBe(false);
   });
 
+  it('keeps the app context identity stable when volatile status changes', async () => {
+    await renderProvider();
+    const first = context;
+
+    await act(() => context?.openSheet());
+
+    expect(context).toBe(first);
+    expect(status?.sheetCount).toBe(1);
+  });
+
   it('tracks nested overlay sheets so the create action can stay hidden', async () => {
     await renderProvider();
 
-    expect(context?.sheetCount).toBe(0);
+    expect(status?.sheetCount).toBe(0);
 
     await act(() => context?.openSheet());
     await act(() => context?.openSheet());
-    expect(context?.sheetCount).toBe(2);
+    expect(status?.sheetCount).toBe(2);
 
     await act(() => context?.closeSheet());
-    expect(context?.sheetCount).toBe(1);
+    expect(status?.sheetCount).toBe(1);
 
     await act(() => context?.closeSheet());
-    expect(context?.sheetCount).toBe(0);
+    expect(status?.sheetCount).toBe(0);
 
     await act(() => context?.closeSheet());
-    expect(context?.sheetCount).toBe(0);
+    expect(status?.sheetCount).toBe(0);
   });
 
   it('persists preference changes and updates the palette', async () => {
@@ -268,11 +281,11 @@ describe('AppProvider', () => {
 
     let pending: Promise<unknown> | undefined;
     await act(() => { pending = context?.api.searchOffers({} as never); });
-    expect(context?.isPending('offers-search')).toBe(true);
-    expect(context?.loadingCount).toBe(0);
+    expect(status?.isPending('offers-search')).toBe(true);
+    expect(status?.loadingCount).toBe(0);
 
     await act(async () => { resolveSearch?.(); await pending; });
-    expect(context?.isPending('offers-search')).toBe(false);
+    expect(status?.isPending('offers-search')).toBe(false);
   });
 
   it('delegates every wrapped API operation to the client', async () => {

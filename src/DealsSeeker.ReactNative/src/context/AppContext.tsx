@@ -43,12 +43,8 @@ interface AppContextValue {
   preferences: UserPreferences;
   palette: ReturnType<typeof resolveTheme>;
   reportDraft: OfferReportDraft | null;
-  loadingCount: number;
-  sheetCount: number;
   openSheet: () => void;
   closeSheet: () => void;
-  pendingOperations: string[];
-  isPending: (operationKey: string) => boolean;
   runOperation: <T>(operationKey: string | null, task: () => Promise<T>) => Promise<T>;
   api: ReturnType<typeof createDealsSeekerApi>;
   t: (key: string) => string;
@@ -73,6 +69,15 @@ interface AppContextValue {
 }
 
 export const AppContext = createContext<AppContextValue | null>(null);
+
+export interface AppStatusValue {
+  loadingCount: number;
+  sheetCount: number;
+  pendingOperations: string[];
+  isPending: (operationKey: string) => boolean;
+}
+
+export const AppStatusContext = createContext<AppStatusValue | null>(null);
 
 function resolveDeviceLanguage(): Language {
   const locale = Localization.getLocales()[0];
@@ -377,12 +382,8 @@ export function AppProvider({ children }: PropsWithChildren) {
       preferences.themeWorld
     ),
     reportDraft,
-    loadingCount,
-    sheetCount,
     openSheet,
     closeSheet,
-    pendingOperations,
-    isPending,
     runOperation,
     api,
     t: translateKey,
@@ -433,12 +434,8 @@ export function AppProvider({ children }: PropsWithChildren) {
     preferences,
     systemScheme,
     reportDraft,
-    loadingCount,
-    sheetCount,
     openSheet,
     closeSheet,
-    pendingOperations,
-    isPending,
     runOperation,
     api,
     translateKey,
@@ -451,5 +448,14 @@ export function AppProvider({ children }: PropsWithChildren) {
     logout,
   ]);
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  const statusValue: AppStatusValue = useMemo(
+    () => ({ loadingCount, sheetCount, pendingOperations, isPending }),
+    [loadingCount, sheetCount, pendingOperations, isPending]
+  );
+
+  return (
+    <AppStatusContext.Provider value={statusValue}>
+      <AppContext.Provider value={value}>{children}</AppContext.Provider>
+    </AppStatusContext.Provider>
+  );
 }

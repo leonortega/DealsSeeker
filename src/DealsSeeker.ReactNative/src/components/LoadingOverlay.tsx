@@ -1,8 +1,10 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
+import { useAppStatus } from '../hooks/useAppStatus';
 
 export function LoadingOverlay({ visible = false }: { visible?: boolean }) {
-  const { loadingCount, palette, t } = useApp();
+  const { palette, t } = useApp();
+  const { loadingCount } = useAppStatus();
 
   if (loadingCount <= 0 && !visible) {
     return null;

@@ -9,6 +9,7 @@ import { CreateOfferFab } from '../components/CreateOfferFab';
 import { LoadingOverlay } from '../components/LoadingOverlay';
 import { NavIcon } from '../components/NavIcon';
 import { useApp } from '../hooks/useApp';
+import { useAppStatus } from '../hooks/useAppStatus';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { useDestinationFocus } from '../hooks/useDestinationFocus';
 import type { MainTab } from '../api/types';
@@ -33,7 +34,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 
 function BrandedTabBar({ state, navigation }: BottomTabBarProps) {
-  const { activeTab, immersiveOffers, openAddOffer, openTab, palette, sheetCount, t } = useApp();
+  const { activeTab, immersiveOffers, openAddOffer, openTab, palette, t } = useApp();
+  const { sheetCount } = useAppStatus();
   const selectedTab = resolveTabFromRoute(String(state.routes[state.index]?.name ?? ''));
   const lastNavTab = useRef<MainTab | null>(selectedTab);
   const footer = resolveFooterColors(palette);
