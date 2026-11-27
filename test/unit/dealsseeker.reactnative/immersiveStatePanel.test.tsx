@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 
@@ -57,6 +57,7 @@ describe('immersive recovery panel placement', () => {
 
   it('lays the recovery panel out below the top controls (APP.POLISH.UX.001-R14)', async () => {
     await render(<OffersScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.browseApproximateArea' }));
 
     const overlay = await screen.findByTestId('immersive-state-overlay');
     expect(StyleSheet.flatten(overlay.props.style)).toMatchObject({ position: 'absolute' });

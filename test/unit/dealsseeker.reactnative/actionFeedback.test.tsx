@@ -93,6 +93,13 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferCommentsModa
   OfferCommentsModal: () => null,
 }));
 
+async function chooseFallbackArea() {
+  const browse = screen.queryByRole('button', { name: 'offers.browseApproximateArea' });
+  if (browse) {
+    await fireEvent.press(browse);
+  }
+}
+
 describe('immersive action feedback (OFFERS.UX.002)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -103,6 +110,7 @@ describe('immersive action feedback (OFFERS.UX.002)', () => {
 
   it('applies favorite and vote outcomes without re-running the search', async () => {
     await render(<OffersScreen />);
+    await chooseFallbackArea();
     await waitFor(() => expect(mockSearchOffers).toHaveBeenCalledTimes(1));
 
     await fireEvent.press(screen.getByRole('button', { name: 'favorite' }));
@@ -114,6 +122,7 @@ describe('immersive action feedback (OFFERS.UX.002)', () => {
 
   it('shows a confirmation when a vote succeeds', async () => {
     await render(<OffersScreen />);
+    await chooseFallbackArea();
     await fireEvent.press(screen.getByRole('button', { name: 'vote' }));
     expect(await screen.findByText('offers.feedbackRegistered')).toBeTruthy();
     expect(mockSuccessFeedback).toHaveBeenCalledTimes(1);
@@ -122,6 +131,7 @@ describe('immersive action feedback (OFFERS.UX.002)', () => {
   it('shows a failure message when a vote is rejected', async () => {
     mockVote.mockResolvedValue({ success: false, message: 'Conflict' });
     await render(<OffersScreen />);
+    await chooseFallbackArea();
     await fireEvent.press(screen.getByRole('button', { name: 'vote' }));
     expect(await screen.findByText('offers.voteFailed')).toBeTruthy();
     expect(mockSuccessFeedback).not.toHaveBeenCalled();
@@ -129,6 +139,7 @@ describe('immersive action feedback (OFFERS.UX.002)', () => {
 
   it('confirms a successful favorite toggle and stays silent on failure', async () => {
     await render(<OffersScreen />);
+    await chooseFallbackArea();
     await fireEvent.press(screen.getByRole('button', { name: 'favorite' }));
     expect(mockSelectionFeedback).toHaveBeenCalledTimes(1);
 
@@ -139,6 +150,7 @@ describe('immersive action feedback (OFFERS.UX.002)', () => {
 
   it('replaces earlier feedback with the latest outcome', async () => {
     await render(<OffersScreen />);
+    await chooseFallbackArea();
     await fireEvent.press(screen.getByRole('button', { name: 'vote' }));
     expect(await screen.findByText('offers.feedbackRegistered')).toBeTruthy();
 

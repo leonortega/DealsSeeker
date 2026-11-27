@@ -61,6 +61,7 @@ export function OffersScreen() {
   const searchRequest = useAbortableRequest();
   const searchSequence = useRef(0);
   const lastLocationAttemptFailed = useRef(false);
+  const fallbackAcceptedRef = useRef(false);
   const helpButtonRef = useRef<ElementRef<typeof View> | null>(null);
 
   async function resolveCurrentLocation() {
@@ -91,6 +92,9 @@ export function OffersScreen() {
     setUserLocation(nextLocation);
     setLocationFallback(usingFallback);
     lastLocationAttemptFailed.current = usingFallback;
+    if (usingFallback) {
+      fallbackAcceptedRef.current = false;
+    }
     setLocationNoticeDismissed(false);
 
     try {
@@ -115,6 +119,7 @@ export function OffersScreen() {
 
     if (lastLocationAttemptFailed.current) {
       setActionStatus(t('offers.locationRetryFailed'), 'error');
+      return;
     }
 
     try {
@@ -137,6 +142,10 @@ export function OffersScreen() {
     nextRadius = radiusMeters,
     nextFavoritesOnly = favoritesOnly
   ) {
+    if (lastLocationAttemptFailed.current && !fallbackAcceptedRef.current) {
+      return;
+    }
+
     const sequence = searchSequence.current + 1;
     searchSequence.current = sequence;
 
@@ -194,6 +203,9 @@ export function OffersScreen() {
     void runOperation(null, async () => {
       try {
         const location = await resolveCurrentLocation();
+        if (lastLocationAttemptFailed.current && !fallbackAcceptedRef.current) {
+          return;
+        }
         const response = await api.searchOffers({
           query,
           userLocation: location,
@@ -271,12 +283,16 @@ export function OffersScreen() {
           </Text>
         </Pressable>
         <Pressable
-          accessibilityLabel={t('offers.dismissNotice')}
+          accessibilityLabel={t('offers.browseApproximateArea')}
           accessibilityRole="button"
-          onPress={() => setLocationNoticeDismissed(true)}
+          onPress={() => {
+            fallbackAcceptedRef.current = true;
+            setLocationNoticeDismissed(true);
+            void search(query, radiusMeters, favoritesOnly);
+          }}
           style={[styles.fallbackButton, { backgroundColor: palette.panel }]}
         >
-          <Text style={{ color: palette.ink }}>{t('offers.dismissNotice')}</Text>
+          <Text style={{ color: palette.ink }}>{t('offers.browseApproximateArea')}</Text>
         </Pressable>
       </View>
     </View>

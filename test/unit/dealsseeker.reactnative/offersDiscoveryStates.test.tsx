@@ -49,6 +49,13 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/components/OfferCommentsModa
   OfferCommentsModal: () => null,
 }));
 
+async function chooseFallbackArea() {
+  const browse = screen.queryByRole('button', { name: 'offers.browseApproximateArea' });
+  if (browse) {
+    await fireEvent.press(browse);
+  }
+}
+
 describe('Offers discovery states', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -59,6 +66,7 @@ describe('Offers discovery states', () => {
     mockSearchOffers.mockRejectedValueOnce(new Error('offline'));
 
     await render(<OffersScreen />);
+    await chooseFallbackArea();
 
     expect(await screen.findByText('offers.searchFailed')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'offers.retry' }));
@@ -68,6 +76,7 @@ describe('Offers discovery states', () => {
 
   it('offers to clear filters when a query returns no results', async () => {
     await render(<OffersScreen />);
+    await chooseFallbackArea();
     await fireEvent.changeText(screen.getByPlaceholderText('offers.searchPlaceholder'), 'coffee');
 
     const clearAction = await screen.findByRole('button', { name: 'offers.clearFilters' }, { timeout: 3000 });

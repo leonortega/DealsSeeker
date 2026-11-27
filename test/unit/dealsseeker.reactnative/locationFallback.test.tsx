@@ -122,10 +122,10 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
 
     expect(await screen.findByText('offers.locationRetryFailed')).toBeTruthy();
     expect(screen.getByText('offers.locationFallbackNotice')).toBeTruthy();
-    expect(mockSearchOffers).toHaveBeenCalled();
+    expect(mockSearchOffers).not.toHaveBeenCalled();
   });
 
-  it('keeps browsing when the notice is dismissed', async () => {
+  it('keeps browsing when the approximate area is chosen', async () => {
     mockSearchOffers.mockResolvedValue({
       offers: [{ offerId: 'o1' }],
       businesses: [],
@@ -133,7 +133,7 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
     await render(<OffersScreen />);
     await screen.findByText('offers.locationFallbackNotice');
 
-    await fireEvent.press(screen.getByRole('button', { name: 'offers.dismissNotice' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.browseApproximateArea' }));
 
     await waitFor(() => expect(screen.queryByText('offers.locationFallbackNotice')).toBeNull());
     expect(mockSearchOffers).toHaveBeenCalled();
@@ -143,6 +143,8 @@ describe('fallback location disclosure (APP.LOCATION.FALLBACK.001)', () => {
     mockImmersive = true;
     mockSearchOffers.mockRejectedValue(new Error('offline'));
     await render(<OffersScreen />);
+    await screen.findByText('offers.locationFallbackNotice');
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.browseApproximateArea' }));
 
     expect(await screen.findByText('offers.searchFailed')).toBeTruthy();
     expect(StyleSheet.flatten(screen.getByTestId('immersive-content').props.style).backgroundColor).toBe('#121417');
