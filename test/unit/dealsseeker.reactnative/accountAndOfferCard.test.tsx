@@ -247,6 +247,7 @@ describe('OfferCard', () => {
     await fireEvent.press(screen.getByText('offers.favorite'));
     await fireEvent.press(screen.getByText('offers.directions.walk'));
     await fireEvent.press(screen.getByText('offers.action.comments'));
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.cardMoreActions' }));
     await fireEvent.press(screen.getByText('offers.report'));
 
     expect(callbacks.onFavorite).toHaveBeenCalledTimes(1);

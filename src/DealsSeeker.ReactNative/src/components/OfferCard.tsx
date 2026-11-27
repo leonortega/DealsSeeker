@@ -66,9 +66,11 @@ function OfferCardRow({
   const imageUri = useOfferImageUri(offer.imageUrl);
   const canRenderImage = Boolean(imageUri) && !isSvgImageUri(imageUri);
   const [imageFailed, setImageFailed] = useState(false);
+  const [maintenanceOpen, setMaintenanceOpen] = useState(false);
 
   useEffect(() => {
     setImageFailed(false);
+    setMaintenanceOpen(false);
   }, [imageUri, offer.offerId]);
 
   return (
@@ -169,9 +171,20 @@ function OfferCardRow({
           </Pressable>
         </View>
 
-        <View style={[styles.voteSection, { borderColor: palette.border }]}>
-          <Text style={[styles.meta, { color: palette.ink }]}>{t('offers.available')}</Text>
-          <View style={styles.voteRow}>
+        <Pressable
+          accessibilityLabel={t('offers.cardMoreActions')}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: maintenanceOpen }}
+          onPress={() => setMaintenanceOpen((current) => !current)}
+          style={[styles.actionButton, { backgroundColor: palette.panelAlt }]}
+          testID="offer-card-more"
+        >
+          <Text style={[styles.actionLabel, { color: palette.ink }]}>{t('offers.cardMoreActions')}</Text>
+        </Pressable>
+        {maintenanceOpen ? (
+          <View style={[styles.voteSection, { borderColor: palette.border }]}>
+            <Text style={[styles.meta, { color: palette.ink }]}>{t('offers.available')}</Text>
+            <View style={styles.voteRow}>
             <Pressable
               accessibilityLabel={`${t('offers.action.available')} ${offer.positiveAvailabilityCount}`}
               accessibilityRole="button"
@@ -214,8 +227,9 @@ function OfferCardRow({
             >
               <Text style={{ color: palette.ink }}>{t('offers.report')}</Text>
             </Pressable>
+            </View>
           </View>
-        </View>
+        ) : null}
       </View>
     </View>
   );

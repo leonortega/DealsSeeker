@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { NativeMapPreview } from '../../../src/DealsSeeker.ReactNative/src/components/NativeMapPreview';
 import { LoginScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/LoginScreen';
@@ -102,6 +102,7 @@ describe('adaptive behavior (APP.ADAPTIVE.UX.002)', () => {
         query=""
       />
     );
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.cardMoreActions' }));
     const vote = screen.getByRole('button', { name: /^offers\.action\.available/ });
     expect(StyleSheet.flatten(vote.props.style).minHeight).toBeGreaterThanOrEqual(44);
   });
