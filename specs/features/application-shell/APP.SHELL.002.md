@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Native Navigation Behavior with Brand Chrome
-- **Version**: `v1.1`
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
@@ -26,8 +26,9 @@ Define that navigation structure and system interaction are delegated to native 
 - `APP.SHELL.002-R6`: Switching between destinations shall preserve the destination's view state (including offers search query and radius) as required by `APP.SHELL.001-R19`.
 - `APP.SHELL.002-R7`: The system shall apply safe-area and window insets so the branded footer clears system bars, cutouts and gesture areas on both platforms without altering its visual design.
 - `APP.SHELL.002-R8`: When the OS Reduce Motion / Remove animations setting is enabled, transition behavior shall change while the brand UI shall remain unchanged.
-- `APP.SHELL.002-R9`: The visible UI shall be identical on iOS and Android; no iOS Human Interface Guidelines or Material 3 visual adaptation shall be applied to the application's own components, typography, colors, iconography or layout.
+- `APP.SHELL.002-R9`: Brand identity, information architecture, copy and visual language (palette, type roles, shapes, brand icon set) shall stay identical on iOS and Android; platform-native interaction affordances shall be used where the platform provides them, without restyling the brand UI.
 - `APP.SHELL.002-R10`: The main sections shall be hosted by a native tab navigator that owns tab state and tab switching behavior; the branded night footer shall be supplied as a custom tab bar and shall remain the only visible tab surface.
+- `APP.SHELL.002-R11`: Controls shall use the platform's native touch affordances: the larger Android touch floor and press feedback on Android, and the standard iOS press behavior, with identical labels, states and actions on both platforms.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -64,6 +65,12 @@ Scenario: Native tab state with branded footer
   And the night footer shall be the only visible tab bar
   And selecting a footer destination shall restore that destination's view state
   And system Back shall follow the native tab back stack
+
+Scenario: Platform affordances keep the brand unchanged
+  Given the same view state on iOS and Android
+  When controls are rendered on both platforms
+  Then each platform uses its native touch affordances
+  And labels, states, actions and brand visuals remain identical
 
 Scenario: Brand UI is identical across platforms
   Given the same view state on iOS and Android

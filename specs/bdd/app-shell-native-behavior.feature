@@ -37,11 +37,17 @@ Feature: Native navigation behavior with brand chrome
     And selecting a footer destination shall restore that destination's view state
     And system Back shall follow the native tab back stack
 
+  Scenario: Platform affordances keep the brand unchanged
+    Given the same view state on iOS and Android
+    When controls are rendered on both platforms
+    Then each platform uses its native touch affordances
+    And labels, states, actions and brand visuals remain identical
+
   Scenario: Brand UI is identical across platforms
     Given the same view state on iOS and Android
     When the branded shell is rendered on both platforms
     Then colors, typography, iconography, spacing and layout shall match
-    And no platform-specific visual adaptation shall be applied
+    And no platform-specific restyling shall be applied
 
   Scenario: Add Offer opens with native modal behavior
     Given the authenticated user is on a standard view
