@@ -1,14 +1,14 @@
 # Spec: `APP.HELP.001`
 
 ## Metadata
-- **Title**: In-product help surface and essential topics
-- **Version**: `v1.1`
+- **Title**: Task-focused, searchable in-product help surface
+- **Version**: `v1.2`
 - **Status**: Approved
 - **Context/View**: Offers View (standard and immersive presentations), application-shell entry points
 - **Priority**: Low
 
 ## Purpose
-Give first-time users a short, task-focused explanation of the essential flows where they need it, without leaving the view they are in.
+Give first-time users a short, task-focused explanation of the essential flows where they need it, organised by what the user wants to do and searchable in place, without leaving the view they are in.
 
 ## Preconditions
 - For the Offers help control, the user is authenticated and in the Offers section.
@@ -25,6 +25,9 @@ Give first-time users a short, task-focused explanation of the essential flows w
 - `APP.HELP.001-R4`: The help surface shall be dismissed by an explicit close control and by the system back action.
 - `APP.HELP.001-R5`: The help control, surface and content shall follow the active theme and localization.
 - `APP.HELP.001-R6`: The help control and close control shall expose accessible names and meet the touch-target floors of `APP.ACCESSIBILITY.UX.001`.
+- `APP.HELP.001-R7`: The help surface shall organise its topics by the user task each supports, under task-oriented headings rather than by app feature or screen name.
+- `APP.HELP.001-R8`: The help surface shall expose one search entry point, defined by `APP.HELP.SEARCH.001`, that filters the same set of topics in place without navigating away or changing the invoking context.
+- `APP.HELP.001-R9`: Searching or ordering topics by relevance shall not add, remove or rename the five essential topics; a contextually opened surface shall keep the relevant topic first until the user searches.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -69,6 +72,26 @@ Scenario: Dismissed contextual help returns focus to the invoking control
   When the user dismisses the help surface
   Then focus returns to the control that opened it
   And the invoking context is unchanged
+
+Scenario: Help topics are organised by task
+  Given the help surface is displayed
+  When the user reviews its headings
+  Then topics are grouped by what the user wants to do
+  And no heading names an app feature or screen instead of a task
+
+Scenario: Help surface hosts a search entry point
+  Given the help surface is displayed
+  When the user views its top area
+  Then one labelled search entry point is available
+  And selecting it filters topics in place as defined by APP.HELP.SEARCH.001
+  And the underlying view stays mounted
+
+Scenario: Search does not change the topic set or contextual ordering
+  Given contextual help was opened with a relevant topic first
+  When the user enters a search term and then clears it
+  Then the same five topics are listed
+  And the relevant topic is shown first again
+  And no topic was added or renamed
 ```
 
 ## Example Inputs/Outputs
@@ -83,11 +106,17 @@ Scenario: Dismissed contextual help returns focus to the invoking control
 - Help open when the presentation mode changes underneath.
 - Large text size.
 - Contextual help opened from a context whose draft or prompt is still active.
+- A search entered while help was opened contextually — matches take precedence while the term is present, and the relevant-topic-first order returns when it is cleared.
+- Long localized task headings that wrap at 200 percent text size.
 
 ## Non-Functional Constraints
 - The help surface shall not block access to the underlying view after dismissal.
+- Reorganising topics by task shall preserve the five essential topics and their contextual ordering rule.
 
 ## Related Specs
+- `APP.TYPOGRAPHY.001`
+- `APP.POLISH.UX.001`
+- `APP.HELP.SEARCH.001`
 - `APP.SHELL.001`
 - `APP.SHELL.005`
 - `APP.THEME.001`

@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text, TouchableRipple, useTheme } from 'react-native-paper';
 import { useApp } from '../hooks/useApp';
 import { platformTouchFloor } from '../utils/layout';
 import { immersiveInk, immersiveInkMuted, immersivePhotoNav } from '../utils/theme';
@@ -13,6 +14,7 @@ export function ImmersiveFeedTabs({
   onChangeTab: (tab: ImmersiveFeedTab) => void;
 }) {
   const { palette, t } = useApp();
+  const theme = useTheme();
 
   const tabs: Array<{ key: ImmersiveFeedTab; label: string }> = [
     { key: 'favorites', label: t('offers.tabFavorites') },
@@ -29,18 +31,27 @@ export function ImmersiveFeedTabs({
         const selected = tab.key === activeTab;
 
         return (
-          <Pressable
+          <TouchableRipple
             key={tab.key}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
             onPress={() => onChangeTab(tab.key)}
+            rippleColor={theme.colors.primary}
             style={styles.tab}
           >
-            <Text numberOfLines={1} style={[styles.tabLabel, { color: selected ? activeColor : inactiveColor }]}>
-              {tab.label}
-            </Text>
-            <View style={[styles.tabIndicator, { backgroundColor: selected ? palette.accent : 'transparent' }]} />
-          </Pressable>
+            <View style={styles.tabContent}>
+              <Text
+                numberOfLines={1}
+                variant="labelLarge"
+                style={[styles.tabLabel, { color: selected ? activeColor : inactiveColor }]}
+              >
+                {tab.label}
+              </Text>
+              <View
+                style={[styles.tabIndicator, { backgroundColor: selected ? palette.accent : 'transparent' }]}
+              />
+            </View>
+          </TouchableRipple>
         );
       })}
     </View>
@@ -54,11 +65,13 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   tab: {
-    alignItems: 'center',
-    gap: 4,
     justifyContent: 'center',
     maxWidth: 110,
     minHeight: platformTouchFloor,
+  },
+  tabContent: {
+    alignItems: 'center',
+    gap: 4,
   },
   tabLabel: {
     fontSize: 13,

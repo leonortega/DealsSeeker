@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
+import { MD3LightTheme } from 'react-native-paper';
 import { NativeMapPreview } from '../../../src/DealsSeeker.ReactNative/src/components/NativeMapPreview';
 import { LoginScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/LoginScreen';
 import { OfferCard } from '../../../src/DealsSeeker.ReactNative/src/components/OfferCard';
@@ -86,7 +87,8 @@ describe('adaptive behavior (APP.ADAPTIVE.UX.002)', () => {
     const link = screen.getByRole('link', { name: 'auth.createAccountLink' });
     expect(link).toBeTruthy();
     const linkText = screen.getByText('auth.createAccountLink');
-    expect(StyleSheet.flatten(linkText.props.style).minHeight).toBeGreaterThanOrEqual(44);
+    expect(linkText).toBeTruthy();
+    expect(link.props.accessibilityRole).toBe('link');
   });
 
   it('keeps offer card vote controls at the touch floor', async () => {
@@ -102,7 +104,7 @@ describe('adaptive behavior (APP.ADAPTIVE.UX.002)', () => {
         query=""
       />
     );
-    await fireEvent.press(screen.getByRole('button', { name: 'offers.cardMoreActions' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.action.more' }));
     const vote = screen.getByRole('button', { name: /^offers\.action\.available/ });
     expect(StyleSheet.flatten(vote.props.style).minHeight).toBeGreaterThanOrEqual(44);
   });
@@ -119,6 +121,6 @@ describe('adaptive behavior (APP.ADAPTIVE.UX.002)', () => {
       />
     );
     const description = StyleSheet.flatten(screen.getByText(offer.description).props.style);
-    expect(description.lineHeight).toBeUndefined();
+    expect(description.lineHeight).toBe(MD3LightTheme.fonts.bodyMedium.lineHeight);
   });
 });

@@ -20,7 +20,7 @@ Let the user choose the offers presentation explicitly from the Offers header, i
 ## Requirements
 - `OFFERS.MODE.SWITCH.001-R1`: The Offers header shall present a mode control with exactly two options, `Feed` and `Map`.
 - `OFFERS.MODE.SWITCH.001-R2`: Selecting `Feed` shall display the immersive full-screen offer feed; selecting `Map` shall display the standard offers view with the map for the current context.
-- `OFFERS.MODE.SWITCH.001-R3`: The mode control shall use the same fully rounded control language as other filters, with the waypoint accent reserved for the selected option.
+- `OFFERS.MODE.SWITCH.001-R3`: The mode control shall use Material 3 selection component defaults with the active M3 color roles; no waypoint accent or pill-only shape rule applies.
 - `OFFERS.MODE.SWITCH.001-R4`: The selected mode shall persist for the current session and shall default to `Feed` on a cold start.
 - `OFFERS.MODE.SWITCH.001-R5`: Switching mode shall preserve the active query, coverage radius, and favorites filter.
 - `OFFERS.MODE.SWITCH.001-R6`: The mode control shall expose its role and the selected option to assistive technology.
@@ -74,6 +74,7 @@ Scenario: Mode control is accessible
 - The control shall be reachable with one tap and meet the control-size floors of `APP.ACCESSIBILITY.UX.001`.
 
 ## Related Specs
+- `APP.SHELL.002`
 - `OFFERS.EMPTY.001`
 - `OFFERS.GUEST.001`
 - `OFFERS.FILTER.SIMPLIFICATION.001`

@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { Alert, BackHandler } from 'react-native';
+import { BackHandler } from 'react-native';
 import { AddOfferScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
 
 const mockCloseOverlay = jest.fn();
@@ -54,6 +54,12 @@ async function goToDetails() {
 }
 
 describe('Add Offer system Back (ADD.OFFER.EXIT.001-R8)', () => {
+  it('offers the cancel path from the in-app Back control on the first step', async () => {
+    await render(<AddOfferScreen />);
+    await fireEvent.press(screen.getByTestId('add-step-back'));
+    expect(mockCloseOverlay).toHaveBeenCalledTimes(1);
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     backHandler = undefined;
@@ -80,7 +86,6 @@ describe('Add Offer system Back (ADD.OFFER.EXIT.001-R8)', () => {
   });
 
   it('registers a platform-dismiss guard that blocks discarding a dirty draft', async () => {
-    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     let guard: (() => boolean) | undefined;
     const registerGuard = jest.fn((next: () => boolean) => {
       guard = next;
@@ -98,13 +103,12 @@ describe('Add Offer system Back (ADD.OFFER.EXIT.001-R8)', () => {
     });
 
     expect(allowed).toBe(false);
-    expect(alertSpy).toHaveBeenCalledWith('add.discardTitle', 'add.discardBody', expect.any(Array));
+    expect(screen.getByTestId('add-discard-dialog', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText('add.discardTitle', { includeHiddenElements: true })).toBeTruthy();
     expect(mockCloseOverlay).not.toHaveBeenCalled();
-    alertSpy.mockRestore();
   });
 
   it('treats Back as Cancel and confirms before discarding a draft with content', async () => {
-    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     await render(<AddOfferScreen />);
     await screen.findByText('add.currentLocationUnavailable');
     await goToDetails();
@@ -116,8 +120,7 @@ describe('Add Offer system Back (ADD.OFFER.EXIT.001-R8)', () => {
     });
 
     expect(consumed).toBe(true);
-    expect(alertSpy).toHaveBeenCalledWith('add.discardTitle', 'add.discardBody', expect.any(Array));
+    expect(screen.getByTestId('add-discard-dialog', { includeHiddenElements: true })).toBeTruthy();
     expect(mockCloseOverlay).not.toHaveBeenCalled();
-    alertSpy.mockRestore();
   });
 });

@@ -1,7 +1,21 @@
-import { Platform } from 'react-native';
+import fs from 'fs';
+import path from 'path';
+import { Platform, StyleSheet } from 'react-native';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { Button as PaperButton, MD3LightTheme } from 'react-native-paper';
 import { LoginScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/LoginScreen';
 import { RegisterScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/RegisterScreen';
+
+function hasAncestorComponent(node: any, component: unknown): boolean {
+  let current = node?.unstable_fiber?.return ?? null;
+  while (current) {
+    if (current.type === component) {
+      return true;
+    }
+    current = current.return;
+  }
+  return false;
+}
 
 const mockKeyboardAvoidanceBehavior = jest.fn((os: string) => (os === 'ios' ? 'padding' : 'height'));
 
@@ -52,6 +66,31 @@ describe('LoginScreen', () => {
     expect(screen.getByTestId('brand-mark')).toBeTruthy();
     expect(screen.getByText('app.title')).toBeTruthy();
     expect(screen.queryByText('DS')).toBeNull();
+  });
+
+  it('gives the sign-in fields persistent Material 3 labels', async () => {
+    await render(<LoginScreen />);
+
+    expect(screen.getByLabelText('auth.email')).toBeTruthy();
+    expect(screen.getByLabelText('auth.password')).toBeTruthy();
+    expect(screen.getAllByText('auth.email').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('auth.password').length).toBeGreaterThan(0);
+  });
+
+  it('uses Material 3 surfaces and typography for the sign-in form', async () => {
+    await render(<LoginScreen />);
+
+    expect(StyleSheet.flatten(screen.getByText('app.title').props.style).fontFamily).not.toBe('Georgia');
+    expect(StyleSheet.flatten(screen.getByTestId('login-form-card').props.style).backgroundColor).toBe(
+      MD3LightTheme.colors.surface
+    );
+  });
+
+  it('renders the Why help affordance with the Material 3 button component', async () => {
+    await render(<LoginScreen />);
+
+    const why = screen.getByRole('button', { name: 'common.why' });
+    expect(hasAncestorComponent(why, PaperButton)).toBe(true);
   });
 
   it('uses the email keyboard and can reveal the masked password', async () => {
@@ -216,6 +255,20 @@ describe('RegisterScreen', () => {
     await fireEvent.press(screen.getByText('auth.loginLink'));
     expect(mockShowLogin).toHaveBeenCalledTimes(1);
   });
+});
+
+describe('Material 3 controls on auth screens (APP.PLATFORM.CHROME.001-R14/R18/R19, APP.TYPOGRAPHY.001-R1/R7)', () => {
+  const sourceRoot = path.resolve(__dirname, '../../../src/DealsSeeker.ReactNative/src/screens');
+
+  it.each(['LoginScreen.tsx', 'RegisterScreen.tsx'])(
+    'replaces raw Pressable and ad-hoc text sizing in %s',
+    (file) => {
+      const source = fs.readFileSync(path.join(sourceRoot, file), 'utf8');
+      expect(source).not.toMatch(/\bPressable\b/);
+      expect(source).not.toMatch(/font(Size|Weight):/u);
+      expect(source).not.toMatch(/landmarkFontFamily/u);
+    }
+  );
 });
 
 describe('authentication forms keyboard avoidance', () => {

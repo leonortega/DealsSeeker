@@ -1,8 +1,11 @@
-import { landmarkFontFamily } from '../utils/typography';
-import type { RefObject } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { type RefObject, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Searchbar, Surface, Text } from 'react-native-paper';
 import { useApp } from '../hooks/useApp';
+import { announceStatus } from '../utils/announce';
+import { platformTouchFloor } from '../utils/layout';
 import { NativeBottomSheet } from './NativeBottomSheet';
+import { PlatformTabIcon } from './PlatformTabIcon';
 import { restoreFocus } from '../utils/focusReturn';
 
 const TOPICS = [
@@ -26,10 +29,28 @@ export function HelpSheet({
   returnFocusRef?: RefObject<unknown>;
   topic?: HelpTopic;
 }) {
-  const { palette, t } = useApp();
+  const { t } = useApp();
+  const [query, setQuery] = useState('');
   const orderedTopics: readonly HelpTopic[] = topic
     ? [topic, ...TOPICS.filter((item) => item !== topic)]
     : TOPICS;
+  const term = query.trim().toLowerCase();
+  const matches = (item: HelpTopic) =>
+    `${t(`${item}.title`)} ${t(`${item}.body`)}`.toLowerCase().includes(term);
+  const visibleTopics = term ? orderedTopics.filter(matches) : orderedTopics;
+
+  useEffect(() => {
+    if (!visible) {
+      setQuery('');
+    }
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible || !term) {
+      return;
+    }
+    announceStatus(visibleTopics.length ? t(`${visibleTopics[0]}.title`) : t('help.noResults'));
+  }, [query, visible, term, t, visibleTopics.length]);
 
   function close() {
     onClose();
@@ -38,44 +59,70 @@ export function HelpSheet({
 
   return (
     <NativeBottomSheet visible={visible} onClose={close}>
-        <View
-          accessibilityViewIsModal
-          testID="help-sheet"
-          style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}
-        >
-          <Text style={[styles.title, { color: palette.ink }]}>{t('help.title')}</Text>
-          <ScrollView style={styles.list}>
-            {orderedTopics.map((topic) => (
-              <View key={topic} style={styles.topic}>
-                <Text style={[styles.topicTitle, { color: palette.ink }]}>{t(`${topic}.title`)}</Text>
-                <Text style={[styles.topicBody, { color: palette.inkMuted }]}>{t(`${topic}.body`)}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+      <Surface
+        accessibilityViewIsModal
+        elevation={1}
+        style={styles.sheet}
+        testID="help-sheet"
+      >
+        <Text variant="headlineSmall">{t('help.title')}</Text>
+        <Searchbar
+          accessibilityLabel={t('help.searchPlaceholder')}
+          icon={({ size, color }) => (
+            <PlatformTabIcon color={color} name="search" size={size} />
+          )}
+          onChangeText={setQuery}
+          placeholder={t('help.searchPlaceholder')}
+          style={styles.search}
+          testID="help-search"
+          value={query}
+        />
+        {term && visibleTopics.length === 0 ? (
+          <View style={styles.noResults}>
+            <Text variant="bodyMedium" accessibilityLiveRegion="polite">
+              {t('help.noResults')}
+            </Text>
+            <Button
+              accessibilityLabel={t('help.clearSearch')}
+              mode="text"
+              onPress={() => setQuery('')}
+              style={styles.clearAction}
+              testID="help-clear-search"
+            >
+              {t('help.clearSearch')}
+            </Button>
+          </View>
+        ) : null}
+        <ScrollView style={styles.list}>
+          {visibleTopics.map((item) => (
+            <View key={item} style={styles.topic} testID="help-topic">
+              <Text variant="titleMedium">{t(`${item}.title`)}</Text>
+              <Text variant="bodyMedium">{t(`${item}.body`)}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </Surface>
     </NativeBottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
   sheet: {
-    borderRadius: 24,
-    borderWidth: 1,
     flex: 1,
+    gap: 12,
     padding: 20,
     width: '100%',
   },
-  title: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 12,
+  search: {
+    marginBottom: 4,
+  },
+  noResults: {
+    gap: 4,
+    marginBottom: 8,
+  },
+  clearAction: {
+    alignSelf: 'flex-start',
+    minHeight: platformTouchFloor,
   },
   list: {
     flex: 1,
@@ -83,13 +130,5 @@ const styles = StyleSheet.create({
   topic: {
     gap: 4,
     marginBottom: 14,
-  },
-  topicTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  topicBody: {
-    fontSize: 14,
-    lineHeight: 20,
   },
 });

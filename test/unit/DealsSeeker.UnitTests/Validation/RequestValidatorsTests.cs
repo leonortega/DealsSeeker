@@ -121,11 +121,40 @@ public class RequestValidatorsTests
         {
             Images = [new OfferImageDto("gallery", "image/jpeg", 1, null, null, 0, null, new string('x', RequestLimits.MaxImageDataUrlLength + 1))]
         };
-        var noCollections = ValidAddOffer() with { Tags = null!, Images = null!, Location = null };
+        var noCollections = ValidAddOffer() with { Tags = null!, Images = null! };
 
         Assert.True(RequestValidators.Validate(tooMany).ContainsKey("images"));
         Assert.True(RequestValidators.Validate(tooLong).ContainsKey("images"));
         Assert.Empty(RequestValidators.Validate(noCollections));
+    }
+
+    [Fact]
+    public void ValidateAddOffer_ValidLocation_HasNoError()
+    {
+        var request = ValidAddOffer() with
+        {
+            Location = new OfferLocationDto("manual-confirmed", "Cafe", ValidPoint)
+        };
+
+        Assert.Empty(RequestValidators.Validate(request));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ValidateAddOffer_MissingLocation_HasPlainLanguageFieldError(bool omitWholeLocation)
+    {
+        var request = omitWholeLocation
+            ? ValidAddOffer() with { Location = null }
+            : ValidAddOffer() with
+            {
+                Location = new OfferLocationDto("manual-confirmed", "Cafe", null!)
+            };
+
+        var errors = RequestValidators.Validate(request);
+
+        Assert.True(errors.TryGetValue("location", out var messages));
+        Assert.Contains("Location is required", messages[0], StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

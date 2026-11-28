@@ -1,23 +1,34 @@
-import { platformTouchFloor } from '../utils/layout';
-import { landmarkFontFamily } from '../utils/typography';
-import { useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { type ElementRef, useRef, useState } from 'react';
+import { Image, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import {
+  Button,
+  HelperText,
+  Snackbar,
+  Surface,
+  Text,
+  TextInput,
+  TouchableRipple,
+  useTheme,
+} from 'react-native-paper';
+import { HelpSheet } from '../components/HelpSheet';
 import { useApp } from '../hooks/useApp';
 import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
-import { authFormStyles } from '../utils/authFormStyles';
-import { keyboardAvoidanceBehavior } from '../utils/layout';
+import { keyboardAvoidanceBehavior, platformTouchFloor } from '../utils/layout';
 
 const emailMaxLength = 254;
 const passwordMaxLength = 200;
 
 export function LoginScreen() {
-  const { api, enterGuestMode, palette, sessionNotice, setSession, showRegister, t } = useApp();
+  const { api, enterGuestMode, sessionNotice, setSession, showRegister, t } = useApp();
+  const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [helpVisible, setHelpVisible] = useState(false);
+  const helpRef = useRef<ElementRef<typeof TouchableRipple> | null>(null);
   const { status, reportStatus: setStatus } = useStatusNotice();
-  const displayedStatus = status ?? (sessionNotice ? t(sessionNotice) : null);
+  const sessionMessage = sessionNotice ? t(sessionNotice) : null;
 
   async function submit() {
     setStatus(null);
@@ -44,92 +55,131 @@ export function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior={keyboardAvoidanceBehavior(Platform.OS)}
-      style={[authFormStyles.root, { backgroundColor: palette.background }]}
-    >
-      <View style={[styles.brandCard, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
+    <KeyboardAvoidingView behavior={keyboardAvoidanceBehavior(Platform.OS)} style={styles.root}>
+      <Surface
+        elevation={0}
+        style={[styles.brandCard, { backgroundColor: theme.colors.surfaceVariant }]}
+      >
         <Image
           source={require('../../assets/brand/logo-icon.png')}
           style={styles.brandMark}
           testID="brand-mark"
         />
-        <Text style={[styles.brandTitle, { color: palette.ink }]}>{t('app.title')}</Text>
-        <Text style={[styles.brandSubtitle, { color: palette.inkMuted }]}>{t('app.subtitle')}</Text>
-      </View>
+        <Text variant="headlineSmall">{t('app.title')}</Text>
+        <Text variant="bodyMedium">{t('app.subtitle')}</Text>
+      </Surface>
 
-      <View style={[authFormStyles.formCard, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.formTitle, { color: palette.ink }]}>{t('auth.loginTitle')}</Text>
+      <Surface
+        elevation={1}
+        style={[styles.formCard, { backgroundColor: theme.colors.surface }]}
+        testID="login-form-card"
+      >
+        <Text variant="titleLarge">{t('auth.loginTitle')}</Text>
+        <Button
+          accessibilityLabel={t('common.why')}
+          contentStyle={styles.buttonContent}
+          mode="text"
+          onPress={() => setHelpVisible(true)}
+          style={styles.inlineAffordance}
+          textColor={theme.colors.primary}
+          touchableRef={helpRef as never}
+        >
+          {t('common.why')}
+        </Button>
         <TextInput
           accessibilityLabel={t('auth.email')}
           autoCapitalize="none"
           autoComplete="username"
           keyboardType="email-address"
-          textContentType="username"
+          label={t('auth.email')}
           maxLength={emailMaxLength}
+          mode="outlined"
           onChangeText={(value) => setEmail(value.slice(0, emailMaxLength))}
           placeholder={t('auth.email')}
-          placeholderTextColor={palette.inkMuted}
-          style={[authFormStyles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
+          textContentType="username"
           value={email}
         />
         <TextInput
           accessibilityLabel={t('auth.password')}
           autoComplete="current-password"
+          error={Boolean(status)}
+          label={t('auth.password')}
           maxLength={passwordMaxLength}
-          textContentType="password"
+          mode="outlined"
           onChangeText={(value) => setPassword(value.slice(0, passwordMaxLength))}
           placeholder={t('auth.password')}
-          placeholderTextColor={palette.inkMuted}
           secureTextEntry={!showPassword}
-          style={[authFormStyles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
+          textContentType="password"
           value={password}
         />
-        <Pressable
+        {status ? (
+          <HelperText accessibilityLiveRegion="polite" type="error" visible>
+            {status}
+          </HelperText>
+        ) : null}
+        <TouchableRipple
           accessibilityLabel={t(showPassword ? 'auth.hidePassword' : 'auth.showPassword')}
           accessibilityRole="button"
           accessibilityState={{ expanded: showPassword }}
           onPress={() => setShowPassword((shown) => !shown)}
-          style={styles.visibilityToggle}
+          style={styles.inlineAffordance}
         >
-          <Text style={[authFormStyles.link, { color: palette.accentText }]}>
+          <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
             {t(showPassword ? 'auth.hidePassword' : 'auth.showPassword')}
           </Text>
-        </Pressable>
-        <Pressable
+        </TouchableRipple>
+        <Button
           accessibilityLabel={t('auth.loginButton')}
-          accessibilityRole="button"
-          style={[authFormStyles.primaryButton, { backgroundColor: palette.accent }]}
+          contentStyle={styles.buttonContent}
+          mode="contained"
           onPress={() => void submit()}
         >
-          <Text style={[authFormStyles.primaryButtonLabel, { color: palette.onAccent }]}>
-            {t('auth.loginButton')}
-          </Text>
-        </Pressable>
-        <Pressable accessibilityLabel={t('auth.createAccountLink')} accessibilityRole="link" onPress={showRegister}>
-          <Text style={[authFormStyles.link, { color: palette.accentText }]}>{t('auth.createAccountLink')}</Text>
-        </Pressable>
-        <Pressable
+          {t('auth.loginButton')}
+        </Button>
+        <Button
+          accessibilityLabel={t('auth.createAccountLink')}
+          accessibilityRole="link"
+          mode="text"
+          onPress={showRegister}
+        >
+          {t('auth.createAccountLink')}
+        </Button>
+        <Button
           accessibilityLabel={t('auth.browseGuest')}
-          accessibilityRole="button"
+          mode="text"
           onPress={enterGuestMode}
         >
-          <Text style={[authFormStyles.link, { color: palette.accentText }]}>{t('auth.browseGuest')}</Text>
-        </Pressable>
-        {displayedStatus ? (
-          <Text accessibilityLiveRegion="polite" style={[authFormStyles.status, { color: palette.danger }]}>
-            {displayedStatus}
+          {t('auth.browseGuest')}
+        </Button>
+        <Snackbar
+          duration={Number.POSITIVE_INFINITY}
+          onDismiss={() => undefined}
+          visible={Boolean(sessionMessage)}
+        >
+          <Text variant="labelLarge" style={{ color: theme.colors.error }}>
+            {sessionMessage}
           </Text>
-        ) : null}
-      </View>
+        </Snackbar>
+      </Surface>
+      <HelpSheet
+        onClose={() => setHelpVisible(false)}
+        returnFocusRef={helpRef}
+        topic="help.contribute"
+        visible={helpVisible}
+      />
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
   brandCard: {
-    borderRadius: 28,
-    borderWidth: 1,
+    alignItems: 'flex-start',
+    gap: 8,
     marginBottom: 16,
     padding: 20,
   },
@@ -138,22 +188,14 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 64,
   },
-  brandTitle: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 30,
-    fontWeight: '700',
-    marginTop: 10,
+  formCard: {
+    gap: 12,
+    padding: 20,
   },
-  brandSubtitle: {
-    fontSize: 15,
-    marginTop: 8,
+  buttonContent: {
+    minHeight: platformTouchFloor,
   },
-  formTitle: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  visibilityToggle: {
+  inlineAffordance: {
     alignSelf: 'flex-start',
     justifyContent: 'center',
     minHeight: platformTouchFloor,

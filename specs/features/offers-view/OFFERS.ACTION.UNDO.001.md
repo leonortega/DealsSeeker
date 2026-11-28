@@ -1,14 +1,14 @@
 # Spec: `OFFERS.ACTION.UNDO.001`
 
 ## Metadata
-- **Title**: One undo action for offer favorites and availability votes
+- **Title**: One undo action for reversible offer actions
 - **Version**: `v1.0`
 - **Status**: Approved
 - **Context/View**: Offers View (list, feed and favorites rows) with Application Shell feedback
 - **Priority**: Medium
 
 ## Purpose
-Let a user reverse a just-completed favorite toggle or availability vote from the success feedback, while ensuring a vote that cannot be retracted is not submitted until the undo window has closed.
+Let a user reverse a just-completed favorite change (including removal in My Favorites) or availability vote from the success feedback, while ensuring a vote that cannot be retracted is not submitted until the undo window has closed.
 
 ## Preconditions
 - The user is authenticated and an offer is visible in the list, feed, or favorites.
@@ -30,7 +30,7 @@ Let a user reverse a just-completed favorite toggle or availability vote from th
 - `OFFERS.ACTION.UNDO.001-R9`: Undo shall not change the selected offer, the active query, or the filter, and shall not force navigation away from the current view.
 - `OFFERS.ACTION.UNDO.001-R10`: The feedback and its undo action shall use the active language and theme.
 - `OFFERS.ACTION.UNDO.001-R11`: Neither the feedback nor its undo action shall expose raw coordinate values.
-- `OFFERS.ACTION.UNDO.001-R12`: No undo action shall be offered for an error message or for an action other than a favorite toggle or an availability vote.
+- `OFFERS.ACTION.UNDO.001-R12`: No undo action shall be offered for an error message or for an action that cannot be reversed.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -88,7 +88,7 @@ Scenario: Leaving the view commits a pending vote and clears undo
   And the pending vote is submitted exactly once
 
 Scenario: No undo on errors or non-reversible actions
-  Given an action failed or an action other than a favorite toggle or vote succeeded
+  Given an action failed or an irreversible action succeeded
   When the status message is displayed
   Then no Undo action is presented with it
 

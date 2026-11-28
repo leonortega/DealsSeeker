@@ -100,14 +100,14 @@ describe('accessible control semantics (APP.ACCESSIBILITY.UX.002)', () => {
         query=""
       />
     );
-    expect(screen.getByRole('button', { name: 'offers.favorite' }).props.accessibilityState).toEqual({ selected: true });
-    await fireEvent.press(screen.getByRole('button', { name: 'offers.cardMoreActions' }));
-    expect(screen.getByRole('button', { name: /^offers\.action\.available/ }).props.accessibilityState).toEqual({ disabled: true });
+    expect(screen.getByRole('button', { name: 'offers.action.favorite' }).props.accessibilityState).toMatchObject({ selected: true });
+    await fireEvent.press(screen.getByRole('button', { name: 'offers.action.more' }));
+    expect(screen.getByRole('button', { name: /^offers\.action\.available/ }).props.accessibilityState).toMatchObject({ disabled: true });
   });
 
   it('exposes favorite selected state and labels photo dots in the immersive feed', async () => {
     await render(<ImmersiveOfferFeed {...baseFeedProps} />);
-    expect(screen.getByRole('button', { name: 'offers.action.favorite' }).props.accessibilityState).toEqual({ selected: true });
+    expect(screen.getByRole('button', { name: 'offers.action.favorite' }).props.accessibilityState).toMatchObject({ selected: true });
     expect(screen.getByRole('button', { name: 'offers.goToImage 1' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'offers.goToImage 2' })).toBeTruthy();
   });

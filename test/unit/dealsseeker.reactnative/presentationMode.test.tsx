@@ -1,7 +1,73 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import fs from 'fs';
+import path from 'path';
 import { StyleSheet } from 'react-native';
+import { Button, IconButton, Searchbar, Text as PaperText, TouchableRipple } from 'react-native-paper';
+
+function hasComponent(node: any, component: unknown): boolean {
+  const visit = (fiber: any): boolean => {
+    if (!fiber) {
+      return false;
+    }
+    if (fiber.type === component) {
+      return true;
+    }
+    return visit(fiber.child) || visit(fiber.sibling);
+  };
+  let top = node.unstable_fiber;
+  while (top?.return) {
+    top = top.return;
+  }
+  return visit(top);
+}
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 import { platformTouchFloor } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
+
+// Paper primitives keep testID/accessibilityRole/style so the authored assertions still hold.
+jest.mock('react-native-paper', () => {
+  const React = require('react');
+  const { View, Pressable, TextInput, Text } = require('react-native');
+  const basic = (name: string, Component: any, defaultRole?: string) => ({
+    children, label, testID, style, accessibilityRole, inputStyle, visible, ...rest
+  }: any) => {
+    if (visible === false) {
+      return null;
+    }
+    const content = children ?? label;
+    const rendered = typeof content === 'string' && Component !== Text
+      ? React.createElement(Text, null, content)
+      : content;
+    return React.createElement(Component, {
+      ...rest,
+      testID: testID ?? `m3-${name}`,
+      style: style ?? inputStyle,
+      accessibilityRole: accessibilityRole ?? defaultRole,
+    }, rendered);
+  };
+  const RadioButton = { Group: basic('radio-group', View, 'radiogroup') };
+  RadioButton.Android = basic('radio', Pressable, 'radio');
+  RadioButton.Item = RadioButton.Android;
+  return {
+    MD3LightTheme: { colors: {}, fonts: {} },
+    MD3DarkTheme: { colors: {}, fonts: {} },
+    DefaultTheme: { colors: {}, fonts: {} },
+    PaperProvider: ({ children }: any) => children,
+    useTheme: () => ({ colors: { primary: '#b85c38', onPrimary: '#ffffff', surface: '#fffdf8', surfaceVariant: '#f5ded6', background: '#fffdf8', onSurface: '#1f3128', onSurfaceVariant: '#53433e', outline: '#d7c9b5', error: '#ba1a1a' }, fonts: {} }),
+    Portal: ({ children }: any) => children,
+    Searchbar: basic('searchbar', TextInput),
+    Chip: basic('chip', Pressable, 'button'),
+    Text: basic('text', Text),
+    TouchableRipple: basic('touchable-ripple', Pressable),
+    Button: basic('button', Pressable, 'button'),
+    Card: basic('card', View),
+    Badge: basic('badge', View),
+    FAB: basic('fab', Pressable, 'button'),
+    RadioButton,
+    Snackbar: basic('snackbar', View),
+    IconButton: basic('iconbutton', Pressable, 'button'),
+    ProgressBar: basic('progressbar', View),
+  };
+});
 
 let mockImmersiveOffers = false;
 let mockIsPending = false;
@@ -217,5 +283,29 @@ describe('presentation mode switch', () => {
 
     await fireEvent.press(screen.getByRole('tab', { name: 'offers.mode.map' }));
     expect(mockCloseImmersiveOffers).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses Material 3 search, icon button, button and snackbar chrome (APP.PLATFORM.CHROME.001-R18)', async () => {
+    await render(<OffersScreen />);
+
+    expect(hasComponent(screen.root, Searchbar)).toBe(true);
+    expect(hasComponent(screen.root, IconButton)).toBe(true);
+    expect(hasComponent(screen.root, Button)).toBe(true);
+  });
+
+  it('uses a Material 3 ripple and type role for the presentation switch (APP.PLATFORM.CHROME.001-R18/R19, APP.TYPOGRAPHY.001-R7)', async () => {
+    const view = await render(<OffersScreen />);
+
+    expect(hasComponent(view.root, TouchableRipple)).toBe(true);
+    expect(hasComponent(view.root, PaperText)).toBe(true);
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '../../../src/DealsSeeker.ReactNative/src/components/PresentationModeSwitch.tsx'),
+      'utf8'
+    );
+    expect(source).toMatch(/useTheme/);
+    expect(source).toMatch(/rippleColor=/);
+    expect(source).not.toMatch(/android_ripple/);
+    expect(source).not.toMatch(/<Pressable/);
+    expect(source).not.toMatch(/fontSize/);
   });
 });

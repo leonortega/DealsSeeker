@@ -236,8 +236,10 @@ public sealed class InMemoryOfferService : IOfferService
             throw new InvalidOperationException("Authenticated user is required.");
         }
 
+        var location = request.Location?.Position
+            ?? throw new InvalidOperationException("Location is required.");
+
         var offerId = $"off-{Guid.NewGuid():N}"[..12];
-        var location = request.Location?.Position ?? new GeoPoint(40.7128, -74.0060);
 
         var normalizedTags = request.Tags
             .Select(NormalizeTag)
@@ -298,6 +300,9 @@ public sealed class InMemoryOfferService : IOfferService
             return Task.FromResult<OfferItemDto?>(null);
         }
 
+        var location = request.Location?.Position
+            ?? throw new InvalidOperationException("Location is required.");
+
         lock (_sync)
         {
             if (!_offers.TryGetValue(offerId, out var existing) ||
@@ -326,7 +331,7 @@ public sealed class InMemoryOfferService : IOfferService
                 Description = request.Description,
                 Tags = normalizedTags,
                 ImageUrls = imageUrls,
-                Location = request.Location?.Position ?? existing.Location
+                Location = location
             };
 
             _offers[offerId] = updated;

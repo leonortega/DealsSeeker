@@ -77,3 +77,68 @@ Feature: Search offers in Offers view
     When the search input is focused
     Then the input and the primary search action remain visible above the keyboard
     And taps on visible sheet controls reach those controls
+
+  Scenario: Coverage radius is shown in plain language
+    Given a coverage radius is selected
+    When the radius is displayed in the Offers view
+    Then it shall be shown as a human-readable distance in the active language
+    And no raw coordinate or internal identifier shall be shown
+
+  Scenario: Reuse a recent search
+    Given the user previously executed a successful search for "coffee"
+    And recent searches are displayed
+    When the user selects that recent search
+    Then the query control shall be populated with "coffee"
+    And the same search shall be executed
+
+  Scenario: Reuse a saved radius and filter preset
+    Given the user saved a preset with a 2500 m coverage radius
+    And saved presets are displayed
+    When the user selects the preset
+    Then the radius control shall show 2500 m
+    And offers shall be searched with that radius
+
+  Scenario: Recent searches do not replace typed input
+    Given recent searches and presets are displayed
+    When the user types a new query instead of selecting one
+    Then the typed query shall be used for the search
+    And no recent entry shall be applied
+
+  Scenario: Search field and chips follow Material 3 patterns
+    Given the user is on Offers view with recent searches and presets displayed
+    When the search controls are rendered
+    Then the search field shall follow a Material 3 search-field pattern
+    And recent searches and presets shall follow a Material 3 chip pattern with the same behavior
+
+  Scenario: Search pattern keeps the input cap and plain-language radius
+    Given the search field and a coverage radius control are displayed
+    When the user enters text or changes the radius
+    Then the 200-character cap shall still apply
+    And the radius shall remain a human-readable distance with no raw coordinate or identifier shown
+
+  Scenario: Long localized chip labels keep controls usable
+    Given recent-search chip labels are longer than the source text at large text scaling
+    When the search controls are rendered
+    Then the chips shall stay within the search pattern without hiding the input or action
+    And the input and primary search action shall remain visible above the keyboard
+
+  Scenario: Coverage options use Material 3 selection controls
+    Given the Offers coverage controls are displayed
+    When the distance options are rendered
+    Then each option uses a Material 3 radio/selection control
+    And no authored-view exception keeps a custom option in its place
+
+  Scenario: Coverage selection announces its exact selected state
+    Given the coverage options include a currently selected distance
+    When assistive technology reads the options
+    Then the group is exposed as a labelled mutually exclusive selection
+    And the selected option announces its selected state
+    And every other option announces an unselected state
+
+  Scenario: Coverage controls keep the touch floor at 200 percent font scale
+    Given the Android font scale is set to 200 percent
+    And a coverage distance label is longer than the source text
+    When the selection controls are rendered
+    Then each option keeps a 48 by 48 dp target
+    And the label reflows without covering another option
+    And no raw coordinate is announced

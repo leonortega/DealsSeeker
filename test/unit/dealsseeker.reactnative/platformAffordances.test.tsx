@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import fs from 'fs';
 import path from 'path';
 import { Platform, StyleSheet, View } from 'react-native';
+import { IconButton as PaperIconButton, TouchableRipple as PaperTouchableRipple } from 'react-native-paper';
 import { CreateOfferFab } from '../../../src/DealsSeeker.ReactNative/src/components/CreateOfferFab';
 import { ImmersiveOfferFeed } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveOfferFeed';
 import { OfferTopBar } from '../../../src/DealsSeeker.ReactNative/src/components/OfferTopBar';
@@ -14,7 +15,7 @@ jest.mock('@expo/vector-icons', () => {
   const { Text } = require('react-native');
   const glyph = (prefix: string) => ({ name, ...props }: { name: string }) =>
     React.createElement(Text, { ...props, testID: `${prefix}-${name}` });
-  return { Ionicons: glyph('ionicon'), MaterialIcons: glyph('materialicon') };
+  return { Ionicons: glyph('ionicon'), MaterialIcons: glyph('materialicon'), MaterialCommunityIcons: glyph('materialcommunityicon') };
 });
 
 const ReactNative = jest.requireActual<typeof import('react-native')>('react-native');
@@ -79,6 +80,23 @@ function glyph(id: string) {
   return screen.getByTestId(id, { includeHiddenElements: true });
 }
 
+function hasComponent(node: any, component: unknown): boolean {
+  const visit = (fiber: any): boolean => {
+    if (!fiber) {
+      return false;
+    }
+    if (fiber.type === component) {
+      return true;
+    }
+    return visit(fiber.child) || visit(fiber.sibling);
+  };
+  let top = node.unstable_fiber;
+  while (top?.return) {
+    top = top.return;
+  }
+  return visit(top);
+}
+
 function renderGallery() {
   return render(
     <ImmersiveOfferFeed
@@ -106,31 +124,46 @@ describe('platform-native touch affordances (APP.SHELL.002-R11)', () => {
     expect(touchFloor('ios')).toBe(44);
   });
 
-  it('uses native press feedback on the presentation switch', async () => {
-    await render(
+  it('uses Material 3 ripple feedback on the presentation switch', async () => {
+    const view = await render(
       <PresentationModeSwitch feedLabel="Feed" mapLabel="Map" onChange={jest.fn()} palette={palette} value="feed" />
     );
 
     expect(screen.getByRole('tab', { name: 'Feed' })).toBeTruthy();
+    expect(hasComponent(view.root, PaperTouchableRipple)).toBe(true);
     const source = fs.readFileSync(
       path.resolve(__dirname, '../../../src/DealsSeeker.ReactNative/src/components/PresentationModeSwitch.tsx'),
       'utf8'
     );
-    expect(source).toMatch(/android_ripple/);
+    expect(source).toMatch(/TouchableRipple/);
+    expect(source).toMatch(/rippleColor=/);
+    expect(source).not.toMatch(/android_ripple/);
+    expect(source).not.toMatch(/<Pressable/);
   });
 
   it('uses the one platform vocabulary for the Create action', async () => {
     await render(<CreateOfferFab label="Create" onPress={jest.fn()} palette={palette} />);
-    expect(glyph('ionicon-add-circle-outline')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Create' })).toBeTruthy();
 
     setPlatform('android');
     await render(<CreateOfferFab label="Create" onPress={jest.fn()} palette={palette} />);
-    expect(glyph('materialicon-add-circle-outline')).toBeTruthy();
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '../../../src/DealsSeeker.ReactNative/src/components/CreateOfferFab.tsx'),
+      'utf8'
+    );
+    expect(source).toMatch(/icon="plus"/);
   });
 
-  it('uses the one platform vocabulary for top-bar search without changing its action', async () => {
+  it('uses the Material 3 search icon button without changing its action', async () => {
     const onSearch = jest.fn();
-    await render(
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '../../../src/DealsSeeker.ReactNative/src/components/OfferTopBar.tsx'),
+      'utf8'
+    );
+    expect(source).toContain('icon="magnify"');
+    expect(source).not.toMatch(/<Pressable/);
+
+    const view = await render(
       <OfferTopBar
         headerControl={<View />}
         helpControl={<View />}
@@ -142,7 +175,8 @@ describe('platform-native touch affordances (APP.SHELL.002-R11)', () => {
         titleColor="#ffffff"
       />
     );
-    expect(glyph('ionicon-search-outline')).toBeTruthy();
+    expect(hasComponent(view.root, PaperIconButton)).toBe(true);
+    expect(screen.queryByTestId('ionicon-search', { includeHiddenElements: true })).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'Search' }));
     expect(onSearch).toHaveBeenCalledTimes(1);
 
@@ -159,14 +193,13 @@ describe('platform-native touch affordances (APP.SHELL.002-R11)', () => {
         titleColor="#ffffff"
       />
     );
-    expect(glyph('materialicon-search')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Search' }));
     expect(onSearch).toHaveBeenCalledTimes(2);
   });
 
   it.each([
     ['ios', 'ionicon-chevron-back-outline', 'ionicon-chevron-forward-outline'],
-    ['android', 'materialicon-chevron-left', 'materialicon-chevron-right'],
+    ['android', 'materialcommunityicon-arrow-left', 'materialcommunityicon-chevron-right'],
   ] as const)('uses %s gallery glyphs with labels and the touch floor intact', async (os, previous, next) => {
     setPlatform(os);
     await renderGallery();

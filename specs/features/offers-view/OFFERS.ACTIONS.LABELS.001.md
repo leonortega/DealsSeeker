@@ -2,13 +2,16 @@
 
 ## Metadata
 - **Title**: Shared Offer Action Vocabulary and Visible Labels
-- **Version**: `v1.3`
+- **Version**: `v1.5`
 - **Status**: Approved
 - **Context/View**: Offers View (immersive feed, offer cards, favorites and detail sheet)
 - **Priority**: Medium
 
+## Material 3 action components (Android phase)
+The authored-view exception for the immersive action rail is retired. Every offer action, including those in the rail, shall be rendered with Material 3 button or icon-button components while keeping the canonical labels, roles, states and order defined by this spec. The separate symbol-vocabulary exception of R10 remains governed by `APP.SYMBOL.VOCABULARY.001` and is not changed here.
+
 ## Purpose
-Keep offer actions self-explanatory on a phone and identical across surfaces without relying on memorized glyphs.
+Keep offer actions self-explanatory on a phone and identical across cards, feed, favorites and detail, with one canonical label, role, state and order for every action.
 
 ## Preconditions
 - The user is authenticated on the Offers view.
@@ -28,6 +31,12 @@ Keep offer actions self-explanatory on a phone and identical across surfaces wit
 - `OFFERS.ACTIONS.LABELS.001-R8`: No more than four actions shall be visible at once in an immersive action rail; every remaining action shall sit behind a single control visibly labelled `More` and shall keep its canonical order inside that control.
 - `OFFERS.ACTIONS.LABELS.001-R9`: No action shall change its label, glyph or relative order because of the surface that renders it.
 - `OFFERS.ACTIONS.LABELS.001-R10`: This canonical vocabulary governs the offer action rail only and is the sole exception to the platform symbol vocabulary; shell chrome and content glyphs outside the rail shall follow the one platform vocabulary defined by `APP.SYMBOL.VOCABULARY.001`, and a rail glyph shall not be reused as a second chrome vocabulary.
+- `OFFERS.ACTIONS.LABELS.001-R11`: For every action, the canonical vocabulary shall fix one visible label, one announced name, one announced role and one announced state; the favorite action shall announce whether the offer is saved, and the availability action shall announce the user's current vote.
+- `OFFERS.ACTIONS.LABELS.001-R12`: An action shall keep the same announced name, role and state on every surface; no surface shall supply a different assistive-technology value for the same action, and an action shall not be announced differently because it appears inside a disclosure.
+- `OFFERS.ACTIONS.LABELS.001-R13`: The canonical vocabulary shall also define the saved-offer removal action as `Remove favorite`; it shall appear only where removal is offered, shall be distinct from the favorite toggle, and shall keep the same label and announced state wherever it appears, as defined by `OFFERS.FAVORITES.001`.
+- `OFFERS.ACTIONS.LABELS.001-R14`: Every offer action control, including those in the immersive rail, shall be rendered with Material 3 button or icon-button components; no authored-view exception shall keep an action as a custom touchable control.
+- `OFFERS.ACTIONS.LABELS.001-R15`: Moving an action to a Material 3 component shall preserve its canonical visible label, glyph, announced name, role, state and relative order defined by R6–R13; the component shall not change which action is announced as selected or disabled.
+- `OFFERS.ACTIONS.LABELS.001-R16`: Each action component shall keep a touch target of at least 48 by 48 dp and shall reflow its caption at 200 percent font scale without clipping, as defined by `APP.ACCESSIBILITY.UX.001` and `APP.ADAPTIVE.UX.002`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -69,6 +78,38 @@ Scenario: Offer rail is the sole exception to the platform symbol vocabulary
   Then the rail uses only this spec's canonical vocabulary
   And the shell chrome uses the one platform symbol vocabulary
   And no rail glyph is reused as a second chrome vocabulary
+
+Scenario: Every action has one canonical label, role, state and order
+  Given an offer appears on a card, in the feed, in favorites and in the detail sheet
+  When assistive technology traverses the actions on each surface
+  Then each action announces the same canonical name, role and state everywhere
+  And the actions keep the same relative order on every surface
+
+Scenario: No surface-specific assistive-technology value
+  Given the same offer action is rendered on two different surfaces
+  When its announced name, role and state are read
+  Then no announced value differs between the surfaces
+  And the same holds when the action sits inside a disclosure
+
+Scenario: Saved-offer removal uses a canonical label and state
+  Given a saved offer is listed in My Favorites
+  When the removal action is rendered and read by assistive technology
+  Then it is labelled Remove favorite
+  And it is announced distinctly from the favorite toggle
+  And its announced state matches the canonical vocabulary
+
+Scenario: Immersive rail uses Material 3 action components
+  Given the immersive action rail is displayed
+  When the actions are rendered
+  Then each action is a Material 3 button or icon-button component
+  And no action remains an authored custom touchable control
+
+Scenario: Material 3 components keep canonical labels, roles and states
+  Given the Android font scale is set to 200 percent
+  And the same action appears in the rail and on a card
+  When assistive technology traverses both surfaces
+  Then each announces the same canonical name, role and state
+  And the action keeps a 48 by 48 dp target on both surfaces
 ```
 
 ## Example Inputs/Outputs
@@ -77,9 +118,13 @@ Scenario: Offer rail is the sole exception to the platform symbol vocabulary
 - Example input: a short landscape viewport with the same offer.
 - Expected output: captions are omitted; every action stays independently tappable and assistive-technology labelled.
 - Example input: the same offer shown in the feed, on a card, in favorites and in the detail sheet.
-- Expected output: identical labels, glyphs and order on every surface.
+- Expected output: identical labels, glyphs, announced states and order on every surface.
 - Example input: an immersive rail with six available actions.
 - Expected output: four visible actions plus one labelled `More` holding the other two.
+- Example input: a saved favorite in My Favorites with a removal action.
+- Expected output: the action reads `Remove favorite`, is distinct from the favorite toggle, and announces the same state as elsewhere.
+- Example input: the immersive rail rendered with Material 3 button and icon-button components.
+- Expected output: the same canonical labels, roles and selected states as a card or detail surface, with each action independently tappable.
 
 ## Edge Cases
 - Long localized labels at 200 percent text size.
@@ -88,14 +133,20 @@ Scenario: Offer rail is the sole exception to the platform symbol vocabulary
 - An offer where some actions are unavailable — the order of the remaining actions does not change.
 - A localized label for `More` that is longer than the source text.
 - A chrome control outside the rail that appears to reuse a rail glyph; it follows the platform vocabulary instead.
+- An action that moves into a disclosure at one text size and out of it at another — its announced name, role and state do not change.
+- A favorite that is saved in one surface and unsaved in another — each surface announces its actual state using the same vocabulary.
+- An action moved from an authored custom touchable control to a Material 3 component — its announced name, role and state do not change.
 
 ## Non-Functional Constraints
 - The waypoint accent stays reserved for the active path and the primary action.
 - Visible captions shall not introduce a second accent color.
+- No raw latitude or longitude value shall appear in any action label or announced state.
 
 ## Related Specs
+- `APP.BRAND.001`
 - `APP.ADAPTIVE.UX.002`
 - `APP.ACCESSIBILITY.UX.001`
+- `APP.ACCESSIBILITY.UX.002`
 - `OFFERS.FEED.IMMERSIVE.001`
 - `OFFERS.UX.002`
 - `APP.PERFORMANCE.001`
@@ -103,3 +154,5 @@ Scenario: Offer rail is the sole exception to the platform symbol vocabulary
 - `OFFERS.DETAIL.ACTIONS.001`
 - `APP.SYMBOL.VOCABULARY.001`
 - `APP.PLATFORM.CHROME.001`
+- `OFFERS.FAVORITES.001`
+- `OFFERS.GRID.CARDS.001`

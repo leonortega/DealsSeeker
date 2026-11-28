@@ -119,6 +119,7 @@ Scenario: Contextual help opens from Add Offer
 - Layout remains usable on mobile portrait screens.
 
 ## Related Specs
+- `APP.TYPOGRAPHY.001`
 - `ADD.OFFER.SEQUENCED.001`
 - `APP.PERFORMANCE.001`
 - `ADD.OFFER.IMAGE.001`

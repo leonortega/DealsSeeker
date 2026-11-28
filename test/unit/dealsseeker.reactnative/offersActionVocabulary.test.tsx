@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import * as ReactNative from 'react-native';
+import { Text as PaperText, TouchableRipple } from 'react-native-paper';
 import { ImmersiveOfferFeed } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveOfferFeed';
-import { OFFER_ACTION_ORDER } from '../../../src/DealsSeeker.ReactNative/src/components/OfferActionVocabulary';
+import { OFFER_ACTION_LABEL_KEYS, OFFER_ACTION_ORDER } from '../../../src/DealsSeeker.ReactNative/src/components/OfferActionVocabulary';
 
 jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({
   width: 420,
@@ -31,6 +32,34 @@ const offer = {
   isPromoted: false, isReported: false, isFavorite: false, distanceMeters: 100,
   hasCurrentUserVoted: false, positiveAvailabilityCount: 2, negativeAvailabilityCount: 1,
 } as never;
+
+function hasAncestor(instance: any, component: unknown): boolean {
+  let fiber = instance?.unstable_fiber;
+  while (fiber) {
+    if (fiber.type === component) {
+      return true;
+    }
+    fiber = fiber.return;
+  }
+  return false;
+}
+
+function hasComponent(node: any, component: unknown): boolean {
+  const visit = (fiber: any): boolean => {
+    if (!fiber) {
+      return false;
+    }
+    if (fiber.type === component) {
+      return true;
+    }
+    return visit(fiber.child) || visit(fiber.sibling);
+  };
+  let top = node.unstable_fiber;
+  while (top?.return) {
+    top = top.return;
+  }
+  return visit(top);
+}
 
 function renderFeed() {
   return render(
@@ -69,8 +98,22 @@ describe('canonical offer action vocabulary (OFFERS.ACTIONS.LABELS.001)', () => 
   it('renders the actions in canonical order', async () => {
     await renderFeed();
 
-    const order = screen.getAllByTestId(/^rail-action-/u).map((node) => node.props.testID);
+    const order = screen
+      .getAllByTestId(/^rail-action-/u)
+      .map((node) => node.props.testID)
+      .filter((testID: string) => /^rail-action-[a-z]+$/u.test(testID));
 
     expect(order).toEqual(OFFER_ACTION_ORDER.slice(0, 4).map((action) => `rail-action-${action}`));
+  });
+
+  it('uses Material 3 ripple surfaces and type roles without changing the rail vocabulary', async () => {
+    const view = await renderFeed();
+
+    expect(hasAncestor(screen.getByTestId('rail-action-directions'), TouchableRipple)).toBe(true);
+    expect(hasAncestor(screen.getByTestId('rail-action-favorite'), TouchableRipple)).toBe(true);
+    expect(hasComponent(view.root, PaperText)).toBe(true);
+    expect(screen.getByTestId('rail-action-directions').props.accessibilityLabel).toBe(
+      OFFER_ACTION_LABEL_KEYS.directions
+    );
   });
 });

@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text, TouchableRipple, useTheme } from 'react-native-paper';
 import { platformTouchFloor } from '../utils/layout';
 import type { Palette } from '../utils/theme';
 
@@ -12,7 +13,8 @@ export interface PresentationModeSwitchProps {
   palette: Palette;
 }
 
-export function PresentationModeSwitch({ feedLabel, mapLabel, onChange, palette, value }: PresentationModeSwitchProps) {
+export function PresentationModeSwitch({ feedLabel, mapLabel, onChange, value }: PresentationModeSwitchProps) {
+  const theme = useTheme();
   const options: { key: PresentationMode; label: string }[] = [
     { key: 'feed', label: feedLabel },
     { key: 'map', label: mapLabel },
@@ -21,24 +23,30 @@ export function PresentationModeSwitch({ feedLabel, mapLabel, onChange, palette,
   return (
     <View
       accessibilityRole="tablist"
-      style={[styles.container, { backgroundColor: palette.panel, borderColor: palette.border }]}
+      style={[styles.container, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
     >
       {options.map((option) => {
         const selected = option.key === value;
         return (
-          <Pressable
-            android_ripple={{ color: palette.accentMuted }}
-            key={option.key}
+          <TouchableRipple
             accessibilityLabel={option.label}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
+            key={option.key}
             onPress={() => onChange(option.key)}
-            style={[styles.segment, { backgroundColor: selected ? palette.accent : palette.panel }]}
+            rippleColor={theme.colors.primary}
+            style={[
+              styles.segment,
+              { backgroundColor: selected ? theme.colors.secondaryContainer : theme.colors.surface },
+            ]}
           >
-            <Text style={[styles.label, { color: selected ? palette.onAccent : palette.ink }]}>
+            <Text
+              style={{ color: selected ? theme.colors.onSecondaryContainer : theme.colors.onSurfaceVariant }}
+              variant="labelLarge"
+            >
               {option.label}
             </Text>
-          </Pressable>
+          </TouchableRipple>
         );
       })}
     </View>
@@ -62,11 +70,5 @@ const styles = StyleSheet.create({
     minHeight: platformTouchFloor,
     minWidth: 66,
     paddingHorizontal: 12,
-  },
-  label: {
-    flexShrink: 1,
-    fontSize: 14,
-    fontWeight: '800',
-    textAlign: 'center',
   },
 });

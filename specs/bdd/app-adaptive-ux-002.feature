@@ -1,19 +1,14 @@
-Feature: Adaptive touch, text, zoom, and motion behavior
-  As a user on a phone or tablet with non-default accessibility settings
-  I want controls, text, maps, captions and motion to adapt to my settings
+Feature: Adaptive touch, text, zoom, motion and font-scale verification
+  As a user on an Android phone, tablet or foldable with non-default accessibility settings
+  I want controls, text, maps, captions and motion to adapt up to 200 percent font
   So that I can complete every task without clipped content, hidden labels or unwanted animation
 
-  Scenario: Every control meets the iOS touch floor
-    Given any supported screen is displayed on iOS
-    When a tappable control is rendered
-    Then its touch target is at least 44 by 44 pt
-    And the control remains distinguishable from its neighbors
-
   Scenario: Every control meets the Android touch floor
-    Given any supported screen is displayed on Android
+    Given any supported screen is displayed
     When a tappable control is rendered
     Then its touch target is at least 48 by 48 dp
     And adjacent targets keep at least 8 dp of separation
+    And the control remains distinguishable from its neighbors
 
   Scenario: Body text survives large text scaling
     Given the system reading size is set to twice the default
@@ -48,7 +43,7 @@ Feature: Adaptive touch, text, zoom, and motion behavior
   Scenario: Reduced motion in both themes and landscape
     Given reduced motion is enabled and the device is in landscape
     When a surface is rendered in either theme
-    Then the platform touch floors and text scaling still hold
+    Then the 48 dp touch floor and text scaling still hold
 
   Scenario: Navigation labels scale without breaking
     Given the system reading size is set to 150 percent
@@ -59,6 +54,31 @@ Feature: Adaptive touch, text, zoom, and motion behavior
   Scenario: Tablet rail preserves touch floor and text scale
     Given the app is rendered at an expanded tablet width
     When the navigation rail or drawer is displayed with a large reading size
-    Then its targets keep the platform touch floors
+    Then its targets keep the 48 by 48 dp floor and 8 dp separation
     And its labels reflow without clipping
     And the compact bottom bar is not shipped unchanged
+
+  Scenario: 200 percent font scale verification
+    Given the Android font scale is set to 200 percent
+    When body text, captions and navigation labels are rendered on any surface
+    Then none are clipped or overlapped
+    And verification evidence captures the result
+
+  Scenario: Adaptivity holds at 200 percent in landscape and foldable postures
+    Given the font scale is 200 percent and reduced motion is enabled
+    When the app is used in landscape and in both foldable postures where a foldable is a target
+    Then touch floors, text reflow and reduced-motion behavior still hold
+    And every primary control remains reachable
+
+  Scenario: Material 3 components keep touch floors at 200 percent
+    Given the Android font scale is set to 200 percent
+    And app bar, coverage selection and offer actions are rendered as Material 3 components
+    When each target is measured
+    Then each keeps a 48 by 48 dp target and 8 dp separation
+
+  Scenario: Material 3 overflow keeps actions labelled
+    Given an offer action rail uses a Material 3 component for its overflow control
+    And the viewport is too short for inline captions
+    When the rail is rendered at 150 percent text
+    Then secondary actions remain behind one visibly labelled disclosure
+    And every action stays independently tappable and labelled

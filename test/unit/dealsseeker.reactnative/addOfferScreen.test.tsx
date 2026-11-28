@@ -1,5 +1,20 @@
+import fs from 'fs';
+import path from 'path';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+import { Button as PaperButton } from 'react-native-paper';
 import { AddOfferScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
+
+function hasAncestorComponent(node: any, component: unknown): boolean {
+  let current = node?.unstable_fiber?.return ?? null;
+  while (current) {
+    if (current.type === component) {
+      return true;
+    }
+    current = current.return;
+  }
+  return false;
+}
 
 let mockOverlayRoute: { name: string; offerId?: string } | null = { name: 'add-offer' };
 const mockCloseOverlay = jest.fn();
@@ -12,6 +27,8 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
   useApp: () => ({
     api: { createOffer: mockCreateOffer, updateOffer: mockUpdateOffer, getMyOfferDraft: mockGetMyOfferDraft },
     closeOverlay: mockCloseOverlay,
+    closeSheet: jest.fn(),
+    openSheet: jest.fn(),
     openTab: mockOpenTab,
     overlayRoute: mockOverlayRoute,
     palette: {
@@ -43,6 +60,13 @@ jest.mock('expo-location', () => ({
 
 
 describe('AddOfferScreen', () => {
+  it('opens contextual help from the Why affordance without losing the draft', async () => {
+    await render(<AddOfferScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'common.why' }));
+    expect(screen.getByTestId('help-sheet')).toBeTruthy();
+    expect(screen.getByTestId('add-step-progress')).toBeTruthy();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockOverlayRoute = { name: 'add-offer' };
@@ -162,6 +186,18 @@ describe('AddOfferScreen', () => {
     expect(screen.getByTestId('add-error-photo')).toBeTruthy();
   });
 
+  it('uses a Material progress indicator and dialog for guarded discard', async () => {
+    await render(<AddOfferScreen />);
+    expect(screen.getByTestId('add-progress-indicator')).toBeTruthy();
+
+    await goToDetails();
+    await fireEvent.changeText(screen.getByPlaceholderText('add.descriptionPlaceholder'), 'draft');
+    await fireEvent.press(screen.getByRole('button', { name: 'add.cancel' }));
+
+    expect(screen.getByTestId('add-discard-dialog', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText('add.discardBody')).toBeTruthy();
+  });
+
   it('offers related tags as opt-in suggestions with an explicit Add action', async () => {
     await render(<AddOfferScreen />);
     await goToDetails();
@@ -241,4 +277,38 @@ describe('AddOfferScreen', () => {
     await render(<AddOfferScreen />);
     expect(screen.getByText('add.editTitle')).toBeTruthy();
   });
+
+  it('uses the Material 3 type scale and shape tokens instead of authored brand rules', async () => {
+    await render(<AddOfferScreen />);
+
+    expect(StyleSheet.flatten(screen.getByText('add.title').props.style).fontFamily).not.toBe('Georgia');
+    expect(StyleSheet.flatten(screen.getByTestId('add-step-photo').props.style).borderRadius).not.toBe(28);
+  });
+
+  it('renders labelled contribution actions with the Material 3 button component', async () => {
+    await render(<AddOfferScreen />);
+
+    expect(hasAncestorComponent(screen.getByTestId('add-take-photo'), PaperButton)).toBe(true);
+    expect(hasAncestorComponent(screen.getByTestId('add-upload'), PaperButton)).toBe(true);
+
+    await goToDetails();
+    await fireEvent.changeText(screen.getByPlaceholderText('add.descriptionPlaceholder'), 'coffee ');
+    const chip = await screen.findByTestId('add-tag-chip');
+    expect(hasAncestorComponent(chip, PaperButton)).toBe(true);
+    expect(hasAncestorComponent(screen.getByTestId('add-tags-why'), PaperButton)).toBe(true);
+  });
+});
+
+describe('Material 3 controls on contribution screens (APP.PLATFORM.CHROME.001-R14/R18/R19, APP.TYPOGRAPHY.001-R1/R7)', () => {
+  const sourceRoot = path.resolve(__dirname, '../../../src/DealsSeeker.ReactNative/src/screens');
+
+  it.each(['AddOfferScreen.tsx', 'SuggestionsScreen.tsx'])(
+    'replaces raw Pressable and ad-hoc text sizing in %s',
+    (file) => {
+      const source = fs.readFileSync(path.join(sourceRoot, file), 'utf8');
+      expect(source).not.toMatch(/\bPressable\b/);
+      expect(source).not.toMatch(/font(Size|Weight):/u);
+      expect(source).not.toMatch(/landmarkFontFamily/u);
+    }
+  );
 });

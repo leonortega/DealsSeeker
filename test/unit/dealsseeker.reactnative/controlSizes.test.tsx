@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react-native';
-import { StyleSheet, View } from 'react-native';
-import { AppFooterBar, footerBarAppearance } from '../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar';
+import { MD3LightTheme } from 'react-native-paper';
+import { StyleSheet } from 'react-native';
+import { AppFooterBar } from '../../../src/DealsSeeker.ReactNative/src/components/AppFooterBar';
 import { platformTouchFloor } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
-import { resolveTheme } from '../../../src/DealsSeeker.ReactNative/src/utils/theme';
 import { ImmersiveOfferFeed } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveOfferFeed';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
 import type { OfferItemDto } from '../../../src/DealsSeeker.ReactNative/src/api/types';
@@ -87,40 +87,38 @@ describe('touch target and label floors', () => {
     mockSearchOffers.mockResolvedValue({ offers: [], businesses: [] });
   });
 
-  it('keeps the night footer palette fixed rather than theme-driven', async () => {
+  it('uses the Material 3 bar surface and active indicator from the Paper theme', async () => {
     await render(
       <AppFooterBar items={[{ ...footerItems[0], active: true }, footerItems[1]]} />
     );
 
-    const wrapper = hostElements().find(
-      (node) => node.type === 'View' && styleOf(node).flexDirection === 'row'
+    expect(screen.getByTestId('bottom-navigation-bar')).toBeTruthy();
+    expect(screen.getByTestId('footer-tab-account').props.accessibilityState).toEqual(
+      expect.objectContaining({ selected: true, disabled: false })
     );
-    expect(styleOf(wrapper as never)).toMatchObject({
-      backgroundColor: '#121417',
-      borderColor: '#71717a',
-      borderRadius: 28,
-    });
-    expect(styleOf(screen.getByRole('button', { name: 'Account' })).backgroundColor).toBe('#5a2e20');
-    expect(styleOf(screen.getByText('👤')).color).toBe('#ff8a65');
+    const styles = hostElements().map((node) => styleOf(node));
+    expect(styles.some((style) => style.backgroundColor === MD3LightTheme.colors.elevation.level2)).toBe(true);
+    expect(styles.some((style) => style.backgroundColor === MD3LightTheme.colors.secondaryContainer)).toBe(true);
+    const authoredColors = new Set([palette.accent, palette.border, palette.card, palette.ink]);
+    expect(styles.some((style) => authoredColors.has(String(style.backgroundColor)))).toBe(false);
   });
 
-  it('exposes the authored night footer surface to the native tab bar', () => {
-    const appearance = footerBarAppearance(resolveTheme('dark', 'dark', 'tangerine'));
-    expect(appearance).toEqual({
-      backgroundColor: '#121417',
-      borderColor: '#71717a',
-      activeTintColor: '#ff8a65',
-      inactiveTintColor: '#a1a1aa',
-    });
+  it('uses Material 3 navigation roles for the RNP bar', async () => {
+    await render(<AppFooterBar items={footerItems} />);
+
+    const wrapper = screen.getByTestId('bottom-navigation-bar-content-wrapper');
+    expect(wrapper.props.accessibilityRole).toBe('tablist');
+    const labels = screen.getAllByText(/Account|Suggestions/, { includeHiddenElements: true });
+    expect(labels.length).toBeGreaterThanOrEqual(2);
   });
 
   it('lets footer labels wrap and follow the system reading size', async () => {
     await render(<AppFooterBar items={footerItems} />);
 
-    const label = screen.getByText('Suggestions');
+    const label = screen.getAllByText('Suggestions', { includeHiddenElements: true })[0];
     expect(label.props.numberOfLines).toBeUndefined();
     expect(label.props.maxFontSizeMultiplier).toBeUndefined();
-    expect(styleOf(label).fontSize).toBeGreaterThanOrEqual(10);
+    expect(styleOf(label).flexShrink).toBeGreaterThan(0);
   });
 
   it('uses pill corners for the search and filter controls', async () => {
@@ -143,46 +141,43 @@ describe('touch target and label floors', () => {
     expect(StyleSheet.flatten(scroll.props.contentContainerStyle).paddingBottom).toBeGreaterThanOrEqual(88);
   });
 
-  it('reserves its own slot for the docked create action', async () => {
-    await render(
-      <AppFooterBar items={footerItems} createAction={<View testID="create-slot" />} />
-    );
-
-    expect(screen.getByTestId('create-slot')).toBeTruthy();
-  });
-
-  it('keeps the footer compact and centered on wide screens', async () => {
+  it('keeps the Create action outside the navigation destinations', async () => {
     await render(<AppFooterBar items={footerItems} />);
 
-    const wrapper = hostElements().find(
-      (node) => node.type === 'View' && styleOf(node).flexDirection === 'row'
-    );
-    expect(styleOf(wrapper as never).maxWidth).toBeGreaterThan(0);
-    expect(styleOf(wrapper as never).alignSelf).toBe('center');
+    expect(screen.getAllByTestId(/^footer-tab-/)).toHaveLength(2);
+    expect(screen.queryByText('Create')).toBeNull();
+  });
+
+  it('renders one Material 3 bar with a single tablist', async () => {
+    await render(<AppFooterBar items={footerItems} />);
+
+    expect(screen.getAllByTestId('bottom-navigation-bar')).toHaveLength(1);
+    expect(screen.getByTestId('bottom-navigation-bar-content-wrapper').props.accessibilityRole).toBe('tablist');
   });
 
   it('gives every footer tab the platform touch floor', async () => {
     await render(<AppFooterBar items={footerItems} />);
 
     for (const item of footerItems) {
-      const tab = screen.getByRole('button', { name: item.label });
+      const tab = screen.getByTestId(`footer-tab-${item.key}`);
       expect(styleOf(tab).minHeight).toBeGreaterThanOrEqual(platformTouchFloor);
+      expect(styleOf(tab).minWidth).toBeGreaterThanOrEqual(platformTouchFloor);
     }
   });
 
   it('separates adjacent footer tabs by at least 8 units', async () => {
     await render(<AppFooterBar items={footerItems} />);
 
-    const wrapper = hostElements().find(
-      (node) => node.type === 'View' && styleOf(node).flexDirection === 'row'
-    );
-    expect(styleOf(wrapper as never).gap).toBeGreaterThanOrEqual(8);
+    const tabs = footerItems.map((item) => screen.getByTestId(`footer-tab-${item.key}`));
+    const separation = tabs.reduce((total, tab) => total + Number(styleOf(tab).marginHorizontal ?? 0), 0);
+    expect(separation).toBeGreaterThanOrEqual(8);
   });
 
   it('renders footer labels at a legible size', async () => {
     await render(<AppFooterBar items={footerItems} />);
 
-    expect(styleOf(screen.getByText('Account')).fontSize).toBeGreaterThanOrEqual(10);
+    const label = screen.getAllByText('Account', { includeHiddenElements: true })[0];
+    expect(styleOf(label).fontSize).toBeGreaterThanOrEqual(10);
   });
 
   it('gives the coverage control the platform touch floor without showing five chips', async () => {

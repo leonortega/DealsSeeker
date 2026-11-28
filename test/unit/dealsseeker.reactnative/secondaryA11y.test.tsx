@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { AccessibilityInfo } from 'react-native';
+import { MD3LightTheme } from 'react-native-paper';
 import { SuggestionsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/SuggestionsScreen';
 import { OfferReportSheet } from '../../../src/DealsSeeker.ReactNative/src/components/OfferReportSheet';
 import { FavoritesScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/FavoritesScreen';
@@ -93,6 +94,6 @@ describe('secondary surface accessibility (APP.ACCESSIBILITY.UX.002/003)', () =>
     await render(<SuggestionsScreen />);
     await fireEvent.press(screen.getByRole('button', { name: 'suggestions.submit' }));
     const status = await screen.findByText('suggestions.failed');
-    expect(StyleSheet.flatten(status.props.style).color).toBe('#8d2f2f');
+    expect(StyleSheet.flatten(status.props.style).color).toBe(MD3LightTheme.colors.error);
   });
 });

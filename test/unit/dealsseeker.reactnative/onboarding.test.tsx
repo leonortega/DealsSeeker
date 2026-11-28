@@ -1,9 +1,29 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+import { Button, Text as PaperText } from 'react-native-paper';
 import { FirstRunSheet } from '../../../src/DealsSeeker.ReactNative/src/components/FirstRunSheet';
+import { materialTypeScale } from '../../../src/DealsSeeker.ReactNative/src/utils/theme';
 
 const mockOpenSheet = jest.fn();
 const mockCloseSheet = jest.fn();
 const mockRestoreFocus = jest.fn();
+
+function hasComponent(node: any, component: unknown): boolean {
+  const visit = (fiber: any): boolean => {
+    if (!fiber) {
+      return false;
+    }
+    if (fiber.type === component) {
+      return true;
+    }
+    return visit(fiber.child) || visit(fiber.sibling);
+  };
+  let top = node.unstable_fiber;
+  while (top?.return) {
+    top = top.return;
+  }
+  return visit(top);
+}
 
 jest.mock('../../../src/DealsSeeker.ReactNative/src/utils/focusReturn', () => ({
   restoreFocus: (...args: unknown[]) => mockRestoreFocus(...args),
@@ -76,5 +96,28 @@ describe('first-run guidance (APP.ONBOARD.001)', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: 'onboarding.gotIt' }));
     expect(mockRestoreFocus).toHaveBeenCalledWith(returnFocusRef);
+  });
+
+  it('maps guidance text to Material type roles and keeps a square touch floor', async () => {
+    await render(<FirstRunSheet onDismiss={jest.fn()} visible />);
+
+    const title = StyleSheet.flatten(screen.getByText('onboarding.title').props.style);
+    const body = StyleSheet.flatten(screen.getByText('onboarding.body').props.style);
+    const actionLabel = StyleSheet.flatten(screen.getByText('onboarding.gotIt').props.style);
+    const action = StyleSheet.flatten(screen.getByTestId('first-run-action-container').props.style);
+
+    expect(title.fontSize).toBe(materialTypeScale.headlineSmall.fontSize);
+    expect(body.fontSize).toBe(materialTypeScale.bodyMedium.fontSize);
+    expect(body.lineHeight).toBe(materialTypeScale.bodyMedium.lineHeight);
+    expect(actionLabel.fontSize).toBe(materialTypeScale.labelLarge.fontSize);
+    expect(action.minHeight).toBeGreaterThanOrEqual(44);
+    expect(action.minWidth).toBe(action.minHeight);
+  });
+
+  it('uses Material 3 button and text primitives for the guidance surface', async () => {
+    const view = await render(<FirstRunSheet onDismiss={jest.fn()} visible />);
+
+    expect(hasComponent(view.root, Button)).toBe(true);
+    expect(hasComponent(view.root, PaperText)).toBe(true);
   });
 });

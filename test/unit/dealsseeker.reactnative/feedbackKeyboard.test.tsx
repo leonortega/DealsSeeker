@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { OfferReportSheet } from '../../../src/DealsSeeker.ReactNative/src/components/OfferReportSheet';
 import { SuggestionsScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/SuggestionsScreen';
 
@@ -52,6 +53,23 @@ describe('feedback forms keyboard access', () => {
     expect(screen.getByTestId('suggestions-keyboard-view')).toBeTruthy();
   });
 
+  it('uses labelled Material fields with a live helper counter', async () => {
+    await render(<SuggestionsScreen />);
+
+    expect(screen.getByTestId('suggestions-message-counter')).toBeTruthy();
+    expect(screen.getByLabelText('suggestions.message').props.value).toBe('');
+    expect(screen.getByLabelText('suggestions.contact').props.value).toBe('');
+  });
+
+  it('presents the form on a Material 3 card with no authored pill shape', async () => {
+    await render(<SuggestionsScreen />);
+
+    const cardStyle = StyleSheet.flatten(screen.getByTestId('suggestions-card').props.style);
+    expect(cardStyle.borderRadius).not.toBe(28);
+    expect(cardStyle.borderColor).toBeUndefined();
+    expect(cardStyle.borderWidth).toBeUndefined();
+  });
+
   it('keeps suggestion success visible until the explicit Done control (APP.SHELL.001-R7)', async () => {
     jest.useFakeTimers();
     await render(<SuggestionsScreen />);
@@ -83,7 +101,14 @@ describe('feedback forms keyboard access', () => {
     };
 
     await render(<OfferReportSheet draft={draft as never} onClose={onClose} visible />);
-    await fireEvent.press(screen.getByText('reports.submit'));
+    await fireEvent.press(screen.getByRole('radio', { name: 'reports.reason.closed' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'reports.submit' }));
+    await act(async () => {
+      jest.advanceTimersByTime(250);
+    });
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'reports.confirmSend', includeHiddenElements: true })
+    );
     await screen.findByText('reports.success');
 
     await act(async () => {

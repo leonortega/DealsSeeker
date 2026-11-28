@@ -1,75 +1,57 @@
-Feature: Brand logo set and placement
+Feature: Material 3 default application identity
   As a DealsSeeker user
-  I want one consistent authored logo across every surface
-  So that the app does not show placeholder brand imagery
+  I want one consistent Material 3 identity across every surface
+  So that no authored brand overlay or placeholder imagery appears
 
-  Scenario: Splash and login use the authored symbol mark
+  Scenario: Material 3 defaults define identity on every surface
+    Given the platform Material 3 component library is active
+    When a startup, splash, login, navigation or action surface is rendered
+    Then its identity treatment follows the Material 3 component defaults
+    And no authored brand overlay restyles those defaults
+
+  Scenario: Application name stays localized theme-aware text
     Given the user has not reached the authenticated shell
     When the splash or login view is rendered
-    Then the symbol mark is displayed as the application identity
-    And the localized application name is shown as text
-    And no placeholder letter glyph is displayed
+    Then the localized application name is shown as text
+    And the text follows the active Material 3 color and type roles
 
-  Scenario: Immersive top bar uses the authored symbol mark
-    Given the authenticated user is on the immersive offers feed
-    When the top bar is rendered
-    Then the symbol mark is displayed as the application identity
-    And the application name text follows the viewport rule
+  Scenario: No placeholder identity is shown
+    Given any application surface is rendered
+    When identity imagery is displayed
+    Then no placeholder letter glyph or placeholder image is shown
 
-  Scenario: Native icon surfaces use the authored logo set
-    Given the application is installed on a mobile device or opened on the web
-    When the app icon, its adaptive layers or the favicon are rendered
-    Then they are derived from the authored logo set
-    And no placeholder icon is displayed
-
-  Scenario: Native startup image uses the stacked lockup
+  Scenario: Startup surfaces present one identity
     Given the application is launching
-    When the native startup image is rendered
-    Then the stacked lockup is shown
+    When the startup or splash surface is rendered
+    Then a single application identity is displayed
+    And no duplicate title, subtitle or second identity mark is displayed
 
-  Scenario: Standard Offers view shows the mark beside the presentation switch
-    Given the authenticated user is on the standard Offers (map) view
-    When the presentation switch is rendered
-    Then the symbol mark is displayed immediately to its left
-    And the mark is not part of the switch itself
-
-  Scenario: Map-view controls mirror the feed top bar
-    Given the authenticated user is on the standard Offers (map) view
-    When the top controls are rendered
-    Then the symbol mark sits in a rounded tile at the left
-    And the presentation switch is centered and the help control is at the right
-    And the controls row is pinned at the same top position as the immersive feed top bar
-    And the row aligns to the same screen edges as the immersive feed top bar
-    And the symbol mark and help control are not clipped by the screen edges
-
-  Scenario: Map-view header reuses the feed header structure without search
-    Given the authenticated user is on the standard Offers (map) view
-    When the top bar is rendered
-    Then it uses the same slots and spacing as the immersive feed top bar
-    And the search slot keeps its footprint
-    And no search control is displayed
-
-  Scenario: Map-view title clears the controls row
-    Given the authenticated user is on the standard Offers (map) view
-    When the view content is rendered
-    Then the title starts below the controls row with a clear gap
-    And no top-bar control is clipped by the screen edges
-
-  Scenario: Native launcher icon uses the symbol with contrast
-    Given the application is installed on an Android device
-    When the launcher icon and its adaptive layers are rendered
-    Then the symbol mark appears in a contrasting color on the brand background
-    And the adaptive foreground contrasts with the adaptive background
-
-  Scenario: Splash uses only the stacked lockup
-    Given the application is showing its in-app splash view
-    When the splash is rendered
-    Then only the stacked lockup is displayed as the brand identity
-    And no second logo or symbol tile is displayed
-    And no separate application-title, subtitle or `DealsSeeker mobile` text is displayed
-
-  Scenario: Offer actions use the authored glyph set
-    Given an offer card or immersive action rail is displayed
+  Scenario: Action glyphs use Material Symbols
+    Given an offer card or action rail is displayed
     When its actions are rendered
-    Then each action uses an authored SVG glyph
-    And no emoji is used as an action icon
+    Then each control uses a verified Material Symbol
+    And no emoji, legacy icon set or authored glyph set is used as an action icon
+
+  Scenario: Top bars use Material 3 structure without authored mark placement
+    Given the user is on a standard or immersive Offers presentation
+    When the top bar is rendered
+    Then it uses the Material 3 app bar pattern with its default control structure
+    And no authored mark tile or mark-beside-switch placement is required
+
+  Scenario: Identity survives seed and appearance changes
+    Given any of the three palette seeds in light or dark appearance
+    When identity text and artwork are rendered
+    Then they use the active Material 3 roles
+    And no second accent or second typeface is introduced
+
+  Scenario: Narrow viewport keeps a single identity
+    Given an immersive presentation on a narrow viewport
+    When the top bar is rendered
+    Then exactly one application identity is shown
+    And no control is clipped by the screen edges
+
+  Scenario: Retired brand rules do not return as overrides
+    Given a Material 3 component with a default color, shape and elevation
+    When a former brand rule would change that default
+    Then the Material 3 default governs
+    And the waypoint accent, night footer and authored glyph set are not reapplied

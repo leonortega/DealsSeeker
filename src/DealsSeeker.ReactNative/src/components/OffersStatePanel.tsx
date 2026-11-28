@@ -1,5 +1,6 @@
+import { StyleSheet } from 'react-native';
+import { Button, Card, Text, useTheme } from 'react-native-paper';
 import { platformTouchFloor } from '../utils/layout';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Palette } from '../utils/theme';
 
 export interface OffersStatePanelProps {
@@ -10,24 +11,33 @@ export interface OffersStatePanelProps {
   palette: Palette;
 }
 
-export function OffersStatePanel({ actionLabel, hint, onAction, palette, title }: OffersStatePanelProps) {
+export function OffersStatePanel({ actionLabel, hint, onAction, title }: OffersStatePanelProps) {
   const hasAction = Boolean(actionLabel && onAction);
+  const theme = useTheme();
 
   return (
-    <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-      <Text style={[styles.title, { color: palette.ink }]}>{title}</Text>
-      <Text style={[styles.hint, { color: palette.inkMuted }]}>{hint}</Text>
+    <Card style={[styles.panel, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+      <Text variant="titleMedium" style={[styles.title, { color: theme.colors.onSurface }]}>
+        {title}
+      </Text>
+      <Text variant="bodyMedium" style={[styles.hint, { color: theme.colors.onSurfaceVariant }]}>
+        {hint}
+      </Text>
       {hasAction ? (
-        <Pressable
+        <Button
           accessibilityLabel={actionLabel}
           accessibilityRole="button"
+          buttonColor={theme.colors.primary}
+          labelStyle={styles.actionLabel}
+          mode="contained"
           onPress={onAction}
-          style={[styles.action, { backgroundColor: palette.accent }]}
+          style={styles.action}
+          textColor={theme.colors.onPrimary}
         >
-          <Text style={[styles.actionLabel, { color: palette.onAccent }]}>{actionLabel}</Text>
-        </Pressable>
+          {actionLabel}
+        </Button>
       ) : null}
-    </View>
+    </Card>
   );
 }
 

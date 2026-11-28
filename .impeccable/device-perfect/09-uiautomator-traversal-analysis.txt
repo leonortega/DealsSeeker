@@ -1,0 +1,16 @@
+﻿
+=== 06-phone-light-account-font100-uiautomator.xml ===
+clickable nodes: 4
+Create [168 x 168] @ (864,1452)
+¯ƒ┐, My Account [360 x 146] @ (0,1630)
+¯ñÅ, Suggestions [360 x 146] @ (360,1630)
+¯òƒ, Offers [360 x 146] @ (720,1630)
+issues: 0
+
+=== 08-phone-font200-standard-uiautomator.xml ===
+clickable nodes: 4
+Create [168 x 168] @ (864,1452)
+¯ƒ┐, My Account [360 x 146] @ (0,1630)
+¯ñÅ, Suggestions [360 x 146] @ (360,1630)
+¯òƒ, Offers [360 x 146] @ (720,1630)
+issues: 0

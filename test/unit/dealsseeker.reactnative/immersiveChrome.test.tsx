@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { Platform, StyleSheet } from 'react-native';
+import { Button as PaperButton, Text as PaperText, TextInput as PaperTextInput, TouchableRipple } from 'react-native-paper';
 import { ImmersiveActionCaption } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveActionGlyphs';
 import { ImmersiveFeedTabs } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveFeedTabs';
 import { ImmersiveOfferFeed } from '../../../src/DealsSeeker.ReactNative/src/components/ImmersiveOfferFeed';
@@ -25,6 +26,23 @@ jest.mock('../../../src/DealsSeeker.ReactNative/src/hooks/useApp', () => ({
     t: (key: string) => key,
   }),
 }));
+
+function hasComponent(node: any, component: unknown): boolean {
+  const visit = (fiber: any): boolean => {
+    if (!fiber) {
+      return false;
+    }
+    if (fiber.type === component) {
+      return true;
+    }
+    return visit(fiber.child) || visit(fiber.sibling);
+  };
+  let top = node.unstable_fiber;
+  while (top?.return) {
+    top = top.return;
+  }
+  return visit(top);
+}
 
 const offer = {
   offerId: 'o1',
@@ -91,6 +109,14 @@ describe('immersive search sheet keyboard avoidance (OFFERS.SEARCH.KEYBOARD.001)
     expect(screen.getByTestId('native-bottom-sheet').props.snapPoints).toEqual(['65%', '90%']);
     expect(screen.getByLabelText('offers.searchPlaceholder').props.maxLength).toBe(200);
   });
+
+  it('uses Material 3 Paper text, input and button primitives in the search sheet', async () => {
+    const view = await renderSearchSheet();
+
+    expect(hasComponent(view.root, PaperText)).toBe(true);
+    expect(hasComponent(view.root, PaperTextInput)).toBe(true);
+    expect(hasComponent(view.root, PaperButton)).toBe(true);
+  });
 });
 
 describe('immersive chrome over the fixed dark backdrop', () => {
@@ -99,6 +125,13 @@ describe('immersive chrome over the fixed dark backdrop', () => {
 
     const label = screen.getByText('offers.tabViewAll');
     expect(StyleSheet.flatten(label.props.style).color).toBe('#f7f1e8');
+  });
+
+  it('renders feed tabs with Material 3 ripple and text primitives', async () => {
+    const view = await render(<ImmersiveFeedTabs activeTab="viewAll" onChangeTab={jest.fn()} />);
+
+    expect(hasComponent(view.root, TouchableRipple)).toBe(true);
+    expect(hasComponent(view.root, PaperText)).toBe(true);
   });
 
   it('renders action captions in a light color even when the light theme is active', async () => {

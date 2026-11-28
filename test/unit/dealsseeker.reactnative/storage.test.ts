@@ -76,4 +76,36 @@ describe('session and preference storage on native', () => {
     expect(store.get('dealseeker.language.usr-1')).toBe('es');
     expect(store.get('dealseeker.navigation.usr-1')).toBe('car');
   });
+
+  it('round-trips an Add Offer draft snapshot and stores it as JSON', async () => {
+    const snapshot = {
+      description: 'fresh coffee',
+      tags: ['coffee'],
+      images: [],
+      location: { source: 'search', label: 'Main Street', position: { lat: 1.25, lng: 2.5 } },
+      locationQuery: 'Main Street',
+      locationConfirmed: true,
+      mapCenter: { lat: 1.25, lng: 2.5 },
+    };
+
+    await storage.saveAddOfferDraft(snapshot);
+
+    expect(await storage.loadAddOfferDraft()).toEqual(snapshot);
+    expect(JSON.parse(store.get('dealseeker.addOffer.draft') ?? 'null')).toEqual(snapshot);
+  });
+
+  it('clears an unreadable Add Offer draft instead of returning broken data', async () => {
+    store.set('dealseeker.addOffer.draft', '{broken');
+
+    expect(await storage.loadAddOfferDraft()).toBeNull();
+    expect(store.has('dealseeker.addOffer.draft')).toBe(false);
+  });
+
+  it('clears the stored Add Offer draft for good', async () => {
+    await storage.saveAddOfferDraft({ description: 'draft', tags: [], images: [], location: null });
+
+    await storage.clearAddOfferDraft();
+
+    expect(await storage.loadAddOfferDraft()).toBeNull();
+  });
 });

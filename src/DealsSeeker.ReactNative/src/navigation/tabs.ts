@@ -1,10 +1,10 @@
 import type { MainTab } from '../api/types';
-import type { NavIconName } from '../components/NavIcon';
+import type { PlatformTabIconName } from '../components/PlatformTabIcon';
 
 export interface TabDestination {
   name: MainTab;
   labelKey: string;
-  icon: NavIconName;
+  icon: PlatformTabIconName;
 }
 
 export const MAIN_TAB_DESTINATIONS: readonly TabDestination[] = [

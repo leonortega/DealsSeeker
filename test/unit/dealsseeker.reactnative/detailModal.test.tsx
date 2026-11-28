@@ -1,7 +1,25 @@
 import { fireEvent, render, screen, within } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
+import { Button, IconButton, MD3LightTheme, TouchableRipple } from 'react-native-paper';
 import { OfferDetailModal } from '../../../src/DealsSeeker.ReactNative/src/components/OfferDetailModal';
 import { platformTouchFloor } from '../../../src/DealsSeeker.ReactNative/src/utils/layout';
+
+function hasComponent(node: any, component: unknown): boolean {
+  const visit = (fiber: any): boolean => {
+    if (!fiber) {
+      return false;
+    }
+    if (fiber.type === component) {
+      return true;
+    }
+    return visit(fiber.child) || visit(fiber.sibling);
+  };
+  let top = node.unstable_fiber;
+  while (top?.return) {
+    top = top.return;
+  }
+  return visit(top);
+}
 
 const mockOnClose = jest.fn();
 const mockOnFavorite = jest.fn();
@@ -58,7 +76,25 @@ const offer = {
   imageUrl: 'https://example.test/a.png',
   imageUrls: ['https://example.test/a.png', 'https://example.test/b.png'],
   distanceMeters: 500,
+  isFavorite: false,
+  isPromoted: false,
+  isReported: false,
 } as never;
+
+function hasAncestor(instance: any, component: unknown): boolean {
+  let fiber = instance?.unstable_fiber;
+  while (fiber) {
+    if (fiber.type === component) {
+      return true;
+    }
+    fiber = fiber.return;
+  }
+  return false;
+}
+
+function hasVariant(instance: any, variant: keyof typeof MD3LightTheme.fonts): boolean {
+  return StyleSheet.flatten(instance.props.style).fontSize === MD3LightTheme.fonts[variant].fontSize;
+}
 
 function hostTypes(node: unknown): string[] {
   if (!node || typeof node !== 'object') {
@@ -130,6 +166,33 @@ describe('OfferDetailModal', () => {
     expect(mockOnFavorite).toHaveBeenCalledWith(expect.objectContaining({ offerId: 'o1' }));
     expect(mockOnDirections).toHaveBeenCalledTimes(1);
     expect(mockOnComments).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the detail sheet actions with Material 3 buttons (OFFERS.ACTIONS.LABELS.001-R14)', async () => {
+    const view = await renderModal();
+
+    expect(hasComponent(view.root, Button)).toBe(true);
+  });
+
+  it('announces the canonical names, roles and states in canonical order (OFFERS.ACTIONS.LABELS.001-R11)', async () => {
+    await renderModal();
+
+    const directions = screen.getByTestId('offer-detail-action-directions');
+    const favorite = screen.getByTestId('offer-detail-action-favorite');
+    const comments = screen.getByTestId('offer-detail-action-comments');
+    expect(directions.props.accessibilityLabel).toBe('offers.action.directions');
+    expect(favorite.props.accessibilityLabel).toBe('offers.action.favorite');
+    expect(comments.props.accessibilityLabel).toBe('offers.action.comments');
+    for (const control of [directions, favorite, comments]) {
+      expect(control.props.accessibilityRole).toBe('button');
+    }
+    expect(favorite.props.accessibilityState).toMatchObject({ selected: false });
+    const order = [directions, favorite, comments].map((node) => node.props.testID);
+    expect(order).toEqual([
+      'offer-detail-action-directions',
+      'offer-detail-action-favorite',
+      'offer-detail-action-comments',
+    ]);
   });
 
   it('shows a photo counter and navigates between photos', async () => {
@@ -249,6 +312,30 @@ describe('OfferDetailModal', () => {
 
     expect(screen.getAllByTestId('native-bottom-sheet')).toHaveLength(1);
     expect(mockRestoreFocus).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses Material 3 icon buttons for gallery navigation and ripple surfaces for slides and actions (APP.PLATFORM.CHROME.001-R18)', async () => {
+    await renderModal();
+
+    expect(hasAncestor(screen.getByLabelText('offers.previousImage'), IconButton)).toBe(true);
+    expect(hasAncestor(screen.getByLabelText('offers.nextImage'), IconButton)).toBe(true);
+    expect(hasAncestor(screen.getAllByTestId('offer-gallery-slide')[0], TouchableRipple)).toBe(true);
+    expect(hasAncestor(screen.getByTestId('offer-detail-action-directions'), TouchableRipple)).toBe(true);
+  });
+
+  it('uses a labelled Material 3 button to close the fullscreen viewer', async () => {
+    const view = await renderModal();
+    await fireEvent.press(view.getAllByTestId('offer-gallery-slide')[0]);
+
+    expect(screen.getByRole('button', { name: 'offers.fullscreenClose' })).toBeTruthy();
+    expect(hasAncestor(screen.getByTestId('offer-fullscreen-close'), Button)).toBe(true);
+  });
+
+  it('renders detail copy with Material 3 type roles (APP.TYPOGRAPHY.001-R7)', async () => {
+    await renderModal();
+
+    expect(hasVariant(screen.getAllByText('Main Street Cafe')[0], 'headlineSmall')).toBe(true);
+    expect(hasVariant(screen.getByText('Coffee and snacks'), 'bodyMedium')).toBe(true);
   });
 
   it('tracks both stacked sheets in the shared sheet accounting', async () => {

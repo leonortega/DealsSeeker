@@ -115,6 +115,7 @@ Scenario: A route changes while a sheet is open
 - Brand visuals shall not change between the two systems.
 
 ## Related Specs
+- `APP.POLISH.UX.001`
 - `APP.PLATFORM.CHROME.001`
 - `APP.BOTTOM_SHEET.001`
 - `APP.ONBOARD.001`

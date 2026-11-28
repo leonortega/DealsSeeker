@@ -162,17 +162,25 @@ public class InMemoryOfferServiceTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.AddAsync(request, " ", TestContext.Current.CancellationToken));
     }
 
-    [Fact]
-    public async Task AddAsync_UsesDefaultLocation_WhenMissing()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AddAsync_RejectsMissingLocation_WithoutStoringDefault(bool omitWholeLocation)
     {
         var service = new InMemoryOfferService();
-        var request = NewOffer() with { Location = null, Images = [] };
+        var request = omitWholeLocation
+            ? NewOffer() with { Location = null, Images = [] }
+            : NewOffer() with
+            {
+                Location = new OfferLocationDto("manual-confirmed", "My Cafe", null!),
+                Images = []
+            };
 
-        var created = await service.AddAsync(request, "usr-1", TestContext.Current.CancellationToken);
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.AddAsync(request, "usr-1", TestContext.Current.CancellationToken));
 
-        Assert.Equal(40.7128, created.Location.Lat);
-        Assert.Equal(-74.0060, created.Location.Lng);
-        Assert.Equal("User Submitted Business", created.BusinessName);
+        Assert.Contains("Location is required", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(await service.GetOwnedOffersAsync("usr-1", TestContext.Current.CancellationToken));
     }
 
     [Fact]

@@ -1,11 +1,13 @@
-import { StatusBar, StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { BackNavigationHandler } from './src/components/BackNavigationHandler';
 import { LoadingOverlay } from './src/components/LoadingOverlay';
 import { AppProvider } from './src/context/AppContext';
+import { useMemo, type ReactNode } from 'react';
+import { PaperProvider } from 'react-native-paper';
 import { useApp } from './src/hooks/useApp';
-import { resolveRouteChrome } from './src/utils/theme';
+import { resolvePaperTheme, resolveRouteChrome } from './src/utils/theme';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { RegisterScreen } from './src/screens/RegisterScreen';
@@ -49,14 +51,27 @@ function AppRoot() {
   return isAuthenticated || guestMode ? <AppNavigator /> : <AuthRoot />;
 }
 
+
+/** Bridges the authored palette worlds into React Native Paper's MD3 theme. */
+function AppPaperProvider({ children }: { children: ReactNode }) {
+  const { preferences } = useApp();
+  const systemScheme = useColorScheme();
+  const theme = useMemo(
+    () => resolvePaperTheme(preferences.themeMode, systemScheme, preferences.themeWorld),
+    [preferences.themeMode, preferences.themeWorld, systemScheme]
+  );
+  return <PaperProvider theme={theme}>{children}</PaperProvider>;
+}
 export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <AppProvider>
-          <AppStatusBar />
-          <BackNavigationHandler />
-          <AppRoot />
+          <AppPaperProvider>
+            <AppStatusBar />
+            <BackNavigationHandler />
+            <AppRoot />
+          </AppPaperProvider>
         </AppProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

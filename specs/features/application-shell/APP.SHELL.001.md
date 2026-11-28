@@ -2,10 +2,13 @@
 
 ## Metadata
 - **Title**: Global Navigation and Session-Aware Landing View
-- **Version**: `v2.8`
+- **Version**: `v2.9`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
+
+## Material 3 app bars (Android phase)
+The platform-native header exception for standard tab destinations is retired. Each standard tab destination shall present a Material 3 app bar that names the destination and exposes its actions; the immersive presentation remains headerless as defined by `APP.SHELL.005`. This route-level app bar is distinct from the global application header retired in v2.1.
 
 ## Navigation restructure (v2.0)
 Requirement R3 is superseded by `OFFERS.MODE.SWITCH.001`: the startup default is the `Feed` presentation selected in the Offers controls, and presentation switching is no longer a bottom-footer button. R1's section list remains authoritative for the shared bottom navigation; Add Offer is reached from a single floating action button per `OFFERS.NAV.ADD.001`.
@@ -59,6 +62,9 @@ Define global app sections and startup landing behavior based on session state.
 - `APP.SHELL.001-R33`: While in a guest session, contribution actions — adding an offer, favoriting, voting, commenting and reporting — shall be gated behind sign-in as defined in `OFFERS.GUEST.001`, and attempting one shall prompt sign-in without discarding the current query, coverage radius, presentation mode or open offer.
 - `APP.SHELL.001-R34`: The guest session state shall be plainly indicated in the Offers view, shall not be restored as an authenticated session after relaunch, and shall not expose raw `lat` or `lng` values.
 - `APP.SHELL.001-R35`: A guest shall have access to the unfiltered no-offers guidance of `OFFERS.EMPTY.001` in both the standard and immersive presentations.
+- `APP.SHELL.001-R36`: Each standard tab destination shall present a Material 3 app bar that shows the destination title and exposes the destination's actions; no platform-native header exception shall apply in the Android phase.
+- `APP.SHELL.001-R37`: The immersive offers presentation shall remain headerless, keeping only its own top bar and controls as defined by `APP.SHELL.005`; the Material 3 app bar requirement of R36 shall not add a second top bar to it.
+- `APP.SHELL.001-R38`: The Material 3 app bar shall preserve the name, role and state of each of its controls, the 48 by 48 dp touch floor and 200 percent font reflow, as defined by `APP.ACCESSIBILITY.UX.001` and `APP.ADAPTIVE.UX.002`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -237,6 +243,26 @@ Scenario: One stable loading indicator in the feed
   Then only one loading indicator shall be visible
   And no second inline progress indicator shall run after it
   And showing or hiding the indicator shall not move the feed controls
+
+Scenario: Standard views show a Material 3 app bar
+  Given the authenticated user is on a standard tab destination
+  When the shell chrome is rendered
+  Then a Material 3 app bar shall name that destination
+  And the app bar shall expose the destination's actions
+  And no platform-native header exception shall apply
+
+Scenario: Immersive presentation stays headerless under the app bar policy
+  Given the authenticated user switches to the immersive offers feed
+  When the shell chrome is rendered
+  Then no app bar shall be rendered for the immersive presentation
+  And only the immersive top bar shall remain
+
+Scenario: Material 3 app bar preserves touch and reading-size floors
+  Given the Android font scale is set to 200 percent
+  And a standard tab destination has a long localized title and an action
+  When the Material 3 app bar is rendered
+  Then the title shall reflow without clipping
+  And each action shall keep a 48 by 48 dp target and its name, role and state
 ```
 
 ## Example Inputs/Outputs
@@ -246,6 +272,8 @@ Scenario: One stable loading indicator in the feed
 - Expected output: `Offers` view rendered first.
 - Example input: Unauthenticated user selects `Browse nearby without an account`.
 - Expected output: read-only Offers view rendered with a plain guest indication and no authenticated session.
+- Example input: standard Offers view with a localized title and a search action on Android.
+- Expected output: a Material 3 app bar titled Offers with the action tappable and announced, and no platform-native header.
 
 ## Edge Cases
 - Persisted session token is invalid or expired at startup; startup shall offer `Login` and `Browse nearby without an account`.
@@ -256,6 +284,7 @@ Scenario: One stable loading indicator in the feed
 - Repeated back invocations shall walk back through visited views and shall not close the application while a previous in-app view remains.
 - Back invoked while a view is briefly replacing its content shall still resolve to the previous visited view rather than closing the application.
 - A very long localized footer label shall still fit within two lines and inside the footer bounds without an ellipsis.
+- A long localized destination title at 200 percent font scale shall reflow in the Material 3 app bar without hiding the title or its actions.
 
 ## Non-Functional Constraints
 - First visible shell and startup view should render without blocking on network responses.
@@ -263,6 +292,8 @@ Scenario: One stable loading indicator in the feed
 - Blocking loading animation should be lightweight and consistent across light/dark themes.
 
 ## Related Specs
+- `APP.PLATFORM.CHROME.001`
+- `APP.TYPOGRAPHY.001`
 - `APP.HELP.CONTEXTUAL.001`
 - `APP.BRAND.001`
 - `APP.SHELL.005`
@@ -288,3 +319,5 @@ Scenario: One stable loading indicator in the feed
 - `APP.SHELL.004`
 - `OFFERS.GUEST.001`
 - `OFFERS.EMPTY.001`
+- `OFFERS.FEED.IMMERSIVE.001`
+- `APP.ACCESSIBILITY.UX.001`

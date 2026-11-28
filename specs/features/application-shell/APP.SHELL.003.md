@@ -2,13 +2,16 @@
 
 ## Metadata
 - **Title**: Native Route Behavior for Overlay Destinations
-- **Version**: `v1.3`
+- **Version**: `v1.4`
 - **Status**: Approved
 - **Context/View**: Application Shell
 - **Priority**: High
 
+## Material 3 route headers (Android phase)
+The platform-native header exception is retired. Overlay destinations and standard tab destinations shall present a Material 3 app bar with a readable title, a back affordance where the route supports back, and the route's actions. The immersive presentation remains headerless as defined by `APP.SHELL.005`. Modal presentation, dismissal safeguards and view-state preservation are unchanged.
+
 ## Purpose
-Define that overlay destinations use platform-native modal behavior while their content and dismissal safeguards remain brand-defined and behavior-preserving.
+Define that overlay destinations use platform-native modal behavior while their header is a Material 3 app bar and their content and dismissal safeguards remain behavior-preserving.
 
 ## Preconditions
 - The authenticated user is on any standard view.
@@ -25,7 +28,9 @@ Define that overlay destinations use platform-native modal behavior while their 
 - `APP.SHELL.003-R5`: Cancelling a modal shall return the user to the underlying view with its state preserved; this includes the offers search query and radius.
 - `APP.SHELL.003-R6`: The Favorites destination shall use native stack push/pop behavior with brand-styled content, not modal behavior.
 - `APP.SHELL.003-R7`: No platform-native close control shall be added inside the brand UI beyond what the operating system itself provides.
-- `APP.SHELL.003-R8`: Overlay destinations shall use the platform-native stack header with a readable title and standard back affordance as defined by `APP.PLATFORM.CHROME.001`.
+- `APP.SHELL.003-R8`: Overlay destinations shall present a Material 3 app bar with a readable title and a standard back affordance, as defined by `APP.PLATFORM.CHROME.001`; no platform-native header exception shall apply in the Android phase.
+- `APP.SHELL.003-R9`: Standard tab destinations shall present a Material 3 app bar that shows the route title and exposes the route's actions; no platform-native header shall be substituted for it in the Android phase.
+- `APP.SHELL.003-R10`: The Material 3 app bar shall keep its title readable, its back affordance reachable where one applies, and its actions independently tappable with their names, roles and states unchanged, including at 200 percent font scale.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -52,12 +57,32 @@ Scenario: Favorites uses native stack behavior
   When the user closes Favorites with system back
   Then native pop behavior shall return to the previous view
   And brand-styled content shall remain visible
-  And the platform-native header for the standard view shall be displayed
+  And the Material 3 app bar for the standard view shall be displayed
 
 Scenario: No foreign close control appears in the brand UI
   Given an overlay destination is open
   When the modal content is rendered
   Then no platform-native close button shall be drawn inside the brand-styled content
+
+Scenario: Overlay destinations use a Material 3 app bar
+  Given the authenticated user opens an overlay destination
+  When the app bar is rendered
+  Then a Material 3 app bar shall show the destination title and a back affordance
+  And no platform-native header shall be rendered for that destination
+
+Scenario: Standard tab destinations show a Material 3 app bar
+  Given the authenticated user is on a standard tab destination
+  When the app bar is rendered
+  Then it shall be a Material 3 app bar
+  And it shall show the route title and the route's actions
+  And no platform-native header exception shall apply
+
+Scenario: App bar stays usable at 200 percent font scale
+  Given the Android font scale is set to 200 percent
+  And a standard tab destination has a long localized title and an action
+  When the Material 3 app bar is rendered
+  Then the title shall reflow without clipping
+  And the action shall remain independently tappable with its name, role and state unchanged
 ```
 
 ## Example Inputs/Outputs
@@ -71,6 +96,7 @@ Scenario: No foreign close control appears in the brand UI
 - The device rotates while a modal is open; the modal shall remain open and brand-styled.
 - A platform cannot provide swipe-down dismissal; system back shall still follow the cancel path.
 - A low-memory event recreates the underlying view; returning from a modal shall not lose the specified view state.
+- A long localized route title at 200 percent font scale shall reflow in the Material 3 app bar without hiding the title or its actions.
 
 ## Non-Functional Constraints
 - Modal transitions shall respect the OS animation setting without changing brand visuals.
@@ -88,3 +114,4 @@ Scenario: No foreign close control appears in the brand UI
 - `APP.LIFECYCLE.001`
 - `APP.ACCESSIBILITY.UX.004`
 - `APP.BOTTOM_SHEET.001`
+- `APP.ACCESSIBILITY.UX.002`

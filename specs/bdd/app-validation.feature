@@ -49,3 +49,26 @@ Feature: Input validation and standard error response
     When the user types or pastes text beyond that maximum
     Then the input retains exactly the maximum number of characters
     And the excess text shall not be sent in any request
+
+  Scenario: Invalid input is flagged while the user types
+    Given a client text input with a field-level rule
+    When the user types a value that violates the rule
+    Then an inline indication shall appear next to the field immediately
+    And the indication shall explain how to correct the value in plain language
+
+  Scenario: Inline indication clears when the value is corrected
+    Given an inline indication is shown for a field
+    When the user corrects the value so that it satisfies the rule
+    Then the indication shall clear without any further input
+
+  Scenario: Inline indication is associated with its field
+    Given an inline indication is shown for a field
+    When assistive technology reads that field
+    Then the indication shall be announced with the field
+    And focus shall not move because of the indication
+
+  Scenario: Submission still applies authoritative validation
+    Given a client input shows no inline indication for its current value
+    When the user submits the value and the API rejects it under R1
+    Then the standard error response shall be shown
+    And no data shall be written or changed

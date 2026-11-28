@@ -130,3 +130,9 @@
 | `OFFERS.ACTION.UNDO.001` | `bdd/offers-action-undo.feature` | N/A | N/A |
 | `APP.LOCATION.UNAVAILABLE.001` | `bdd/app-location-unavailable.feature` | N/A | N/A |
 | `APP.HELP.CONTEXTUAL.001` | `bdd/app-help-contextual.feature` | N/A | N/A |
+| `APP.HELP.SEARCH.001` | `bdd/app-help-search.feature` | N/A | N/A |
+| `APP.DRAFT.RECOVERY.001` | `bdd/app-draft-recovery.feature` | N/A | N/A |
+| `OFFERS.SEARCH.RECENTS.001` | `bdd/offers-search-recents.feature` | N/A | N/A |
+| `REPORTS.REASONS.001` | `bdd/reports-reasons.feature` | N/A | N/A |
+| `APP.PERFORMANCE.PROFILE.001` | `bdd/app-performance-profile.feature` | N/A | N/A |
+| `APP.ADAPTIVE.LANDSCAPE.001` | `bdd/app-adaptive-landscape.feature` | N/A | N/A |

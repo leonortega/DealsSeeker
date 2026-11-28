@@ -2,13 +2,13 @@
 
 ## Metadata
 - **Title**: Native Bottom-Sheet Behavior for Overlays
-- **Version**: `v2.0`
+- **Version**: `v2.1`
 - **Status**: Approved
 - **Context/View**: Application Shell, Offers overlays
 - **Priority**: Low
 
 ## Purpose
-Give the application's focused sub-tasks one native bottom-sheet interaction — drag, snap and swipe dismissal — keep their input usable above the on-screen keyboard, and keep all visible content brand-styled and identical on both platforms.
+Give the application's focused sub-tasks one native bottom-sheet interaction — drag, snap and swipe dismissal — using a Material 3 bottom-sheet pattern with a 48 dp drag handle while keeping the single sheet modality, their input usable above the on-screen keyboard, and all visible content brand-styled and identical on both platforms.
 
 ## Preconditions
 - The user has opened an overlay surface (help, offer detail, comments or search).
@@ -32,6 +32,8 @@ Give the application's focused sub-tasks one native bottom-sheet interaction —
 - `APP.BOTTOM_SHEET.001-R12`: While a sheet is open, the native bottom navigation and its Create action shall not render above the sheet, and every sheet control including its primary action shall remain visible and reachable.
 - `APP.BOTTOM_SHEET.001-R13`: While a sheet is visible, the focused text input and the sheet's primary action shall stay above the on-screen keyboard or IME, and a tap on any visible sheet control shall be delivered to that control rather than swallowed by the keyboard-avoidance behavior, as defined by `OFFERS.SEARCH.KEYBOARD.001`.
 - `APP.BOTTOM_SHEET.001-R14`: This sheet system shall be the only modality used for focused sub-tasks; no sub-task shall introduce a separate full-screen modal or a second overlay pattern, as defined by `APP.MODALITY.UNIFICATION.001`.
+- `APP.BOTTOM_SHEET.001-R15`: Overlay sheets shall follow a Material 3 bottom-sheet pattern with a visible drag handle of at least 48 dp, keeping the one sheet modality defined by R14.
+- `APP.BOTTOM_SHEET.001-R16`: The Material 3 sheet pattern shall not change snap points, swipe or discard behavior, keyboard avoidance, chrome stacking, system Back behavior, brand styling or modality defined by R1–R14.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -112,6 +114,24 @@ Scenario: Every focused sub-task uses the one sheet system
   When each is opened
   Then each uses this sheet system
   And none introduces a separate full-screen modal or a second overlay pattern
+
+Scenario: Sheets use a Material 3 pattern with a 48 dp drag handle
+  Given the user opens an overlay surface
+  When the sheet is rendered
+  Then it shall follow a Material 3 bottom-sheet pattern with a visible drag handle of at least 48 dp
+  And it shall rest at the same snap point with the same brand styling
+
+Scenario: The sheet pattern keeps one modality and dismissal rules
+  Given an overlay sheet with unsaved edits is open
+  When the user drags the handle down
+  Then the existing discard confirmation shall be shown
+  And no second sheet or full-screen modal shall be introduced
+
+Scenario: Large text and a tall keyboard keep the handle usable
+  Given large text scaling and a tall keyboard on a short viewport
+  When the sheet is visible
+  Then the 48 dp drag handle and snap points shall remain usable
+  And the input and primary action shall stay above the keyboard
 ```
 
 ## Example Inputs/Outputs
@@ -119,6 +139,8 @@ Scenario: Every focused sub-task uses the one sheet system
 - Expected output: Help closes through its normal dismissal path; no visual restyle.
 - Example input: open the immersive search sheet and focus its input while the keyboard is shown.
 - Expected output: the input and primary search action stay above the keyboard and taps reach them.
+- Example input: open the immersive search sheet and view its top edge.
+- Expected output: a Material 3 sheet with a 48 dp drag handle at the same snap point, with brand styling unchanged.
 
 ## Edge Cases
 - A drag that ends before the dismissal threshold — the sheet returns to its snap point.
@@ -128,10 +150,11 @@ Scenario: Every focused sub-task uses the one sheet system
 - A sheet opened while the native bottom navigation is visible, in either presentation, with a long localized label.
 - A tall keyboard with a suggestion strip on a short viewport — the input and primary action remain visible and the snap points do not change.
 - A sub-task opened while a native route is displayed — it still uses this sheet system and does not become a full-screen modal.
+- A sheet at large text size with a tall keyboard — the drag handle and snap points remain usable and the input stays above the keyboard.
 
 ## Non-Functional Constraints
 - Sheet behavior shall remain platform-native; sheet visuals shall stay brand-defined.
-- No new visual component library shall be adopted beyond the sheet behavior dependency.
+- Adopting a Material 3 sheet pattern shall not introduce a second sheet modality or replace the brand styling.
 
 ## Related Specs
 - `APP.HELP.CONTEXTUAL.001`

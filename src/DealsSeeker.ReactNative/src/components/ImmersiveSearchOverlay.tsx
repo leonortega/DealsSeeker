@@ -3,13 +3,11 @@ import type { RefObject } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from 'react-native';
+import { Button, Text, TextInput, useTheme } from 'react-native-paper';
 import { useApp } from '../hooks/useApp';
 import { CoverageDistanceControl } from './CoverageDistanceControl';
 import { restoreFocus } from '../utils/focusReturn';
@@ -37,6 +35,7 @@ export function ImmersiveSearchOverlay({
   returnFocusRef?: RefObject<unknown>;
 }) {
   const { palette, t } = useApp();
+  const theme = useTheme();
 
   function close() {
     onClose();
@@ -57,19 +56,23 @@ export function ImmersiveSearchOverlay({
         >
           <View
             accessibilityViewIsModal
-            style={[styles.sheet, { backgroundColor: palette.panel, borderColor: palette.border }]}
+            style={[styles.sheet, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
           >
-            <Text style={[styles.title, { color: palette.ink }]}>{t('offers.searchOffers')}</Text>
+            <Text style={{ color: theme.colors.onSurface }} variant="titleLarge">
+              {t('offers.searchOffers')}
+            </Text>
 
             <TextInput
               accessibilityLabel={t('offers.searchPlaceholder')}
+              contentStyle={styles.input}
+              label={t('offers.searchPlaceholder')}
               maxLength={queryMaxLength}
               onChangeText={onChangeQuery}
               onSubmitEditing={onSearch}
               placeholder={t('offers.searchPlaceholder')}
-              placeholderTextColor={palette.inkMuted}
+              placeholderTextColor={theme.colors.onSurfaceVariant}
               returnKeyType="search"
-              style={[styles.input, { backgroundColor: palette.card, borderColor: palette.border, color: palette.ink }]}
+              testID="immersive-search-input"
               value={query}
             />
 
@@ -81,20 +84,24 @@ export function ImmersiveSearchOverlay({
             />
 
             <View style={styles.actions}>
-              <Pressable
+              <Button
+                accessibilityLabel={t('common.cancel')}
                 accessibilityRole="button"
+                mode="outlined"
                 onPress={close}
-                style={[styles.actionButton, { backgroundColor: palette.card, borderColor: palette.border }]}
+                style={[styles.actionButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
               >
-                <Text style={{ color: palette.ink, fontWeight: '700' }}>{t('common.cancel')}</Text>
-              </Pressable>
-              <Pressable
+                {t('common.cancel')}
+              </Button>
+              <Button
+                accessibilityLabel={t('common.search')}
                 accessibilityRole="button"
+                mode="contained"
                 onPress={onSearch}
-                style={[styles.actionButton, { backgroundColor: palette.accent }]}
+                style={[styles.actionButton, { backgroundColor: theme.colors.primary }]}
               >
-                <Text style={{ color: palette.onAccent, fontWeight: '800' }}>{t('common.search')}</Text>
-              </Pressable>
+                {t('common.search')}
+              </Button>
             </View>
           </View>
         </ScrollView>
@@ -118,10 +125,6 @@ const styles = StyleSheet.create({
     padding: 18,
     width: '100%',
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
   input: {
     borderRadius: 999,
     borderWidth: 1,
@@ -135,12 +138,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   actionButton: {
-    alignItems: 'center',
-    borderRadius: 999,
-    borderWidth: 1,
-    justifyContent: 'center',
     minHeight: platformTouchFloor,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
   },
 });

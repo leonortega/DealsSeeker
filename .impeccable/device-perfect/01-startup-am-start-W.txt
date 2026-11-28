@@ -1,0 +1,28 @@
+﻿COMMAND: adb -s emulator-5554 shell am force-stop com.anonymous.dealsseekerreactnative
+COMMAND: adb -s emulator-5554 shell am start -W -n com.anonymous.dealsseekerreactnative/.MainActivity
+CONDITIONS: emulator (sdk_gphone64_x86_64), Android 15, 1080x1920@480dpi, night=no, font_scale=1.0
+
+=== RUN 1 ===
+Starting: Intent { cmp=com.anonymous.dealsseekerreactnative/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.anonymous.dealsseekerreactnative/expo.modules.devlauncher.launcher.DevLauncherActivity
+TotalTime: 5192
+WaitTime: 5198
+Complete
+=== RUN 2 ===
+Starting: Intent { cmp=com.anonymous.dealsseekerreactnative/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.anonymous.dealsseekerreactnative/expo.modules.devlauncher.launcher.DevLauncherActivity
+TotalTime: 2819
+WaitTime: 2820
+Complete
+=== RUN 3 ===
+Starting: Intent { cmp=com.anonymous.dealsseekerreactnative/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.anonymous.dealsseekerreactnative/expo.modules.devlauncher.launcher.DevLauncherActivity
+TotalTime: 2863
+WaitTime: 2866
+Complete

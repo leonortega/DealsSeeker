@@ -31,3 +31,46 @@ Feature: Visible action feedback in the immersive presentation
     Given a confirmation is displayed after a successful action
     When the user performs another action that fails
     Then the error message replaces the earlier confirmation
+
+  Scenario: Both presentations use the same feedback surface
+    Given the same offer action is available in the standard and immersive presentations
+    When the action succeeds in each presentation
+    Then the confirmation uses the same status surface and placement in both
+    And its wording follows the same plain-language pattern
+
+  Scenario: Stale feedback is cleared when the user moves on
+    Given a confirmation is displayed for the currently selected offer
+    When the user selects a different offer or leaves the Offers view
+    Then the earlier confirmation is no longer displayed
+    And no expired message is left to be read
+
+  Scenario: Feedback preserves the user's work context
+    Given the user has an active query, filter, selected offer and a partially written report
+    When an offer action produces feedback
+    Then the query, filter, selected offer and report draft are unchanged
+    And the scroll position is unchanged
+
+  Scenario: Feedback does not stack with another status panel
+    Given a search-failure error panel is displayed
+    When an offer action produces feedback
+    Then only the single status surface carries the new feedback
+    And the search-failure state is unchanged or replaced, not duplicated
+
+  Scenario: Action feedback follows the snackbar pattern in both presentations
+    Given the same offer action is available in the standard and immersive presentations
+    When the action produces feedback
+    Then the feedback shall appear on one non-interrupting Material 3 snackbar-pattern status surface in both presentations
+    And the action rail, mode control and primary actions shall remain tappable
+
+  Scenario: Temporary and persistent snackbar forms keep their behavior
+    Given an offer action produces transient feedback and another produces feedback that waits for an action
+    When each is displayed on the status surface
+    Then the transient feedback shall follow its dwell
+    And the waiting feedback shall remain until the user acts or dismisses it
+    And undo behavior and work preservation shall be unchanged
+
+  Scenario: Long localized feedback and undo fit one snackbar surface
+    Given feedback wraps to several lines and carries one undo action
+    When it is displayed in the immersive presentation
+    Then the message and undo action shall remain on the one status surface
+    And no raw coordinate value shall be shown

@@ -58,7 +58,7 @@ describe('SplashScreen', () => {
     await render(<SplashScreen />);
     expect(screen.getByTestId('brand-mark')).toBeTruthy();
     expect(screen.queryByTestId('splash-icon')).toBeNull();
-    expect(screen.queryByText('app.title')).toBeNull();
+    expect(screen.getByText('app.title')).toBeTruthy();
     expect(screen.queryByText('app.subtitle')).toBeNull();
     expect(screen.queryByText('splash.cta')).toBeNull();
   });

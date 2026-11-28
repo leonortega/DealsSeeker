@@ -1,20 +1,30 @@
 import { platformTouchFloor } from '../utils/layout';
-import { landmarkFontFamily } from '../utils/typography';
-import { useEffect, useRef, useState } from 'react';
+import { type ElementRef, useEffect, useRef, useState } from 'react';
 import {
-  Alert,
   BackHandler,
   Image,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
-  Text,
-  TextInput,
+  findNodeHandle,
   View,
 } from 'react-native';
+import {
+  Button,
+  Checkbox,
+  Dialog,
+  HelperText,
+  IconButton,
+  ProgressBar,
+  Snackbar,
+  Surface,
+  Text,
+  TextInput,
+  TouchableRipple,
+  useTheme,
+} from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,15 +32,24 @@ import { isRequestAborted } from '../api/client';
 import { apiConfig } from '../api/config';
 import { GeoPoint, OfferImageDto, OfferLocationDto } from '../api/types';
 import { NativeMapPreview } from '../components/NativeMapPreview';
+import { PlatformTabIcon } from '../components/PlatformTabIcon';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
 import { useAppStatus } from '../hooks/useAppStatus';
 import { useStatusNotice } from '../hooks/useStatusNotice';
+import { HelpSheet } from '../components/HelpSheet';
 import { announceStatus } from '../utils/announce';
-import { statusColor, type StatusTone } from '../utils/statusNotice';
+import type { StatusTone } from '../utils/statusNotice';
 import { extractCompletedWord, extractWords } from '../utils/format';
 import { keyboardAvoidanceBehavior, resolveAddOfferColumns } from '../utils/layout';
+import {
+  clearAddOfferDraft,
+  loadAddOfferDraft,
+  saveAddOfferDraft,
+  type AddOfferDraftSnapshot,
+} from '../utils/storage';
 import { getSuggestedTags, maxDraftTags, normalizeTag } from '../utils/tagLexicon';
+import { focusHandle } from '../utils/focusReturn';
 
 interface DraftImage {
   previewUri: string | null;
@@ -124,8 +143,27 @@ function dedupeLocationSearchResults(results: LocationSearchResult[]) {
   });
 }
 
+function hasRecoverableDraftContent(draft: AddOfferDraftSnapshot) {
+  return (
+    draft.images.length > 0 ||
+    draft.description.trim().length > 0 ||
+    draft.tags.length > 0 ||
+    Boolean(draft.locationConfirmed) ||
+    (draft.location !== null && draft.location.source !== 'auto')
+  );
+}
+
+function sameErrors(left: Record<string, string>, right: Record<string, string>) {
+  const keys = Object.keys(left);
+  if (keys.length !== Object.keys(right).length) {
+    return false;
+  }
+  return keys.every((key) => left[key] === right[key]);
+}
+
 export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: () => boolean) => void } = {}) {
-  const { api, closeOverlay, openTab, overlayRoute, palette, preferences, t } = useApp();
+  const { api, closeOverlay, openTab, overlayRoute, preferences, t } = useApp();
+  const theme = useTheme();
   const { isPending } = useAppStatus();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -146,6 +184,12 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
   const [activeStep, setActiveStep] = useState<AddOfferStep>('photo');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [helpVisible, setHelpVisible] = useState(false);
+  const [resumeDraft, setResumeDraft] = useState<AddOfferDraftSnapshot | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const [focusTarget, setFocusTarget] = useState<string | null>(null);
+  const [guidanceField, setGuidanceField] = useState<'location' | 'description' | 'tags' | null>(null);
+  const [discardDialog, setDiscardDialog] = useState<'cancel' | 'draft' | null>(null);
   const { status, statusTone, reportStatus: reportNotice } = useStatusNotice();
   const [loadFailed, setLoadFailed] = useState(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
@@ -155,16 +199,172 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
   const locationSearchRequest = useAbortableRequest();
   const locationSearchSequence = useRef(0);
   const pinSequence = useRef(0);
-  const discardPromptOpen = useRef(false);
   const dismissApproved = useRef(false);
   const tagLimitNotified = useRef(false);
+  const touchedFields = useRef<Record<string, boolean>>({});
+  const descriptionInputRef = useRef<{ focus: () => void } | null>(null);
+  const locationInputRef = useRef<{ focus: () => void } | null>(null);
+  const photoButtonRef = useRef<ElementRef<typeof View>>(null);
+  const helpButtonRef = useRef<ElementRef<typeof View>>(null);
+  const tRef = useRef(t);
+  tRef.current = t;
   const isVisible = overlayRoute?.name === 'add-offer';
+  const editingOfferId = overlayRoute?.name === 'add-offer' ? overlayRoute.offerId : undefined;
   const hasDraftContent =
     images.length > 0 ||
     description.trim().length > 0 ||
     tags.length > 0 ||
     locationConfirmed ||
     (location !== null && location.source !== 'auto');
+
+  function currentSnapshot(): AddOfferDraftSnapshot {
+    return {
+      description,
+      tags,
+      images: images.map((image) => image.metadata),
+      location,
+      locationQuery,
+      locationConfirmed,
+      mapCenter,
+    };
+  }
+
+  function applySnapshot(snapshot: AddOfferDraftSnapshot) {
+    setDescription(snapshot.description);
+    setTags(snapshot.tags);
+    setSuggestionTags([]);
+    setSeedTags(snapshot.tags);
+    setDismissedTags([]);
+    setImages(
+      snapshot.images.map((image, index) => ({
+        previewUri: resolveImagePreviewUri(image),
+        metadata: { ...image, order: index },
+      }))
+    );
+    setLocation(snapshot.location);
+    setLocationQuery(snapshot.locationQuery ?? snapshot.location?.label ?? '');
+    setLocationConfirmed(Boolean(snapshot.locationConfirmed));
+    setMapCenter(snapshot.mapCenter ?? snapshot.location?.position ?? null);
+    setLocationResults([]);
+    setSuggestionsSuppressed(true);
+    setActiveStep('photo');
+  }
+
+  function resetFields() {
+    setImages([]);
+    setSelectedImageIndex(0);
+    setDescription('');
+    setTags([]);
+    setSuggestionTags([]);
+    setSeedTags([]);
+    setDismissedTags([]);
+    setLocation(null);
+    setLocationQuery('');
+    setLocationConfirmed(false);
+    setLocationResults([]);
+    setSuggestionsSuppressed(true);
+    setMapCenter(null);
+    setFieldErrors({});
+    touchedFields.current = {};
+    setFocusTarget(null);
+    setGuidanceField(null);
+    setActiveStep('photo');
+  }
+
+  useEffect(() => {
+    if (!isVisible || editingOfferId) {
+      setHydrated(true);
+      return;
+    }
+
+    let active = true;
+    setHydrated(false);
+    void loadAddOfferDraft()
+      .then((snapshot) => {
+        if (!active) {
+          return;
+        }
+        if (snapshot && hasRecoverableDraftContent(snapshot)) {
+          setResumeDraft(snapshot);
+        }
+        setHydrated(true);
+      })
+      .catch(() => {
+        if (active) {
+          setHydrated(true);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isVisible, editingOfferId]);
+
+  useEffect(() => {
+    if (!isVisible || editingOfferId || !hydrated || resumeDraft || submitted || !hasDraftContent) {
+      return;
+    }
+    void saveAddOfferDraft(currentSnapshot());
+  }, [
+    isVisible,
+    editingOfferId,
+    hydrated,
+    resumeDraft,
+    submitted,
+    hasDraftContent,
+    description,
+    tags,
+    images,
+    location,
+    locationQuery,
+    locationConfirmed,
+    mapCenter,
+  ]);
+
+  useEffect(() => {
+    if (!isVisible || !focusTarget) {
+      return;
+    }
+    if (focusTarget === 'description' || focusTarget === 'location') {
+      const input = focusTarget === 'description' ? descriptionInputRef.current : locationInputRef.current;
+      input?.focus();
+      return;
+    }
+    const node = photoButtonRef.current;
+    focusHandle(node ? findNodeHandle(node as never) ?? null : null);
+  }, [focusTarget, isVisible]);
+
+  useEffect(() => {
+    if (!isVisible) {
+      return;
+    }
+    setFieldErrors((current) => {
+      const next = { ...current };
+      const invalid: Record<string, boolean> = {
+        photo: images.length === 0,
+        description: !description.trim(),
+        tags: tags.length === 0,
+        location: !location || !locationConfirmed,
+      };
+      const messages: Record<string, string> = {
+        photo: tRef.current('add.photoRequired'),
+        description: tRef.current('add.validationDescription'),
+        tags: tRef.current('add.validationTags'),
+        location: tRef.current('add.validationLocation'),
+      };
+      for (const field of Object.keys(invalid)) {
+        if (!touchedFields.current[field] && !(field in current)) {
+          continue;
+        }
+        if (invalid[field]) {
+          next[field] = messages[field];
+        } else {
+          delete next[field];
+        }
+      }
+      return sameErrors(next, current) ? current : next;
+    });
+  }, [isVisible, images, description, tags, location, locationConfirmed]);
 
   useEffect(() => {
     if (!isVisible) {
@@ -204,11 +404,18 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
     announceStatus(message);
   }
 
+  const statusColor =
+    statusTone === 'error'
+      ? theme.colors.error
+      : statusTone === 'success'
+        ? theme.colors.primary
+        : theme.colors.onSurface;
+
   const searchFeedbackVisible = isVisible && !locationConfirmed && locationQuery.trim().length >= 3;
   const isSearching = searchFeedbackVisible && !suggestionsSuppressed && isPending('locations-search');
 
   function handleCancel() {
-    if (discardPromptOpen.current) {
+    if (discardDialog) {
       return;
     }
 
@@ -217,25 +424,44 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       return;
     }
 
-    discardPromptOpen.current = true;
-    Alert.alert(t('add.discardTitle'), t('add.discardBody'), [
-      {
-        text: t('add.keepEditing'),
-        style: 'cancel',
-        onPress: () => {
-          discardPromptOpen.current = false;
-        },
-      },
-      {
-        text: t('add.discardConfirm'),
-        style: 'destructive',
-        onPress: () => {
-          discardPromptOpen.current = false;
-          dismissApproved.current = true;
-          closeOverlay();
-        },
-      },
-    ]);
+    setDiscardDialog('cancel');
+  }
+
+  function confirmDiscard() {
+    const target = discardDialog;
+    setDiscardDialog(null);
+
+    if (target === 'cancel') {
+      dismissApproved.current = true;
+      void clearAddOfferDraft();
+      closeOverlay();
+      return;
+    }
+
+    if (target === 'draft') {
+      void clearAddOfferDraft();
+      resetFields();
+      setResumeDraft(null);
+      reportStatus(null);
+    }
+  }
+
+  function resumeRetainedDraft() {
+    if (!resumeDraft) {
+      return;
+    }
+    applySnapshot(resumeDraft);
+    touchedFields.current = {};
+    setFieldErrors({});
+    setResumeDraft(null);
+    reportStatus(t('add.draftRestored'), 'success');
+  }
+
+  function discardRetainedDraft() {
+    if (!resumeDraft || discardDialog) {
+      return;
+    }
+    setDiscardDialog('draft');
   }
 
   function handleRetryLoad() {
@@ -248,8 +474,6 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
     setSearchAttempt((current) => current + 1);
   }
 
-  const editingOfferId = overlayRoute?.name === 'add-offer' ? overlayRoute.offerId : undefined;
-
   useEffect(() => {
     if (!isVisible) {
       return;
@@ -259,6 +483,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       reportStatus(null);
       setActiveStep('photo');
       setFieldErrors({});
+      touchedFields.current = {};
       setSubmitted(false);
       setLoadFailed(false);
 
@@ -427,6 +652,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
   }
 
   async function handleMapTap(point: GeoPoint) {
+    touchedFields.current.location = true;
     const sequence = pinSequence.current + 1;
     pinSequence.current = sequence;
 
@@ -466,37 +692,41 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
     return (
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}
-        style={{ backgroundColor: palette.background }}
+        style={{ backgroundColor: theme.colors.background }}
       >
         <View style={styles.header}>
-          <Text style={[styles.title, { color: palette.ink }]}>{t('add.editTitle')}</Text>
+          <Text variant="titleLarge">{t('add.editTitle')}</Text>
         </View>
-        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-          <Text style={[styles.status, { color: palette.danger }]}>{t('add.loadFailed')}</Text>
+        <Surface elevation={1} style={[styles.panel, { backgroundColor: theme.colors.surface }]}>
+          <Text variant="bodyMedium" style={{ color: theme.colors.error }}>
+            {t('add.loadFailed')}
+          </Text>
           <View style={styles.actionRow}>
-            <Pressable
+            <Button
               accessibilityLabel={t('add.retry')}
-              accessibilityRole="button"
+              mode="contained-tonal"
               onPress={handleRetryLoad}
-              style={[styles.button, { backgroundColor: palette.accentMuted }]}
+              style={styles.button}
+              testID="add-retry-load"
             >
-              <Text style={{ color: palette.accentText }}>{t('add.retry')}</Text>
-            </Pressable>
-            <Pressable
+              {t('add.retry')}
+            </Button>
+            <Button
               accessibilityLabel={t('add.cancel')}
-              accessibilityRole="button"
+              mode="outlined"
               onPress={handleCancel}
-              style={[styles.button, { backgroundColor: palette.panel }]}
+              style={styles.button}
             >
-              <Text style={{ color: palette.ink }}>{t('add.cancel')}</Text>
-            </Pressable>
+              {t('add.cancel')}
+            </Button>
           </View>
-        </View>
+        </Surface>
       </ScrollView>
     );
   }
 
   function addTag(value: string, source: 'description' | 'manual' | 'suggestion' = 'description') {
+    touchedFields.current.tags = true;
     const normalized = normalizeTag(value).slice(0, maxTagLength);
     if (!normalized || (source !== 'manual' && dismissedTags.includes(normalized)) || tags.includes(normalized)) {
       return;
@@ -532,6 +762,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
   }
 
   function removeTag(tag: string) {
+    touchedFields.current.tags = true;
     setTags((current) => current.filter((item) => item !== tag));
     setSuggestionTags((current) => current.filter((item) => item !== tag));
     setSeedTags((current) => current.filter((item) => item !== tag));
@@ -587,6 +818,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       return;
     }
 
+    touchedFields.current.photo = true;
     setImages((current) => [...current, built]);
     setSelectedImageIndex(images.length);
   }
@@ -619,6 +851,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       return;
     }
 
+    touchedFields.current.photo = true;
     setImages((current) => [...current, ...nextImages]);
     setSelectedImageIndex(images.length);
   }
@@ -642,6 +875,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
   }
 
   function removeCurrentImage() {
+    touchedFields.current.photo = true;
     setImages((current) => {
       const next = current.filter((_, index) => index !== selectedImageIndex);
       const nextIndex = Math.max(0, Math.min(selectedImageIndex, next.length - 1));
@@ -668,7 +902,21 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       errors.location = t('add.validationLocation');
     }
 
+    touchedFields.current = { photo: true, description: true, tags: true, location: true };
     setFieldErrors(errors);
+    const firstInvalid =
+      activeStep === 'photo'
+        ? 'photo'
+        : activeStep === 'place'
+          ? 'location'
+          : errors.description
+            ? 'description'
+            : 'tags';
+    const firstMessage = errors[firstInvalid];
+    setFocusTarget(firstMessage ? firstInvalid : null);
+    if (firstMessage) {
+      announceStatus(firstMessage);
+    }
     return Object.keys(errors).length === 0;
   }
 
@@ -698,6 +946,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
         return;
       }
 
+      void clearAddOfferDraft();
       reportStatus(t('add.updated'), 'success');
       setSubmitted(true);
       return;
@@ -710,6 +959,7 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       return;
     }
 
+    void clearAddOfferDraft();
     reportStatus(t('add.created'), 'success');
     setSubmitted(true);
   }
@@ -733,37 +983,80 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
-        style={{ backgroundColor: palette.background }}
+        style={{ backgroundColor: theme.colors.background }}
         testID="add-offer-scroll"
       >
         <View style={styles.header}>
-          <Text style={[styles.title, { color: palette.ink }]}>{editingOfferId ? t('add.editTitle') : t('add.title')}</Text>
-          <Pressable
+          <Text variant="titleLarge">{editingOfferId ? t('add.editTitle') : t('add.title')}</Text>
+          <Button
             accessibilityLabel={t('add.cancel')}
-            accessibilityRole="button"
+            mode="text"
             onPress={handleCancel}
-            style={styles.inlineAction}
+            testID="add-cancel"
           >
-            <Text style={{ color: palette.inkMuted }}>{t('add.cancel')}</Text>
-          </Pressable>
+            {t('add.cancel')}
+          </Button>
+          <IconButton
+            accessibilityLabel={t('common.why')}
+            icon={({ size, color }) => (
+              <PlatformTabIcon color={color} name="help" size={size} />
+            )}
+            onPress={() => setHelpVisible(true)}
+            ref={helpButtonRef as never}
+            testID="add-help"
+          />
         </View>
 
+        {resumeDraft ? (
+          <Surface elevation={1} testID="add-draft-resume" style={[styles.panel, { backgroundColor: theme.colors.surface }]}>
+            <Text accessibilityLiveRegion="polite" variant="bodyMedium">
+              {t('add.draftRestored')}
+            </Text>
+            <View style={styles.actionRow}>
+              <Button
+                accessibilityLabel={t('common.resume')}
+                mode="contained-tonal"
+                onPress={resumeRetainedDraft}
+                style={styles.button}
+                testID="add-draft-resume-button"
+              >
+                {t('common.resume')}
+              </Button>
+              <Button
+                accessibilityLabel={t('add.discardConfirm')}
+                mode="outlined"
+                onPress={discardRetainedDraft}
+                style={styles.button}
+                testID="add-draft-discard"
+              >
+                {t('add.discardConfirm')}
+              </Button>
+            </View>
+          </Surface>
+        ) : null}
+
         <View testID="add-step-progress" style={styles.stepProgress}>
+          <ProgressBar
+            progress={(activeStepIndex + 1) / stepOrder.length}
+            style={styles.progress}
+            testID="add-progress-indicator"
+          />
           {stepOrder.map((step, index) => (
             <Text
               key={step}
               testID={index === activeStepIndex ? 'add-active-step' : undefined}
+              variant="labelMedium"
               style={[
                 styles.stepLabel,
                 index === activeStepIndex
-                  ? { backgroundColor: palette.accent, color: palette.onAccent }
-                  : { backgroundColor: palette.panel, color: palette.inkMuted },
+                  ? { backgroundColor: theme.colors.primary, color: theme.colors.onPrimary }
+                  : { backgroundColor: theme.colors.surfaceVariant, color: theme.colors.onSurfaceVariant },
               ]}
             >
               {t(`add.step.${step}`)}
             </Text>
           ))}
-          <Text testID="add-steps-remaining" style={[styles.stepRemaining, { color: palette.inkMuted }]}>
+          <Text testID="add-steps-remaining" variant="labelSmall" style={styles.stepRemaining}>
             {stepOrder.length - activeStepIndex - 1} {t('add.stepsRemaining')}
           </Text>
         </View>
@@ -774,24 +1067,29 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
         >
           <View style={styles.column} testID="add-offer-column-primary">
         {activeStep === 'photo' ? (
-        <View testID="add-step-photo" style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-          <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.images')}</Text>
+        <Surface elevation={1} testID="add-step-photo" style={[styles.panel, { backgroundColor: theme.colors.surface }]}>
+          <Text variant="titleLarge">{t('add.images')}</Text>
           {fieldErrors.photo ? (
-            <Text accessibilityLiveRegion="polite" testID="add-error-photo" style={[styles.fieldError, { color: palette.danger }]}>
+            <HelperText
+              accessibilityLiveRegion="polite"
+              testID="add-error-photo"
+              type="error"
+              visible
+            >
               {fieldErrors.photo}
-            </Text>
+            </HelperText>
           ) : null}
-          <View style={[styles.imageStage, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
+          <View style={[styles.imageStage, { backgroundColor: theme.colors.surfaceVariant }]}>
             {previewImage?.previewUri ? (
               <Image source={{ uri: previewImage.previewUri }} style={styles.previewImage} />
             ) : (
-              <Text style={[styles.emptyImage, { color: palette.inkMuted }]}>{t('add.noPhoto')}</Text>
+              <Text variant="bodyMedium">{t('add.noPhoto')}</Text>
             )}
           </View>
           {images.length > 1 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.thumbnailRow}>
               {images.map((image, index) => (
-                <Pressable
+                <TouchableRipple
                   key={`${image.previewUri}-${index}`}
                   accessibilityLabel={`${t('offers.goToImage')} ${index + 1}`}
                   accessibilityRole="button"
@@ -800,128 +1098,170 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
                   style={[
                     styles.thumbnailWrap,
                     {
-                      borderColor: index === selectedImageIndex ? palette.accentText : palette.border,
+                      borderColor:
+                        index === selectedImageIndex ? theme.colors.primary : theme.colors.outlineVariant,
                     },
                   ]}
                 >
                   {image.previewUri ? (
                     <Image source={{ uri: image.previewUri }} style={styles.thumbnail} />
                   ) : (
-                    <View style={[styles.thumbnailPlaceholder, { backgroundColor: palette.panelAlt }]}>
-                      <Text style={[styles.thumbnailPlaceholderText, { color: palette.inkMuted }]}>
-                        {t('add.photoPlaceholder')}
-                      </Text>
+                    <View style={[styles.thumbnailPlaceholder, { backgroundColor: theme.colors.surfaceVariant }]}>
+                      <Text variant="labelSmall">{t('add.photoPlaceholder')}</Text>
                     </View>
                   )}
-                </Pressable>
+                </TouchableRipple>
               ))}
             </ScrollView>
           ) : null}
           <View style={styles.actionRow}>
-            <Pressable
-              testID="add-take-photo"
-              style={[styles.button, { backgroundColor: palette.panel }]}
+            <Button
+              buttonColor={theme.colors.primaryContainer}
+              contentStyle={styles.buttonContent}
+              mode="contained-tonal"
               onPress={() => void pickFromCamera()}
+              style={styles.button}
+              testID="add-take-photo"
+              textColor={theme.colors.onPrimaryContainer}
             >
-              <Text style={{ color: palette.ink }}>{t('add.takePhoto')}</Text>
-            </Pressable>
-            <Pressable
-              testID="add-upload"
-              style={[styles.button, { backgroundColor: palette.accentMuted }]}
+              {t('add.takePhoto')}
+            </Button>
+            <Button
+              buttonColor={theme.colors.primaryContainer}
+              contentStyle={styles.buttonContent}
+              mode="contained-tonal"
               onPress={() => void pickFromGallery()}
+              style={styles.button}
+              testID="add-upload"
+              textColor={theme.colors.onPrimaryContainer}
+              touchableRef={photoButtonRef as never}
             >
-              <Text style={{ color: palette.accentText }}>{t('add.upload')}</Text>
-            </Pressable>
+              {t('add.upload')}
+            </Button>
           </View>
           {images.length > 0 ? (
             <View style={styles.actionRow}>
-              <Pressable
-                testID="add-move-left"
+              <Button
                 accessibilityLabel={t('add.moveLeft')}
-                accessibilityRole="button"
-                style={[styles.secondaryAction, { backgroundColor: palette.card, borderColor: palette.border }]}
+                buttonColor={theme.colors.surfaceVariant}
+                contentStyle={styles.buttonContent}
+                mode="outlined"
                 onPress={() => moveImage(-1)}
+                style={styles.secondaryAction}
+                testID="add-move-left"
               >
-                <Text style={{ color: palette.inkMuted }}>{t('add.moveLeft')}</Text>
-              </Pressable>
-              <Pressable
-                testID="add-move-right"
+                {t('add.moveLeft')}
+              </Button>
+              <Button
                 accessibilityLabel={t('add.moveRight')}
-                accessibilityRole="button"
-                style={[styles.secondaryAction, { backgroundColor: palette.card, borderColor: palette.border }]}
+                buttonColor={theme.colors.surfaceVariant}
+                contentStyle={styles.buttonContent}
+                mode="outlined"
                 onPress={() => moveImage(1)}
+                style={styles.secondaryAction}
+                testID="add-move-right"
               >
-                <Text style={{ color: palette.inkMuted }}>{t('add.moveRight')}</Text>
-              </Pressable>
-              <Pressable
-                testID="add-remove-image"
+                {t('add.moveRight')}
+              </Button>
+              <Button
                 accessibilityLabel={t('common.remove')}
-                accessibilityRole="button"
-                style={[styles.secondaryAction, { backgroundColor: palette.card, borderColor: palette.border }]}
+                buttonColor={theme.colors.surfaceVariant}
+                contentStyle={styles.buttonContent}
+                mode="outlined"
                 onPress={removeCurrentImage}
+                style={styles.secondaryAction}
+                testID="add-remove-image"
+                textColor={theme.colors.error}
               >
-                <Text style={{ color: palette.danger }}>{t('common.remove')}</Text>
-              </Pressable>
+                {t('common.remove')}
+              </Button>
             </View>
           ) : null}
-        </View>
+        </Surface>
         ) : null}
 
         {activeStep === 'place' ? (
-        <View testID="add-step-place" style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-          <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.location')}</Text>
+        <Surface elevation={1} testID="add-step-place" style={[styles.panel, { backgroundColor: theme.colors.surface }]}>
+          <Text variant="titleLarge">{t('add.location')}</Text>
           {fieldErrors.location ? (
-            <Text accessibilityLiveRegion="polite" testID="add-error-location" style={[styles.fieldError, { color: palette.danger }]}>
+            <HelperText
+              accessibilityLiveRegion="polite"
+              testID="add-error-location"
+              type="error"
+              visible
+            >
               {fieldErrors.location}
-            </Text>
+            </HelperText>
           ) : null}
-          <Text style={{ color: palette.inkMuted }}>
+          <Text variant="bodyMedium">
             {t('add.currentAddress')}: {location?.label ?? t('add.locationUnavailable')}
           </Text>
+          {guidanceField === 'location' ? (
+            <Text
+              accessibilityLabel={t('add.guidance.location')}
+              accessibilityLiveRegion="polite"
+              testID="add-guidance-location"
+            >
+              {t('add.guidance.location')}
+            </Text>
+          ) : null}
           <TextInput
             accessibilityLabel={t('add.locationSearch')}
+            autoFocus={focusTarget === 'location'}
             editable={!locationConfirmed}
+            error={Boolean(fieldErrors.location)}
+            label={t('add.locationSearch')}
             maxLength={locationQueryMaxLength}
             onChangeText={(value) => {
+              touchedFields.current.location = true;
+              setFocusTarget(null);
               setLocationQuery(value);
               setSuggestionsSuppressed(false);
             }}
+            onBlur={() => {
+              if (locationConfirmed) {
+                setGuidanceField(null);
+              }
+            }}
+            onFocus={() => setGuidanceField('location')}
             placeholder={t('add.locationSearch')}
-            placeholderTextColor={palette.inkMuted}
-            style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
+            ref={locationInputRef as never}
+            testID="add-location-input"
             value={locationQuery}
           />
           {locationQuery.trim().length > 0 && locationQuery.trim().length < 3 ? (
-            <Text style={{ color: palette.inkMuted }}>{t('add.locationPlaceholder')}</Text>
+            <Text variant="bodyMedium">{t('add.locationPlaceholder')}</Text>
           ) : null}
           {isSearching ? (
-            <Text accessibilityLiveRegion="polite" style={{ color: palette.inkMuted }}>
+            <Text accessibilityLiveRegion="polite" variant="bodyMedium">
               {t('add.searchingLocations')}
             </Text>
           ) : null}
           {!isSearching && searchFailed && searchFeedbackVisible ? (
             <View style={styles.searchFeedback}>
-              <Text accessibilityLiveRegion="polite" style={{ color: palette.danger }}>
+              <Text accessibilityLiveRegion="polite" variant="bodyMedium" style={{ color: theme.colors.error }}>
                 {t('add.locationSearchFailed')}
               </Text>
-              <Pressable
+              <Button
                 accessibilityLabel={t('add.retry')}
-                accessibilityRole="button"
+                mode="text"
                 onPress={handleRetrySearch}
                 style={styles.inlineAction}
               >
-                <Text style={{ color: palette.accentText }}>{t('add.retry')}</Text>
-              </Pressable>
+                {t('add.retry')}
+              </Button>
             </View>
           ) : null}
           {!isSearching && !searchFailed && searchCompleted && searchFeedbackVisible ? (
-            <Text style={{ color: palette.inkMuted }}>{t('add.noLocationResults')}</Text>
+            <Text variant="bodyMedium">{t('add.noLocationResults')}</Text>
           ) : null}
           {locationResults.map((result) => (
-            <Pressable
+            <TouchableRipple
               key={getLocationSearchResultKey(result)}
-              style={[styles.resultRow, { backgroundColor: palette.panel, borderColor: palette.border }]}
+              accessibilityRole="button"
+              style={[styles.resultRow, { backgroundColor: theme.colors.surfaceVariant }]}
               onPress={() => {
+                touchedFields.current.location = true;
                 setLocation({
                   source: 'search',
                   label: result.label,
@@ -935,10 +1275,10 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
                 reportStatus(t('add.locationSelected'));
               }}
             >
-              <Text style={{ color: palette.ink }}>{result.label}</Text>
-            </Pressable>
+              <Text variant="bodyMedium">{result.label}</Text>
+            </TouchableRipple>
           ))}
-          <Text style={{ color: palette.inkMuted }}>{t('add.mapPinHint')}</Text>
+          <Text variant="bodyMedium">{t('add.mapPinHint')}</Text>
           {location || mapCenter ? (
             <NativeMapPreview
               businesses={
@@ -963,16 +1303,16 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
               onMapDragEnd={handleMapDragEnd}
             />
           ) : null}
-          <Pressable
+          <Button
             accessibilityLabel={t('add.setPinAtCenter')}
-            accessibilityRole="button"
+            mode="contained-tonal"
             onPress={() => void handleMapTap(location?.position ?? mapCenter ?? fallbackMapCenter)}
-            style={[styles.button, { backgroundColor: palette.panelAlt }]}
+            style={styles.button}
           >
-            <Text style={{ color: palette.ink }}>{t('add.setPinAtCenter')}</Text>
-          </Pressable>
+            {t('add.setPinAtCenter')}
+          </Button>
           <View style={styles.actionRow}>
-            <Pressable
+            <TouchableRipple
               accessibilityLabel={t('add.confirmLocation')}
               accessibilityRole="button"
               accessibilityState={{ selected: locationConfirmed, disabled: !location || locationConfirmed }}
@@ -980,56 +1320,73 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
               style={[
                 styles.button,
                 {
-                  backgroundColor: locationConfirmed ? palette.panel : palette.accentMuted,
+                  backgroundColor: locationConfirmed ? theme.colors.surfaceVariant : theme.colors.primaryContainer,
                   opacity: !location || locationConfirmed ? 0.45 : 1,
                 },
               ]}
               onPress={() => {
+                touchedFields.current.location = true;
+                setFocusTarget(null);
+                setGuidanceField(null);
                 setLocationConfirmed(true);
                 reportStatus(t('add.locationConfirmed'));
               }}
             >
-              <Text style={{ color: locationConfirmed ? palette.inkMuted : palette.accent }}>{t('add.confirmLocation')}</Text>
-            </Pressable>
-            <Pressable
+              <Text variant="labelLarge">{t('add.confirmLocation')}</Text>
+            </TouchableRipple>
+            <Button
               accessibilityLabel={t('add.editLocation')}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: !locationConfirmed }}
+              buttonColor={theme.colors.surfaceVariant}
+              contentStyle={styles.buttonContent}
               disabled={!locationConfirmed}
-              style={[
-                styles.button,
-                {
-                  backgroundColor: locationConfirmed ? palette.panel : palette.panelAlt,
-                  opacity: locationConfirmed ? 1 : 0.45,
-                },
-              ]}
+              mode="outlined"
               onPress={() => {
                 setLocationConfirmed(false);
                 reportStatus(t('add.locationEditEnabled'));
               }}
+              style={styles.button}
             >
-              <Text style={{ color: palette.ink }}>{t('add.editLocation')}</Text>
-            </Pressable>
+              {t('add.editLocation')}
+            </Button>
           </View>
-        </View>
+        </Surface>
         ) : null}
 
           </View>
           <View style={styles.column} testID="add-offer-column-secondary">
         {activeStep === 'details' ? (
-        <View testID="add-step-details" style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-          <Text style={[styles.sectionTitle, { color: palette.ink }]}>{t('add.description')}</Text>
+        <Surface elevation={1} testID="add-step-details" style={[styles.panel, { backgroundColor: theme.colors.surface }]}>
+          <Text variant="titleLarge">{t('add.description')}</Text>
           {fieldErrors.description ? (
-            <Text accessibilityLiveRegion="polite" testID="add-error-description" style={[styles.fieldError, { color: palette.danger }]}>
+            <HelperText
+              accessibilityLiveRegion="polite"
+              testID="add-error-description"
+              type="error"
+              visible
+            >
               {fieldErrors.description}
+            </HelperText>
+          ) : null}
+          {guidanceField === 'description' ? (
+            <Text
+              accessibilityLabel={t('add.guidance.description')}
+              accessibilityLiveRegion="polite"
+              testID="add-guidance-description"
+            >
+              {t('add.guidance.description')}
             </Text>
           ) : null}
           <TextInput
             accessibilityLabel={t('add.description')}
+            autoFocus={focusTarget === 'description'}
+            error={Boolean(fieldErrors.description)}
+            label={t('add.description')}
             maxLength={descriptionMaxLength}
             multiline
             onChangeText={(value) => {
               const next = value.slice(0, descriptionMaxLength);
+              touchedFields.current.description = true;
+              setFocusTarget(null);
               setDescription(next);
               if (!next.trim()) {
                 setTags([]);
@@ -1055,166 +1412,257 @@ export function AddOfferScreen({ onDismissGuard }: { onDismissGuard?: (guard: ()
                 }
               }
             }}
-            onBlur={() => commitFinalWordTag()}
+            onBlur={() => {
+              commitFinalWordTag();
+              if (description.trim()) {
+                setGuidanceField(null);
+              }
+            }}
+            onFocus={() => setGuidanceField('description')}
             placeholder={t('add.descriptionPlaceholder')}
-            placeholderTextColor={palette.inkMuted}
-            style={[
-              styles.textarea,
-              { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink },
-            ]}
+            ref={descriptionInputRef as never}
+            style={styles.textarea}
+            testID="add-description-input"
             value={description}
           />
-          <Text style={{ color: palette.inkMuted, textAlign: 'right' }}>{`${description.length}/${descriptionMaxLength}`}</Text>
-          <Text style={{ color: palette.inkMuted }}>{t('add.descriptionMaxHint')}</Text>
-          <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.detectedWords')}</Text>
+          <HelperText style={styles.counter} testID="add-description-counter" type="info">
+            {`${description.length}/${descriptionMaxLength}`}
+          </HelperText>
+          <HelperText type="info">{t('add.descriptionMaxHint')}</HelperText>
+          <Text variant="labelMedium">{t('add.detectedWords')}</Text>
           <View style={styles.wordGrid}>
             {detectedWords.map((word) => (
-              <Pressable
+              <Button
                 key={word}
-                style={[styles.wordChip, { backgroundColor: palette.panel, borderColor: palette.border }]}
+                buttonColor={theme.colors.surfaceVariant}
+                contentStyle={styles.buttonContent}
+                mode="contained-tonal"
                 onPress={() => addTag(word, 'manual')}
+                style={styles.wordChip}
               >
-                <Text style={{ color: palette.ink }}>{word}</Text>
-              </Pressable>
+                {word}
+              </Button>
             ))}
           </View>
 
-          <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.tags')}</Text>
-          <Text style={{ color: palette.inkMuted }}>{t('add.tagsHint')}</Text>
-          <Text style={{ color: palette.inkMuted }}>{t('add.tagsAutoHint')}</Text>
-          <Text style={{ color: palette.inkMuted }}>{t('add.tagsLimitHint')}</Text>
-          {fieldErrors.tags ? (
-            <Text accessibilityLiveRegion="polite" testID="add-error-tags" style={[styles.fieldError, { color: palette.danger }]}>
-              {fieldErrors.tags}
+          <View style={styles.header}>
+            <Text variant="labelMedium">{t('add.tags')}</Text>
+            <Button
+              accessibilityLabel={t('common.why')}
+              contentStyle={styles.buttonContent}
+              mode="text"
+              onPress={() => setGuidanceField((current) => (current === 'tags' ? null : 'tags'))}
+              style={styles.inlineAction}
+              testID="add-tags-why"
+              textColor={theme.colors.primary}
+            >
+              {t('common.why')}
+            </Button>
+          </View>
+          {guidanceField === 'tags' && tags.length === 0 ? (
+            <Text
+              accessibilityLabel={t('add.guidance.tags')}
+              accessibilityLiveRegion="polite"
+              testID="add-guidance-tags"
+            >
+              {t('add.guidance.tags')} {t('add.tagsHint')}
             </Text>
+          ) : null}
+          <Text variant="bodyMedium">{t('add.tagsAutoHint')}</Text>
+          <Text variant="bodyMedium">{t('add.tagsLimitHint')}</Text>
+          {fieldErrors.tags ? (
+            <HelperText
+              accessibilityLiveRegion="polite"
+              testID="add-error-tags"
+              type="error"
+              visible
+            >
+              {fieldErrors.tags}
+            </HelperText>
           ) : null}
           {tagSuggestions.length > 0 ? (
             <View testID="add-suggestions" style={styles.suggestionSection}>
-              <Text style={[styles.label, { color: palette.inkMuted }]}>{t('add.suggestionsTitle')}</Text>
+              <Text variant="labelMedium">{t('add.suggestionsTitle')}</Text>
               {tagSuggestions.map((tag) => (
                 <View key={tag} testID="add-suggestion" style={styles.suggestionRow}>
-                  <Text style={{ color: palette.ink, flex: 1 }}>{tag}</Text>
-                  <Pressable
+                  <Text variant="bodyMedium" style={{ flex: 1 }}>
+                    {tag}
+                  </Text>
+                  <Checkbox.Item
                     accessibilityLabel={`${t('add.suggestionAdd')} ${tag}`}
-                    accessibilityRole="button"
+                    label={t('add.suggestionAdd')}
                     onPress={() => addTag(tag, 'suggestion')}
+                    status={tags.includes(tag) ? 'checked' : 'unchecked'}
                     style={styles.suggestionAction}
                     testID="add-suggestion-add"
-                  >
-                    <Text style={{ color: palette.accentText }}>{t('add.suggestionAdd')}</Text>
-                  </Pressable>
-                  <Pressable
+                  />
+                  <Button
                     accessibilityLabel={`${t('add.suggestionDismiss')} ${tag}`}
-                    accessibilityRole="button"
+                    contentStyle={styles.buttonContent}
+                    mode="text"
                     onPress={() => setDismissedTags((current) => [...current, tag])}
                     style={styles.suggestionAction}
                     testID="add-suggestion-dismiss"
                   >
-                    <Text style={{ color: palette.inkMuted }}>{t('add.suggestionDismiss')}</Text>
-                  </Pressable>
+                    {t('add.suggestionDismiss')}
+                  </Button>
                 </View>
               ))}
             </View>
           ) : null}
           <View style={styles.wordGrid}>
-            {tags.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('add.noTags')}</Text> : null}
+            {tags.length === 0 ? <Text variant="bodyMedium">{t('add.noTags')}</Text> : null}
             {tags.map((tag) => (
-              <Pressable
+              <Button
                 key={tag}
-                testID="add-tag-chip"
-                style={[styles.wordChip, { backgroundColor: palette.accentMuted, borderColor: palette.border }]}
+                buttonColor={theme.colors.primaryContainer}
+                contentStyle={styles.buttonContent}
+                mode="contained-tonal"
                 onPress={() => removeTag(tag)}
+                style={styles.wordChip}
+                testID="add-tag-chip"
+                textColor={theme.colors.onPrimaryContainer}
               >
-                <Text style={{ color: palette.accentText }}>{tag}</Text>
-              </Pressable>
+                {tag}
+              </Button>
             ))}
           </View>
-        </View>
+        </Surface>
         ) : null}
 
         <View style={styles.stepNav}>
-          <Pressable
-            accessibilityLabel={t('add.step.back')}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: activeStepIndex === 0 }}
-            disabled={activeStepIndex === 0}
-            onPress={() => setActiveStep((current) => stepOrder[Math.max(0, stepOrder.indexOf(current) - 1)])}
-            style={[styles.stepNavButton, { backgroundColor: palette.panel }]}
+          <Button
+            accessibilityLabel={activeStepIndex === 0 ? t('add.cancel') : t('add.step.back')}
+            mode="outlined"
+            onPress={() => {
+              if (activeStepIndex === 0) {
+                handleCancel();
+                return;
+              }
+              setActiveStep((current) => stepOrder[Math.max(0, stepOrder.indexOf(current) - 1)]);
+            }}
+            style={styles.stepNavButton}
             testID="add-step-back"
           >
-            <Text style={{ color: palette.ink }}>{t('add.step.back')}</Text>
-          </Pressable>
-          <Pressable
+            {t('add.step.back')}
+          </Button>
+          <Button
             accessibilityLabel={t('add.step.next')}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: activeStepIndex === stepOrder.length - 1 }}
             disabled={activeStepIndex === stepOrder.length - 1}
-            onPress={() => setActiveStep((current) => stepOrder[Math.min(stepOrder.length - 1, stepOrder.indexOf(current) + 1)])}
-            style={[styles.stepNavButton, { backgroundColor: palette.accentMuted }]}
+            mode="contained-tonal"
+            onPress={() =>
+              setActiveStep((current) =>
+                stepOrder[Math.min(stepOrder.length - 1, stepOrder.indexOf(current) + 1)]
+              )
+            }
+            style={styles.stepNavButton}
             testID="add-step-next"
           >
-            <Text style={{ color: palette.accentText }}>{t('add.step.next')}</Text>
-          </Pressable>
+            {t('add.step.next')}
+          </Button>
         </View>
 
         {activeStep === 'details' ? (
-          <Pressable
+          <Button
             accessibilityLabel={editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
-            accessibilityRole="button"
-            testID="add-submit-button"
-            style={[styles.submitButton, { backgroundColor: palette.accent }]}
+            mode="contained"
             onPress={() => void submit()}
+            style={styles.submitButton}
+            testID="add-submit-button"
           >
-            <Text style={[styles.submitLabel, { color: palette.onAccent }]}>
-              {editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
-            </Text>
-          </Pressable>
-        ) : null}
-        {submitted ? (
-          <View testID="add-success" style={styles.successPanel}>
-            <Text
-              accessibilityLiveRegion="polite"
-              style={[styles.status, { color: palette.success ?? palette.accent }]}
-            >
-              {t(editingOfferId ? 'add.updated' : 'add.created')}
-            </Text>
-            {!editingOfferId ? (
-              <Pressable
-                accessibilityLabel={t('add.viewOffer')}
-                accessibilityRole="button"
-                onPress={() => {
-                  closeOverlay();
-                  openTab('offers');
-                }}
-                style={[styles.stepNavButton, { backgroundColor: palette.accentMuted }]}
-                testID="add-view-offer"
-              >
-                <Text style={{ color: palette.accentText }}>{t('add.viewOffer')}</Text>
-              </Pressable>
-            ) : null}
-            <Pressable
-              accessibilityLabel={t('common.done')}
-              accessibilityRole="button"
-              onPress={() => {
-                closeOverlay();
-                if (editingOfferId) {
-                  openTab('account');
-                }
-              }}
-              style={[styles.stepNavButton, { backgroundColor: palette.panel }]}
-              testID="add-done"
-            >
-              <Text style={{ color: palette.ink }}>{t('common.done')}</Text>
-            </Pressable>
-          </View>
-        ) : status ? (
-          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
-            {status}
-          </Text>
+            {editingOfferId ? t('add.submitEdit') : t('add.submitCreate')}
+          </Button>
         ) : null}
           </View>
         </View>
       </ScrollView>
+      <Dialog
+        dismissable={false}
+        dismissableBackButton={false}
+        testID="add-success"
+        visible={submitted}
+      >
+        <Dialog.Title accessibilityLiveRegion="polite" style={{ color: theme.colors.primary }}>
+          {t(editingOfferId ? 'add.updated' : 'add.created')}
+        </Dialog.Title>
+        <Dialog.Actions>
+          {!editingOfferId ? (
+            <Button
+              accessibilityLabel={t('add.viewOffer')}
+              mode="contained-tonal"
+              onPress={() => {
+                closeOverlay();
+                openTab('offers');
+              }}
+              testID="add-view-offer"
+            >
+              {t('add.viewOffer')}
+            </Button>
+          ) : null}
+          <Button
+            accessibilityLabel={t('common.done')}
+            mode="outlined"
+            onPress={() => {
+              closeOverlay();
+              if (editingOfferId) {
+                openTab('account');
+              }
+            }}
+            testID="add-done"
+          >
+            {t('common.done')}
+          </Button>
+        </Dialog.Actions>
+      </Dialog>
+      <Dialog
+        dismissable={false}
+        dismissableBackButton={false}
+        onDismiss={() => setDiscardDialog(null)}
+        testID="add-discard-dialog"
+        visible={discardDialog !== null}
+      >
+        <Dialog.Title>{t('add.discardTitle')}</Dialog.Title>
+        <Dialog.Content>
+          <Text variant="bodyMedium">{t('add.discardBody')}</Text>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button
+            accessibilityLabel={t('add.keepEditing')}
+            mode="text"
+            onPress={() => setDiscardDialog(null)}
+            testID="add-discard-keep"
+          >
+            {t('add.keepEditing')}
+          </Button>
+          <Button
+            accessibilityLabel={t('add.discardConfirm')}
+            buttonColor={theme.colors.error}
+            mode="contained"
+            onPress={confirmDiscard}
+            testID="add-discard-confirm"
+            textColor={theme.colors.onError}
+          >
+            {t('add.discardConfirm')}
+          </Button>
+        </Dialog.Actions>
+      </Dialog>
+      <Snackbar
+        duration={Number.POSITIVE_INFINITY}
+        onDismiss={() => {}}
+        testID="add-status"
+        visible={Boolean(status) && !submitted}
+        wrapperStyle={styles.snackbarWrapper}
+      >
+        <Text variant="labelLarge" style={{ color: statusColor }}>
+          {status}
+        </Text>
+      </Snackbar>
+      <HelpSheet
+        onClose={() => setHelpVisible(false)}
+        returnFocusRef={helpButtonRef}
+        topic="help.contribute"
+        visible={helpVisible}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -1244,26 +1692,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  title: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 28,
-    fontWeight: '700',
-  },
   panel: {
-    borderRadius: 28,
-    borderWidth: 1,
     gap: 12,
     padding: 18,
   },
-  sectionTitle: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 22,
-    fontWeight: '700',
-  },
   imageStage: {
     alignItems: 'center',
-    borderRadius: 24,
-    borderWidth: 1,
+    borderRadius: 16,
     height: 230,
     justifyContent: 'center',
     overflow: 'hidden',
@@ -1272,15 +1707,11 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '100%',
   },
-  emptyImage: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
   thumbnailRow: {
     maxHeight: 74,
   },
   thumbnailWrap: {
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 2,
     marginRight: 10,
     overflow: 'hidden',
@@ -1294,10 +1725,6 @@ const styles = StyleSheet.create({
     height: 68,
     justifyContent: 'center',
     width: 68,
-  },
-  thumbnailPlaceholderText: {
-    fontSize: 11,
-    fontWeight: '700',
   },
   actionRow: {
     flexDirection: 'row',
@@ -1322,43 +1749,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 13,
   },
+  buttonContent: {
+    minHeight: platformTouchFloor,
+  },
   secondaryAction: {
     alignItems: 'center',
     borderRadius: 16,
-    borderWidth: 1,
     flex: 0,
     justifyContent: 'center',
     minHeight: platformTouchFloor,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
-  input: {
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-  },
   textarea: {
-    borderRadius: 18,
-    borderWidth: 1,
     minHeight: 140,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
     textAlignVertical: 'top',
   },
   resultRow: {
-    borderRadius: 14,
-    borderWidth: 1,
+    borderRadius: 16,
     justifyContent: 'center',
     minHeight: platformTouchFloor,
     paddingHorizontal: 12,
     paddingVertical: 12,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
   },
   wordGrid: {
     flexDirection: 'row',
@@ -1367,25 +1779,14 @@ const styles = StyleSheet.create({
   },
   wordChip: {
     alignItems: 'center',
-    borderRadius: 999,
-    borderWidth: 1,
+    borderRadius: 16,
     justifyContent: 'center',
     minHeight: platformTouchFloor,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
   submitButton: {
-    borderRadius: 28,
     paddingVertical: 16,
-  },
-  submitLabel: {
-    fontSize: 16,
-    fontWeight: '800',
-    textAlign: 'center',
-  },
-  status: {
-    fontSize: 14,
-    fontWeight: '700',
   },
   stepProgress: {
     alignItems: 'center',
@@ -1393,18 +1794,24 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
+  progress: {
+    alignSelf: 'stretch',
+    marginBottom: 4,
+  },
+  counter: {
+    textAlign: 'right',
+  },
+  snackbarWrapper: {
+    paddingHorizontal: 16,
+  },
   stepLabel: {
-    borderRadius: 999,
-    fontSize: 13,
-    fontWeight: '800',
+    borderRadius: 16,
     minHeight: 36,
     overflow: 'hidden',
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   stepRemaining: {
-    fontSize: 12,
-    fontWeight: '700',
     marginLeft: 'auto',
   },
   stepNav: {
@@ -1413,15 +1820,10 @@ const styles = StyleSheet.create({
   },
   stepNavButton: {
     alignItems: 'center',
-    borderRadius: 999,
     flex: 1,
     justifyContent: 'center',
     minHeight: platformTouchFloor,
     paddingVertical: 12,
-  },
-  fieldError: {
-    fontSize: 13,
-    fontWeight: '700',
   },
   suggestionSection: {
     gap: 8,
@@ -1433,13 +1835,10 @@ const styles = StyleSheet.create({
   },
   suggestionAction: {
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 16,
     justifyContent: 'center',
     minHeight: platformTouchFloor,
     minWidth: 56,
     paddingHorizontal: 10,
-  },
-  successPanel: {
-    gap: 10,
   },
 });

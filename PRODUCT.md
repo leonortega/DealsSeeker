@@ -4,9 +4,11 @@
 
 ## Platform
 
-adaptive
+android
 
-Mobile-only: iOS and Android are the shipped targets, built from one Expo/React Native codebase with one brand-defined design language. OS-level behavior adapts per platform (Back, gestures, insets, modal semantics, lifecycle); the application UI/UX stays identical on both. (`adaptive` is the recorded value because the product spans multiple native mobile platforms.)
+This phase ships a full Android app from the Expo/React Native codebase. Impeccable evaluations in this phase shall score against the Android platform reference (Material 3, TalkBack, predictive Back, window/IME insets, 48dp touch floor) and the desktop-equivalent OS affordances; iOS is out of scope for this phase and is not a verification gate. The shared codebase keeps iOS compatibility, but no iOS claim is made here.
+
+The longer-term product remains mobile-only across iOS and Android with one brand-defined design language; that multi-platform phase is deferred. (`android` is the recorded value for this phase so critique and audit score the actual shipped surface rather than a platform mix.)
 
 ## Users
 

@@ -1,13 +1,13 @@
 import { type ReactNode, useEffect, useRef } from 'react';
+import { useTheme } from 'react-native-paper';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import type { BottomSheetMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
 import { useApp } from '../hooks/useApp';
 
 /**
- * Brand-styled wrapper around native bottom-sheet behavior. The library owns
- * drag, snap, dismissal and system Back; the visual layer stays DealsSeeker's
- * own. No local BackHandler subscription is installed so the platform's
- * predictive Back / edge swipe stays intact.
+ * Material 3 bottom-sheet wrapper. The library owns drag, snap, dismissal and
+ * system Back; visuals come from the active Paper theme. No local BackHandler
+ * subscription is installed so predictive Back / edge swipe stays intact.
  */
 export function NativeBottomSheet({
   visible,
@@ -18,7 +18,8 @@ export function NativeBottomSheet({
   onClose: () => void;
   children: ReactNode;
 }) {
-  const { palette, openSheet, closeSheet } = useApp();
+  const { openSheet, closeSheet } = useApp();
+  const theme = useTheme();
   const sheetRef = useRef<BottomSheetMethods>(null);
 
   useEffect(() => {
@@ -42,11 +43,11 @@ export function NativeBottomSheet({
       backdropComponent={(props) => (
         <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.52} />
       )}
-      backgroundStyle={{ backgroundColor: palette.card }}
+      backgroundStyle={{ backgroundColor: theme.colors.surface }}
       // Immersive feed chrome uses zIndex 2 and status banners use zIndex 5;
       // the sheet must sit above both so its content stays readable.
       containerStyle={{ zIndex: 1000 }}
-      handleIndicatorStyle={{ backgroundColor: palette.border }}
+      handleIndicatorStyle={{ backgroundColor: theme.colors.onSurfaceVariant }}
     >
       <BottomSheetView>{children}</BottomSheetView>
     </BottomSheet>

@@ -1,28 +1,40 @@
 import { platformTouchFloor } from '../utils/layout';
-import { landmarkFontFamily } from '../utils/typography';
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { Button, Card, ProgressBar, Snackbar, Text, TouchableRipple, useTheme } from 'react-native-paper';
 import * as Location from 'expo-location';
 import { OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
 import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
+import { statusColor } from '../utils/statusNotice';
 import { selectionFeedback } from '../utils/haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { openDirections } from '../utils/maps';
+import { OFFER_ACTION_LABEL_KEYS } from '../components/OfferActionVocabulary';
 import { shorten } from '../utils/format';
 import { resolveEmulatorLocation } from '../utils/emulatorLocation';
 
 export function FavoritesScreen() {
   const { api, overlayRoute, palette, preferences, t } = useApp();
+  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
   const [locationUnavailable, setLocationUnavailable] = useState(false);
   const [retryFailed, setRetryFailed] = useState(false);
-  const { status, reportStatus: reportNotice } = useStatusNotice();
+  const {
+    status,
+    statusTone,
+    statusAction,
+    pending,
+    pendingLabel,
+    reportStatus: reportNotice,
+    reportPending,
+    clearStatus,
+  } = useStatusNotice();
 
-  function reportStatus(message: string | null) {
-    reportNotice(message);
+  function reportStatus(message: string | null, tone: 'neutral' | 'error' | 'success' = 'neutral', action: { label: string; onPress: () => void } | null = null) {
+    reportNotice(message, tone, action);
     announceStatus(message);
   }
 
@@ -85,39 +97,68 @@ export function FavoritesScreen() {
   }
 
   async function removeFavorite(offer: OfferItemDto) {
+    reportPending(t('common.saving'));
+    const previousIndex = offers.findIndex((item) => item.offerId === offer.offerId);
     const result = await api.setOfferFavorite(offer.offerId, { isFavorite: false });
     if (!result.success) {
-      reportStatus(t('favorites.removeFailed'));
+      reportStatus(t('favorites.removeFailed'), 'error');
       return;
     }
 
     setOffers((current) => current.filter((item) => item.offerId !== offer.offerId));
+    reportStatus(t('offers.favoriteReverted'), 'neutral', {
+      label: t('common.undo'),
+      onPress: () => {
+        void api.setOfferFavorite(offer.offerId, { isFavorite: true }).then((undoResult) => {
+          if (!undoResult.success) {
+            reportStatus(t('favorites.removeFailed'), 'error');
+            return;
+          }
+          setOffers((current) => {
+            if (current.some((item) => item.offerId === offer.offerId)) {
+              return current;
+            }
+            const restored = current.slice();
+            restored.splice(previousIndex < 0 ? restored.length : previousIndex, 0, offer);
+            return restored;
+          });
+          reportStatus(t('offers.favoriteUpdated'), 'success');
+        });
+      },
+    });
     selectionFeedback();
   }
+
+  useEffect(() => () => clearStatus(), [clearStatus]);
 
   if (locationUnavailable) {
     return (
       <View style={[styles.unavailableScreen, { backgroundColor: palette.background }]} testID="favorites-location-unavailable">
-        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-          <Text style={[styles.title, { color: palette.ink }]}>{t('favorites.title')}</Text>
+        <Card style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <Text variant="headlineSmall" style={{ color: palette.ink }}>
+            {t('favorites.title')}
+          </Text>
           <View accessible accessibilityRole="alert" style={styles.unavailableCopy}>
-            <Text style={[styles.unavailableTitle, { color: palette.ink }]}>{t('offers.locationUnavailable')}</Text>
-            <Text style={{ color: palette.inkMuted }}>
+            <Text variant="titleMedium" style={{ color: palette.ink }}>
+              {t('offers.locationUnavailable')}
+            </Text>
+            <Text variant="bodyMedium" style={{ color: palette.inkMuted }}>
               {retryFailed ? t('offers.locationRetryFailed') : t('offers.locationUnavailableHint')}
             </Text>
           </View>
-          <Pressable
+          <Button
             accessibilityLabel={t('offers.retryLocation')}
             accessibilityRole="button"
+            buttonColor={palette.panelAlt}
+            mode="contained"
             onPress={() => void load(true)}
-            style={[styles.retryButton, { backgroundColor: palette.panelAlt }]}
+            style={styles.retryButton}
             testID="favorites-location-retry"
+            textColor={palette.ink}
           >
-            <Text style={{ color: palette.ink, fontWeight: '700', textAlign: 'center' }}>
-              {t('offers.retryLocation')}
-            </Text>
-          </Pressable>
-        </View>
+            {t('offers.retryLocation')}
+          </Button>
+        </Card>
       </View>
     );
   }
@@ -128,45 +169,91 @@ export function FavoritesScreen() {
       data={offers}
       keyExtractor={(item) => item.offerId}
       ListHeaderComponent={
-        <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <Card style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <View style={styles.header}>
-            <Text style={[styles.title, { color: palette.ink }]}>{t('favorites.title')}</Text>
+            <Text variant="headlineSmall" style={{ color: palette.ink }}>
+              {t('favorites.title')}
+            </Text>
           </View>
-          {offers.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('favorites.empty')}</Text> : null}
-        </View>
+          {offers.length === 0 ? (
+            <Text variant="bodyMedium" style={{ color: palette.inkMuted }}>
+              {t('favorites.empty')}
+            </Text>
+          ) : null}
+        </Card>
       }
       ListFooterComponent={
-        status ? (
-          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: palette.danger }]}>
-            {status}
-          </Text>
+        pending || status ? (
+          <Snackbar visible onDismiss={() => undefined} style={styles.statusRow} testID="favorites-status">
+            {pending ? <ProgressBar color={palette.accent} /> : null}
+            <Text
+              accessibilityLiveRegion="polite"
+              variant="bodyMedium"
+              style={{ color: statusColor(palette, statusTone) }}
+            >
+              {pending ? pendingLabel : status}
+            </Text>
+            {!pending && statusAction ? (
+              <Button
+                accessibilityLabel={statusAction.label}
+                accessibilityRole="button"
+                mode="text"
+                onPress={statusAction.onPress}
+                textColor={palette.accentText ?? palette.ink}
+              >
+                {statusAction.label}
+              </Button>
+            ) : null}
+          </Snackbar>
         ) : undefined
       }
       renderItem={({ item: offer }) => (
-        <View style={[styles.card, { backgroundColor: palette.panel, borderColor: palette.border }]}>
-          <Text style={[styles.offerTitle, { color: palette.ink }]}>{offer.businessName}</Text>
-          <Text style={{ color: palette.inkMuted }}>{shorten(offer.description, 110)}</Text>
+        <Card style={[styles.card, { backgroundColor: palette.panel, borderColor: palette.border }]}>
+          <Text variant="titleMedium" style={{ color: palette.ink }}>
+            {offer.businessName}
+          </Text>
+          <Text variant="bodyMedium" style={{ color: palette.inkMuted }}>
+            {shorten(offer.description, 110)}
+          </Text>
           <View style={styles.actionRow}>
-            <Pressable
-              accessibilityLabel={preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+            <Button
+              accessibilityLabel={t(OFFER_ACTION_LABEL_KEYS.directions)}
               accessibilityRole="button"
-              style={[styles.button, { backgroundColor: palette.panelAlt }]}
+              buttonColor={palette.panelAlt}
+              mode="contained"
               onPress={() => void openDirections(offer.location, preferences.navigationMode)}
+              style={styles.button}
+              textColor={palette.ink}
             >
-              <Text style={{ color: palette.ink, fontWeight: '700', textAlign: 'center' }}>
-                {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
-              </Text>
-            </Pressable>
-            <Pressable
+              {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+            </Button>
+            <TouchableRipple
               accessibilityLabel={t('offers.favoriteRemove')}
               accessibilityRole="button"
-              style={[styles.button, { backgroundColor: palette.panelAlt }]}
+              accessibilityState={{ selected: true }}
               onPress={() => void removeFavorite(offer)}
+              rippleColor={theme.colors.primary}
+              style={styles.button}
             >
-              <Text style={{ color: palette.danger, fontWeight: '700', textAlign: 'center' }}>{t('offers.favoriteRemove')}</Text>
-            </Pressable>
+              <View style={styles.buttonContent}>
+                <View importantForAccessibility="no-hide-descendants" pointerEvents="none">
+                  <Button
+                    children={null}
+                    buttonColor={palette.panelAlt}
+                    icon="heart"
+                    mode="contained"
+                    onPress={() => void removeFavorite(offer)}
+                    style={styles.m3Button}
+                    textColor={palette.danger}
+                  />
+                </View>
+                <Text variant="labelLarge" style={{ color: palette.danger }}>
+                  {t('offers.favoriteRemove')}
+                </Text>
+              </View>
+            </TouchableRipple>
           </View>
-        </View>
+        </Card>
       )}
       style={{ backgroundColor: palette.background }}
       testID="favorites-scroll"
@@ -190,24 +277,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  title: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 28,
-    fontWeight: '700',
-  },
   card: {
     borderRadius: 18,
     borderWidth: 1,
     gap: 8,
     padding: 14,
   },
-  offerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
   actionRow: {
     flexDirection: 'row',
     gap: 10,
+  },
+  buttonContent: {
+    alignItems: 'center',
+    gap: 4,
+    justifyContent: 'center',
   },
   button: {
     alignItems: 'center',
@@ -218,9 +301,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
-  status: {
-    fontSize: 14,
-    fontWeight: '700',
+  m3Button: {
+    margin: 0,
+  },
+  statusRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
   },
   unavailableScreen: {
     flex: 1,
@@ -238,9 +327,5 @@ const styles = StyleSheet.create({
   },
   unavailableCopy: {
     gap: 8,
-  },
-  unavailableTitle: {
-    fontSize: 18,
-    fontWeight: '800',
   },
 });

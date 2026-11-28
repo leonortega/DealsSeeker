@@ -22,7 +22,7 @@ Keep internal identifiers out of the report form while preserving the existing s
 - `REPORTS.FORM.002-R2`: The Reports view shall not require the user to type an offer identifier; offer context shall come only from the offer-driven Report action defined in `REPORTS.OFFER.PREFILL.001`.
 - `REPORTS.FORM.002-R3`: When no offer context is available, the report shall be submitted without an offer identifier, as defined in `REPORTS.SUBMIT.001-R3`.
 - `REPORTS.FORM.002-R4`: The authenticated user identifier and UTC timestamp shall still be attached to the payload internally, without being presented as editable user input.
-- `REPORTS.FORM.002-R5`: The report message shall remain the only required user input.
+- `REPORTS.FORM.002-R5`: The report reason shall be required in addition to the message, per `REPORTS.REASONS.001`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin

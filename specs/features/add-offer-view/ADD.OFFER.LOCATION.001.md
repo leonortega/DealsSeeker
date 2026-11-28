@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Title**: Add Offer Location Auto-Populate, Confirm, and Live Suggestions
-- **Version**: `v1.9`
+- **Version**: `v2.0`
 - **Status**: Approved
 - **Context/View**: Add Offer View
 - **Priority**: High
@@ -42,6 +42,7 @@ Define location lifecycle during add-offer flow.
 - `ADD.OFFER.LOCATION.001-R23`: When a lookup returns no results, the system shall show a no-results message in the location section.
 - `ADD.OFFER.LOCATION.001-R24`: When a lookup fails, the system shall show an error with a retry path and shall leave the current draft location unchanged.
 - `ADD.OFFER.LOCATION.001-R25`: A disabled `Confirm Location` or `Edit Location` control shall not be operable, and its disabled state shall be exposed to assistive technology.
+- `ADD.OFFER.LOCATION.001-R26`: An offer submission without an explicit location shall be rejected with a plain-language validation error; the system shall not substitute a default coordinate or a location the user did not choose.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -113,6 +114,11 @@ Scenario: Disabled location controls are not operable
   And Edit Location is enabled
   When assistive technology inspects Confirm Location
   Then its disabled state is announced
+Scenario: Missing location is rejected without a substituted coordinate
+  Given an offer submission has no location
+  When the submission is validated
+  Then it is rejected with a field-level location error
+  And no fabricated coordinate is stored or displayed
 ```
 
 ## Example Inputs/Outputs
@@ -122,6 +128,7 @@ Scenario: Disabled location controls are not operable
 
 ## Edge Cases
 - Current location unavailable due to permission/state.
+- A submission whose location is absent or null.
 - Search returns no results.
 - User confirms location without auto-populated value.
 - Reverse-geocoding returns no address for GPS coordinates; UI shows fallback non-coordinate label.
@@ -130,6 +137,8 @@ Scenario: Disabled location controls are not operable
 
 ## Non-Functional Constraints
 - Location state should remain consistent across view updates within the same draft.
+
+- `APP.VALIDATION.001`
 
 ## Related Specs
 - `ADD.OFFER.IMAGE.001`

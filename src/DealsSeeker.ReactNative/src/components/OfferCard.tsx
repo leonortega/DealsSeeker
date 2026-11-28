@@ -1,14 +1,16 @@
 import { platformTouchFloor } from '../utils/layout';
-import { landmarkFontFamily } from '../utils/typography';
-import { Image, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Image, StyleSheet, View, useWindowDimensions } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
+import { Badge, Button, Card, Chip, IconButton, Text, TouchableRipple, useTheme } from 'react-native-paper';
 import { memo, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { OfferAvailabilityVoteType, OfferItemDto } from '../api/types';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { useApp } from '../hooks/useApp';
 import { isSvgImageUri } from '../utils/images';
 import { immersiveInk } from '../utils/theme';
 import { ImmersiveActionIconGlyph } from './ImmersiveActionGlyphs';
-import { OfferActionGlyph, OFFER_ACTION_GLYPHS } from './OfferActionVocabulary';
+import { OfferActionGlyph, OFFER_ACTION_GLYPHS, OFFER_ACTION_LABEL_KEYS } from './OfferActionVocabulary';
 import { formatDistanceMeters, shorten } from '../utils/format';
 
 interface OfferCardProps {
@@ -20,6 +22,9 @@ interface OfferCardProps {
   onDirections: (offer: OfferItemDto) => void;
   onOpenDetail: (offer: OfferItemDto) => void;
   onComments: (offer: OfferItemDto) => void;
+  selectionMode?: boolean;
+  selected?: boolean;
+  onToggleSelection?: (offerId: string) => void;
 }
 
 function HighlightedDescription({ description, query }: { description: string; query: string }) {
@@ -38,11 +43,15 @@ function HighlightedDescription({ description, query }: { description: string; q
   }, [reduced, words]);
 
   if (words.length === 0) {
-    return <Text style={[styles.description, { color: palette.ink }]}>{reduced}</Text>;
+    return (
+      <Text variant="bodyMedium" style={{ color: palette.ink }}>
+        {reduced}
+      </Text>
+    );
   }
 
   return (
-    <Text style={[styles.description, { color: palette.ink }]}>
+    <Text variant="bodyMedium" style={{ color: palette.ink }}>
       {parts.map((part, index) => {
         const highlighted = words.some((word) => part.toLowerCase() === word.toLowerCase());
         return (
@@ -58,6 +67,52 @@ function HighlightedDescription({ description, query }: { description: string; q
   );
 }
 
+/**
+ * TouchableRipple is the press surface because Paper's Button hard-codes its
+ * own accessibilityState; the ripple wrapper keeps the canonical announced
+ * name, role and selected/disabled state while a Paper button supplies the M3 visual.
+ */
+function M3CardAction({
+  accessibilityLabel,
+  accessibilityState,
+  children,
+  disabled,
+  glyph,
+  onPress,
+  style,
+  testID,
+}: {
+  accessibilityLabel: string;
+  accessibilityState?: { selected?: boolean; disabled?: boolean };
+  children?: ReactNode;
+  disabled?: boolean;
+  glyph: ReactNode;
+  onPress: () => void;
+  style: StyleProp<ViewStyle>;
+  testID: string;
+}) {
+  const theme = useTheme();
+  return (
+    <TouchableRipple
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+      accessibilityState={accessibilityState}
+      disabled={disabled}
+      onPress={onPress}
+      rippleColor={theme.colors.primary}
+      style={style}
+      testID={testID}
+    >
+      <View style={styles.actionContent}>
+        <View importantForAccessibility="no-hide-descendants" pointerEvents="none">
+          <Button children={null} icon={() => glyph} onPress={onPress} style={styles.m3Action} />
+        </View>
+        {children}
+      </View>
+    </TouchableRipple>
+  );
+}
+
 function OfferCardRow({
   offer,
   onComments,
@@ -67,8 +122,12 @@ function OfferCardRow({
   onReport,
   onVote,
   query,
+  selectionMode = false,
+  selected = false,
+  onToggleSelection,
 }: OfferCardProps) {
   const { palette, preferences, t } = useApp();
+  const theme = useTheme();
   const { width } = useWindowDimensions();
   const stackActions = width < 720;
   const imageUri = useOfferImageUri(offer.imageUrl);
@@ -82,185 +141,216 @@ function OfferCardRow({
   }, [imageUri, offer.offerId]);
 
   return (
-    <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border, shadowColor: palette.shadow }]}>
-      <Pressable
+    <Card style={styles.card}>
+      {selectionMode ? (
+        <TouchableRipple
+          accessibilityLabel={`${t('offers.select')} ${offer.businessName}`}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: selected }}
+          onPress={() => onToggleSelection?.(offer.offerId)}
+          rippleColor={theme.colors.primary}
+          style={styles.selectionToggle}
+          testID="offer-card-selection"
+        >
+          <Text variant="labelLarge" style={{ color: palette.ink }}>
+            {selected ? '✓' : '○'}
+          </Text>
+        </TouchableRipple>
+      ) : null}
+      <TouchableRipple
         accessibilityLabel={t('offers.openDetail')}
         accessibilityRole="button"
         style={[styles.visual, { backgroundColor: palette.accentMuted }]}
         onPress={() => onOpenDetail(offer)}
         onLongPress={() => onOpenDetail(offer)}
+        rippleColor={theme.colors.primary}
       >
-        {canRenderImage && !imageFailed ? (
-          <Image
-            resizeMode="cover"
-            source={{ uri: imageUri ?? undefined }}
-            style={styles.visualImage}
-            onError={() => setImageFailed(true)}
-          />
-        ) : (
-          <View
-            style={[styles.visualPlaceholder, { backgroundColor: palette.panel, borderColor: palette.border }]}
-          >
-            <Text style={[styles.visualPlaceholderLabel, { color: palette.inkMuted }]}>
-              {t('add.photoPlaceholder')}
-            </Text>
+        <View style={styles.visualContent}>
+          {canRenderImage && !imageFailed ? (
+            <Image
+              resizeMode="cover"
+              source={{ uri: imageUri ?? undefined }}
+              style={styles.visualImage}
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            <View
+              style={[styles.visualPlaceholder, { backgroundColor: palette.panel, borderColor: palette.border }]}
+            >
+              <Text variant="labelSmall" style={{ color: palette.inkMuted }}>
+                {t('add.photoPlaceholder')}
+              </Text>
+            </View>
+          )}
+          <View style={styles.badgeRow}>
+            {offer.isPromoted ? (
+              <Badge style={[styles.badge, { backgroundColor: palette.highlight, color: palette.onHighlight }]}>
+                {t('offers.promoted')}
+              </Badge>
+            ) : null}
+            {offer.isReported ? (
+              <Badge style={[styles.badge, { backgroundColor: palette.danger, color: palette.onDanger }]}>
+                {t('offers.reported')}
+              </Badge>
+            ) : null}
           </View>
-        )}
-        <View style={styles.badgeRow}>
-          {offer.isPromoted ? (
-            <View style={[styles.badge, { backgroundColor: palette.highlight }]}>
-              <Text style={[styles.badgeLabel, { color: palette.onHighlight }]}>{t('offers.promoted')}</Text>
-            </View>
-          ) : null}
-          {offer.isReported ? (
-            <View style={[styles.badge, { backgroundColor: palette.danger }]}>
-              <Text style={[styles.badgeLabel, { color: palette.onDanger }]}>{t('offers.reported')}</Text>
-            </View>
-          ) : null}
-        </View>
-        <View style={styles.visualMeta}>
-          <View style={[styles.metaChip, { backgroundColor: palette.overlay }]}>
-            <Text style={styles.metaChipLabel}>{formatDistanceMeters(offer.distanceMeters)}</Text>
+          <View style={styles.visualMeta}>
+            <Badge style={[styles.metaChip, { backgroundColor: palette.overlay, color: immersiveInk }]}>
+              {formatDistanceMeters(offer.distanceMeters)}
+            </Badge>
+            {offer.imageUrls.length > 1 ? (
+              <Badge style={[styles.metaChip, { backgroundColor: palette.overlay, color: immersiveInk }]}>
+                {String(offer.imageUrls.length)}
+              </Badge>
+            ) : null}
           </View>
-          {offer.imageUrls.length > 1 ? (
-            <View style={[styles.metaChip, { backgroundColor: palette.overlay }]}>
-              <Text style={styles.metaChipLabel}>{offer.imageUrls.length}</Text>
-            </View>
-          ) : null}
         </View>
-      </Pressable>
+      </TouchableRipple>
 
       <View style={styles.body}>
-        <Text style={[styles.businessName, { color: palette.ink }]}>{offer.businessName}</Text>
+        <Text variant="titleLarge" style={{ color: palette.ink }}>
+          {offer.businessName}
+        </Text>
         <HighlightedDescription description={offer.description} query={query} />
 
         {offer.tags.length > 0 ? (
           <View style={styles.tags}>
             {offer.tags.slice(0, 4).map((tag) => (
-              <View key={tag} style={[styles.tag, { backgroundColor: palette.panel, borderColor: palette.border }]}>
-                <Text style={[styles.tagLabel, { color: palette.inkMuted }]}>{tag}</Text>
-              </View>
+              <Chip
+                key={tag}
+                style={[styles.tag, { backgroundColor: palette.panel, borderColor: palette.border }]}
+                textStyle={{ color: palette.inkMuted }}
+              >
+                {tag}
+              </Chip>
             ))}
           </View>
         ) : null}
 
-        <Text style={[styles.meta, { color: palette.inkMuted }]}>
+        <Text variant="bodySmall" style={{ color: palette.inkMuted }}>
           {t('offers.distance')}: {formatDistanceMeters(offer.distanceMeters)}
         </Text>
         {offer.isReported ? (
-          <Text style={[styles.warning, { color: palette.danger }]}>{t('offers.reportedWarning')}</Text>
+          <Text variant="bodySmall" style={{ color: palette.danger }}>
+            {t('offers.reportedWarning')}
+          </Text>
         ) : null}
 
         <View style={[styles.actions, stackActions && styles.actionsStacked]}>
-          <Pressable
-            testID="offer-card-action-directions"
-            accessibilityLabel={preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
-            accessibilityRole="button"
-            style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.accentMuted }]}
+          <M3CardAction
+            accessibilityLabel={t(OFFER_ACTION_LABEL_KEYS.directions)}
+            glyph={<OfferActionGlyph glyph={OFFER_ACTION_GLYPHS.directions} prominent testID="offer-action-glyph" />}
             onPress={() => onDirections(offer)}
+            style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.accentMuted }]}
+            testID="offer-card-action-directions"
           >
-            <OfferActionGlyph
-              glyph={OFFER_ACTION_GLYPHS.directions}
-              prominent
-              testID="offer-action-glyph"
-            />
-            <Text style={[styles.actionLabel, { color: palette.accentText }]}>
+            <Text variant="labelLarge" style={[styles.actionLabel, { color: palette.accentText }]}>
               {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
             </Text>
-          </Pressable>
-          <Pressable
-            testID="offer-card-action-favorite"
-            accessibilityLabel={t('offers.favorite')}
-            accessibilityRole="button"
+          </M3CardAction>
+          <M3CardAction
+            accessibilityLabel={t(OFFER_ACTION_LABEL_KEYS.favorite)}
             accessibilityState={{ selected: offer.isFavorite }}
-            style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: offer.isFavorite ? palette.accentMuted : palette.panel }]}
+            glyph={<OfferActionGlyph active={offer.isFavorite} glyph={OFFER_ACTION_GLYPHS.favorite} testID="offer-action-glyph" />}
             onPress={() => onFavorite(offer)}
+            style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: offer.isFavorite ? palette.accentMuted : palette.panel }]}
+            testID="offer-card-action-favorite"
           >
-            <OfferActionGlyph
-              active={offer.isFavorite}
-              glyph={OFFER_ACTION_GLYPHS.favorite}
-              testID="offer-action-glyph"
-            />
-            <Text style={[styles.actionLabel, { color: offer.isFavorite ? palette.accentText : palette.ink }]}>
+            <Text
+              variant="labelLarge"
+              style={[styles.actionLabel, { color: offer.isFavorite ? palette.accentText : palette.ink }]}
+            >
               {t('offers.favorite')}
             </Text>
-          </Pressable>
-          <Pressable
-            testID="offer-card-action-comments"
+          </M3CardAction>
+          <M3CardAction
             accessibilityLabel={t('offers.action.comments')}
-            accessibilityRole="button"
-            style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.panel }]}
+            glyph={<OfferActionGlyph glyph={OFFER_ACTION_GLYPHS.comments} testID="offer-action-glyph" />}
             onPress={() => onComments(offer)}
+            style={[styles.actionButton, !stackActions && styles.actionButtonRow, { backgroundColor: palette.panel }]}
+            testID="offer-card-action-comments"
           >
-            <OfferActionGlyph glyph={OFFER_ACTION_GLYPHS.comments} testID="offer-action-glyph" />
-            <Text style={[styles.actionLabel, { color: palette.ink }]}>{t('offers.action.comments')}</Text>
-          </Pressable>
+            <Text variant="labelLarge" style={[styles.actionLabel, { color: palette.ink }]}>
+              {t('offers.action.comments')}
+            </Text>
+          </M3CardAction>
         </View>
 
-        <Pressable
-          accessibilityLabel={t('offers.cardMoreActions')}
+        <IconButton
+          accessibilityLabel={t('offers.action.more')}
           accessibilityRole="button"
           accessibilityState={{ expanded: maintenanceOpen }}
+          icon={() => (
+            <Text variant="labelLarge" style={[styles.actionLabel, { color: palette.ink }]}>
+              {t('offers.cardMoreActions')}
+            </Text>
+          )}
           onPress={() => setMaintenanceOpen((current) => !current)}
           style={[styles.actionButton, { backgroundColor: palette.panelAlt }]}
           testID="offer-card-more"
-        >
-          <Text style={[styles.actionLabel, { color: palette.ink }]}>{t('offers.cardMoreActions')}</Text>
-        </Pressable>
+        />
         {maintenanceOpen ? (
           <View style={[styles.voteSection, { borderColor: palette.border }]}>
-            <Text style={[styles.meta, { color: palette.ink }]}>{t('offers.available')}</Text>
+            <Text variant="labelLarge" style={{ color: palette.ink }}>
+              {t('offers.available')}
+            </Text>
             <View style={styles.voteRow}>
-            <Pressable
-              accessibilityLabel={`${t('offers.action.available')} ${offer.positiveAvailabilityCount}`}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
-              disabled={offer.hasCurrentUserVoted}
-              onPress={() => onVote(offer, 1)}
-              style={[
-                styles.voteButton,
-                { backgroundColor: palette.panel },
-                offer.hasCurrentUserVoted && styles.disabled,
-              ]}
-            >
-              <View style={styles.voteContent}>
-                <ImmersiveActionIconGlyph kind="votePositive" />
-                <Text style={{ color: palette.ink }}>{offer.positiveAvailabilityCount}</Text>
-              </View>
-            </Pressable>
-            <Pressable
-              accessibilityLabel={`${t('offers.action.unavailable')} ${offer.negativeAvailabilityCount}`}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
-              disabled={offer.hasCurrentUserVoted}
-              onPress={() => onVote(offer, 2)}
-              style={[
-                styles.voteButton,
-                { backgroundColor: palette.panel },
-                offer.hasCurrentUserVoted && styles.disabled,
-              ]}
-            >
-              <View style={styles.voteContent}>
-                <ImmersiveActionIconGlyph kind="voteNegative" />
-                <Text style={{ color: palette.ink }}>{offer.negativeAvailabilityCount}</Text>
-              </View>
-            </Pressable>
-            <Pressable
-              accessibilityLabel={t('offers.report')}
-              accessibilityRole="button"
-              style={[styles.voteButton, { backgroundColor: palette.panel }]}
-              onPress={() => onReport(offer)}
-            >
-              <View style={styles.voteContent}>
-                <ImmersiveActionIconGlyph kind={OFFER_ACTION_GLYPHS.report} />
-                <Text style={{ color: palette.ink }}>{t('offers.report')}</Text>
-              </View>
-            </Pressable>
+              <M3CardAction
+                accessibilityLabel={`${t('offers.action.available')} ${offer.positiveAvailabilityCount}`}
+                accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
+                disabled={offer.hasCurrentUserVoted}
+                glyph={<ImmersiveActionIconGlyph kind="votePositive" />}
+                onPress={() => onVote(offer, 1)}
+                style={[
+                  styles.voteButton,
+                  { backgroundColor: palette.panel },
+                  offer.hasCurrentUserVoted && styles.disabled,
+                ]}
+                testID="offer-card-vote-available"
+              >
+                <View style={styles.voteContent}>
+                  <Text variant="labelLarge" style={{ color: palette.ink }}>
+                    {offer.positiveAvailabilityCount}
+                  </Text>
+                </View>
+              </M3CardAction>
+              <M3CardAction
+                accessibilityLabel={`${t('offers.action.unavailable')} ${offer.negativeAvailabilityCount}`}
+                accessibilityState={{ disabled: offer.hasCurrentUserVoted }}
+                disabled={offer.hasCurrentUserVoted}
+                glyph={<ImmersiveActionIconGlyph kind="voteNegative" />}
+                onPress={() => onVote(offer, 2)}
+                style={[
+                  styles.voteButton,
+                  { backgroundColor: palette.panel },
+                  offer.hasCurrentUserVoted && styles.disabled,
+                ]}
+                testID="offer-card-vote-unavailable"
+              >
+                <View style={styles.voteContent}>
+                  <Text variant="labelLarge" style={{ color: palette.ink }}>
+                    {offer.negativeAvailabilityCount}
+                  </Text>
+                </View>
+              </M3CardAction>
+              <M3CardAction
+                accessibilityLabel={t('offers.report')}
+                glyph={<ImmersiveActionIconGlyph kind={OFFER_ACTION_GLYPHS.report} />}
+                onPress={() => onReport(offer)}
+                style={[styles.voteButton, { backgroundColor: palette.panel }]}
+                testID="offer-card-report"
+              >
+                <View style={styles.voteContent}>
+                  <Text variant="labelLarge" style={{ color: palette.ink }}>
+                    {t('offers.report')}
+                  </Text>
+                </View>
+              </M3CardAction>
             </View>
           </View>
         ) : null}
       </View>
-    </View>
+    </Card>
   );
 }
 
@@ -268,20 +358,25 @@ export const OfferCard = memo(OfferCardRow);
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 26,
-    borderWidth: 1,
-    elevation: 8,
     overflow: 'hidden',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
+  },
+  selectionToggle: {
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    borderRadius: 999,
+    justifyContent: 'center',
+    minHeight: platformTouchFloor,
+    minWidth: platformTouchFloor,
   },
   visual: {
     height: 160,
-    justifyContent: 'space-between',
     overflow: 'hidden',
     padding: 14,
     position: 'relative',
+  },
+  visualContent: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
   visualImage: {
     bottom: 0,
@@ -300,10 +395,6 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
-  visualPlaceholderLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
   badgeRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -317,36 +408,16 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
   },
   badge: {
-    borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 6,
-  },
-  badgeLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    textTransform: 'uppercase',
   },
   metaChip: {
-    borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 6,
-  },
-  metaChipLabel: {
-    color: immersiveInk,
-    fontSize: 12,
-    fontWeight: '700',
   },
   body: {
     gap: 10,
     padding: 16,
-  },
-  businessName: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  description: {
-    fontSize: 14,
   },
   tags: {
     flexDirection: 'row',
@@ -354,22 +425,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tag: {
-    borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 6,
-  },
-  tagLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  meta: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  warning: {
-    fontSize: 12,
-    fontWeight: '700',
   },
   actions: {
     flexDirection: 'row',
@@ -379,10 +437,14 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: 8,
   },
+  actionContent: {
+    alignItems: 'center',
+    gap: 4,
+    justifyContent: 'center',
+  },
   actionButton: {
     alignItems: 'center',
     borderRadius: 14,
-    gap: 4,
     justifyContent: 'center',
     minHeight: platformTouchFloor,
     paddingHorizontal: 12,
@@ -391,8 +453,10 @@ const styles = StyleSheet.create({
   actionButtonRow: {
     flex: 1,
   },
+  m3Action: {
+    margin: 0,
+  },
   actionLabel: {
-    fontWeight: '700',
     textAlign: 'center',
   },
   voteSection: {

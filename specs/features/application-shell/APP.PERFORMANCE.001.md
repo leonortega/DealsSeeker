@@ -1,21 +1,22 @@
 # Spec: `APP.PERFORMANCE.001`
 
 ## Metadata
-- **Title**: Responsive Startup, Rendering and Image Cache Performance
-- **Version**: `v1.0`
+- **Title**: Responsive Startup, Rendering and Bounded-Cache Performance with Measured Evidence
+- **Version**: `v1.1`
 - **Status**: Approved
 - **Context/View**: Application Shell (startup, offer rendering and image cache)
 - **Priority**: High
 
 ## Purpose
-Make startup and offer rendering respond to real readiness signals instead of fixed waits, and keep repeated rendering and cache growth bounded.
+Make startup and offer rendering respond to real readiness signals instead of fixed waits, keep rendering and cache growth bounded, and prove startup, scroll smoothness, bundle size and cache limits with measured verification evidence.
 
 ## Preconditions
 - The app is launching or an offer list, feed or detail surface is rendering.
 - Offer data and images may be loaded or still resolving.
+- Performance measurement is available on a device representing a target device class.
 
 ## Trigger
-- The app starts, an offer row renders, or an image is written to or read from the local image cache.
+- The app starts, an offer row renders, a feed is scrolled, or an image is written to or read from the local image cache.
 
 ## Requirements
 - `APP.PERFORMANCE.001-R1`: The system shall show the first interactive frame when the signals that the shell actually needs are ready; no fixed-duration splash wait shall be required before that frame.
@@ -26,6 +27,11 @@ Make startup and offer rendering respond to real readiness signals instead of fi
 - `APP.PERFORMANCE.001-R6`: Image cache keys shall be bounded in length and deterministically derived from the image source reference rather than embedding an unbounded raw reference.
 - `APP.PERFORMANCE.001-R7`: Image cache growth shall be bounded by an explicit capacity with an eviction policy; cache size shall not grow without limit as new images are viewed.
 - `APP.PERFORMANCE.001-R8`: Image cache persistence shall not perform synchronous disk writes on the main interface thread; writes shall be deferred or asynchronous and shall not block rendering or input.
+- `APP.PERFORMANCE.001-R9`: Time to the first interactive frame shall be measured on a representative device, checked against a defined budget, and recorded as verification evidence, as defined by `APP.PERFORMANCE.PROFILE.001`.
+- `APP.PERFORMANCE.001-R10`: Scroll smoothness of the offer feed shall be measured during a representative scroll, with recorded evidence of sustained frame rate and no visible jank at the device's refresh rate.
+- `APP.PERFORMANCE.001-R11`: Bundle size shall be measured and tracked against a defined budget, with evidence that the shipped bundle does not grow without bound.
+- `APP.PERFORMANCE.001-R12`: The bounded image cache shall be verified with evidence that capacity and eviction hold under rapid viewing of many images, as defined by `APP.PERFORMANCE.PROFILE.001`.
+- `APP.PERFORMANCE.001-R13`: Gesture, refresh-rate and smoothness evidence shall come from a physical device where one is available; emulator captures may provide breadth but shall not be the sole basis for performance claims.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -75,6 +81,36 @@ Scenario: Cache writes do not block the interface
   When the cache write occurs
   Then no synchronous disk write happens on the main interface thread
   And rendering and input remain responsive
+
+Scenario: Startup time is measured and recorded
+  Given the app is launched on a representative device
+  When time to the first interactive frame is measured
+  Then it meets the defined startup budget
+  And the measurement is recorded as verification evidence
+
+Scenario: Scroll smoothness is measured
+  Given the offer feed contains enough rows for a representative scroll
+  When the user scrolls the feed on a device
+  Then the sustained frame rate meets the smoothness target at the device refresh rate
+  And no visible jank is present in the recorded evidence
+
+Scenario: Bundle size is measured and budgeted
+  Given the shipped application bundle is analyzed
+  When its size is measured
+  Then it is within the defined budget
+  And the measurement is recorded with a comparable baseline
+
+Scenario: Cache limits are evidenced under rapid viewing
+  Given many images are viewed in quick succession
+  When the cache is inspected
+  Then it never exceeds its capacity
+  And eviction is observed in the recorded evidence
+
+Scenario: Performance evidence distinguishes device from emulator
+  Given performance evidence is reviewed
+  When claims about gestures, refresh rate and smoothness are made
+  Then they come from a physical device where one is available
+  And emulator evidence is identified as breadth only
 ```
 
 ## Example Inputs/Outputs
@@ -83,7 +119,9 @@ Scenario: Cache writes do not block the interface
 - Example input: user toggles a favorite press state on a list of twenty offers.
 - Expected output: only the affected row updates; the other nineteen rows keep their rendered output.
 - Example input: cache capacity of fifty images with a fifty-first image viewed.
-- Expected output: a bounded-hash key is used and one older entry is evicted; no unbounded cache growth.
+- Expected output: a bounded key is used and one older entry is evicted; no unbounded cache growth, with recorded evidence.
+- Example input: a measured feed scroll on a 90 Hz device.
+- Expected output: sustained frame rate near the refresh rate with no visible jank, recorded as evidence.
 
 ## Edge Cases
 - Connectivity failure makes the profile request fail — the shell still renders usable content.
@@ -91,6 +129,7 @@ Scenario: Cache writes do not block the interface
 - Very long localized image URLs with query strings.
 - Large text sizes and long descriptions increase render cost without reintroducing per-render recomputation.
 - Rapid scrolling causes many images to be cached in a short period.
+- Measurement device class differs from the slowest supported device class.
 
 ## Non-Functional Constraints
 - No fixed startup delay shall be introduced as a substitute for readiness detection.
@@ -104,3 +143,4 @@ Scenario: Cache writes do not block the interface
 - `OFFERS.DETAIL.ACTIONS.001`
 - `ADD.OFFER.SEQUENCED.001`
 - `ADD.OFFER.UX.001`
+- `APP.PERFORMANCE.PROFILE.001`

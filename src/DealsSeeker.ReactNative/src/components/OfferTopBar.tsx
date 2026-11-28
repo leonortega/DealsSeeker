@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
+import { IconButton, Text, useTheme } from 'react-native-paper';
 import { platformTouchFloor } from '../utils/layout';
 import type { Palette } from '../utils/theme';
-import { landmarkFontFamily } from '../utils/typography';
-import { PlatformTabIcon } from './PlatformTabIcon';
 
 export interface OfferTopBarProps {
   headerControl: ReactNode;
@@ -28,6 +27,8 @@ export function OfferTopBar({
   title,
   titleColor,
 }: OfferTopBarProps) {
+  const theme = useTheme();
+
   return (
     <View
       pointerEvents="box-none"
@@ -39,18 +40,28 @@ export function OfferTopBar({
         style={[styles.logo, { backgroundColor: palette.panel }]}
         testID="brand-mark"
       />
-      {isNarrow ? null : <Text style={[styles.title, { color: titleColor }]}>{title}</Text>}
+      {isNarrow ? null : (
+        <Text style={{ color: titleColor }} variant="titleLarge">
+          {title}
+        </Text>
+      )}
       <View pointerEvents="box-none" style={styles.modeSlot}>{headerControl}</View>
       <View pointerEvents="box-none" style={styles.actions}>
         {onSearch ? (
-          <Pressable
+          <IconButton
             accessibilityLabel={searchLabel}
             accessibilityRole="button"
+            contentStyle={styles.iconButton}
+            icon="magnify"
+            iconColor={theme.colors.onSurface}
             onPress={onSearch}
-            style={[styles.iconButton, { backgroundColor: palette.panel, borderColor: palette.border }]}
-          >
-            <PlatformTabIcon color={palette.ink} name="search" size={20} />
-          </Pressable>
+            rippleColor={theme.colors.primary}
+            size={20}
+            style={[
+              styles.iconButton,
+              { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
+            ]}
+          />
         ) : (
           <View style={styles.searchSlot} />
         )}
@@ -74,11 +85,6 @@ const styles = StyleSheet.create({
     height: 40,
     resizeMode: 'contain',
     width: 40,
-  },
-  title: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 18,
-    fontWeight: '700',
   },
   modeSlot: {
     maxWidth: 360,

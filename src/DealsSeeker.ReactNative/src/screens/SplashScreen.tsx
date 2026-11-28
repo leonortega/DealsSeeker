@@ -1,18 +1,26 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Surface, Text, useTheme } from 'react-native-paper';
 import { useApp } from '../hooks/useApp';
 
 export function SplashScreen() {
-  const { palette, t } = useApp();
+  const { t } = useApp();
+  const theme = useTheme();
 
   return (
-    <View style={[styles.root, { backgroundColor: palette.background }]}>
-      <Image
-        source={require('../../assets/brand/logo-stacked.png')}
-        style={styles.brandLogo}
+    <Surface
+      elevation={0}
+      style={[styles.root, { backgroundColor: theme.colors.surface }]}
+      testID="splash-surface"
+    >
+      <Text
+        accessibilityRole="header"
+        style={{ color: theme.colors.onSurface }}
         testID="brand-mark"
-      />
-
-    </View>
+        variant="displaySmall"
+      >
+        {t('app.title')}
+      </Text>
+    </Surface>
   );
 }
 
@@ -22,11 +30,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
-  },
-  brandLogo: {
-    height: 152,
-    marginBottom: 18,
-    resizeMode: 'contain',
-    width: 240,
   },
 });

@@ -8,7 +8,7 @@
 - **Priority**: Medium
 
 ## Purpose
-Give the light and dark themes a warmer, more optimistic palette while keeping the Trail Map identity and contrast floors.
+Give the light and dark themes a warmer, more optimistic M3 palette while keeping the contrast floors.
 
 ## Preconditions
 - The active theme is light (Golden Hour) or dark (Lantern).
@@ -21,8 +21,8 @@ Give the light and dark themes a warmer, more optimistic palette while keeping t
 - `APP.THEME.003-R2`: Body and metadata text shall keep at least 4.5:1 contrast against its surface, and control boundaries at least 3:1.
 - `APP.THEME.003-R3`: Text on the accent shall use a dedicated `onAccent` role — white in light theme, forest ink in dark theme — so primary actions stay legible in both.
 - `APP.THEME.003-R4`: A reserved `highlight` role (honey in light, lantern gold in dark) shall be used only for offer signals such as promoted badges, with `onHighlight` forest ink text.
-- `APP.THEME.003-R5`: The highlight role shall not replace the terracotta waypoint accent for primary actions, selected tabs, selected chips or the active indicator.
-- `APP.THEME.003-R6`: The Night Footer Rule surfaces shall remain unchanged in both themes.
+- `APP.THEME.003-R5`: The highlight role shall follow the active Material 3 color roles for primary actions, selected tabs, selected chips and the active indicator.
+- `APP.THEME.003-R6`: Material 3 navigation surfaces shall remain unchanged in both themes.
 - `APP.THEME.003-R7`: Success, danger and muted text roles shall keep their semantic meaning and meet the contrast floors of R2.
 
 ## Acceptance Criteria (BDD)

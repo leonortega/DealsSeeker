@@ -1,27 +1,28 @@
-Feature: Landmark typography and reading-size scaling across platforms
+Feature: Material 3 type scale and reading-size scaling
   As a DealsSeeker user on either iOS or Android
-  I want the brand's serif landmarks to render and all text to follow my reading size
-  So that the visual system reads the same everywhere and stays legible
+  I want every string to use the Material 3 type scale and default typeface
+  So that the visual system is consistent and stays legible at my reading size
 
-  Scenario: Landmarks render as serif on both platforms
-    Given the same landmark text is displayed on iOS and Android
+  Scenario: All text uses the Material 3 default typeface
+    Given the same screen is displayed on iOS and Android
     When the views are rendered
-    Then both platforms show a serif face for that text
-    And the hierarchy matches the design system
+    Then every text role uses the Material 3 default typeface
+    And no serif, Georgia or Roboto Serif face appears
 
-  Scenario: Operational text stays sans
-    Given a view with descriptions, metadata and buttons
+  Scenario: No brand and plain face split remains
+    Given a view with titles, descriptions, metadata and buttons
     When the view is rendered
-    Then those strings use the system sans face
+    Then all strings share the same typeface
+    And no string class changes face by brand role
 
   Scenario: Text scales beyond 1.2x with the system setting
     Given the system reading size is set to twice the default
-    When landmark, label and body text are rendered
+    When title, label and body text are rendered
     Then each grows with the setting
     And no cap limits growth at 1.2 times the default
 
-  Scenario: Long localized headline wraps rather than truncates
-    Given a landmark string substantially longer than its English source
+  Scenario: Long localized title wraps rather than truncates
+    Given a title string substantially longer than its English source
     When it is rendered at 200 percent text size
     Then it wraps at word boundaries rather than truncating
     And no glyph is clipped or overlaps a control
@@ -35,5 +36,29 @@ Feature: Landmark typography and reading-size scaling across platforms
   Scenario: Hierarchy survives large-scale mixed text
     Given a heading and its body copy at the largest reading size
     When they are rendered together
-    Then the heading keeps its serif landmark role
-    And the body stays on the sans face and wraps without overlap
+    Then the heading keeps its Material 3 type role
+    And the body stays on the same typeface and wraps without overlap
+
+  Scenario: Material 3 type scale covers every text role
+    Given screens with display, headline, title, body and label text
+    When their text is rendered
+    Then each maps to a Material 3 type scale token in Large, Medium or Small
+    And no hand-picked per-screen size replaces a token
+
+  Scenario: Emphasized variants are used for emphasis only
+    Given component labels and an editorial headline
+    When text is rendered
+    Then emphasized Material 3 variants appear only where emphasis is called for
+    And component defaults stay on the regular scale tokens
+
+  Scenario: No legacy serif fallback is introduced
+    Given a device where a serif face is available
+    When text is rendered
+    Then no text role selects that serif face
+    And the Material 3 default face is used for every role
+
+  Scenario: Line height adapts without clipping
+    Given a language script with tall glyphs at an elevated reading size
+    When text is rendered
+    Then the role's line height adapts to the script
+    And no glyph is clipped or overlaps an adjacent row

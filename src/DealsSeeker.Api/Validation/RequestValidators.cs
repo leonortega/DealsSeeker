@@ -73,9 +73,14 @@ public static class RequestValidators
             errors["images"] = [$"Each image must be at most {RequestLimits.MaxImageDataUrlLength} characters."];
         }
 
-        if (request.Location is not null)
+        var location = request.Location?.Position;
+        if (location is null)
         {
-            AddCoordinateErrors(errors, request.Location.Position, "location.position");
+            errors["location"] = ["Location is required."];
+        }
+        else
+        {
+            AddCoordinateErrors(errors, location, "location.position");
         }
 
         return errors;

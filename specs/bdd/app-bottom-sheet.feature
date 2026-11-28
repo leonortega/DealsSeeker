@@ -79,3 +79,21 @@ Feature: Native bottom-sheet behavior for overlays
     When each is opened
     Then each uses this sheet system
     And none introduces a separate full-screen modal or a second overlay pattern
+
+  Scenario: Sheets use a Material 3 pattern with a 48 dp drag handle
+    Given the user opens an overlay surface
+    When the sheet is rendered
+    Then it shall follow a Material 3 bottom-sheet pattern with a visible drag handle of at least 48 dp
+    And it shall rest at the same snap point with the same brand styling
+
+  Scenario: The sheet pattern keeps one modality and dismissal rules
+    Given an overlay sheet with unsaved edits is open
+    When the user drags the handle down
+    Then the existing discard confirmation shall be shown
+    And no second sheet or full-screen modal shall be introduced
+
+  Scenario: Large text and a tall keyboard keep the handle usable
+    Given large text scaling and a tall keyboard on a short viewport
+    When the sheet is visible
+    Then the 48 dp drag handle and snap points shall remain usable
+    And the input and primary action shall stay above the keyboard

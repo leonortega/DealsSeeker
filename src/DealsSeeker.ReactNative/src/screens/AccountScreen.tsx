@@ -1,12 +1,25 @@
-import { landmarkFontFamily } from '../utils/typography';
+import {
+  Avatar,
+  Button,
+  Dialog,
+  Divider,
+  List,
+  Portal,
+  RadioButton,
+  Snackbar,
+  Surface,
+  Switch,
+  Text,
+  useTheme,
+} from 'react-native-paper';
 import { useEffect, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { OfferItemDto, ThemeMode, ThemeWorld, UserProfileDto } from '../api/types';
 import { AvatarPicker } from '../components/AvatarPicker';
 import { useApp } from '../hooks/useApp';
 import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
-import { statusColor, type StatusTone } from '../utils/statusNotice';
+import type { StatusTone } from '../utils/statusNotice';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { avatarEmoji } from '../utils/avatars';
 import { shorten } from '../utils/format';
@@ -26,16 +39,23 @@ const themeWorlds: Array<{ world: ThemeWorld; labelKey: string }> = [
 ];
 
 export function AccountScreen() {
-  const { activeTab, api, avatarId, logout, openAddOffer, palette, preferences, saveAvatar, setLanguage, setNavigationMode, setThemeMode, setThemeWorld, t } =
+  const { activeTab, api, avatarId, logout, openAddOffer, preferences, saveAvatar, setLanguage, setNavigationMode, setThemeMode, setThemeWorld, t } =
     useApp();
+  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState<UserProfileDto | null>(null);
   const [offers, setOffers] = useState<OfferItemDto[]>([]);
+  const [pendingRemoval, setPendingRemoval] = useState<OfferItemDto | null>(null);
   const { status, statusTone, reportStatus: reportNotice } = useStatusNotice();
+  const carMode = preferences.navigationMode === 'car';
 
   function reportStatus(message: string | null, tone: StatusTone = 'neutral') {
     reportNotice(message, tone);
     announceStatus(message);
+  }
+
+  function toggleNavigationMode() {
+    void setNavigationMode(carMode ? 'pedestrian' : 'car');
   }
 
   async function selectAvatar(nextAvatarId: string) {
@@ -67,188 +87,208 @@ export function AccountScreen() {
     return null;
   }
 
-  async function removeOffer(offer: OfferItemDto) {
-    Alert.alert(t('account.removeOffer'), t('account.removePrompt'), [
-      { text: t('common.no') },
-      {
-        text: t('common.yes'),
-        onPress: () => {
-          void (async () => {
-            const result = await api.deleteOffer(offer.offerId);
-            if (!result.success) {
-              reportStatus(t('account.offerRemoveFailed'), 'error');
-              return;
-            }
+  async function confirmRemoval() {
+    const offer = pendingRemoval;
+    setPendingRemoval(null);
+    if (!offer) {
+      return;
+    }
 
-            setOffers((current) => current.filter((item) => item.offerId !== offer.offerId));
-            reportStatus(t('account.offerRemoved'));
-          })();
-        },
-      },
-    ]);
+    const result = await api.deleteOffer(offer.offerId);
+    if (!result.success) {
+      reportStatus(t('account.offerRemoveFailed'), 'error');
+      return;
+    }
+
+    setOffers((current) => current.filter((item) => item.offerId !== offer.offerId));
+    reportStatus(t('account.offerRemoved'));
   }
 
+  const statusColor =
+    statusTone === 'error'
+      ? theme.colors.error
+      : statusTone === 'success'
+        ? theme.colors.primary
+        : theme.colors.inverseOnSurface;
+
   return (
-    <FlatList
-      contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}
-      data={offers}
-      keyExtractor={(item) => item.offerId}
-      style={{ backgroundColor: palette.background }}
-      testID="account-scroll"
-      ListHeaderComponent={
-        <>
-          <View style={[styles.hero, { backgroundColor: palette.panelAlt, borderColor: palette.border }]}>
-        <View style={styles.heroTop}>
-          <View style={[styles.avatar, { backgroundColor: palette.accentMuted }]}>
-            <Text style={[styles.avatarText, { color: palette.accentText }]}>{avatarEmoji(profile?.avatarId ?? avatarId)}</Text>
-          </View>
-          <Text style={[styles.heroTitle, { color: palette.ink }]}>{profile?.displayName ?? t('account.title')}</Text>
-        </View>
-        <View style={styles.accountDetails}>
-          <Text numberOfLines={2} style={[styles.email, { color: palette.inkMuted }]}>{profile?.email ?? ''}</Text>
-          <Pressable
-            accessibilityLabel={t('account.logout')}
-            accessibilityRole="button"
-            style={[styles.logout, { backgroundColor: palette.danger }]}
-            onPress={() => void logout()}
-          >
-            <Text style={[styles.logoutLabel, { color: palette.onDanger }]}>{t('account.logout')}</Text>
-          </Pressable>
-        </View>
-      </View>
-
-      <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.panelTitle, { color: palette.ink }]}>{t('account.settings')}</Text>
-        <View style={styles.settingGroup}>
-          <Text style={[styles.settingLabel, { color: palette.inkMuted }]}>{t('settings.world')}</Text>
-          <View accessibilityLabel={t('settings.world')} accessibilityRole="radiogroup" style={styles.row}>
-            {themeWorlds.map(({ world, labelKey }) => {
-              const selected = preferences.themeWorld === world;
-              return (
-                <Pressable
-                  key={world}
-                  accessibilityLabel={t(labelKey)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                  style={[
-                    styles.choice,
-                    { backgroundColor: selected ? palette.accent : palette.panel, borderColor: palette.border },
-                  ]}
-                  onPress={() => void setThemeWorld(world)}
+    <View style={styles.root}>
+      <FlatList
+        contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom }]}
+        data={offers}
+        keyExtractor={(item) => item.offerId}
+        style={{ backgroundColor: theme.colors.background }}
+        testID="account-scroll"
+        ListHeaderComponent={
+          <>
+            <Surface elevation={1} style={[styles.panel, { backgroundColor: theme.colors.surface }]}>
+              <View style={styles.heroTop}>
+                <Avatar.Text
+                  color={theme.colors.onPrimaryContainer}
+                  label={avatarEmoji(profile?.avatarId ?? avatarId)}
+                  size={56}
+                  style={{ backgroundColor: theme.colors.primaryContainer }}
+                />
+                <Text variant="titleLarge">{profile?.displayName ?? t('account.title')}</Text>
+              </View>
+              <View style={styles.accountDetails}>
+                <Text numberOfLines={2} variant="bodyMedium">
+                  {profile?.email ?? ''}
+                </Text>
+                <Button
+                  accessibilityLabel={t('account.logout')}
+                  buttonColor={theme.colors.error}
+                  contentStyle={styles.buttonContent}
+                  mode="contained"
+                  onPress={() => void logout()}
+                  style={styles.logout}
+                  textColor={theme.colors.onError}
                 >
-                  <Text style={{ color: selected ? palette.onAccent : palette.ink }}>{t(labelKey)}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-        <View style={styles.settingGroup}>
-          <Text style={[styles.settingLabel, { color: palette.inkMuted }]}>{t('settings.theme')}</Text>
-          <View accessibilityLabel={t('settings.theme')} accessibilityRole="radiogroup" style={styles.row}>
-            {themeOptions.map(({ mode, labelKey }) => {
-              const selected = preferences.themeMode === mode;
-              return (
-                <Pressable
-                  key={mode}
-                  accessibilityLabel={t(labelKey)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                  style={[
-                    styles.choice,
-                    { backgroundColor: selected ? palette.accent : palette.panel, borderColor: palette.border },
-                  ]}
-                  onPress={() => void setThemeMode(mode)}
+                  {t('account.logout')}
+                </Button>
+              </View>
+            </Surface>
+
+            <Surface elevation={1} style={[styles.panel, { backgroundColor: theme.colors.surface }]}>
+              <Text variant="titleLarge">{t('account.settings')}</Text>
+              <List.Section>
+                <Text variant="labelMedium">{t('settings.world')}</Text>
+                <RadioButton.Group
+                  onValueChange={(value) => void setThemeWorld(value as ThemeWorld)}
+                  value={preferences.themeWorld}
                 >
-                  <Text style={{ color: selected ? palette.onAccent : palette.ink }}>{t(labelKey)}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-        <View style={styles.row}>
-          <Pressable
-            accessibilityLabel={t('nav.language')}
-            accessibilityRole="button"
-            style={[styles.choice, { backgroundColor: palette.panel, borderColor: palette.border }]}
-            onPress={() => void setLanguage(preferences.language === 'en' ? 'es' : 'en')}
-          >
-            <Text style={{ color: palette.ink }}>{preferences.language.toUpperCase()}</Text>
-            <PlatformTabIcon color={palette.inkMuted} name="chevronForward" size={18} />
-          </Pressable>
-          <Pressable
-            accessibilityLabel={preferences.navigationMode === 'car' ? t('nav.car') : t('nav.pedestrian')}
-            accessibilityRole="button"
-            accessibilityState={{ selected: preferences.navigationMode === 'car' }}
-            style={[styles.choice, { backgroundColor: palette.panel, borderColor: palette.border }]}
-            onPress={() => void setNavigationMode(preferences.navigationMode === 'car' ? 'pedestrian' : 'car')}
-          >
-            <Text style={{ color: palette.ink }}>
-              {preferences.navigationMode === 'car' ? t('nav.car') : t('nav.pedestrian')}
-            </Text>
-            <PlatformTabIcon color={palette.inkMuted} name="chevronForward" size={18} />
-          </Pressable>
-        </View>
-      </View>
+                  {themeWorlds.map(({ world, labelKey }) => (
+                    <RadioButton.Item
+                      accessibilityLabel={t(labelKey)}
+                      key={world}
+                      label={t(labelKey)}
+                      style={styles.choice}
+                      value={world}
+                    />
+                  ))}
+                </RadioButton.Group>
+                <Divider />
+                <Text variant="labelMedium">{t('settings.theme')}</Text>
+                <RadioButton.Group
+                  onValueChange={(value) => void setThemeMode(value as ThemeMode)}
+                  value={preferences.themeMode}
+                >
+                  {themeOptions.map(({ mode, labelKey }) => (
+                    <RadioButton.Item
+                      accessibilityLabel={t(labelKey)}
+                      key={mode}
+                      label={t(labelKey)}
+                      style={styles.choice}
+                      value={mode}
+                    />
+                  ))}
+                </RadioButton.Group>
+                <Divider />
+                <List.Item
+                  accessibilityLabel={t('nav.language')}
+                  accessibilityRole="button"
+                  left={() => <Text variant="labelLarge">{preferences.language.toUpperCase()}</Text>}
+                  onPress={() => void setLanguage(preferences.language === 'en' ? 'es' : 'en')}
+                  right={() => (
+                    <PlatformTabIcon color={theme.colors.onSurfaceVariant} name="chevronForward" size={18} />
+                  )}
+                  style={styles.listItem}
+                  title={t('nav.language')}
+                />
+                <List.Item
+                  accessibilityLabel={carMode ? t('nav.car') : t('nav.pedestrian')}
+                  accessibilityRole="button"
+                  onPress={toggleNavigationMode}
+                  right={() => (
+                    <View style={styles.navAffordance}>
+                      <Switch
+                        accessibilityLabel={carMode ? t('nav.car') : t('nav.pedestrian')}
+                        onValueChange={toggleNavigationMode}
+                        value={carMode}
+                      />
+                      <PlatformTabIcon color={theme.colors.onSurfaceVariant} name="chevronForward" size={18} />
+                    </View>
+                  )}
+                  style={styles.listItem}
+                  title={carMode ? t('nav.car') : t('nav.pedestrian')}
+                />
+              </List.Section>
+            </Surface>
 
-      <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.panelTitle, { color: palette.ink }]}>{t('settings.avatar')}</Text>
-        <AvatarPicker selectedAvatarId={avatarId} onSelect={(nextAvatarId) => void selectAvatar(nextAvatarId)} />
-      </View>
+            <Surface elevation={1} style={[styles.panel, { backgroundColor: theme.colors.surface }]}>
+              <Text variant="titleLarge">{t('settings.avatar')}</Text>
+              <AvatarPicker selectedAvatarId={avatarId} onSelect={(nextAvatarId) => void selectAvatar(nextAvatarId)} />
+            </Surface>
 
-          <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-            <Text style={[styles.panelTitle, { color: palette.ink }]}>{t('account.offers')}</Text>
-            {offers.length === 0 ? <Text style={{ color: palette.inkMuted }}>{t('account.noOffers')}</Text> : null}
-          </View>
-        </>
-      }
-      ListFooterComponent={
-        status ? (
-          <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
-            {status}
-          </Text>
-        ) : undefined
-      }
-      renderItem={({ item: offer }) => (
-        <View style={[styles.offerCard, { backgroundColor: palette.panel, borderColor: palette.border }]}>
-          <Text style={[styles.offerTitle, { color: palette.ink }]}>{offer.businessName}</Text>
-          <Text style={{ color: palette.inkMuted }}>{shorten(offer.description, 100)}</Text>
-          <View style={styles.actionRow}>
-            <Pressable
-              accessibilityLabel={t('account.editOffer')}
-              accessibilityRole="button"
-              style={[styles.smallButton, { backgroundColor: palette.accentMuted }]}
-              onPress={() => openAddOffer(offer.offerId)}
-            >
-              <Text style={{ color: palette.accentText }}>{t('account.editOffer')}</Text>
-            </Pressable>
-            <Pressable
-              accessibilityLabel={t('account.removeOffer')}
-              accessibilityRole="button"
-              style={[styles.smallButton, { backgroundColor: palette.panelAlt }]}
-              onPress={() => removeOffer(offer)}
-            >
-              <Text style={{ color: palette.danger }}>{t('account.removeOffer')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
-    />
+            <Surface elevation={1} style={[styles.panel, { backgroundColor: theme.colors.surface }]}>
+              <Text variant="titleLarge">{t('account.offers')}</Text>
+              {offers.length === 0 ? <Text variant="bodyMedium">{t('account.noOffers')}</Text> : null}
+            </Surface>
+          </>
+        }
+        renderItem={({ item: offer }) => (
+          <Surface elevation={1} style={[styles.offerCard, { backgroundColor: theme.colors.surface }]}>
+            <Text variant="titleMedium">{offer.businessName}</Text>
+            <Text variant="bodyMedium">{shorten(offer.description, 100)}</Text>
+            <View style={styles.actionRow}>
+              <Button
+                accessibilityLabel={t('account.editOffer')}
+                contentStyle={styles.buttonContent}
+                mode="contained-tonal"
+                onPress={() => openAddOffer(offer.offerId)}
+                style={styles.smallButton}
+              >
+                {t('account.editOffer')}
+              </Button>
+              <Button
+                accessibilityLabel={t('account.removeOffer')}
+                contentStyle={styles.buttonContent}
+                mode="text"
+                onPress={() => setPendingRemoval(offer)}
+                style={styles.smallButton}
+                textColor={theme.colors.error}
+              >
+                {t('account.removeOffer')}
+              </Button>
+            </View>
+          </Surface>
+        )}
+      />
+
+      <Portal>
+        <Dialog onDismiss={() => setPendingRemoval(null)} visible={pendingRemoval !== null}>
+          <Dialog.Title>{t('account.removeOffer')}</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">{t('account.removePrompt')}</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setPendingRemoval(null)}>{t('common.no')}</Button>
+            <Button onPress={() => void confirmRemoval()}>{t('common.yes')}</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
+      <Snackbar
+        duration={Number.POSITIVE_INFINITY}
+        onDismiss={() => reportStatus(null)}
+        visible={Boolean(status)}
+        wrapperStyle={styles.statusWrapper}
+      >
+        <Text style={{ color: statusColor, fontWeight: '700' }}>{status}</Text>
+      </Snackbar>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   content: {
     gap: 14,
     paddingBottom: 24,
   },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  hero: {
-    borderRadius: 28,
-    borderWidth: 1,
+  panel: {
     gap: 14,
     padding: 18,
   },
@@ -257,87 +297,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 14,
   },
-  avatar: {
-    alignItems: 'center',
-    borderRadius: 24,
-    height: 56,
-    justifyContent: 'center',
-    width: 56,
-  },
-  avatarText: {
-    fontSize: 26,
-  },
-  heroTitle: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 24,
-    fontWeight: '700',
-  },
   accountDetails: {
     alignItems: 'flex-start',
     flexDirection: 'column',
     gap: 8,
     marginTop: 4,
   },
-  email: {
-    flexShrink: 1,
-  },
   logout: {
-    alignItems: 'center',
     alignSelf: 'flex-start',
-    borderRadius: 14,
-    justifyContent: 'center',
+  },
+  buttonContent: {
     minHeight: platformTouchFloor,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  logoutLabel: {
-    fontWeight: '800',
-  },
-  panel: {
-    borderRadius: 28,
-    borderWidth: 1,
-    gap: 12,
-    padding: 18,
-  },
-  panelTitle: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  settingGroup: {
-    gap: 8,
-  },
-  settingLabel: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  row: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
   },
   choice: {
-    alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 6,
-    justifyContent: 'center',
+    backgroundColor: 'transparent',
     minHeight: platformTouchFloor,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+  },
+  listItem: {
+    minHeight: platformTouchFloor,
+  },
+  navAffordance: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
   },
   offerCard: {
-    borderRadius: 18,
-    borderWidth: 1,
     gap: 8,
     padding: 14,
-  },
-  offerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
   },
   actionRow: {
     flexDirection: 'row',
@@ -345,15 +331,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   smallButton: {
-    alignItems: 'center',
-    borderRadius: 12,
-    justifyContent: 'center',
-    minHeight: platformTouchFloor,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    flex: 1,
   },
-  status: {
-    fontSize: 14,
-    fontWeight: '700',
+  statusWrapper: {
+    paddingHorizontal: 16,
   },
 });

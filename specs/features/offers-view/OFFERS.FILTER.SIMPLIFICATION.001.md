@@ -22,7 +22,7 @@ Reduce the visible filter decisions in Offers from five coverage chips to one gl
 - `OFFERS.FILTER.SIMPLIFICATION.001-R2`: Selecting a distance shall apply it to the search immediately and keep the chosen value visible in the control.
 - `OFFERS.FILTER.SIMPLIFICATION.001-R3`: The query input and Favorites-only control shall remain directly visible where they are today.
 - `OFFERS.FILTER.SIMPLIFICATION.001-R4`: The same control and distance options shall be used in the standard Offers view and the immersive search sheet.
-- `OFFERS.FILTER.SIMPLIFICATION.001-R5`: The control shall use the pill shape, meet the touch floor, and expose its current value and selected state to assistive technology.
+- `OFFERS.FILTER.SIMPLIFICATION.001-R5`: The control shall use Material 3 shape and color roles, meet the touch floor, and expose its current value and selected state to assistive technology.
 - `OFFERS.FILTER.SIMPLIFICATION.001-R6`: Search behavior, result ordering and the supported distance values shall not change.
 
 ## Acceptance Criteria (BDD)
@@ -65,10 +65,11 @@ Scenario: Assistive technology reads the current distance
 
 ## Non-Functional Constraints
 - No new picker dependency; the expanded options stay within the presenting surface rather than opening a nested sheet.
-- The waypoint accent remains reserved for the active path; the selected distance keeps its muted fill and accent text.
+- The selected distance uses the active M3 role colors; no second accent language is introduced.
 - Localized labels and EN/ES parity are preserved.
 
 ## Related Specs
+- `OFFERS.SEARCH.RECENTS.001`
 - `OFFERS.SEARCH.001`
 - `APP.ADAPTIVE.UX.002`
 - `APP.BOTTOM_SHEET.001`

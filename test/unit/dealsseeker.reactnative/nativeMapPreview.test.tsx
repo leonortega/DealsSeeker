@@ -27,6 +27,16 @@ describe('NativeMapPreview', () => {
     expect(screen.getByTestId('rn-map')).toBeTruthy();
   });
 
+  it('uses a Material 3 type role for its text (APP.TYPOGRAPHY.001-R7)', () => {
+    const source = require('fs').readFileSync(
+      require('path').resolve(__dirname, '../../../src/DealsSeeker.ReactNative/src/components/NativeMapPreview.tsx'),
+      'utf8'
+    ) as string;
+    expect(source).toMatch(/from 'react-native-paper'/);
+    expect(source).toMatch(/variant="/);
+    expect(source).not.toMatch(/from 'react-native'.*\bText\b/);
+  });
+
   it('clips the map surface to structural panel corners', async () => {
     await render(<NativeMapPreview {...baseProps} />);
 

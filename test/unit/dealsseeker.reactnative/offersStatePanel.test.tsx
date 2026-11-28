@@ -1,5 +1,23 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { Button, Card, Text as PaperText } from 'react-native-paper';
 import { OffersStatePanel } from '../../../src/DealsSeeker.ReactNative/src/components/OffersStatePanel';
+
+function hasComponent(node: any, component: unknown): boolean {
+  const visit = (fiber: any): boolean => {
+    if (!fiber) {
+      return false;
+    }
+    if (fiber.type === component) {
+      return true;
+    }
+    return visit(fiber.child) || visit(fiber.sibling);
+  };
+  let top = node.unstable_fiber;
+  while (top?.return) {
+    top = top.return;
+  }
+  return visit(top);
+}
 import type { Palette } from '../../../src/DealsSeeker.ReactNative/src/utils/theme';
 
 const palette = {
@@ -63,5 +81,26 @@ describe('OffersStatePanel', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy();
+  });
+
+  it('uses Material 3 card and button surfaces (OFFERS.FAVORITES.001-R15)', async () => {
+    await render(
+      <OffersStatePanel
+        actionLabel="Retry"
+        hint="Check your connection"
+        onAction={() => undefined}
+        palette={palette}
+        title="Search failed"
+      />
+    );
+
+    expect(hasComponent(screen.root, Card)).toBe(true);
+    expect(hasComponent(screen.root, Button)).toBe(true);
+  });
+
+  it('maps the panel caption and hint to Material 3 text variants', async () => {
+    await render(<OffersStatePanel hint="Try another tag" palette={palette} title="No offers matched" />);
+
+    expect(hasComponent(screen.root, PaperText)).toBe(true);
   });
 });

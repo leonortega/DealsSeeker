@@ -44,3 +44,21 @@ Feature: Visible and recoverable offers search failure
     When the Offers view resolves the current position
     Then no location-bound search is executed
     And a location-unavailable state with a retry action is displayed
+
+  Scenario: Errors use the single status surface
+    Given an action in the Offers view has failed
+    When the error feedback is displayed
+    Then it appears on the same status surface used by other feedback
+    And no second competing error banner is shown
+
+  Scenario: Recovery preserves user work
+    Given the user has a query, radius, filter, selected offer and an in-progress draft
+    When a request fails and the user retries or continues with another action
+    Then the query, radius, filter, selected offer and draft are unchanged
+    And nothing the user entered is discarded
+
+  Scenario: Expired error is cleared
+    Given an error message is displayed
+    When the condition is resolved, the user leaves the view, or the dwell ends
+    Then the error message is no longer displayed
+    And no expired error is left to be read

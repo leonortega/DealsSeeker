@@ -1,5 +1,4 @@
 import { platformTouchFloor } from '../utils/layout';
-import { landmarkFontFamily } from '../utils/typography';
 import { immersiveInk } from '../utils/theme';
 import React, { type RefObject, useEffect, useRef, useState } from 'react';
 import {
@@ -10,12 +9,11 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   FlatList,
-  Pressable,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Button, IconButton, Text, TouchableRipple, useTheme } from 'react-native-paper';
 import { OfferItemDto } from '../api/types';
 import { useOfferImageUri } from '../hooks/useOfferImageUri';
 import { useApp } from '../hooks/useApp';
@@ -25,7 +23,7 @@ import { resolveMotionPreferences } from '../utils/motion';
 import { restoreFocus } from '../utils/focusReturn';
 import { NativeBottomSheet } from './NativeBottomSheet';
 import { PlatformTabIcon } from './PlatformTabIcon';
-import { OfferActionGlyph, OFFER_ACTION_GLYPHS } from './OfferActionVocabulary';
+import { OfferActionGlyph, OFFER_ACTION_GLYPHS, OFFER_ACTION_LABEL_KEYS } from './OfferActionVocabulary';
 import { formatDistanceMeters } from '../utils/format';
 
 interface OfferDetailModalProps {
@@ -224,7 +222,9 @@ function ZoomableImage({
 
   return (
     <View style={styles.fullscreenPlaceholder}>
-      <Text style={styles.gallerySymbol}>{placeholderSymbol}</Text>
+      <Text variant="displayLarge" style={styles.gallerySymbol}>
+        {placeholderSymbol}
+      </Text>
     </View>
   );
 }
@@ -257,13 +257,59 @@ function OfferGalleryImage({
 
   return (
     <View style={styles.galleryPanel}>
-      <Text style={styles.gallerySymbol}>{placeholderSymbol}</Text>
+      <Text variant="displayLarge" style={styles.gallerySymbol}>
+        {placeholderSymbol}
+      </Text>
     </View>
+  );
+}
+
+/** Paper Button fixes its own accessibilityState, so the ripple carries the announced state. */
+function M3DetailAction({
+  accessibilityLabel,
+  accessibilityState,
+  backgroundColor,
+  glyph,
+  label,
+  labelColor,
+  onPress,
+  testID,
+}: {
+  accessibilityLabel: string;
+  accessibilityState?: { selected?: boolean };
+  backgroundColor: string;
+  glyph: React.ReactNode;
+  label: string;
+  labelColor: string;
+  onPress: () => void;
+  testID: string;
+}) {
+  const theme = useTheme();
+  return (
+    <TouchableRipple
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+      accessibilityState={accessibilityState}
+      onPress={onPress}
+      rippleColor={theme.colors.primary}
+      style={[styles.actionButton, { backgroundColor }]}
+      testID={testID}
+    >
+      <View style={styles.actionContent}>
+        <View importantForAccessibility="no-hide-descendants" pointerEvents="none">
+          <Button children={null} icon={() => glyph} onPress={onPress} style={styles.m3Action} />
+        </View>
+        <Text variant="labelLarge" style={{ color: labelColor }}>
+          {label}
+        </Text>
+      </View>
+    </TouchableRipple>
   );
 }
 
 export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onComments, visible, returnFocusRef }: OfferDetailModalProps) {
   const { palette, preferences, t } = useApp();
+  const theme = useTheme();
 
   function close() {
     onClose();
@@ -352,20 +398,23 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
       <NativeBottomSheet visible={visible} onClose={close}>
           <View accessibilityViewIsModal testID="offer-detail-sheet" style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <View style={styles.header}>
-            <Text numberOfLines={2} style={[styles.title, { color: palette.ink }]}>{offer.businessName}</Text>
+            <Text numberOfLines={2} variant="headlineSmall" style={{ color: palette.ink, flex: 1, marginRight: 12 }}>
+              {offer.businessName}
+            </Text>
           </View>
 
           <View style={[styles.gallery, { backgroundColor: palette.accentMuted }]}>
-            <Pressable
+            <IconButton
               accessibilityLabel={t('offers.previousImage')}
               accessibilityRole="button"
               accessibilityState={{ disabled: !hasMultipleImages }}
+              contentStyle={styles.galleryTouchable}
               disabled={!hasMultipleImages}
+              icon={() => <PlatformTabIcon color={palette.ink} name="chevronBackward" size={24} />}
               onPress={showPreviousImage}
+              size={24}
               style={[styles.galleryButton, !hasMultipleImages && styles.galleryButtonDisabled]}
-            >
-              <PlatformTabIcon color={palette.ink} name="chevronBackward" size={24} />
-            </Pressable>
+            />
 
             <View style={styles.galleryPanel}>
               <FlatList
@@ -375,103 +424,106 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
                 keyExtractor={(imageUrl, index) => `${imageUrl ?? 'placeholder'}-${index}`}
                 pagingEnabled
                 renderItem={({ item: imageUrl, index }: { item: string; index: number }) => (
-                  <Pressable
-                    ref={selectedImageIndex === index ? fullscreenReturnRef : undefined}
+                  <TouchableRipple
+                    ref={selectedImageIndex === index ? (fullscreenReturnRef as never) : undefined}
                     testID="offer-gallery-slide"
                     onPress={() => setFullscreenVisible(true)}
+                    rippleColor={theme.colors.primary}
                     style={[styles.gallerySlide, { width: carouselWidth }]}
                   >
                     <OfferGalleryImage imageUrl={imageUrl} placeholderSymbol={hasMultipleImages ? '▣' : '▤'} />
-                  </Pressable>
+                  </TouchableRipple>
                 )}
                 showsHorizontalScrollIndicator={false}
                 onMomentumScrollEnd={handleCarouselEnd}
               />
               <View style={[styles.galleryCounter, { backgroundColor: palette.overlay }]}>
-                <Text style={styles.galleryCounterLabel}>
+                <Text style={styles.galleryCounterLabel} variant="labelSmall">
                   {detailImages.length === 0 ? '0 / 0' : `${selectedImageIndex + 1} / ${detailImages.length}`}
                 </Text>
               </View>
             </View>
 
-            <Pressable
+            <IconButton
               accessibilityLabel={t('offers.nextImage')}
               accessibilityRole="button"
               accessibilityState={{ disabled: !hasMultipleImages }}
+              contentStyle={styles.galleryTouchable}
               disabled={!hasMultipleImages}
+              icon={() => <PlatformTabIcon color={palette.ink} name="chevronForward" size={24} />}
               onPress={showNextImage}
+              size={24}
               style={[styles.galleryButton, !hasMultipleImages && styles.galleryButtonDisabled]}
-            >
-              <PlatformTabIcon color={palette.ink} name="chevronForward" size={24} />
-            </Pressable>
+            />
           </View>
 
           <View testID="offer-detail-badges" style={styles.badges}>
             {offer.isPromoted ? (
               <View style={[styles.badge, { backgroundColor: palette.highlight }]}>
-                <Text style={[styles.badgeLabel, { color: palette.onHighlight }]}>{t('offers.promoted')}</Text>
+                <Text variant="labelSmall" style={{ color: palette.onHighlight }}>
+                  {t('offers.promoted')}
+                </Text>
               </View>
             ) : null}
             {offer.isReported ? (
               <View style={[styles.badge, { backgroundColor: palette.danger }]}>
-                <Text style={[styles.badgeLabel, { color: palette.onDanger }]}>{t('offers.reported')}</Text>
+                <Text variant="labelSmall" style={{ color: palette.onDanger }}>
+                  {t('offers.reported')}
+                </Text>
               </View>
             ) : null}
           </View>
-          <Text style={[styles.description, { color: palette.ink }]}>{offer.description}</Text>
-          <Text style={[styles.meta, { color: palette.inkMuted }]}>
+          <Text variant="bodyMedium" style={{ color: palette.ink }}>
+            {offer.description}
+          </Text>
+          <Text variant="bodySmall" style={{ color: palette.inkMuted }}>
             {t('offers.distance')}: {formatDistanceMeters(offer.distanceMeters)}
           </Text>
           {offer.isReported ? (
-            <Text style={[styles.warning, { color: palette.danger }]}>{t('offers.reportedWarning')}</Text>
+            <Text variant="bodySmall" style={{ color: palette.danger }}>
+              {t('offers.reportedWarning')}
+            </Text>
           ) : null}
 
           <View style={styles.tags}>
             {offer.tags.map((tag) => (
               <View key={tag} style={[styles.tag, { backgroundColor: palette.panel, borderColor: palette.border }]}>
-                <Text style={{ color: palette.inkMuted }}>{tag}</Text>
+                <Text variant="bodyMedium" style={{ color: palette.inkMuted }}>
+                  {tag}
+                </Text>
               </View>
             ))}
           </View>
 
           <View style={styles.actions}>
-            <Pressable
-              accessibilityLabel={t('offers.action.directions')}
-              accessibilityRole="button"
-              testID="offer-detail-action-directions"
-              style={[styles.actionButton, { backgroundColor: palette.accentMuted }]}
+            <M3DetailAction
+              accessibilityLabel={t(OFFER_ACTION_LABEL_KEYS.directions)}
+              backgroundColor={palette.accentMuted}
+              glyph={<OfferActionGlyph glyph={OFFER_ACTION_GLYPHS.directions} prominent testID="offer-detail-action-glyph" />}
+              label={preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
+              labelColor={palette.accentText}
               onPress={() => onDirections(offer)}
-            >
-              <OfferActionGlyph glyph={OFFER_ACTION_GLYPHS.directions} prominent testID="offer-detail-action-glyph" />
-              <Text style={{ color: palette.accentText }}>
-                {preferences.navigationMode === 'car' ? t('offers.directions.car') : t('offers.directions.walk')}
-              </Text>
-            </Pressable>
-            <Pressable
-              accessibilityLabel={t('offers.favorite')}
-              accessibilityRole="button"
+              testID="offer-detail-action-directions"
+            />
+            <M3DetailAction
+              accessibilityLabel={t(OFFER_ACTION_LABEL_KEYS.favorite)}
               accessibilityState={{ selected: offer.isFavorite }}
-              testID="offer-detail-action-favorite"
-              style={[styles.actionButton, { backgroundColor: palette.panel }]}
+              backgroundColor={palette.panel}
+              glyph={<OfferActionGlyph active={offer.isFavorite} glyph={OFFER_ACTION_GLYPHS.favorite} testID="offer-detail-action-glyph" />}
+              label={t('offers.favorite')}
+              labelColor={palette.ink}
               onPress={() => onFavorite(offer)}
-            >
-              <OfferActionGlyph
-                active={offer.isFavorite}
-                glyph={OFFER_ACTION_GLYPHS.favorite}
-                testID="offer-detail-action-glyph"
-              />
-              <Text style={{ color: palette.ink }}>{t('offers.favorite')}</Text>
-            </Pressable>
-            <Pressable
-              accessibilityLabel={t('offers.action.comments')}
-              accessibilityRole="button"
-              testID="offer-detail-action-comments"
-              style={[styles.actionButton, { backgroundColor: palette.panel }]}
+              testID="offer-detail-action-favorite"
+            />
+            <M3DetailAction
+              accessibilityLabel={t(OFFER_ACTION_LABEL_KEYS.comments)}
+              backgroundColor={palette.panel}
+              glyph={<OfferActionGlyph glyph={OFFER_ACTION_GLYPHS.comments} testID="offer-detail-action-glyph" />}
+              label={t('offers.action.comments')}
+              labelColor={palette.ink}
               onPress={() => onComments(offer)}
-            >
-              <OfferActionGlyph glyph={OFFER_ACTION_GLYPHS.comments} testID="offer-detail-action-glyph" />
-              <Text style={{ color: palette.ink }}>{t('offers.action.comments')}</Text>
-            </Pressable>
+              testID="offer-detail-action-comments"
+            />
           </View>
         </View>
       </NativeBottomSheet>
@@ -483,32 +535,55 @@ export function OfferDetailModal({ offer, onClose, onDirections, onFavorite, onC
           style={[styles.fullscreenSheet, { backgroundColor: palette.card, borderColor: palette.border }]}
         >
           <View style={styles.header}>
-            <Text numberOfLines={1} style={[styles.title, { color: palette.ink }]}>{offer.businessName}</Text>
-            <Pressable accessibilityLabel={t('offers.fullscreenClose')} accessibilityRole="button" hitSlop={8} onPress={closeFullscreen} style={styles.closeButton}>
-              <Text style={[styles.close, { color: palette.ink }]}>{t('offers.fullscreenClose')}</Text>
-            </Pressable>
+            <Text numberOfLines={1} variant="headlineSmall" style={{ color: palette.ink, flex: 1, marginRight: 12 }}>
+              {offer.businessName}
+            </Text>
+            <Button
+              accessibilityLabel={t('offers.fullscreenClose')}
+              accessibilityRole="button"
+              hitSlop={8}
+              mode="text"
+              onPress={closeFullscreen}
+              style={styles.closeButton}
+              testID="offer-fullscreen-close"
+              textColor={theme.colors.onSurface}
+            >
+              {t('offers.fullscreenClose')}
+            </Button>
           </View>
 
           <View style={styles.fullscreenFrame}>
             {hasMultipleImages ? (
-              <Pressable accessibilityLabel={t('offers.previousImage')} accessibilityRole="button" onPress={showPreviousImage} style={styles.fullscreenNavButton}>
-                <PlatformTabIcon color={palette.ink} name="chevronBackward" size={24} />
-              </Pressable>
+              <IconButton
+                accessibilityLabel={t('offers.previousImage')}
+                accessibilityRole="button"
+                contentStyle={styles.galleryTouchable}
+                icon={() => <PlatformTabIcon color={palette.ink} name="chevronBackward" size={24} />}
+                onPress={showPreviousImage}
+                size={24}
+                style={styles.fullscreenNavButton}
+              />
             ) : null}
 
             <View style={styles.fullscreenImageWrap}>
               <ZoomableImage imageUrl={currentImage} placeholderSymbol={hasMultipleImages ? '▣' : '▤'} />
               <View style={[styles.galleryCounter, styles.fullscreenCounter, { backgroundColor: palette.overlay }]}>
-                <Text style={styles.galleryCounterLabel}>
+                <Text style={styles.galleryCounterLabel} variant="labelSmall">
                   {detailImages.length === 0 ? '0 / 0' : `${selectedImageIndex + 1} / ${detailImages.length}`}
                 </Text>
               </View>
             </View>
 
             {hasMultipleImages ? (
-              <Pressable accessibilityLabel={t('offers.nextImage')} accessibilityRole="button" onPress={showNextImage} style={styles.fullscreenNavButton}>
-                <PlatformTabIcon color={palette.ink} name="chevronForward" size={24} />
-              </Pressable>
+              <IconButton
+                accessibilityLabel={t('offers.nextImage')}
+                accessibilityRole="button"
+                contentStyle={styles.galleryTouchable}
+                icon={() => <PlatformTabIcon color={palette.ink} name="chevronForward" size={24} />}
+                onPress={showNextImage}
+                size={24}
+                style={styles.fullscreenNavButton}
+              />
             ) : null}
           </View>
         </View>
@@ -539,26 +614,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  title: {
-    flex: 1,
-    fontFamily: landmarkFontFamily(),
-    fontSize: 24,
-    fontWeight: '700',
-    marginRight: 12,
-  },
   closeButton: {
-    alignItems: 'center',
     alignSelf: 'flex-start',
     flexShrink: 0,
-    justifyContent: 'center',
     minHeight: platformTouchFloor,
     minWidth: platformTouchFloor,
-    paddingVertical: 4,
-  },
-  close: {
-    fontSize: 14,
-    fontWeight: '700',
-    textAlign: 'right',
   },
   gallery: {
     alignItems: 'center',
@@ -604,11 +664,12 @@ const styles = StyleSheet.create({
   },
   galleryCounterLabel: {
     color: immersiveInk,
-    fontSize: 12,
-    fontWeight: '700',
+  },
+  galleryTouchable: {
+    height: platformTouchFloor,
+    width: platformTouchFloor,
   },
   gallerySymbol: {
-    fontSize: 76,
     opacity: 0.45,
   },
   fullscreenFrame: {
@@ -649,13 +710,6 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '100%',
   },
-  description: {
-    fontSize: 15,
-  },
-  meta: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
   tags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -677,25 +731,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
-  badgeLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
-  warning: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
   actions: {
     flexDirection: 'row',
     gap: 10,
+  },
+  actionContent: {
+    alignItems: 'center',
+    gap: 4,
   },
   actionButton: {
     alignItems: 'center',
     borderRadius: 16,
     flex: 1,
-    gap: 4,
+    minHeight: platformTouchFloor,
     paddingHorizontal: 14,
     paddingVertical: 14,
+  },
+  m3Action: {
+    margin: 0,
   },
 });

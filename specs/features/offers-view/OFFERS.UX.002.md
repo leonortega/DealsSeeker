@@ -1,14 +1,14 @@
 # Spec: `OFFERS.UX.002`
 
 ## Metadata
-- **Title**: Visible action feedback in the immersive presentation
-- **Version**: `v1.2`
+- **Title**: Unified and non-stale action feedback across presentations
+- **Version**: `v1.4`
 - **Status**: Approved
 - **Context/View**: Offers View (immersive presentation)
 - **Priority**: High
 
 ## Purpose
-Ensure that offer actions confirm their outcome where the user actually works, with one undo action available for a just-completed favorite or vote, instead of silently setting a message that is never shown.
+Ensure that offer actions confirm their outcome where the user actually works, with one undo action available for a just-completed favorite or vote, using one non-interrupting Material 3 snackbar-pattern status surface in both presentations, never leaving an expired message on screen, and never discarding the user's work.
 
 ## Preconditions
 - The user is in the immersive offers feed.
@@ -30,6 +30,12 @@ Ensure that offer actions confirm their outcome where the user actually works, w
 - `OFFERS.UX.002-R10`: The `Undo` action shall be announced together with the feedback and shall remain tappable without covering the action rail, the mode control, or the primary actions.
 - `OFFERS.UX.002-R11`: For an availability vote, `Undo` shall leave no recorded vote because submission is deferred until the undo window closes; a later vote by the same user shall be accepted as their first vote.
 - `OFFERS.UX.002-R12`: Feedback and its undo action shall not expose raw coordinate values.
+- `OFFERS.UX.002-R13`: The same status surface, placement and wording pattern shall be used for equivalent actions in the standard and immersive presentations, so that feedback does not change shape with the presentation mode.
+- `OFFERS.UX.002-R14`: A status message shall not be left visible once it is inaccurate or once the user has moved away from the offer or view it described; an expired message shall be cleared rather than remain as an unread message.
+- `OFFERS.UX.002-R15`: Presenting, replacing or clearing feedback shall preserve the user's query, coverage radius, filter, selected offer, any open report draft, and scroll position.
+- `OFFERS.UX.002-R16`: Feedback shall appear on the single status surface defined by `APP.POLISH.UX.001` and shall not stack with a search-failure or empty-state panel.
+- `OFFERS.UX.002-R17`: The single status surface shall follow a Material 3 snackbar pattern in both the standard and immersive presentations: non-interrupting, with a temporary form for transient feedback and a persistent-until-action form for feedback that waits for a user action.
+- `OFFERS.UX.002-R18`: The snackbar pattern shall not change R1–R16 behavior: undo availability and dwell, control reachability, work preservation, coordinate privacy and the single-surface placement shall remain as specified.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -75,6 +81,49 @@ Scenario: Undo feedback stays within the offer and hides coordinates
   When the user reads the confirmation and its Undo action
   Then the selected offer and the active filter are unchanged
   And no raw latitude or longitude values are shown
+
+Scenario: Both presentations use the same feedback surface
+  Given the same offer action is available in the standard and immersive presentations
+  When the action succeeds in each presentation
+  Then the confirmation uses the same status surface and placement in both
+  And its wording follows the same plain-language pattern
+
+Scenario: Stale feedback is cleared when the user moves on
+  Given a confirmation is displayed for the currently selected offer
+  When the user selects a different offer or leaves the Offers view
+  Then the earlier confirmation is no longer displayed
+  And no expired message is left to be read
+
+Scenario: Feedback preserves the user's work context
+  Given the user has an active query, filter, selected offer and a partially written report
+  When an offer action produces feedback
+  Then the query, filter, selected offer and report draft are unchanged
+  And the scroll position is unchanged
+
+Scenario: Feedback does not stack with another status panel
+  Given a search-failure error panel is displayed
+  When an offer action produces feedback
+  Then only the single status surface carries the new feedback
+  And the search-failure state is unchanged or replaced, not duplicated
+
+Scenario: Action feedback follows the snackbar pattern in both presentations
+  Given the same offer action is available in the standard and immersive presentations
+  When the action produces feedback
+  Then the feedback shall appear on one non-interrupting Material 3 snackbar-pattern status surface in both presentations
+  And the action rail, mode control and primary actions shall remain tappable
+
+Scenario: Temporary and persistent snackbar forms keep their behavior
+  Given an offer action produces transient feedback and another produces feedback that waits for an action
+  When each is displayed on the status surface
+  Then the transient feedback shall follow its dwell
+  And the waiting feedback shall remain until the user acts or dismisses it
+  And undo behavior and work preservation shall be unchanged
+
+Scenario: Long localized feedback and undo fit one snackbar surface
+  Given feedback wraps to several lines and carries one undo action
+  When it is displayed in the immersive presentation
+  Then the message and undo action shall remain on the one status surface
+  And no raw coordinate value shall be shown
 ```
 
 ## Example Inputs/Outputs
@@ -89,12 +138,23 @@ Scenario: Undo feedback stays within the offer and hides coordinates
 - Large text scaling on a phone-sized screen — the undo action stays reachable without covering controls.
 - Feedback shown while the search error state panel is already visible.
 - Error feedback and non-reversible actions — no undo action is offered.
+- A confirmation about an offer that is reported or voted on again after the message appeared — the new state wins and the older message is not left behind.
+- Feedback arriving while a report draft is open in the feed — the draft stays open and unchanged.
+- Localized long feedback text — it wraps within the one status surface instead of creating a second one.
+- A very small viewport where the undo action and the status text must share one surface.
+- A localized confirmation longer than the source text with an undo action — the message and undo stay on one snackbar-pattern surface and controls remain tappable.
 
 ## Non-Functional Constraints
 - Feedback shall be transient and shall not require a separate dismissal action to continue using the feed.
 - An undo action shall not outlive its confirmation or change the selected offer.
+- Unifying feedback across presentations shall not remove the undo affordance or weaken its accessibility.
+- The snackbar pattern shall not add a second feedback surface or obscure the action rail or mode control.
 
 ## Related Specs
+- `APP.TYPOGRAPHY.001`
+- `APP.POLISH.UX.001`
+- `APP.RESILIENCE.UX.001`
+- `APP.DRAFT.RECOVERY.001`
 - `OFFERS.ACTIONS.LABELS.001`
 - `OFFERS.UX.001`
 - `OFFERS.FEED.IMMERSIVE.001`

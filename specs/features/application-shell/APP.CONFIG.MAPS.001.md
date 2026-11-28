@@ -59,6 +59,8 @@ Scenario: Missing credential is a configuration error
 - The credential shall not be logged or shown to the user.
 
 ## Related Specs
+- `APP.POLISH.UX.001`
+- `APP.TYPOGRAPHY.001`
 - `APP.MAP.STACK.001`
 - `APP.NATIVE_MAP.001`
 - `OFFERS.MAP.001`

@@ -52,3 +52,36 @@ Feature: Contextual help entry points
     Then the affordance and the help surface are announced by assistive technology
     And no text is clipped
     And no raw latitude or longitude value is visible
+
+  Scenario: Add Offer fields carry inline guidance
+    Given the Add Offer view is open with its location, description and tag fields
+    When the user focuses each field
+    Then short guidance is shown beside that field
+    And the location guidance explains a confirmed location without showing coordinates
+    And the field and its primary action stay usable
+
+  Scenario: Report field carries inline guidance
+    Given the report surface is open with a reason or message field
+    When the user focuses that field
+    Then guidance explains what to include and that sending needs explicit confirmation
+    And the draft message stays editable
+
+  Scenario: No-position state carries inline guidance
+    Given the no-position state is displayed
+    When the user reads its decision
+    Then inline guidance explains how to provide a position or use an explicit override
+    And no location-bound search is started by the guidance
+
+  Scenario: Sign-in guard carries inline guidance
+    Given a sign-in guard is shown for a gated contribution action
+    When the user reads the guard
+    Then inline guidance explains why sign-in is needed and that their place is preserved
+    And the sign-in form and preserved context remain usable
+
+  Scenario: Inline guidance collapses and stays attached
+    Given inline guidance is shown for an active field
+    When the user completes that field and moves to the next one
+    Then the guidance for the completed field collapses
+    And guidance for the newly active field may appear
+    And each guidance is announced with its own field
+    And no raw latitude or longitude value is shown

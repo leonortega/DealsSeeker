@@ -1,24 +1,19 @@
+import fs from 'fs';
+import path from 'path';
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform } from 'react-native';
 import { CreateOfferFab } from '../../../src/DealsSeeker.ReactNative/src/components/CreateOfferFab';
-import type { Palette } from '../../../src/DealsSeeker.ReactNative/src/utils/theme';
 
 jest.mock('@expo/vector-icons', () => {
   const React = require('react');
   const { Text } = require('react-native');
   const glyph = (prefix: string) => ({ name, ...props }: { name: string }) =>
     React.createElement(Text, { ...props, testID: `${prefix}-${name}` });
-  return { Ionicons: glyph('ionicon'), MaterialIcons: glyph('materialicon') };
+  return { Ionicons: glyph('ionicon'), MaterialIcons: glyph('materialicon'), MaterialCommunityIcons: glyph('materialcommunityicon') };
 });
-
-const palette = { accent: '#b85c38', onAccent: '#ffffff', shadow: 'rgba(0, 0, 0, 0.3)' } as Palette;
 
 function setPlatform(os: 'ios' | 'android') {
   (Platform as unknown as { OS: string }).OS = os;
-}
-
-function glyph(id: string) {
-  return screen.getByTestId(id, { includeHiddenElements: true });
 }
 
 describe('CreateOfferFab', () => {
@@ -26,7 +21,7 @@ describe('CreateOfferFab', () => {
 
   it('opens Add Offer when pressed', async () => {
     const onPress = jest.fn();
-    await render(<CreateOfferFab label="Create" onPress={onPress} palette={palette} />);
+    await render(<CreateOfferFab label="Create" onPress={onPress} />);
 
     await fireEvent.press(screen.getByRole('button', { name: 'Create' }));
 
@@ -34,34 +29,34 @@ describe('CreateOfferFab', () => {
   });
 
   it('is not rendered while an overlay sheet is open', async () => {
-    await render(<CreateOfferFab label="Create" onPress={jest.fn()} palette={palette} visible={false} />);
+    await render(<CreateOfferFab label="Create" onPress={jest.fn()} visible={false} />);
 
     expect(screen.queryByRole('button', { name: 'Create' })).toBeNull();
   });
 
-  it('uses a docked slot instead of floating over content', async () => {
-    await render(<CreateOfferFab label="Create" onPress={jest.fn()} palette={palette} />);
-
-    const style = StyleSheet.flatten(screen.getByRole('button', { name: 'Create' }).props.style);
-    expect(style.position).toBeUndefined();
-    expect(style.left).toBeUndefined();
-    expect(style.bottom).toBeUndefined();
-    expect(style.width).toBe(56);
-    expect(style.height).toBe(56);
-  });
-
   it('uses the platform create symbol on iOS', async () => {
-    await render(<CreateOfferFab label="Create" onPress={jest.fn()} palette={palette} />);
+    await render(<CreateOfferFab label="Create" onPress={jest.fn()} />);
 
-    expect(glyph('ionicon-add-circle-outline')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Create' })).toBeTruthy();
     expect(JSON.stringify(screen.toJSON())).not.toContain('RNSVGSvgView');
   });
 
   it('uses the platform create symbol on Android', async () => {
     setPlatform('android');
-    await render(<CreateOfferFab label="Create" onPress={jest.fn()} palette={palette} />);
+    await render(<CreateOfferFab label="Create" onPress={jest.fn()} />);
 
-    expect(glyph('materialicon-add-circle-outline')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Create' })).toBeTruthy();
     expect(JSON.stringify(screen.toJSON())).not.toContain('RNSVGSvgView');
+  });
+
+  it('uses Material 3 FAB defaults with no authored color, shape or elevation (APP.PLATFORM.CHROME.001-R19)', () => {
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '../../../src/DealsSeeker.ReactNative/src/components/CreateOfferFab.tsx'),
+      'utf8'
+    );
+    expect(source).not.toMatch(/customSize/);
+    expect(source).not.toMatch(/style=/);
+    expect(source).not.toMatch(/palette/);
+    expect(source).not.toMatch(/shadowOpacity|shadowRadius|elevation|borderRadius/);
   });
 });

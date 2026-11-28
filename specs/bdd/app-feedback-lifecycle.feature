@@ -44,3 +44,61 @@ Feature: Transient feedback lifecycle
     Given a user action produced an error message
     When the message is displayed
     Then no undo action is presented with it
+
+  Scenario: Every mutation shows pending then one outcome
+    Given a user action is about to mutate saved data
+    When the action starts
+    Then a pending indication shall be visible and announced to assistive technology
+    When the action succeeds or fails
+    Then exactly one terminal status message shall be shown
+    And no pending indication shall remain
+
+  Scenario: Failure is described plainly and never as success
+    Given a mutation has failed
+    When its status message is shown
+    Then the message shall describe the failure in plain language
+    And the message shall not be presented as a success
+
+  Scenario: A persistent message stays until it is dismissed
+    Given a status message is designated persistent
+    When the short dwell and the longer dwell elapse
+    Then the message shall still be displayed
+    And a visible, labelled dismiss control shall be available
+    When the user selects dismiss
+    Then the message shall no longer be displayed
+
+  Scenario: A transient message does not remove a persistent message
+    Given a persistent message is displayed
+    When another action produces a transient message
+    Then the persistent message shall remain displayed
+    And the transient message shall follow its own dwell
+
+  Scenario: Every reversible action offers undo
+    Given an action whose prior state can be restored has succeeded
+    When its success message is shown
+    Then one undo action shall be presented with the message
+    And selecting it shall restore the prior state
+
+  Scenario: An irreversible action offers no undo
+    Given an action whose prior state cannot be restored has succeeded
+    When its success message is shown
+    Then no undo action shall be presented with it
+
+  Scenario: Status messages follow a non-interrupting snackbar pattern
+    Given a user action is about to produce a status message
+    When the message is displayed on the unified status surface
+    Then it shall follow a Material 3 snackbar pattern that does not block the current view or take focus
+    And its message and any single action shall be presented together on the one surface
+
+  Scenario: The snackbar pattern keeps temporary and persistent forms distinct
+    Given a transient message and a persistent message are both specified
+    When each is displayed on the unified status surface
+    Then the transient message shall auto-dismiss after its own dwell
+    And the persistent message shall remain until the user dismisses it or acts on it
+    And the undo behavior and dwell rules shall be unchanged
+
+  Scenario: A long localized snackbar message with an action stays on one surface
+    Given a status message wraps to several lines and carries one undo action
+    When it is displayed on the unified status surface
+    Then the message and the undo action shall remain together on that one surface
+    And the current view shall stay interactive and the message shall stay announced

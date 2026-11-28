@@ -119,3 +119,21 @@ Feature: Account management for user lifecycle
     When the user opens the My Account section
     Then the Login view is shown
     And the read-only guest browse entry point is available
+
+  Scenario: Account details and owned offers use consistent Material 3 list rows
+    Given the user is authenticated and opens My Account
+    When the account details and owned offers are rendered
+    Then they shall be presented as Material 3 list rows with a consistent structure
+    And each row's action shall keep its announced name, role and state
+
+  Scenario: Owned-offer removal uses a Material 3 dialog
+    Given an owned offer is listed in My Account
+    When the user selects Remove
+    Then a Material 3 dialog shall offer Yes and No with the same outcomes as before
+    And selecting No shall keep the offer unchanged
+
+  Scenario: A long email address keeps its Material 3 row layout
+    Given the user has a very long email address and large text scaling
+    When account details are rendered
+    Then the logout action shall remain on its own left-aligned line
+    And the row shall not hide the account actions

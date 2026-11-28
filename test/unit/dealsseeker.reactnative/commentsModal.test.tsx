@@ -1,5 +1,30 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import {
+  ActivityIndicator as PaperActivityIndicator,
+  Avatar as PaperAvatar,
+  Button as PaperButton,
+  HelperText as PaperHelperText,
+  Text as PaperText,
+  TextInput as PaperTextInput,
+} from 'react-native-paper';
 import { OfferCommentsModal } from '../../../src/DealsSeeker.ReactNative/src/components/OfferCommentsModal';
+
+function hasComponent(node: any, component: unknown): boolean {
+  const visit = (fiber: any): boolean => {
+    if (!fiber) {
+      return false;
+    }
+    if (fiber.type === component) {
+      return true;
+    }
+    return visit(fiber.child) || visit(fiber.sibling);
+  };
+  let top = node.unstable_fiber;
+  while (top?.return) {
+    top = top.return;
+  }
+  return visit(top);
+}
 
 const mockGetOfferComments = jest.fn();
 const mockCreateOfferComment = jest.fn();
@@ -132,5 +157,24 @@ describe('OfferCommentsModal', () => {
     await renderModal();
     await screen.findByText('Great deal!');
     expect(screen.queryByRole('button', { name: 'offers.close' })).toBeNull();
+  });
+
+  it('renders the sheet copy, input, avatar and counter with Material 3 Paper primitives', async () => {
+    const view = await renderModal();
+    await screen.findByText('Great deal!');
+
+    expect(hasComponent(view.root, PaperText)).toBe(true);
+    expect(hasComponent(view.root, PaperTextInput)).toBe(true);
+    expect(hasComponent(view.root, PaperAvatar.Text)).toBe(true);
+    expect(hasComponent(view.root, PaperHelperText)).toBe(true);
+    expect(hasComponent(view.root, PaperButton)).toBe(true);
+  });
+
+  it('shows the pending comment load through the Paper activity indicator', async () => {
+    mockGetOfferComments.mockReturnValue(new Promise(() => {}));
+    const view = await renderModal();
+
+    expect(hasComponent(view.root, PaperActivityIndicator)).toBe(true);
+    expect(screen.getByText('comments.loading')).toBeTruthy();
   });
 });

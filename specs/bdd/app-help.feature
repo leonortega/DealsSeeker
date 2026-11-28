@@ -52,3 +52,23 @@ Feature: Contextual in-product help
     When the user dismisses the help surface
     Then focus returns to the control that opened it
     And the invoking context is unchanged
+
+  Scenario: Help topics are organised by task
+    Given the help surface is displayed
+    When the user reviews its headings
+    Then topics are grouped by what the user wants to do
+    And no heading names an app feature or screen instead of a task
+
+  Scenario: Help surface hosts a search entry point
+    Given the help surface is displayed
+    When the user views its top area
+    Then one labelled search entry point is available
+    And selecting it filters topics in place as defined by APP.HELP.SEARCH.001
+    And the underlying view stays mounted
+
+  Scenario: Search does not change the topic set or contextual ordering
+    Given contextual help was opened with a relevant topic first
+    When the user enters a search term and then clears it
+    Then the same five topics are listed
+    And the relevant topic is shown first again
+    And no topic was added or renamed

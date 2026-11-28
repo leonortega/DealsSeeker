@@ -1214,7 +1214,8 @@ public sealed class DapperOfferService(
         }
 
         var description = request.Description?.Trim() ?? string.Empty;
-        var location = request.Location?.Position ?? new GeoPoint(40.7128, -74.0060);
+        var location = request.Location?.Position
+            ?? throw new InvalidOperationException("Location is required.");
         var normalizedTags = request.Tags
             .Select(NormalizeTag)
             .Where(tag => !string.IsNullOrWhiteSpace(tag))

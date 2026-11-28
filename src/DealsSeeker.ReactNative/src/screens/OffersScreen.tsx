@@ -1,7 +1,17 @@
 import { platformTouchFloor } from '../utils/layout';
-import { landmarkFontFamily } from '../utils/typography';
-import { type ElementRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, SectionList, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { type ElementRef, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { SectionList, StyleSheet, useWindowDimensions, View } from 'react-native';
+import {
+  Button,
+  Chip,
+  IconButton,
+  ProgressBar,
+  Searchbar,
+  Snackbar,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from 'react-native-paper';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isRequestAborted } from '../api/client';
@@ -18,14 +28,14 @@ import { OfferCommentsModal } from '../components/OfferCommentsModal';
 import { OfferReportSheet } from '../components/OfferReportSheet';
 import { FirstRunSheet } from '../components/FirstRunSheet';
 import { HelpSheet, type HelpTopic } from '../components/HelpSheet';
-import { PlatformTabIcon } from '../components/PlatformTabIcon';
 import { OffersStatePanel } from '../components/OffersStatePanel';
+import { OFFER_ACTION_LABEL_KEYS } from '../components/OfferActionVocabulary';
 import { PresentationModeSwitch, type PresentationMode } from '../components/PresentationModeSwitch';
 import { useAbortableRequest } from '../hooks/useAbortableRequest';
 import { useApp } from '../hooks/useApp';
 import { STATUS_DWELL_MS, useStatusNotice } from '../hooks/useStatusNotice';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
-import { partitionOffers } from '../utils/format';
+import { formatDistanceMeters, partitionOffers } from '../utils/format';
 import { selectionFeedback, successFeedback } from '../utils/haptics';
 import { openDirections } from '../utils/maps';
 import { resolveOffersViewState } from '../utils/offersState';
@@ -39,9 +49,10 @@ const searchDebounceMs = 300;
 const queryMaxLength = 200;
 
 export function OffersScreen() {
-  const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, isAuthenticated, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, runOperation, setReportDraft, t } =
+  const { activeTab, api, clearReportDraft, closeImmersiveOffers, immersiveOffers, isAuthenticated, openAddOffer, openImmersiveOffers, palette, preferences, reportDraft, runOperation, session, setReportDraft, t } =
     useApp();
   const { width: viewportWidth } = useWindowDimensions();
+  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [radiusMeters, setRadiusMeters] = useState(1500);
@@ -52,7 +63,21 @@ export function OffersScreen() {
   const [commentsOffer, setCommentsOffer] = useState<OfferItemDto | null>(null);
   const [userLocation, setUserLocation] = useState<DevicePosition | null>(null);
   const [userLocationLabel, setUserLocationLabel] = useState(t('offers.locationUnavailable'));
-  const { status, statusTone, statusAction, reportStatus: setActionStatus } = useStatusNotice();
+  const {
+    status,
+    statusTone,
+    statusAction,
+    pending,
+    pendingLabel,
+    persistentStatus,
+    persistentTone,
+    persistentAction,
+    statusPersistent,
+    reportStatus: setActionStatus,
+    reportPending,
+    dismissStatus,
+    clearStatus,
+  } = useStatusNotice();
   const [searchFailed, setSearchFailed] = useState(false);
   const [helpVisible, setHelpVisible] = useState(false);
   const [helpTopic, setHelpTopic] = useState<HelpTopic | undefined>(undefined);
@@ -60,9 +85,28 @@ export function OffersScreen() {
   const [firstRunVisible, setFirstRunVisible] = useState(false);
   const searchRequest = useAbortableRequest();
   const searchSequence = useRef(0);
+  const debounceGeneration = useRef(0);
   const voteTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [presets, setPresets] = useState<Array<{ id: string; radiusMeters: number; favoritesOnly: boolean }>>([]);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedOfferIds, setSelectedOfferIds] = useState<string[]>([]);
+  const activeUserId = session?.userId ?? 'guest';
 
   const helpButtonRef = useRef<ElementRef<typeof View> | null>(null);
+
+  useEffect(() => {
+    setRecentSearches([]);
+    setPresets([]);
+    setSelectionMode(false);
+    setSelectedOfferIds([]);
+  }, [activeUserId]);
+
+  useEffect(() => {
+    if (activeTab !== 'offers') {
+      clearStatus();
+    }
+  }, [activeTab, clearStatus]);
 
   async function resolveCurrentLocation(): Promise<DevicePosition | null> {
     const emulatorLocation = resolveEmulatorLocation();
@@ -158,6 +202,7 @@ export function OffersScreen() {
 
       setResults(response);
       setSearchFailed(false);
+      rememberSearch(nextQuery);
     } catch (error) {
       if (isRequestAborted(error) || sequence !== searchSequence.current) {
         return;
@@ -168,11 +213,33 @@ export function OffersScreen() {
   }
 
   const searchDebounced = useDebouncedCallback(
-    (nextQuery: string, nextRadius: number, nextFavoritesOnly: boolean) => {
+    (nextQuery: string, nextRadius: number, nextFavoritesOnly: boolean, generation: number) => {
+      if (generation !== debounceGeneration.current) {
+        return;
+      }
       void search(nextQuery, nextRadius, nextFavoritesOnly);
     },
     searchDebounceMs
   );
+
+  const scheduleSearch = (nextQuery: string, nextRadius: number, nextFavoritesOnly: boolean) =>
+    searchDebounced(nextQuery, nextRadius, nextFavoritesOnly, debounceGeneration.current);
+
+  function rememberSearch(nextQuery: string) {
+    const value = nextQuery.trim();
+    if (!value || value.length > queryMaxLength) {
+      return;
+    }
+    setRecentSearches((current) =>
+      [value, ...current.filter((entry) => entry.toLowerCase() !== value.toLowerCase())].slice(0, 5)
+    );
+  }
+
+  function runImmediateSearch(nextQuery: string, nextRadius: number, nextFavoritesOnly: boolean) {
+    debounceGeneration.current += 1;
+    searchSequence.current += 1;
+    void search(nextQuery, nextRadius, nextFavoritesOnly);
+  }
 
   useEffect(() => {
     if (activeTab !== 'offers') {
@@ -211,6 +278,17 @@ export function OffersScreen() {
     });
   }, [activeTab, preferences.language, runOperation]);
 
+  const sections = useMemo(() => partitionOffers(results.offers, query), [results.offers, query]);
+  const listSections = useMemo(
+    () => [
+      ...(sections.promoted.length > 0
+        ? [{ key: 'promoted', title: t('offers.promoted'), data: sections.promoted }]
+        : []),
+      ...(sections.feed.length > 0 ? [{ key: 'feed', title: t('nav.offers'), data: sections.feed }] : []),
+    ],
+    [sections, t]
+  );
+  const combinedOffers = useMemo(() => [...sections.promoted, ...sections.feed], [sections]);
   if (activeTab !== 'offers') {
     return null;
   }
@@ -222,6 +300,8 @@ export function OffersScreen() {
   });
 
   const presentationMode: PresentationMode = immersiveOffers ? 'feed' : 'map';
+  const searchValidationMessage =
+    query.trim().length > 0 && query.trim().length < 2 ? t('offers.searchMinLength') : null;
 
   function changePresentationMode(nextMode: PresentationMode) {
     if (nextMode === 'feed') {
@@ -242,15 +322,17 @@ export function OffersScreen() {
   );
 
   const helpButton = (
-    <Pressable
-      ref={helpButtonRef}
+    <IconButton
+      ref={helpButtonRef as never}
       accessibilityLabel={t('common.help')}
       accessibilityRole="button"
+      icon="help"
+      iconColor={palette.ink}
       onPress={() => setHelpVisible(true)}
+      size={20}
       style={[styles.helpButton, { backgroundColor: palette.panel, borderColor: palette.border }]}
-    >
-      <PlatformTabIcon color={palette.ink} name="help" size={20} />
-    </Pressable>
+      testID="offers-help"
+    />
   );
 
   const locationUnavailablePanel = (
@@ -262,14 +344,16 @@ export function OffersScreen() {
         palette={palette}
         title={t('offers.locationUnavailable')}
       />
-      <Pressable
+      <Button
         accessibilityLabel={t('common.why')}
         accessibilityRole="button"
+        mode="text"
         onPress={() => openContextHelp('help.find')}
         style={styles.whyButton}
+        textColor={palette.accentText}
       >
-        <Text style={{ color: palette.accentText, fontWeight: '800' }}>{t('common.why')}</Text>
-      </Pressable>
+        {t('common.why')}
+      </Button>
     </View>
   );
 
@@ -300,14 +384,16 @@ export function OffersScreen() {
           palette={palette}
           title={title}
         />
-        <Pressable
+        <Button
           accessibilityLabel={t('common.why')}
           accessibilityRole="button"
+          mode="text"
           onPress={() => openContextHelp('help.find')}
           style={styles.whyButton}
+          textColor={palette.accentText}
         >
-          <Text style={{ color: palette.accentText, fontWeight: '800' }}>{t('common.why')}</Text>
-        </Pressable>
+          {t('common.why')}
+        </Button>
       </View>
     );
   }
@@ -316,8 +402,90 @@ export function OffersScreen() {
     if (isAuthenticated) {
       return true;
     }
-    setActionStatus(t('auth.signInToContribute'), 'error');
+    setActionStatus(t('auth.signInToContribute'), 'error', null, { persistent: true });
     return false;
+  }
+
+  function saveCurrentPreset() {
+    const preset = { id: `${radiusMeters}-${favoritesOnly}`, radiusMeters, favoritesOnly };
+    setPresets((current) =>
+      [preset, ...current.filter((entry) => entry.id !== preset.id)].slice(0, 5)
+    );
+  }
+
+  function removeRecent(value: string) {
+    setRecentSearches((current) => current.filter((entry) => entry !== value));
+  }
+
+  function removePreset(id: string) {
+    setPresets((current) => current.filter((entry) => entry.id !== id));
+  }
+
+  function toggleSelection(offerId: string) {
+    setSelectedOfferIds((current) =>
+      current.includes(offerId) ? current.filter((id) => id !== offerId) : [...current, offerId]
+    );
+  }
+
+  function exitSelection() {
+    setSelectionMode(false);
+    setSelectedOfferIds([]);
+  }
+
+  async function voteSelectedAvailable() {
+    const targets = combinedOffers.filter(
+      (offer) => selectedOfferIds.includes(offer.offerId) && !offer.hasCurrentUserVoted
+    );
+    if (targets.length === 0) {
+      exitSelection();
+      return;
+    }
+    reportPending(t('common.saving'));
+    const results = await Promise.all(
+      targets.map((offer) => api.voteOfferAvailability(offer.offerId, { vote: 1 }))
+    );
+    const votedIds = targets.filter((_, index) => results[index]?.success).map((offer) => offer.offerId);
+    if (votedIds.length === 0) {
+      setActionStatus(t('offers.voteFailed'), 'error');
+      return;
+    }
+    setResults((previous) => ({
+      ...previous,
+      offers: previous.offers.map((offer) =>
+        votedIds.includes(offer.offerId)
+          ? { ...offer, hasCurrentUserVoted: true, positiveAvailabilityCount: offer.positiveAvailabilityCount + 1 }
+          : offer
+      ),
+    }));
+    setActionStatus(t('offers.feedbackRegistered'), 'success');
+    successFeedback();
+    exitSelection();
+  }
+
+  async function saveSelectedFavorites() {
+    const targets = combinedOffers.filter((offer) => selectedOfferIds.includes(offer.offerId) && !offer.isFavorite);
+    if (targets.length === 0) {
+      exitSelection();
+      return;
+    }
+    reportPending(t('common.saving'));
+    const results = await Promise.all(
+      targets.map((offer) => api.setOfferFavorite(offer.offerId, { isFavorite: true }))
+    );
+    const savedIds = targets.filter((_, index) => results[index]?.success).map((offer) => offer.offerId);
+    if (savedIds.length === 0) {
+      setActionStatus(t('offers.favoriteFailed'), 'error');
+      return;
+    }
+    setResults((previous) => ({
+      ...previous,
+      offers: previous.offers.map((offer) =>
+        savedIds.includes(offer.offerId) ? { ...offer, isFavorite: true } : offer
+      ),
+    }));
+    setActionStatus(t('offers.favoriteUpdated'), 'success');
+    selectionFeedback();
+    exitSelection();
   }
 
   function renderStatePanel() {
@@ -340,17 +508,7 @@ export function OffersScreen() {
     return null;
   }
 
-  const sections = useMemo(() => partitionOffers(results.offers, query), [results.offers, query]);
-  const listSections = useMemo(
-    () => [
-      ...(sections.promoted.length > 0
-        ? [{ key: 'promoted', title: t('offers.promoted'), data: sections.promoted }]
-        : []),
-      ...(sections.feed.length > 0 ? [{ key: 'feed', title: t('nav.offers'), data: sections.feed }] : []),
-    ],
-    [sections, t]
-  );
-  const combinedOffers = useMemo(() => [...sections.promoted, ...sections.feed], [sections]);
+
   const gridColumns = resolveOffersGridColumns(viewportWidth);
   const cardWidth = Math.max(
     220,
@@ -361,7 +519,7 @@ export function OffersScreen() {
     if (!requireSession()) {
       return;
     }
-    setActionStatus(null);
+    reportPending(t('common.saving'));
     const nextFavorite = !offer.isFavorite;
     const result = await api.setOfferFavorite(offer.offerId, { isFavorite: nextFavorite });
     if (!result.success) {
@@ -388,7 +546,7 @@ export function OffersScreen() {
     setActionStatus(t('offers.favoriteUpdated'), 'neutral', {
       label: t('common.undo'),
       onPress: () => {
-        void api.setOfferFavorite(offer.offerId, { isFavorite: false }).then((undoResult) => {
+        void api.setOfferFavorite(offer.offerId, { isFavorite: !nextFavorite }).then((undoResult) => {
           if (!undoResult.success) {
             return;
           }
@@ -411,7 +569,7 @@ export function OffersScreen() {
     if (!requireSession()) {
       return;
     }
-    setActionStatus(null);
+    reportPending(t('common.saving'));
 
     const applyVote = (item: OfferItemDto): OfferItemDto =>
       item.offerId === offer.offerId
@@ -489,35 +647,195 @@ export function OffersScreen() {
     void search(query, radiusMeters, nextFavoritesOnly);
   }
 
-  if (immersiveOffers) {
-    return (
-      <View style={[styles.immersiveWrapper, { backgroundColor: palette.backdrop }]} testID="immersive-content">
-        {locationUnavailable || renderStatePanel() ? (
-          <View pointerEvents="box-none" style={styles.immersiveStateOverlay} testID="immersive-state-overlay">
-            {locationUnavailable ? locationUnavailablePanel : null}
-            {renderStatePanel()}
-          </View>
-        ) : null}
-        {status ? (
-          <View pointerEvents="box-none" style={styles.feedbackToast}>
-            <View
-              style={[styles.feedbackToastText, { backgroundColor: palette.card, borderColor: palette.border }]}
-            >
-              <Text accessibilityLiveRegion="polite" style={{ color: statusColor(palette, statusTone) }}>
+  const guestHelpButton =
+    !isAuthenticated && persistentStatus === t('auth.signInToContribute') ? (
+      <Button
+        accessibilityLabel={t('common.why')}
+        accessibilityRole="button"
+        mode="text"
+        onPress={() => openContextHelp('help.contribute')}
+        textColor={palette.accentText}
+      >
+        {t('common.why')}
+      </Button>
+    ) : null;
+
+  const hasStatus = Boolean(pending || status || persistentStatus);
+  const statusSurface =
+    hasStatus ? (
+      <Snackbar visible onDismiss={() => undefined} style={styles.statusSurface} testID="offers-status-surface">
+        <View style={[styles.statusCard, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          {persistentStatus ? (
+            <View style={styles.statusLine}>
+              <Text
+                accessibilityLiveRegion="polite"
+                variant="bodyMedium"
+                style={{ color: statusColor(palette, persistentTone) }}
+              >
+                {persistentStatus}
+              </Text>
+              {guestHelpButton}
+              {persistentAction ? (
+                <Button
+                  accessibilityLabel={persistentAction.label}
+                  accessibilityRole="button"
+                  mode="text"
+                  onPress={persistentAction.onPress}
+                  textColor={palette.ink}
+                >
+                  {persistentAction.label}
+                </Button>
+              ) : null}
+              <Button
+                accessibilityLabel={t('offers.dismissNotice')}
+                accessibilityRole="button"
+                mode="text"
+                onPress={dismissStatus}
+                testID="status-dismiss"
+                textColor={palette.ink}
+              >
+                {t('offers.dismissNotice')}
+              </Button>
+            </View>
+          ) : null}
+          {pending ? (
+            <View>
+              <ProgressBar color={palette.accent} />
+              <Text accessibilityLiveRegion="polite" variant="bodyMedium" style={{ color: palette.ink }}>
+                {pendingLabel}
+              </Text>
+            </View>
+          ) : status ? (
+            <View style={styles.statusLine}>
+              <Text
+                accessibilityLiveRegion="polite"
+                variant="bodyMedium"
+                style={{ color: statusColor(palette, statusTone) }}
+              >
                 {status}
               </Text>
               {statusAction ? (
-                <Pressable
+                <Button
                   accessibilityLabel={statusAction.label}
                   accessibilityRole="button"
+                  mode="text"
                   onPress={statusAction.onPress}
+                  textColor={palette.ink}
                 >
-                  <Text style={{ color: palette.accentText, fontWeight: '800' }}>{statusAction.label}</Text>
-                </Pressable>
+                  {statusAction.label}
+                </Button>
               ) : null}
+            </View>
+          ) : null}
+        </View>
+      </Snackbar>
+    ) : null;
+
+  function renderSearchAccelerators(): ReactNode {
+    return (
+      <View style={styles.accelerators} testID="search-accelerators">
+        {recentSearches.length > 0 ? (
+          <View style={styles.acceleratorSection}>
+            <Text variant="titleSmall" style={{ color: palette.ink }}>
+              {t('offers.recentSearches')}
+            </Text>
+            <View style={styles.chipRow}>
+              {recentSearches.map((entry) => (
+                <View key={entry} style={styles.chip}>
+                  <Chip
+                    accessibilityLabel={entry}
+                    accessibilityRole="button"
+                    selected={entry === query}
+                    onPress={() => {
+                      setQuery(entry);
+                      runImmediateSearch(entry, radiusMeters, favoritesOnly);
+                    }}
+                    textStyle={{ color: palette.ink }}
+                  >
+                    {entry}
+                  </Chip>
+                  <IconButton
+                    accessibilityLabel={`${t('common.remove')} ${entry}`}
+                    accessibilityRole="button"
+                    icon="close"
+                    iconColor={theme.colors.onSurfaceVariant}
+                    onPress={() => removeRecent(entry)}
+                    size={18}
+                    style={styles.removeChip}
+                  />
+                </View>
+              ))}
+            </View>
+            <Button
+              accessibilityLabel={t('offers.clearRecents')}
+              accessibilityRole="button"
+              mode="text"
+              onPress={() => setRecentSearches([])}
+              textColor={palette.inkMuted}
+            >
+              {t('offers.clearRecents')}
+            </Button>
+          </View>
+        ) : null}
+        {presets.length > 0 ? (
+          <View style={styles.acceleratorSection}>
+            <Text variant="titleSmall" style={{ color: palette.ink }}>
+              {t('offers.savedPresets')}
+            </Text>
+            <View style={styles.chipRow}>
+              {presets.map((preset) => (
+                <View key={preset.id} style={styles.chip}>
+                  <Chip
+                    accessibilityLabel={`${t('offers.savedPresets')} ${formatDistanceMeters(preset.radiusMeters)}`}
+                    accessibilityRole="button"
+                    selected={preset.radiusMeters === radiusMeters && preset.favoritesOnly === favoritesOnly}
+                    onPress={() => {
+                      setRadiusMeters(preset.radiusMeters);
+                      setFavoritesOnly(preset.favoritesOnly);
+                      setFeedTab(preset.favoritesOnly ? 'favorites' : 'viewAll');
+                      runImmediateSearch(query, preset.radiusMeters, preset.favoritesOnly);
+                    }}
+                    textStyle={{ color: palette.ink }}
+                  >
+                    {formatDistanceMeters(preset.radiusMeters)} · {preset.favoritesOnly ? t('offers.favoritesOnly') : t('nav.offers')}
+                  </Chip>
+                  <IconButton
+                    accessibilityLabel={`${t('common.remove')} ${formatDistanceMeters(preset.radiusMeters)}`}
+                    accessibilityRole="button"
+                    icon="close"
+                    iconColor={theme.colors.onSurfaceVariant}
+                    onPress={() => removePreset(preset.id)}
+                    size={18}
+                    style={styles.removeChip}
+                  />
+                </View>
+              ))}
             </View>
           </View>
         ) : null}
+        <Button
+          accessibilityLabel={t('offers.savePreset')}
+          accessibilityRole="button"
+          mode="text"
+          onPress={saveCurrentPreset}
+          testID="save-preset"
+          textColor={palette.accentText ?? palette.ink}
+        >
+          {t('offers.savePreset')}
+        </Button>
+      </View>
+    );
+  }
+
+  if (immersiveOffers) {
+    return (
+      <View style={[styles.immersiveWrapper, { backgroundColor: palette.backdrop }]} testID="immersive-content">
+        {locationUnavailable || state.kind !== 'none' ? (
+          <View pointerEvents="box-none" style={styles.immersiveStateOverlay} testID="immersive-state-overlay">
+            {locationUnavailable ? locationUnavailablePanel : renderStatePanel()}
+          </View>
+        ) : null}
+        {statusSurface}
         <ImmersiveOfferFeed
           feedTab={feedTab}
           headerControl={modeSwitch}
@@ -535,11 +853,17 @@ export function OffersScreen() {
           onReport={(offer) => { if (requireSession()) { setReportDraft(offer); } }}
           onSearch={(nextQuery) => {
             setQuery(nextQuery);
-            searchDebounced(nextQuery, radiusMeters, favoritesOnly);
+            scheduleSearch(nextQuery, radiusMeters, favoritesOnly);
           }}
           onVote={vote}
           query={query}
           radiusMeters={radiusMeters}
+          searchAccelerators={renderSearchAccelerators()}
+          selectionMode={selectionMode}
+          selectedOfferIds={selectedOfferIds}
+          onToggleSelection={toggleSelection}
+          onSelectMode={() => setSelectionMode(true)}
+          onExitSelection={exitSelection}
         />
         <OfferDetailModal
           offer={detailOffer}
@@ -566,7 +890,7 @@ export function OffersScreen() {
           returnFocusRef={helpButtonRef}
           visible={reportDraft !== null}
         />
-        <FirstRunSheet onDismiss={dismissFirstRun} visible={firstRunVisible} />
+        <FirstRunSheet onDismiss={dismissFirstRun} returnFocusRef={helpButtonRef} visible={firstRunVisible} />
       </View>
     );
   }
@@ -585,6 +909,7 @@ export function OffersScreen() {
           titleColor={palette.ink}
         />
       </View>
+      {statusSurface}
       <SectionList
         testID="offers-scroll"
         contentContainerStyle={[styles.content, { paddingBottom: 180 + insets.bottom, paddingHorizontal: 16, paddingTop: 68 }]}
@@ -598,26 +923,40 @@ export function OffersScreen() {
             {locationUnavailable ? locationUnavailablePanel : null}
         <View style={styles.heroRow}>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.title, { color: palette.ink }]}>{t('offers.title')}</Text>
-            <Text style={{ color: palette.inkMuted }}>
+            <Text variant="headlineMedium" style={{ color: palette.ink }}>
+              {t('offers.title')}
+            </Text>
+            <Text variant="bodyMedium" style={{ color: palette.inkMuted }}>
               {t('offers.location')}: {userLocationLabel}
             </Text>
           </View>
         </View>
         <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-          <TextInput
+          <Searchbar
             accessibilityLabel={t('offers.searchPlaceholder')}
+            accessibilityHint={searchValidationMessage ?? undefined}
+            inputStyle={[styles.input, { backgroundColor: palette.panel, borderColor: searchValidationMessage ? palette.danger : palette.border, color: palette.ink }]}
             maxLength={queryMaxLength}
             onChangeText={(value) => {
               const next = value.slice(0, queryMaxLength);
               setQuery(next);
-              searchDebounced(next, radiusMeters, favoritesOnly);
+              scheduleSearch(next, radiusMeters, favoritesOnly);
             }}
             placeholder={t('offers.searchPlaceholder')}
             placeholderTextColor={palette.inkMuted}
-            style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
+            testID="offers-search-input"
             value={query}
           />
+          {searchValidationMessage ? (
+            <Text
+              accessibilityLiveRegion="polite"
+              variant="bodySmall"
+              style={{ color: palette.danger }}
+              testID="offers-search-validation"
+            >
+              {searchValidationMessage}
+            </Text>
+          ) : null}
           <View style={styles.filterRow}>
             <CoverageDistanceControl
               onChange={(option) => {
@@ -630,20 +969,88 @@ export function OffersScreen() {
             />
           </View>
           <View style={styles.actionRow}>
-            <Pressable style={[styles.actionButton, { backgroundColor: palette.accent }]} onPress={() => void search()}>
-              <Text style={[styles.primaryLabel, { color: palette.onAccent }]}>{t('common.search')}</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.actionButton, { backgroundColor: favoritesOnly ? palette.accentMuted : palette.panel }]}
+            <Button
+              accessibilityLabel={t('common.search')}
+              accessibilityRole="button"
+              buttonColor={palette.accent}
+              mode="contained"
+              onPress={() => void search()}
+              style={styles.actionButton}
+              textColor={palette.onAccent}
+            >
+              {t('common.search')}
+            </Button>
+            <Button
+              accessibilityLabel={t('offers.favoritesOnly')}
+              accessibilityRole="button"
+              buttonColor={favoritesOnly ? palette.accentMuted : palette.panel}
+              mode="contained"
               onPress={() => {
                 const next = !favoritesOnly;
                 setFavoritesOnly(next);
                 setFeedTab(next ? 'favorites' : 'viewAll');
                 void search(query, radiusMeters, next);
               }}
+              style={styles.actionButton}
+              textColor={favoritesOnly ? palette.accentText : palette.ink}
             >
-              <Text style={{ color: favoritesOnly ? palette.accentText : palette.ink }}>{t('offers.favoritesOnly')}</Text>
-            </Pressable>
+              {t('offers.favoritesOnly')}
+            </Button>
+          </View>
+          {renderSearchAccelerators()}
+          <View style={styles.actionRow}>
+            {selectionMode ? (
+              <>
+                <Button
+                  accessibilityLabel={t('offers.batchDone')}
+                  accessibilityRole="button"
+                  buttonColor={palette.panel}
+                  mode="contained"
+                  onPress={exitSelection}
+                  style={styles.actionButton}
+                  textColor={palette.ink}
+                >
+                  {t('offers.batchDone')}
+                </Button>
+                <Button
+                  accessibilityLabel={t('offers.batchFavorite')}
+                  accessibilityRole="button"
+                  buttonColor={palette.panel}
+                  disabled={selectedOfferIds.length === 0}
+                  mode="contained"
+                  onPress={() => void saveSelectedFavorites()}
+                  style={styles.actionButton}
+                  textColor={palette.ink}
+                >
+                  {t('offers.batchFavorite')}
+                </Button>
+                <Button
+                  accessibilityLabel={t(OFFER_ACTION_LABEL_KEYS.available)}
+                  accessibilityRole="button"
+                  buttonColor={palette.panel}
+                  disabled={selectedOfferIds.length === 0}
+                  mode="contained"
+                  onPress={() => void voteSelectedAvailable()}
+                  style={styles.actionButton}
+                  textColor={palette.ink}
+                >
+                  {t(OFFER_ACTION_LABEL_KEYS.available)}
+                </Button>
+              </>
+            ) : (
+              <Button
+                accessibilityLabel={t('offers.select')}
+                accessibilityRole="button"
+                accessibilityState={{ expanded: selectionMode }}
+                buttonColor={palette.panel}
+                mode="contained"
+                onPress={() => setSelectionMode(true)}
+                style={styles.actionButton}
+                textColor={palette.ink}
+              >
+                {t('offers.select')}
+              </Button>
+            )}
           </View>
         </View>
 
@@ -662,26 +1069,10 @@ export function OffersScreen() {
             ) : null}
           </>
         }
-      ListFooterComponent={
-        status ? (
-          <View style={styles.statusRow}>
-            <Text accessibilityLiveRegion="polite" style={[styles.status, { color: statusColor(palette, statusTone) }]}>
-              {status}
-            </Text>
-            {statusAction ? (
-              <Pressable
-                accessibilityLabel={statusAction.label}
-                accessibilityRole="button"
-                onPress={statusAction.onPress}
-              >
-                <Text style={{ color: palette.accentText, fontWeight: '800' }}>{statusAction.label}</Text>
-              </Pressable>
-            ) : null}
-          </View>
-        ) : undefined
-      }
       renderSectionHeader={({ section }) => (
-        <Text style={[styles.sectionTitle, { color: palette.ink }]}>{section.title}</Text>
+        <Text variant="headlineSmall" style={{ color: palette.ink }}>
+          {section.title}
+        </Text>
       )}
       renderItem={({ item: offer }) => (
         <View style={gridColumns === 1 ? styles.gridCellFull : [styles.gridCell, { width: cardWidth }]}>
@@ -694,6 +1085,9 @@ export function OffersScreen() {
             onReport={(offer) => { if (requireSession()) { setReportDraft(offer); } }}
             onVote={vote}
             query={query}
+            selectionMode={selectionMode}
+            selected={selectionMode && selectedOfferIds.includes(offer.offerId)}
+            onToggleSelection={toggleSelection}
           />
         </View>
       )}
@@ -775,24 +1169,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  fallbackText: {
-    fontSize: 12,
+  removeChip: {
+    minHeight: platformTouchFloor,
+    minWidth: platformTouchFloor,
   },
-  fallbackActions: {
+  statusSurface: {
+    left: 16,
+    position: 'absolute',
+    right: 16,
+    top: 116,
+    zIndex: 6,
+  },
+  statusCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  statusLine: {
+    alignItems: 'center',
     flexDirection: 'row',
-    gap: 10,
+    flexWrap: 'wrap',
+    gap: 12,
   },
-  fallbackButton: {
+  accelerators: {
+    borderRadius: 16,
+    gap: 8,
+  },
+  acceleratorSection: {
+    gap: 6,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chip: {
     alignItems: 'center',
     borderRadius: 999,
-    flex: 1,
-    justifyContent: 'center',
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 6,
     minHeight: platformTouchFloor,
-    paddingHorizontal: 14,
-  },
-  fallbackButtonLabel: {
-    fontSize: 14,
-    fontWeight: '800',
+    paddingHorizontal: 12,
   },
   feedbackToast: {
     alignItems: 'flex-start',
@@ -802,18 +1222,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     zIndex: 5,
-  },
-  feedbackToastText: {
-    borderRadius: 12,
-    borderWidth: 1,
-    fontSize: 13,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  title: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 30,
-    fontWeight: '700',
   },
   panel: {
     borderRadius: 28,
@@ -843,10 +1251,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
-  primaryLabel: {
-    fontWeight: '800',
-    textAlign: 'center',
-  },
   section: {
     gap: 10,
   },
@@ -861,26 +1265,10 @@ const styles = StyleSheet.create({
   gridCellFull: {
     width: '100%',
   },
-  sectionTitle: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 24,
-    fontWeight: '700',
-  },
   whyButton: {
     alignSelf: 'flex-start',
     minHeight: platformTouchFloor,
     justifyContent: 'center',
     paddingHorizontal: 16,
-  },
-  statusRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-  },
-  status: {
-    fontSize: 14,
-    fontWeight: '700',
   },
 });

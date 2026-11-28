@@ -1,6 +1,6 @@
-Feature: One undo action for offer favorites and availability votes
+Feature: One undo action for reversible offer actions
   As a user
-  I want to reverse a just-completed favorite or vote from the success feedback
+  I want to reverse a just-completed favorite change or vote from the success feedback
   So that a mistaken action does not linger while I am still looking at the offer
 
   Scenario: Favorite toggle offers one undo in the status dwell

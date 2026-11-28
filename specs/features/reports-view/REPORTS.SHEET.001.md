@@ -70,6 +70,8 @@ Scenario: Contextual help opens from the report sheet
 ## Non-Functional Constraints
 - No new visual component library shall be added; reuse the comments sheet styling pattern.
 
+- `REPORTS.REASONS.001`
+
 ## Related Specs
 - `REPORTS.SUBMIT.001`
 - `REPORTS.OFFER.PREFILL.001`

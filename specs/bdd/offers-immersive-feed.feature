@@ -24,6 +24,8 @@ Feature: Immersive vertical full-screen main page feed
     Then favorite, directions, availability voting, and report controls are available in a vertical side rail on the right
     And the open detail control is not available
     And their existing behavior and state are preserved
+    And each control uses a Material 3 button or icon-button component
+    And no authored-view exception keeps a control as a custom pressable
 
   Scenario: Description and tags use more control
     Given an offer page with a long description and tags
@@ -180,3 +182,16 @@ Feature: Immersive vertical full-screen main page feed
     Given no offers are available
     When the main page loads
     Then no empty-state message is displayed
+
+  Scenario: Rail actions keep canonical semantics through Material 3 components
+    Given an offer page with favorite and availability actions is displayed
+    When assistive technology traverses the action rail
+    Then each action announces its canonical name, role and selected state
+    And no announced value differs from the same action on another surface
+
+  Scenario: Rail actions stay tappable at 200 percent font scale
+    Given the Android font scale is set to 200 percent
+    And the immersive rail is displayed on a wide screen
+    When assistive technology reads the rail
+    Then every action remains visible and independently tappable
+    And each keeps a 48 by 48 dp target and its canonical state

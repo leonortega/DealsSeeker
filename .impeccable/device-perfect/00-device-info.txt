@@ -1,0 +1,17 @@
+﻿ADB_DEVICES:
+List of devices attached
+emulator-5554	device
+
+MODEL: sdk_gphone64_x86_64
+ANDROID: 15
+SIZE: Physical size: 1080x1920
+DENSITY: Physical density: 480
+NIGHT: Night mode: no
+FONT_SCALE: 1.0
+REVERSE:
+host-17 tcp:8081 tcp:8081
+host-17 tcp:5005 tcp:5005
+
+RESOLVED_ACTIVITY:
+priority=0 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=false
+com.anonymous.dealsseekerreactnative/.MainActivity

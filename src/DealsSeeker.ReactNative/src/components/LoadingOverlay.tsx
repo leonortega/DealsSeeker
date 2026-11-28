@@ -1,9 +1,11 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Text, useTheme } from 'react-native-paper';
 import { useApp } from '../hooks/useApp';
 import { useAppStatus } from '../hooks/useAppStatus';
 
 export function LoadingOverlay({ visible = false }: { visible?: boolean }) {
-  const { palette, t } = useApp();
+  const { t } = useApp();
+  const theme = useTheme();
   const { loadingCount } = useAppStatus();
 
   if (loadingCount <= 0 && !visible) {
@@ -11,10 +13,10 @@ export function LoadingOverlay({ visible = false }: { visible?: boolean }) {
   }
 
   return (
-    <View style={[styles.backdrop, { backgroundColor: palette.overlay }]}>
-      <View style={[styles.panel, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <ActivityIndicator size="large" color={palette.accent} />
-        <Text style={[styles.text, { color: palette.ink }]}>{t('app.loading')}</Text>
+    <View style={[styles.backdrop, { backgroundColor: theme.colors.backdrop }]}>
+      <View style={[styles.panel, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+        <ActivityIndicator color={theme.colors.primary} size="large" />
+        <Text style={styles.text} variant="titleMedium">{t('app.loading')}</Text>
       </View>
     </View>
   );

@@ -1,8 +1,17 @@
-import { landmarkFontFamily } from '../utils/typography';
 import { type RefObject, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Avatar,
+  Button,
+  HelperText,
+  Text,
+  TextInput,
+  useTheme,
+} from 'react-native-paper';
 import { OfferCommentDto, OfferItemDto } from '../api/types';
 import { useApp } from '../hooks/useApp';
+import { platformTouchFloor } from '../utils/layout';
 import { restoreFocus } from '../utils/focusReturn';
 import { NativeBottomSheet } from './NativeBottomSheet';
 import { avatarEmoji } from '../utils/avatars';
@@ -26,7 +35,8 @@ function formatCommentDate(value: string) {
 }
 
 export function OfferCommentsModal({ offer, visible, onClose, returnFocusRef }: OfferCommentsModalProps) {
-  const { api, palette, t } = useApp();
+  const { api, t } = useApp();
+  const theme = useTheme();
 
   function close() {
     onClose();
@@ -129,87 +139,112 @@ export function OfferCommentsModal({ offer, visible, onClose, returnFocusRef }: 
 
   return (
     <NativeBottomSheet visible={visible} onClose={close}>
-        <View accessibilityViewIsModal style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}>
-          <View style={styles.header}>
-            <Text numberOfLines={2} style={[styles.title, { color: palette.ink }]}>
-              {t('comments.title')}
+      <View
+        accessibilityViewIsModal
+        style={[styles.sheet, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
+      >
+        <View style={styles.header}>
+          <Text numberOfLines={2} style={styles.title} variant="headlineSmall">
+            {t('comments.title')}
+          </Text>
+        </View>
+
+        <Text style={{ color: theme.colors.onSurfaceVariant }} variant="titleSmall">
+          {offer.businessName}
+        </Text>
+
+        {loading ? (
+          <View style={styles.loadingRow}>
+            <ActivityIndicator color={theme.colors.primary} />
+            <Text style={styles.empty} variant="bodyMedium">
+              {t('comments.loading')}
             </Text>
           </View>
+        ) : null}
 
-          <Text style={[styles.offerName, { color: palette.inkMuted }]}>{offer.businessName}</Text>
+        {comments.length === 0 && !loading ? (
+          <Text style={styles.empty} variant="bodyMedium">
+            {t('comments.empty')}
+          </Text>
+        ) : null}
 
-          {loading ? (
-            <View style={styles.loadingRow}>
-              <ActivityIndicator color={palette.accent} />
-              <Text style={[styles.empty, { color: palette.inkMuted }]}>{t('comments.loading')}</Text>
-            </View>
-          ) : null}
-
-          {comments.length === 0 && !loading ? (
-            <Text style={[styles.empty, { color: palette.inkMuted }]}>{t('comments.empty')}</Text>
-          ) : null}
-
-          <FlatList
-            data={comments}
-            keyExtractor={(comment) => comment.commentId}
-            style={styles.list}
-            contentContainerStyle={styles.listContent}
-            ListFooterComponent={
-              hasMore ? (
-                <Pressable style={[styles.loadMoreButton, { borderColor: palette.border }]} onPress={() => void loadMore()}>
-                  {loadingMore ? (
-                    <ActivityIndicator color={palette.accent} />
-                  ) : (
-                    <Text style={[styles.loadMoreLabel, { color: palette.accentText }]}>{t('comments.loadMore')}</Text>
-                  )}
-                </Pressable>
-              ) : undefined
-            }
-            renderItem={({ item }: { item: OfferCommentDto }) => (
-              <View style={[styles.comment, { backgroundColor: palette.panel, borderColor: palette.border }]}>
-                <Text style={styles.avatar}>{avatarEmoji(item.avatarId)}</Text>
-                <View style={styles.commentBody}>
-                  <Text style={[styles.author, { color: palette.ink }]}>{item.displayName}</Text>
-                  <Text style={[styles.meta, { color: palette.inkMuted }]}>{formatCommentDate(item.createdAtUtc)}</Text>
-                  <Text style={[styles.commentText, { color: palette.ink }]}>{item.body}</Text>
-                </View>
+        <FlatList
+          data={comments}
+          keyExtractor={(comment) => comment.commentId}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          ListFooterComponent={
+            hasMore ? (
+              <Button
+                accessibilityLabel={t('comments.loadMore')}
+                accessibilityRole="button"
+                loading={loadingMore}
+                mode="text"
+                onPress={() => void loadMore()}
+                style={[styles.loadMoreButton, { borderColor: theme.colors.outline }]}
+              >
+                {t('comments.loadMore')}
+              </Button>
+            ) : undefined
+          }
+          renderItem={({ item }: { item: OfferCommentDto }) => (
+            <View
+              style={[
+                styles.comment,
+                {
+                  backgroundColor: theme.colors.surfaceVariant,
+                  borderColor: theme.colors.outlineVariant,
+                },
+              ]}
+            >
+              <Avatar.Text label={avatarEmoji(item.avatarId)} size={40} style={styles.avatar} />
+              <View style={styles.commentBody}>
+                <Text variant="labelLarge">{item.displayName}</Text>
+                <Text style={{ color: theme.colors.onSurfaceVariant }} variant="bodySmall">
+                  {formatCommentDate(item.createdAtUtc)}
+                </Text>
+                <Text variant="bodyMedium">{item.body}</Text>
               </View>
-            )}
-          />
+            </View>
+          )}
+        />
 
-          <TextInput
-            maxLength={bodyMaxLength}
-            multiline
-            onChangeText={(value) => setBody(value.slice(0, bodyMaxLength))}
-            placeholder={t('comments.placeholder')}
-            placeholderTextColor={palette.inkMuted}
-            style={[styles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
-            value={body}
-          />
-          <Text style={{ color: palette.inkMuted, textAlign: 'right' }}>{`${body.length}/${bodyMaxLength}`}</Text>
+        <TextInput
+          label={t('comments.placeholder')}
+          maxLength={bodyMaxLength}
+          multiline
+          onChangeText={(value) => setBody(value.slice(0, bodyMaxLength))}
+          placeholder={t('comments.placeholder')}
+          placeholderTextColor={theme.colors.onSurfaceVariant}
+          style={styles.input}
+          testID="comments-input"
+          value={body}
+        />
+        <HelperText style={styles.counter} testID="comments-counter" type="info">
+          {`${body.length}/${bodyMaxLength}`}
+        </HelperText>
 
-          {status ? <Text style={[styles.status, { color: palette.danger }]}>{status}</Text> : null}
+        {status ? (
+          <HelperText accessibilityLiveRegion="polite" testID="comments-status" type="error">
+            {status}
+          </HelperText>
+        ) : null}
 
-          <Pressable style={[styles.publishButton, { backgroundColor: palette.accent }]} onPress={() => void publish()}>
-            <Text style={[styles.publishLabel, { color: palette.onAccent }]}>{t('comments.publish')}</Text>
-          </Pressable>
-        </View>
+        <Button
+          accessibilityLabel={t('comments.publish')}
+          accessibilityRole="button"
+          mode="contained"
+          onPress={() => void publish()}
+          style={[styles.publishButton, { backgroundColor: theme.colors.primary }]}
+        >
+          {t('comments.publish')}
+        </Button>
+      </View>
     </NativeBottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  scrim: {
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
   sheet: {
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
@@ -225,17 +260,9 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontFamily: landmarkFontFamily(),
-    fontSize: 24,
-    fontWeight: '700',
     marginRight: 12,
   },
-  offerName: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
   empty: {
-    fontSize: 14,
     paddingVertical: 8,
   },
   loadingRow: {
@@ -252,14 +279,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   loadMoreButton: {
-    alignItems: 'center',
     borderRadius: 12,
     borderWidth: 1,
-    paddingVertical: 10,
-  },
-  loadMoreLabel: {
-    fontSize: 14,
-    fontWeight: '700',
+    minHeight: platformTouchFloor,
   },
   comment: {
     borderRadius: 16,
@@ -269,41 +291,23 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   avatar: {
-    fontSize: 22,
+    alignSelf: 'center',
   },
   commentBody: {
     flex: 1,
     gap: 2,
   },
-  author: {
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  meta: {
-    fontSize: 12,
-  },
-  commentText: {
-    fontSize: 15,
-  },
   input: {
-    borderRadius: 16,
-    borderWidth: 1,
     minHeight: 72,
     paddingHorizontal: 14,
     paddingVertical: 12,
     textAlignVertical: 'top',
   },
-  status: {
-    fontSize: 13,
-    fontWeight: '700',
+  counter: {
+    textAlign: 'right',
   },
   publishButton: {
     borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-  },
-  publishLabel: {
-    fontWeight: '800',
-    textAlign: 'center',
+    minHeight: platformTouchFloor,
   },
 });

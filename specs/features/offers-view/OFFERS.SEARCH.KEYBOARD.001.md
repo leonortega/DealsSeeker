@@ -95,6 +95,8 @@ Scenario: Character limit still applies with the keyboard open
 - Existing search validation and result-refresh behavior shall be unchanged.
 
 ## Related Specs
+- `APP.TYPOGRAPHY.001`
+- `OFFERS.SEARCH.RECENTS.001`
 - `OFFERS.SEARCH.001`
 - `APP.BOTTOM_SHEET.001`
 - `APP.POLISH.UX.001`

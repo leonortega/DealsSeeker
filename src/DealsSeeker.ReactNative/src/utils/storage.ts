@@ -1,8 +1,28 @@
 import * as SecureStore from 'expo-secure-store';
-import { Language, NavigationMode, ThemeMode, ThemeWorld, UserPreferences } from '../api/types';
+import {
+  GeoPoint,
+  Language,
+  NavigationMode,
+  OfferImageDto,
+  OfferLocationDto,
+  ThemeMode,
+  ThemeWorld,
+  UserPreferences,
+} from '../api/types';
 
 const SESSION_KEY = 'dealseeker.auth.session';
 const FIRST_RUN_KEY = 'dealseeker.onboarding.completed';
+const ADD_OFFER_DRAFT_KEY = 'dealseeker.addOffer.draft';
+
+export interface AddOfferDraftSnapshot {
+  description: string;
+  tags: string[];
+  images: OfferImageDto[];
+  location: OfferLocationDto | null;
+  locationQuery?: string;
+  locationConfirmed?: boolean;
+  mapCenter?: GeoPoint | null;
+}
 export const DEFAULT_PREFERENCES: UserPreferences = {
   themeMode: 'system',
   themeWorld: 'tangerine',
@@ -99,4 +119,30 @@ export async function savePreferences(preferences: UserPreferences, userId?: str
     writeValue(preferenceKey('language', userId), preferences.language),
     writeValue(preferenceKey('navigation', userId), preferences.navigationMode),
   ]);
+}
+
+export async function loadAddOfferDraft(): Promise<AddOfferDraftSnapshot | null> {
+  const raw = await readValue(ADD_OFFER_DRAFT_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as AddOfferDraftSnapshot;
+    if (!parsed || typeof parsed.description !== 'string' || !Array.isArray(parsed.tags) || !Array.isArray(parsed.images)) {
+      throw new Error('Invalid draft');
+    }
+    return parsed;
+  } catch {
+    await deleteValue(ADD_OFFER_DRAFT_KEY);
+    return null;
+  }
+}
+
+export async function saveAddOfferDraft(draft: AddOfferDraftSnapshot) {
+  await writeValue(ADD_OFFER_DRAFT_KEY, JSON.stringify(draft));
+}
+
+export async function clearAddOfferDraft() {
+  await deleteValue(ADD_OFFER_DRAFT_KEY);
 }

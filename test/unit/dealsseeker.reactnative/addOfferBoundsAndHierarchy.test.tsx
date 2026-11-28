@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
+import { MD3LightTheme } from 'react-native-paper';
 import { AddOfferScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
 
 let mockOverlayRoute: { name: string; offerId?: string } | null = { name: 'add-offer' };
@@ -125,28 +126,34 @@ describe('Add Offer image hierarchy (ADD.OFFER.VISUAL.HIERARCHY.001)', () => {
     await screen.findByTestId('add-move-left');
   }
 
+  // Paper Button puts `style` on its surface (and, on iOS, an outer shadow layer).
+  function buttonStyle(id: string) {
+    const outer =
+      screen.queryByTestId(`${id}-container-outer-layer`) ?? screen.queryByTestId(`${id}-outer-layer`);
+    const container = screen.getByTestId(`${id}-container`);
+    return StyleSheet.flatten([container.props.style, outer?.props.style]);
+  }
+
   it('gives photo entry a larger share of the row than reorder actions', async () => {
     await renderWithPhoto();
 
-    const takePhoto = screen.getByTestId('add-take-photo');
-    const moveLeft = screen.getByTestId('add-move-left');
-    expect(StyleSheet.flatten(takePhoto.props.style).flex).toBe(1);
-    expect(StyleSheet.flatten(moveLeft.props.style).flex).toBe(0);
+    expect(buttonStyle('add-take-photo').flex).toBe(1);
+    expect(buttonStyle('add-move-left').flex).toBe(0);
   });
 
-  it('uses quieter colors for reorder and remove than for photo entry', async () => {
+  it('uses Material 3 tonal roles for reorder and remove versus photo entry', async () => {
     await renderWithPhoto();
 
-    expect(StyleSheet.flatten(screen.getByTestId('add-take-photo').props.style).backgroundColor).toBe('#fff9f0');
-    expect(StyleSheet.flatten(screen.getByTestId('add-move-left').props.style).backgroundColor).toBe('#fffdf8');
-    expect(StyleSheet.flatten(screen.getByTestId('add-remove-image').props.style).backgroundColor).toBe('#fffdf8');
+    expect(buttonStyle('add-take-photo').backgroundColor).toBe(MD3LightTheme.colors.primaryContainer);
+    expect(buttonStyle('add-move-left').backgroundColor).toBe(MD3LightTheme.colors.surfaceVariant);
+    expect(buttonStyle('add-remove-image').backgroundColor).toBe(MD3LightTheme.colors.surfaceVariant);
   });
 
   it('keeps every image-panel control at least 44pt tall', async () => {
     await renderWithPhoto();
 
     for (const id of ['add-take-photo', 'add-upload', 'add-move-left', 'add-move-right', 'add-remove-image']) {
-      expect(StyleSheet.flatten(screen.getByTestId(id).props.style).minHeight).toBeGreaterThanOrEqual(44);
+      expect(buttonStyle(id).minHeight).toBeGreaterThanOrEqual(44);
     }
   });
 });

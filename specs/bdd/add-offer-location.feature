@@ -124,3 +124,9 @@ Feature: Add Offer location suggestions and mini map
     And Edit Location is enabled
     When assistive technology inspects Confirm Location
     Then its disabled state is announced
+
+  Scenario: Missing location is rejected without a substituted coordinate
+    Given an offer submission has no location
+    When the submission is validated
+    Then it is rejected with a field-level location error
+    And no fabricated coordinate is stored or displayed

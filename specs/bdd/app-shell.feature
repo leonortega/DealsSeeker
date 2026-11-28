@@ -182,3 +182,23 @@ Feature: Application shell and session-aware landing
     Then only one loading indicator is visible at the shell's fixed root position
     And no second inline progress indicator runs after it
     And the indicator does not change position between loading stages
+
+  Scenario: Standard tab destinations show a Material 3 app bar
+    Given the user is authenticated on a standard tab destination
+    When the shell chrome is rendered
+    Then a Material 3 app bar names that destination
+    And the app bar exposes the destination's actions
+    And no platform-native header exception applies
+
+  Scenario: Immersive presentation stays headerless under the app bar policy
+    Given the user is authenticated and switches to the immersive offers feed
+    When the shell chrome is rendered
+    Then no app bar is rendered for the immersive presentation
+    And only the immersive top bar remains
+
+  Scenario: Material 3 app bar preserves touch and reading-size floors
+    Given the Android font scale is set to 200 percent
+    And a standard tab destination has a long localized title and an action
+    When the Material 3 app bar is rendered
+    Then the title reflows without clipping
+    And the action keeps a 48 by 48 dp target and its name, role and state

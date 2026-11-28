@@ -32,7 +32,7 @@ Feature: One platform symbol vocabulary outside the offer action rail
     Then the avatar remains product content
     And it is not counted as a second symbol vocabulary
 
-  Scenario: Offer rail is the sole exception
+  Scenario: Offer rail uses the same platform symbol vocabulary
     Given the offer action rail and shell chrome are rendered on both platforms
     When their glyphs are displayed
     Then the rail uses the canonical vocabulary from OFFERS.ACTIONS.LABELS.001
@@ -44,3 +44,20 @@ Feature: One platform symbol vocabulary outside the offer action rail
     When chrome and gallery controls are rendered
     Then the same platform vocabulary is used
     And no control falls back to a second glyph set
+
+  Scenario: Material Symbols names are looked up by keyword
+    Given an Android control that needs a glyph
+    When its symbol name is chosen
+    Then the name is obtained by a descriptive keyword lookup in the symbol catalog
+    And no guessed or legacy icon name is used
+
+  Scenario: Verified names cover DealsSeeker roles
+    Given the Android shell, offers, contribution and account glyph roles
+    When they are rendered
+    Then they use the verified names near_me, explore, my_location, directions, favorite, report, chat, add, search, help, thumb_up and event_available as applicable
+
+  Scenario: A symbol is not reused for a second meaning on a screen
+    Given a screen with several symbol-bearing controls
+    When its glyphs are rendered
+    Then no two controls with different meanings share the same symbol
+    And a second meaning uses a different verified name

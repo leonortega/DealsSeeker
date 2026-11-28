@@ -79,6 +79,7 @@ Scenario: System Back acts as Cancel
 - The discard confirmation shall not require a separate dismissal action to resume editing.
 
 ## Related Specs
+- `APP.DRAFT.RECOVERY.001`
 - `APP.MODALITY.UNIFICATION.001`
 - `ADD.OFFER.PROGRESSIVE.DISCLOSURE.001`
 - `ADD.OFFER.LAYOUT.001`

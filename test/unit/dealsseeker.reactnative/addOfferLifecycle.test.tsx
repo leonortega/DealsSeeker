@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { Alert, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { MD3LightTheme } from 'react-native-paper';
 import { AddOfferScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/AddOfferScreen';
 
 let mockOverlayRoute: { name: string; offerId?: string } | null = { name: 'add-offer' };
@@ -157,37 +158,36 @@ describe('Add Offer lifecycle (impeccable pass)', () => {
   });
 
   it('closes an empty draft without a confirmation step', async () => {
-    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     await render(<AddOfferScreen />);
     await screen.findByText('add.currentLocationUnavailable');
 
-    fireEvent.press(screen.getByText('add.cancel'));
+    fireEvent.press(screen.getByTestId('add-cancel'));
 
-    expect(alertSpy).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('add-discard-dialog', { includeHiddenElements: true })).toBeNull();
     expect(mockCloseOverlay).toHaveBeenCalledTimes(1);
-    alertSpy.mockRestore();
   });
 
   it('confirms before discarding a draft with content and keeps it when declined', async () => {
-    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     await render(<AddOfferScreen />);
     await screen.findByText('add.currentLocationUnavailable');
     await goToDetails();
     await fireEvent.changeText(screen.getByPlaceholderText('add.descriptionPlaceholder'), 'fresh coffee');
 
-    fireEvent.press(screen.getByText('add.cancel'));
-    expect(alertSpy).toHaveBeenCalledWith('add.discardTitle', 'add.discardBody', expect.any(Array));
+    fireEvent.press(screen.getByTestId('add-cancel'));
+    expect(await screen.findByText('add.discardTitle', { includeHiddenElements: true })).toBeTruthy();
 
-    const buttons = alertSpy.mock.calls[0][2] as Array<{ text: string; onPress?: () => void }>;
-    const keepEditing = buttons.find((button) => button.text === 'add.keepEditing');
-    keepEditing?.onPress?.();
+    await fireEvent.press(
+      screen.getByRole('button', { name: 'add.keepEditing', includeHiddenElements: true })
+    );
     expect(mockCloseOverlay).not.toHaveBeenCalled();
-    expect(screen.getByPlaceholderText('add.descriptionPlaceholder').props.value).toBe('fresh coffee');
+    expect(
+      screen.getByPlaceholderText('add.descriptionPlaceholder', { includeHiddenElements: true }).props.value
+    ).toBe('fresh coffee');
 
-    const discard = buttons.find((button) => button.text === 'add.discardConfirm');
-    discard?.onPress?.();
+    await fireEvent.press(screen.getByTestId('add-cancel', { includeHiddenElements: true }));
+    expect(await screen.findByTestId('add-discard-dialog', { includeHiddenElements: true })).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('add-discard-confirm', { includeHiddenElements: true }));
     expect(mockCloseOverlay).toHaveBeenCalledTimes(1);
-    alertSpy.mockRestore();
   });
 
   it('shows the inline note explaining automatic tag addition', async () => {
@@ -203,7 +203,7 @@ describe('Add Offer lifecycle (impeccable pass)', () => {
 
     fireEvent.press(screen.getByText('add.submitCreate'));
     const confirmation = await screen.findByText('add.created');
-    expect(StyleSheet.flatten(confirmation.props.style).color).toBe('#2f6e46');
+    expect(StyleSheet.flatten(confirmation.props.style).color).toBe(MD3LightTheme.colors.primary);
     expect(mockCloseOverlay).not.toHaveBeenCalled();
 
     await new Promise((resolve) => setTimeout(resolve, 500));

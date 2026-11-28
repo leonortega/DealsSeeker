@@ -1,9 +1,10 @@
 import type { RefObject } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Button, Text, useTheme } from 'react-native-paper';
 import { platformTouchFloor } from '../utils/layout';
-import { landmarkFontFamily } from '../utils/typography';
 import { useApp } from '../hooks/useApp';
 import { restoreFocus } from '../utils/focusReturn';
+import { materialTypeScale } from '../utils/theme';
 import { NativeBottomSheet } from './NativeBottomSheet';
 
 export function FirstRunSheet({
@@ -15,7 +16,8 @@ export function FirstRunSheet({
   onDismiss: () => void;
   returnFocusRef?: RefObject<unknown>;
 }) {
-  const { palette, t } = useApp();
+  const { t } = useApp();
+  const theme = useTheme();
 
   function close() {
     onDismiss();
@@ -27,18 +29,30 @@ export function FirstRunSheet({
       <View
         accessibilityViewIsModal
         testID="first-run-sheet"
-        style={[styles.sheet, { backgroundColor: palette.card, borderColor: palette.border }]}
+        style={[styles.sheet, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
       >
-        <Text style={[styles.title, { color: palette.ink }]}>{t('onboarding.title')}</Text>
-        <Text style={[styles.body, { color: palette.inkMuted }]}>{t('onboarding.body')}</Text>
-        <Pressable
+        <Text variant="headlineSmall" style={styles.title}>
+          {t('onboarding.title')}
+        </Text>
+        <Text
+          variant="bodyMedium"
+          style={[styles.body, { color: theme.colors.onSurfaceVariant }]}
+        >
+          {t('onboarding.body')}
+        </Text>
+        <Button
           accessibilityLabel={t('onboarding.gotIt')}
           accessibilityRole="button"
+          buttonColor={theme.colors.primary}
+          labelStyle={styles.actionLabel}
+          mode="contained"
           onPress={close}
-          style={[styles.action, { backgroundColor: palette.accent }]}
+          style={styles.action}
+          testID="first-run-action"
+          textColor={theme.colors.onPrimary}
         >
-          <Text style={[styles.actionLabel, { color: palette.onAccent }]}>{t('onboarding.gotIt')}</Text>
-        </Pressable>
+          {t('onboarding.gotIt')}
+        </Button>
       </View>
     </NativeBottomSheet>
   );
@@ -54,23 +68,20 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 22,
-    fontWeight: '700',
+    ...materialTypeScale.headlineSmall,
   },
   body: {
-    fontSize: 15,
-    lineHeight: 21,
+    ...materialTypeScale.bodyMedium,
   },
   action: {
     alignItems: 'center',
     borderRadius: 28,
     justifyContent: 'center',
     minHeight: platformTouchFloor,
+    minWidth: platformTouchFloor,
     paddingHorizontal: 20,
   },
   actionLabel: {
-    fontSize: 15,
-    fontWeight: '800',
+    ...materialTypeScale.labelLarge,
   },
 });

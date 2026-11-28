@@ -42,3 +42,21 @@ Feature: Authentication input affordances
     When the user asks why an account is required
     Then the single help surface opens with the account topic first
     And the guest remains in the current context
+
+  Scenario: Auth fields use labelled Material 3 inputs
+    Given the user is on Login or Register
+    When the email, password and display-name inputs are rendered
+    Then each shall show a persistent label and a helper or error text line
+    And the label and any error text shall be announced on focus
+
+  Scenario: The input pattern preserves autofill and visibility semantics
+    Given a password has been entered
+    When the visibility control is used inside the labelled input
+    Then its current state shall still be announced
+    And autofill metadata, length caps and submission behavior shall be unchanged
+
+  Scenario: Long localized labels keep the input and control usable
+    Given localized labels and helper text longer than the source text at large text scaling
+    When the fields are rendered
+    Then each label and helper line shall stay with its own field
+    And the visibility control shall remain labelled and tappable

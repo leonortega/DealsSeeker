@@ -8,7 +8,7 @@ Feature: Contributor-facing report fields
     When the report form is rendered
     Then no raw user identifier shall be displayed
     And no offer identifier input shall be displayed
-    And the report message shall be the only required input
+    And the report reason and message shall both be required
 
   Scenario: Generic report still carries internal context
     Given an authenticated user opens Reports directly without offer context

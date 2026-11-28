@@ -63,7 +63,80 @@ describe('useStatusNotice (APP.FEEDBACK.001)', () => {
     await act(async () => notice?.reportStatus('Saved'));
     view.unmount();
 
-    await act(async () => jest.advanceTimersByTime(STATUS_DWELL_MS + 1));
+    act(() => {
+      jest.advanceTimersByTime(STATUS_DWELL_MS + 1);
+    });
     expect(notice?.status).toBe('Saved');
+  });
+
+  it('shows a pending indication until exactly one terminal outcome replaces it (APP.FEEDBACK.001-R10/R11)', async () => {
+    await render(<Probe />);
+
+    await act(async () => notice?.reportPending('common.saving'));
+    expect(notice?.pending).toBe(true);
+    expect(notice?.pendingLabel).toBe('common.saving');
+    expect(notice?.status).toBeNull();
+
+    await act(async () => notice?.reportStatus('Saved', 'success'));
+    expect(notice?.pending).toBe(false);
+    expect(notice?.status).toBe('Saved');
+    expect(notice?.statusTone).toBe('success');
+
+    await act(async () => jest.advanceTimersByTime(STATUS_DWELL_MS + 1));
+    expect(notice?.status).toBeNull();
+  });
+
+  it('retires a previous undo action when a new message arrives (APP.FEEDBACK.001-R3)', async () => {
+    await render(<Probe />);
+    const firstUndo = jest.fn();
+
+    await act(async () => notice?.reportStatus('First', 'neutral', { label: 'Undo', onPress: firstUndo }));
+    expect(notice?.statusAction?.label).toBe('Undo');
+
+    await act(async () => notice?.reportStatus('Second'));
+    expect(notice?.status).toBe('Second');
+    expect(notice?.statusAction).toBeNull();
+  });
+
+  it('keeps a persistent message through both dwells until it is dismissed (APP.FEEDBACK.001-R12)', async () => {
+    await render(<Probe />);
+
+    await act(async () => notice?.reportStatus('Keep me', 'neutral', null, { persistent: true }));
+    expect(notice?.persistentStatus).toBe('Keep me');
+    expect(notice?.statusPersistent).toBe(true);
+
+    await act(async () => jest.advanceTimersByTime(ERROR_STATUS_DWELL_MS + 1));
+    expect(notice?.persistentStatus).toBe('Keep me');
+
+    await act(async () => notice?.dismissStatus());
+    expect(notice?.persistentStatus).toBeNull();
+    expect(notice?.statusPersistent).toBe(false);
+  });
+
+  it('does not let a transient message remove a persistent message (APP.FEEDBACK.001-R13)', async () => {
+    await render(<Probe />);
+
+    await act(async () => notice?.reportStatus('Persistent', 'neutral', null, { persistent: true }));
+    await act(async () => notice?.reportStatus('Transient', 'success'));
+
+    expect(notice?.persistentStatus).toBe('Persistent');
+    expect(notice?.status).toBe('Transient');
+
+    await act(async () => jest.advanceTimersByTime(STATUS_DWELL_MS + 1));
+    expect(notice?.status).toBeNull();
+    expect(notice?.persistentStatus).toBe('Persistent');
+  });
+
+  it('clears pending and every message when the view is left (APP.FEEDBACK.001-R4)', async () => {
+    await render(<Probe />);
+
+    await act(async () => notice?.reportStatus('Persistent', 'neutral', null, { persistent: true }));
+    await act(async () => notice?.reportPending('common.saving'));
+    await act(async () => notice?.clearStatus());
+
+    expect(notice?.pending).toBe(false);
+    expect(notice?.status).toBeNull();
+    expect(notice?.persistentStatus).toBeNull();
+    expect(notice?.statusAction).toBeNull();
   });
 });

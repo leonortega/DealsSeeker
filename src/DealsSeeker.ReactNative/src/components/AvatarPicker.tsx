@@ -1,5 +1,6 @@
+import { StyleSheet, View } from 'react-native';
+import { Text, TouchableRipple, useTheme } from 'react-native-paper';
 import { platformTouchFloor } from '../utils/layout';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../hooks/useApp';
 import { AVATAR_OPTIONS } from '../utils/avatars';
 
@@ -9,28 +10,33 @@ interface AvatarPickerProps {
 }
 
 export function AvatarPicker({ selectedAvatarId, onSelect }: AvatarPickerProps) {
-  const { palette, t } = useApp();
+  const { t } = useApp();
+  const theme = useTheme();
 
   return (
     <View style={styles.row}>
       {AVATAR_OPTIONS.map((option) => {
         const active = option.avatarId === selectedAvatarId;
         return (
-          <Pressable
+          <TouchableRipple
             key={option.avatarId}
             accessibilityLabel={`${t('settings.avatar')} ${option.avatarId}`}
             accessibilityRole="button"
+            accessibilityState={{ selected: active }}
             onPress={() => onSelect(option.avatarId)}
+            rippleColor={theme.colors.primary}
             style={[
               styles.option,
               {
-                backgroundColor: active ? palette.accentMuted : palette.card,
-                borderColor: active ? palette.accentText : palette.border,
+                backgroundColor: active ? theme.colors.secondaryContainer : theme.colors.surface,
+                borderColor: active ? theme.colors.primary : theme.colors.outline,
               },
             ]}
           >
-            <Text style={styles.emoji}>{option.emoji}</Text>
-          </Pressable>
+            <Text variant="bodyLarge" style={styles.emoji}>
+              {option.emoji}
+            </Text>
+          </TouchableRipple>
         );
       })}
     </View>

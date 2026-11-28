@@ -130,7 +130,7 @@ describe('accessible contribution and auth surfaces (APP.ACCESSIBILITY.UX.002)',
     expect(screen.getByTestId('native-bottom-sheet')).toBeTruthy();
     const coverage = screen.getByRole('button', { name: /1500 m/ });
     await fireEvent.press(coverage);
-    expect(screen.getByRole('radio', { name: '1500 m' }).props.accessibilityState).toEqual({ selected: true });
+    expect(screen.getByRole('radio', { name: '1500 m' }).props.accessibilityState).toMatchObject({ selected: true });
     expect(screen.getByRole('button', { name: 'common.cancel' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'common.search' })).toBeTruthy();
   });
@@ -212,7 +212,7 @@ describe('accessible contribution and auth surfaces (APP.ACCESSIBILITY.UX.002)',
     await render(<ImmersiveFeedTabs activeTab="viewAll" onChangeTab={jest.fn()} />);
     const tabs = screen.getAllByRole('tab');
     expect(tabs).toHaveLength(2);
-    tabs.forEach((tab) => expect(tab.props.style.minHeight).toBeGreaterThanOrEqual(44));
+    tabs.forEach((tab) => expect(StyleSheet.flatten(tab.props.style).minHeight).toBeGreaterThanOrEqual(44));
   });
 });
 

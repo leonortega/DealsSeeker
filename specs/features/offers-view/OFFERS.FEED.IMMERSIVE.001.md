@@ -2,16 +2,19 @@
 
 ## Metadata
 - **Title**: Immersive Vertical Full-Screen Main Page Feed
-- **Version**: `v2.4`
+- **Version**: `v2.5`
 - **Status**: Approved
 - **Context/View**: Offers View (Main Page)
 - **Priority**: High
 
+## Header and action-rail policy (v2.5)
+The platform-native header exception and the authored-view rail exception are retired. Standard top-level views use a Material 3 app bar as defined by `APP.SHELL.003`; the immersive presentation keeps only its own top bar and remains headerless. The immersive action rail uses Material 3 button and icon-button components with the canonical labels, roles and selected states defined by `OFFERS.ACTIONS.LABELS.001`.
+
 ## Navigation restructure (v2.0)
 The following navigation-related requirements are superseded by `OFFERS.MODE.SWITCH.001`, `APP.SHELL.001` and `OFFERS.NAV.ADD.001`: R4–R7, R16–R35, R42–R45 and R53. The immersive feed no longer has a static left navigation panel or a footer mode button; both presentations share one bottom navigation, presentation is chosen in the Offers controls, and Add Offer is opened from a single floating action button. All non-navigation requirements (feed paging, photo carousel, overlays, theme, privacy, states) remain in force.
 
-## Header policy (v2.4)
-Standard top-level views use the platform-native header, per the revised `APP.SHELL.005`. The immersive presentation keeps only its own top bar and remains headerless; its controls are unchanged.
+## Header policy (v2.4, superseded by v2.5)
+Standard top-level views no longer use a platform-native header; they use the Material 3 app bar defined in the v2.5 policy above. The immersive presentation keeps only its own top bar and remains headerless; its controls are unchanged.
 
 ## Purpose
 Define a new main-page browsing experience that presents offers as a vertical, full-screen, one-offer-per-viewport immersive feed, with application identity and discovery controls on the left, offer actions on the right, and offer text/tags in the lower-left description area.
@@ -85,6 +88,8 @@ Define a new main-page browsing experience that presents offers as a vertical, f
 - `OFFERS.FEED.IMMERSIVE.001-R59`: On wide screens the presentation mode control shall keep a compact width and shall not stretch across the full screen.
 - `OFFERS.FEED.IMMERSIVE.001-R60`: While the immersive feed is displayed, the safe-area background and the status-bar treatment shall use the fixed plum presentation so the full-bleed surface is not framed by a light band, in both themes.
 - `OFFERS.FEED.IMMERSIVE.001-R61`: At increased text sizes, every offer action in the side rail shall remain visible and independently tappable, with no overlapping labels or clipped controls; decorative captions may be omitted when the controls carry accessible names.
+- `OFFERS.FEED.IMMERSIVE.001-R62`: The immersive action rail shall use Material 3 button and icon-button components for its offer actions; no authored-view exception shall keep an action as a custom touchable control.
+- `OFFERS.FEED.IMMERSIVE.001-R63`: Each rail action shall keep the canonical label, announced name, announced role and announced state defined by `OFFERS.ACTIONS.LABELS.001`, shall remain independently tappable with a 48 by 48 dp target, and shall stay visible at 200 percent font scale as defined by `APP.ADAPTIVE.UX.002`.
 
 ## Acceptance Criteria (BDD)
 ```gherkin
@@ -109,6 +114,8 @@ Scenario: Offer controls remain available in side rail
   Then favorite, directions, availability voting, and report controls shall be available in a vertical side rail on the right
   And the open detail control shall not be available
   And their existing behavior and state shall be preserved
+  And each control shall use a Material 3 button or icon-button component
+  And no authored-view exception shall keep a control as a custom touchable control
 
 Scenario: Description and tags use more control
   Given an offer page with a long description and tags
@@ -267,11 +274,26 @@ Scenario: Empty feed state
   Given no offers are available
   When the main page loads
   Then guidance to add the first offer or widen the search area is displayed in the feed
+
+Scenario: Rail actions keep canonical semantics through Material 3 components
+  Given an offer page with favorite and availability actions is displayed
+  When assistive technology traverses the action rail
+  Then each action announces its canonical name, role and selected state
+  And no announced value differs from the same action on another surface
+
+Scenario: Rail actions stay tappable at 200 percent font scale
+  Given the Android font scale is set to 200 percent
+  And the immersive rail is displayed on a wide screen
+  When assistive technology reads the rail
+  Then every action remains visible and independently tappable
+  And each keeps a 48 by 48 dp target and its canonical state
 ```
 
 ## Example Inputs/Outputs
 - Example input: Offers main page with 5 offers at a `390px` viewport width.
 - Expected output: Five full-screen offer pages, each with full-bleed image, left identity/discovery controls, right side-rail controls, and truncated description/tags with a `more` control.
+- Example input: an offer rail with favorite, directions and availability actions rendered as Material 3 components.
+- Expected output: each action announces its canonical name, role and selected state, with no authored custom touchable control in the rail.
 
 ## Edge Cases
 - Offers with missing images still render a full-screen page with placeholder visual.
@@ -282,6 +304,7 @@ Scenario: Empty feed state
 - A vertical swipe over a multi-photo offer scrolls the feed without changing the displayed photo.
 - Offer text overlays remain readable over both light and dark offer images while their background stays transparent.
 - The new-offer and immersive-view buttons remain on the same row on narrow viewports, with the button labels truncating rather than wrapping.
+- A rail action moved to a Material 3 component at 200 percent font scale — it stays visible, independently tappable and keeps its canonical announced state.
 
 ## Non-Functional Constraints
 - Vertical feed scrolling should remain smooth under typical offer counts.
@@ -317,3 +340,4 @@ Scenario: Empty feed state
 - `OFFERS.MODE.SWITCH.001`
 - `OFFERS.NAV.ADD.001`
 - `OFFERS.UX.002`
+- `APP.ADAPTIVE.UX.002`

@@ -43,3 +43,21 @@ Feature: Sequenced Add Offer flow with visible progress
     When the user requests Back
     Then the existing cancel path is offered
     And the attached photo is not discarded
+
+  Scenario: Step progress uses a Material 3 progress indicator
+    Given the user opens Add Offer in create mode
+    When the view renders
+    Then the active step and the number of remaining steps shall be shown by a Material 3 progress indicator
+    And the fixed order Photo, Place, Details shall remain unchanged
+
+  Scenario: A step-level confirmation uses a Material 3 dialog
+    Given a confirmation is shown during the sequenced flow
+    When the dialog is displayed
+    Then it shall remain until the user makes an explicit selection
+    And no step shall advance and no entered data shall be discarded by the dialog alone
+
+  Scenario: Long localized step names keep the progress indicator readable
+    Given step names are longer and the text scale is large
+    When the view renders
+    Then the progress indicator shall still show the active step and remaining count
+    And only the active step's controls shall be presented

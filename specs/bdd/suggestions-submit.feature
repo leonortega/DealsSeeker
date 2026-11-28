@@ -37,3 +37,21 @@ Feature: Suggestions submission flow
     Given the user is on Suggestions view
     When the user pastes 300 characters into the contact input
     Then the contact input holds exactly 254 characters
+
+  Scenario: Suggestion inputs use labelled Material 3 fields
+    Given the user is on Suggestions view
+    When the message and contact inputs are rendered
+    Then each shall show a persistent label and a helper or error text line
+    And the message field shall keep its live counter
+
+  Scenario: The suggestion form uses a Material 3 card and button
+    Given the user is on Suggestions view
+    When the form is rendered
+    Then it shall be presented on a Material 3 card pattern
+    And the submit action shall follow a Material 3 button pattern and stay operable with the keyboard open
+
+  Scenario: A long localized helper line stays inside its field
+    Given a localized helper or error line longer than the field width
+    When the inputs are rendered
+    Then the line shall wrap within its own field
+    And the submit action shall remain visible and tappable

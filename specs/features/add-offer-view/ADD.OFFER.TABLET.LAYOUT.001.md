@@ -60,6 +60,7 @@ Scenario: Tablet composition preserves behavior
 - The tablet arrangement shall not add a second scaffold or duplicate any control instance.
 
 ## Related Specs
+- `APP.SHELL.002`
 - `ADD.OFFER.LAYOUT.001`
 - `APP.ADAPTIVE.UX.001`
 - `APP.ADAPTIVE.UX.002`

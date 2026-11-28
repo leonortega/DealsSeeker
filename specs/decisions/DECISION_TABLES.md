@@ -127,7 +127,7 @@
 |---|---|---|
 | Splash display trigger | App startup | Runs before first interactive view |
 | Splash duration | About 2 seconds | Target duration, not hard real-time |
-| Splash behavior | Branded animated intro with smooth exit | Keeps startup identity consistent |
+| Splash behavior | Material 3 startup surface with a smooth exit | Keeps startup identity consistent |
 | Global loading trigger | Any required in-view data request in progress | Includes initial location fetch and search |
 | Loading UI | Blocking overlay with animated indicator | Prevents accidental double actions |
 | Interaction during loading | Disabled for underlying view | Overlay blocks taps/clicks/inputs |
@@ -284,8 +284,8 @@
 | Decision Point | Default Rule | Notes |
 |---|---|---|
 | Navigation container | Native stack + tab navigator for stack/tab state, transitions and gestures | No custom global navigator |
-| Visible navigation chrome | Native headers on standard views; brand-styled night footer | `APP.SHELL.005`, `APP.SHELL.002` |
-| Visual system | `DESIGN.md` authoritative; no HIG/M3 visual adaptation | Brand UI unchanged on iOS and Android |
+| Visible navigation chrome | Material 3 app bars on standard views; M3 navigation bar/rail, immersive stays headerless | `APP.SHELL.005`, `APP.SHELL.002` |
+| Visual system | Material 3 authoritative via `DESIGN.md` and Paper | M3 roles/shape/type/glyphs on Android; no authored brand overlay |
 | Modal presentation | One sheet modality for sub-tasks and one native-route modality for destinations | `APP.MODALITY.UNIFICATION.001`; no third modal system |
 | Platform dismissal | Routed through in-app cancel path; discard confirmation when dirty | Preserves `ADD.OFFER.EXIT.001` |
 | System Back | Native lifecycle handlers replace custom global BackHandler | Preserves immersive close and discard |

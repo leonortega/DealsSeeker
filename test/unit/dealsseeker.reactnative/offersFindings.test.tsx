@@ -1,7 +1,71 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
+import { Button, Card } from 'react-native-paper';
 import { OffersScreen } from '../../../src/DealsSeeker.ReactNative/src/screens/OffersScreen';
+
+function hasComponent(node: any, component: unknown): boolean {
+  const visit = (fiber: any): boolean => {
+    if (!fiber) {
+      return false;
+    }
+    if (fiber.type === component) {
+      return true;
+    }
+    return visit(fiber.child) || visit(fiber.sibling);
+  };
+  let top = node.unstable_fiber;
+  while (top?.return) {
+    top = top.return;
+  }
+  return visit(top);
+}
 import { OffersStatePanel } from '../../../src/DealsSeeker.ReactNative/src/components/OffersStatePanel';
+
+// Paper primitives keep testID/accessibilityRole/style so the authored assertions still hold.
+jest.mock('react-native-paper', () => {
+  const React = require('react');
+  const { View, Pressable, TextInput, Text } = require('react-native');
+  const basic = (name: string, Component: any, defaultRole?: string) => ({
+    children, label, testID, style, accessibilityRole, inputStyle, visible, ...rest
+  }: any) => {
+    if (visible === false) {
+      return null;
+    }
+    const content = children ?? label;
+    const rendered = typeof content === 'string' && Component !== Text
+      ? React.createElement(Text, null, content)
+      : content;
+    return React.createElement(Component, {
+      ...rest,
+      testID: testID ?? `m3-${name}`,
+      style: style ?? inputStyle,
+      accessibilityRole: accessibilityRole ?? defaultRole,
+    }, rendered);
+  };
+  const RadioButton = { Group: basic('radio-group', View, 'radiogroup') };
+  RadioButton.Android = basic('radio', Pressable, 'radio');
+  RadioButton.Item = RadioButton.Android;
+  return {
+    useTheme: () => ({ colors: { primary: '#b85c38', onPrimary: '#ffffff', surface: '#fffdf8', surfaceVariant: '#f5ded6', background: '#fffdf8', onSurface: '#1f3128', onSurfaceVariant: '#53433e', outline: '#d7c9b5', error: '#ba1a1a' }, fonts: {} }),
+    Text: basic('text', Text),
+    MD3LightTheme: { colors: {}, fonts: {} },
+    MD3DarkTheme: { colors: {}, fonts: {} },
+    DefaultTheme: { colors: {}, fonts: {} },
+    PaperProvider: ({ children }: any) => children,
+    Portal: ({ children }: any) => children,
+    Searchbar: basic('searchbar', TextInput),
+    Chip: basic('chip', Pressable, 'button'),
+    Button: basic('button', Pressable, 'button'),
+    Card: basic('card', View),
+    Badge: basic('badge', View),
+    FAB: basic('fab', Pressable, 'button'),
+    RadioButton,
+    Snackbar: basic('snackbar', View),
+    IconButton: basic('iconbutton', Pressable, 'button'),
+    ProgressBar: basic('progressbar', View),
+    TouchableRipple: basic('touchable-ripple', Pressable, 'button'),
+  };
+});
 
 let mockImmersiveOffers = false;
 const mockCloseImmersiveOffers = jest.fn();
@@ -88,5 +152,14 @@ describe('Offers device findings', () => {
     expect(StyleSheet.flatten(action.props.style).alignSelf).toBe('flex-start');
     await fireEvent.press(action);
     expect(onAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses Material 3 card and button patterns for the recovery surface (OFFERS.UX.002-R16)', async () => {
+    await render(
+      <OffersStatePanel title="No offers" hint="Clear the filters" palette={palette} />
+    );
+
+    expect(hasComponent(screen.root, Card)).toBe(true);
+    expect(hasComponent(screen.root, Button)).toBe(false);
   });
 });

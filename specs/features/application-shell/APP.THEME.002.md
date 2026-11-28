@@ -22,7 +22,7 @@ Prevent fixed light backgrounds from showing through the application when the da
 - `APP.THEME.002-R2`: Gaps between cards and panels shall use the theme background, not a fixed light surface.
 - `APP.THEME.002-R3`: Cards, panels and controls shall keep their own palette roles and shall not be flattened into the background.
 - `APP.THEME.002-R4`: The requirement shall hold in both themes and for both supported languages.
-- `APP.THEME.002-R5`: The shared bottom navigation shall keep its fixed night surface per the Night Footer Rule.
+- `APP.THEME.002-R5`: The shared navigation surface shall use the active Material 3 navigation colors.
 - `APP.THEME.002-R6`: In the immersive presentation, the full content area behind state panels and status banners shall use the fixed plum presentation background, so no navigator surface shows through in either theme.
 
 ## Acceptance Criteria (BDD)
@@ -53,7 +53,7 @@ Scenario: Immersive state panels have a dark backdrop
 
 ## Example Inputs/Outputs
 - Example input: dark theme, My Account with several cards.
-- Expected output: dark background between cards; dark cards with light text; night footer unchanged.
+- Expected output: dark background between cards; dark cards with light text; M3 navigation surface unchanged.
 
 ## Edge Cases
 - Empty states where no cards are present.

@@ -5,8 +5,8 @@ describe('native shell navigation options', () => {
     expect(stackScreenOptions()).toEqual({ headerShown: true });
   });
 
-  it('shows a platform-native header on standard tab screens', () => {
-    expect(tabScreenOptions()).toEqual({ headerShown: true });
+  it('defers the standard tab header to the Material 3 app bar', () => {
+    expect(tabScreenOptions()).toEqual({ headerShown: false });
   });
 
   it('uses a native sheet on iOS and a full-screen modal on Android', () => {

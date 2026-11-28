@@ -1,20 +1,19 @@
-import { platformTouchFloor } from '../utils/layout';
-import { landmarkFontFamily } from '../utils/typography';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { Button, HelperText, Surface, Text, TextInput, TouchableRipple, useTheme } from 'react-native-paper';
 import { useApp } from '../hooks/useApp';
 import { useStatusNotice } from '../hooks/useStatusNotice';
 import { announceStatus } from '../utils/announce';
-import { authFormStyles } from '../utils/authFormStyles';
 import { validateEmail, validateStrongPassword } from '../utils/format';
-import { keyboardAvoidanceBehavior } from '../utils/layout';
+import { keyboardAvoidanceBehavior, platformTouchFloor } from '../utils/layout';
 
 const displayNameMaxLength = 80;
 const emailMaxLength = 254;
 const passwordMaxLength = 200;
 
 export function RegisterScreen() {
-  const { api, palette, setSession, showLogin, t } = useApp();
+  const { api, setSession, showLogin, t } = useApp();
+  const theme = useTheme();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -75,88 +74,106 @@ export function RegisterScreen() {
     }
   }
 
+  const nameError = status === t('auth.nameRequired');
+  const emailError = status === t('auth.emailRequired');
+  const passwordError = Boolean(status) && !nameError && !emailError;
+
   return (
-    <KeyboardAvoidingView
-      behavior={keyboardAvoidanceBehavior(Platform.OS)}
-      style={[authFormStyles.root, { backgroundColor: palette.background }]}
-    >
-      <View style={[authFormStyles.formCard, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.formTitle, { color: palette.ink }]}>{t('auth.registerTitle')}</Text>
+    <KeyboardAvoidingView behavior={keyboardAvoidanceBehavior(Platform.OS)} style={styles.root}>
+      <Surface
+        elevation={1}
+        style={[styles.formCard, { backgroundColor: theme.colors.surface }]}
+        testID="register-form-card"
+      >
+        <Text variant="titleLarge">{t('auth.registerTitle')}</Text>
         <TextInput
           accessibilityLabel={t('auth.displayName')}
+          error={nameError}
+          label={t('auth.displayName')}
           maxLength={displayNameMaxLength}
+          mode="outlined"
           onChangeText={(value) => setDisplayName(value.slice(0, displayNameMaxLength))}
           placeholder={t('auth.displayName')}
-          placeholderTextColor={palette.inkMuted}
-          style={[authFormStyles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
           value={displayName}
         />
         <TextInput
           accessibilityLabel={t('auth.email')}
           autoCapitalize="none"
           autoComplete="username"
+          error={emailError}
           keyboardType="email-address"
-          textContentType="username"
+          label={t('auth.email')}
           maxLength={emailMaxLength}
+          mode="outlined"
           onChangeText={(value) => setEmail(value.slice(0, emailMaxLength))}
           placeholder={t('auth.email')}
-          placeholderTextColor={palette.inkMuted}
-          style={[authFormStyles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
+          textContentType="username"
           value={email}
         />
         <TextInput
           accessibilityLabel={t('auth.password')}
           autoComplete="new-password"
+          error={passwordError}
+          label={t('auth.password')}
           maxLength={passwordMaxLength}
-          textContentType="newPassword"
+          mode="outlined"
           onChangeText={(value) => setPassword(value.slice(0, passwordMaxLength))}
           placeholder={t('auth.password')}
-          placeholderTextColor={palette.inkMuted}
           secureTextEntry={!showPassword}
-          style={[authFormStyles.input, { backgroundColor: palette.panel, borderColor: palette.border, color: palette.ink }]}
+          textContentType="newPassword"
           value={password}
         />
-        <Pressable
+        {status ? (
+          <HelperText accessibilityLiveRegion="polite" type="error" visible>
+            {status}
+          </HelperText>
+        ) : null}
+        <TouchableRipple
           accessibilityLabel={t(showPassword ? 'auth.hidePassword' : 'auth.showPassword')}
           accessibilityRole="button"
           accessibilityState={{ expanded: showPassword }}
           onPress={() => setShowPassword((shown) => !shown)}
-          style={styles.visibilityToggle}
+          style={styles.inlineAffordance}
         >
-          <Text style={[authFormStyles.link, { color: palette.accentText }]}>
+          <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
             {t(showPassword ? 'auth.hidePassword' : 'auth.showPassword')}
           </Text>
-        </Pressable>
-        <Pressable
+        </TouchableRipple>
+        <Button
           accessibilityLabel={t('auth.registerButton')}
-          accessibilityRole="button"
-          style={[authFormStyles.primaryButton, { backgroundColor: palette.accent }]}
+          contentStyle={styles.buttonContent}
+          mode="contained"
           onPress={() => void submit()}
         >
-          <Text style={[authFormStyles.primaryButtonLabel, { color: palette.onAccent }]}>
-            {t('auth.registerButton')}
-          </Text>
-        </Pressable>
-        <Pressable accessibilityLabel={t('auth.loginLink')} accessibilityRole="link" onPress={showLogin}>
-          <Text style={[authFormStyles.link, { color: palette.accentText }]}>{t('auth.loginLink')}</Text>
-        </Pressable>
-        {status ? (
-          <Text accessibilityLiveRegion="polite" style={[authFormStyles.status, { color: palette.danger }]}>
-            {status}
-          </Text>
-        ) : null}
-      </View>
+          {t('auth.registerButton')}
+        </Button>
+        <Button
+          accessibilityLabel={t('auth.loginLink')}
+          accessibilityRole="link"
+          mode="text"
+          onPress={showLogin}
+        >
+          {t('auth.loginLink')}
+        </Button>
+      </Surface>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  formTitle: {
-    fontFamily: landmarkFontFamily(),
-    fontSize: 24,
-    fontWeight: '700',
+  root: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
   },
-  visibilityToggle: {
+  formCard: {
+    gap: 12,
+    padding: 20,
+  },
+  buttonContent: {
+    minHeight: platformTouchFloor,
+  },
+  inlineAffordance: {
     alignSelf: 'flex-start',
     justifyContent: 'center',
     minHeight: platformTouchFloor,
